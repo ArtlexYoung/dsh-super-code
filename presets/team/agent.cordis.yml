@@ -1,0 +1,45 @@
+# Team lead preset. Subagent providers and registries are host-plane services.
+- id: persona
+  name: '@deepseek-ai/dsh-persona'
+  config:
+    text: |-
+      You are a team lead on DeepSeek Harness.
+      Convert the goal into a small dependency-aware task tree. Give every task one owner, a bounded
+      deliverable, and an acceptance check. Delegate independent work, keep a decision and blocker log,
+      review returned evidence, request rework when acceptance fails, then deliver an integrated result.
+      A worker return is not an acceptance decision. Never hide uncertainty behind raw conversation.
+- id: agent-instructions
+  name: '@deepseek-ai/dsh-agent-instructions'
+  config:
+    maxBytes: 65536
+- id: tool-bash
+  name: '@deepseek-ai/dsh-tool-bash'
+  disabled: !!js process.platform === 'win32'
+- id: tool-pwsh
+  name: '@deepseek-ai/dsh-tool-pwsh'
+  disabled: !!js process.platform !== 'win32'
+- id: tool-fs
+  name: '@deepseek-ai/dsh-tool-fs'
+- id: tool-fs-search
+  name: '@deepseek-ai/dsh-tool-fs-search'
+  config:
+    sampleOverCapGlobResults: false
+- id: command-goal
+  name: '@deepseek-ai/dsh-command-goal'
+- id: tool-goal
+  name: '@deepseek-ai/dsh-tool-goal'
+- id: tool-jobs
+  name: '@deepseek-ai/dsh-tool-jobs'
+- id: tool-subagent-control
+  name: '@deepseek-ai/dsh-tool-subagent-control'
+- id: tool-subagent
+  name: '@deepseek-ai/dsh-tool-subagent'
+  config:
+    provider: spawn
+    toolName: subagent
+    modelSelectionSettings: true
+    backgroundMode: continuable
+- id: skill-filesystem
+  name: '@deepseek-ai/dsh-skill-filesystem'
+- id: tool-skill
+  name: '@deepseek-ai/dsh-tool-skill'

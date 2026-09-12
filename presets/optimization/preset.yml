@@ -1,0 +1,3 @@
+name: Optimization lab
+description: An experiment agent that protects baselines, measures bottlenecks, evaluates candidates, and records rollback evidence.
+order: 40

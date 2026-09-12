@@ -1,0 +1,3 @@
+name: Evidence research
+description: A research agent that separates claims, sources, uncertainty, counterexamples, and reproducible findings.
+order: 30

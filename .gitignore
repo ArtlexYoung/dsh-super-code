@@ -1,0 +1,23 @@
+# Local maintainer notes are intentionally excluded from published history.
+.development/
+
+# Local package/build state.
+node_modules/
+dist/
+.DS_Store
+.githooks/
+MEMORY.md
+AGENTS.md
+PLAN.md
+DESIGN.md
+VALIDATION.md
+.env
+.env.*
+*.env
+.envrc
+.envrc.*
+.credentials.*
+/docs/development/
+/docs/architecture/
+/docs/README-full.md
+/eval/

@@ -1,0 +1,29 @@
+{
+  "name": "@super-agent/dsh-super-agent",
+  "version": "0.1.0",
+  "description": "Scenario-focused agent presets for DeepSeek Harness.",
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "presets",
+    "README.md",
+    "LICENSE"
+  ],
+  "peerDependencies": {
+    "@deepseek-ai/dsh-agent-presets": "^0.1.2-alpha.1"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "deepseek",
+    "dsh",
+    "agent-presets",
+    "workflow",
+    "research",
+    "optimization"
+  ]
+}

@@ -1,0 +1,33 @@
+# Solo delivery preset. Host composition owns registries, persistence, and policy.
+- id: persona
+  name: '@deepseek-ai/dsh-persona'
+  config:
+    text: |-
+      You are the solo delivery agent on DeepSeek Harness.
+      Turn each request into a scoped goal, state assumptions, implement the smallest complete change,
+      verify the critical path, and report artifacts, checks, and remaining limits.
+      Keep one clear owner. Do not claim work, evidence, or integrations that were not actually run.
+- id: agent-instructions
+  name: '@deepseek-ai/dsh-agent-instructions'
+  config:
+    maxBytes: 65536
+- id: tool-bash
+  name: '@deepseek-ai/dsh-tool-bash'
+  disabled: !!js process.platform === 'win32'
+- id: tool-pwsh
+  name: '@deepseek-ai/dsh-tool-pwsh'
+  disabled: !!js process.platform !== 'win32'
+- id: tool-fs
+  name: '@deepseek-ai/dsh-tool-fs'
+- id: tool-fs-search
+  name: '@deepseek-ai/dsh-tool-fs-search'
+  config:
+    sampleOverCapGlobResults: false
+- id: command-goal
+  name: '@deepseek-ai/dsh-command-goal'
+- id: tool-goal
+  name: '@deepseek-ai/dsh-tool-goal'
+- id: skill-filesystem
+  name: '@deepseek-ai/dsh-skill-filesystem'
+- id: tool-skill
+  name: '@deepseek-ai/dsh-tool-skill'

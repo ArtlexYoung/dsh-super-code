@@ -7,10 +7,10 @@
 这是一个包含 preset 配置和一个最小 bundle patch 的包，依赖 DeepSeek Harness 官方插件。推荐直接安装到 profile：
 
 ```bash
-dsh plugin --profile my-profile add @super-agent/dsh-super-agent
+dsh plugin --profile my-profile add dsh-super-agent
 ```
 
-安装后，包的 `cordis.patch.yml` 会自动把自己的 `presets/` 目录加入 `dsh-agent-presets` 的 system roots，并将默认 preset 设为 `solo`。启动 profile 后可以在 session 创建时选择 `team`、`research` 或 `optimization`。
+安装后，包的 `cordis.patch.yml` 会自动把自己的 `presets/` 目录加入 `dsh-agent-presets` 的 system roots，并将默认 preset 设为 `solo`。启动 profile 后可以在 session 创建时选择 `team`、`research` 或 `optimization`。如果 profile 是 headless 或其他不含 `agent-presets` 的组合，需要先装配 `@deepseek-ai/dsh-agent-presets`，或在 profile patch 中插入该 row。
 
 如果部署不使用 bundle 自动装配，也可以手工在宿主 composition 中启用 `@deepseek-ai/dsh-agent-presets`，并把本包的 `presets` 目录加入 roots：
 
@@ -19,7 +19,7 @@ dsh plugin --profile my-profile add @super-agent/dsh-super-agent
   config:
     default: solo
     roots:
-      - path: ./node_modules/@super-agent/dsh-super-agent/presets
+      - path: ./node_modules/dsh-super-agent/presets
         trust: system
 ```
 
@@ -48,7 +48,7 @@ dsh plugin --profile my-profile add @super-agent/dsh-super-agent
 
 ## 兼容性和权限边界
 
-- 目标 Harness 版本：`0.1.2-alpha.1`（与当前 pinned Harness 对齐）。
+- 目标 Harness 版本：`0.1.2-alpha.x`；当前源码验证基线为 pinned commit `cd5ef814`（runtime `0.1.2-alpha.1`），npm 依赖从 `0.1.2-alpha.2` 起可用。
 - 本包只包含声明式 YAML、显示元数据和文档，不执行安装脚本。
 - preset 的实际权限等于它列出的官方工具以及宿主为这些工具提供的服务；`trust: system` 只表示部署信任来源，不是额外沙箱。
 - `tool-bash`/`tool-pwsh`、文件工具和 web 工具仍受宿主 sandbox、审批和网络策略约束。
@@ -64,3 +64,14 @@ presets/
 └── optimization/agent.cordis.yml
 ```
 
+
+## 发布
+
+发布前执行：
+
+```bash
+npm pack --dry-run
+npm publish --dry-run
+```
+
+确认 tarball 只包含 `presets/`、`cordis.patch.yml`、README、License 和 package manifest 后，再执行 `npm publish`。发布是外部操作，需要 npm 登录和包名写权限；GitHub 仓库地址已写入 manifest，但本地提交不会自动 push。

@@ -1,5 +1,5 @@
 {
-  "name": "@super-agent/dsh-super-agent",
+  "name": "dsh-super-agent",
   "version": "0.1.0",
   "description": "Scenario-focused agent presets for DeepSeek Harness.",
   "license": "MIT",
@@ -11,7 +11,7 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@deepseek-ai/dsh-agent-presets": "^0.1.2-alpha.1"
+    "@deepseek-ai/dsh-agent-presets": "^0.1.2-alpha.2"
   },
   "engines": {
     "node": ">=22"

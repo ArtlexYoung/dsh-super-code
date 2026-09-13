@@ -4,7 +4,15 @@
 
 ## 安装和装配
 
-这是一个只包含 preset 配置的包，依赖 DeepSeek Harness 官方插件。把包安装到运行 DSH 的 profile 后，在宿主 composition 中启用 `@deepseek-ai/dsh-agent-presets`，并把本包的 `presets` 目录加入 roots：
+这是一个包含 preset 配置和一个最小 bundle patch 的包，依赖 DeepSeek Harness 官方插件。推荐直接安装到 profile：
+
+```bash
+dsh plugin --profile my-profile add @super-agent/dsh-super-agent
+```
+
+安装后，包的 `cordis.patch.yml` 会自动把自己的 `presets/` 目录加入 `dsh-agent-presets` 的 system roots，并将默认 preset 设为 `solo`。启动 profile 后可以在 session 创建时选择 `team`、`research` 或 `optimization`。
+
+如果部署不使用 bundle 自动装配，也可以手工在宿主 composition 中启用 `@deepseek-ai/dsh-agent-presets`，并把本包的 `presets` 目录加入 roots：
 
 ```yaml
 - name: '@deepseek-ai/dsh-agent-presets'
@@ -15,7 +23,7 @@
         trust: system
 ```
 
-`path` 必须改成部署环境中实际的绝对路径或工作目录相对路径。也可以关闭 `includeShippedRoot`，只保留自己的 preset；root 按顺序扫描，重复 id 由先出现的 root 获胜。
+`path` 必须改成部署环境中实际的绝对路径或工作目录相对路径。bundle 安装路径由 DSH profile 的 pnpm 管理，不要把 `node_modules` 路径硬编码进提交文件。也可以关闭 `includeShippedRoot`，只保留自己的 preset；root 按顺序扫描，重复 id 由先出现的 root 获胜。
 
 安装本包不会自动修改宿主 composition、启用网络、授予 shell 权限或配置模型账号。宿主仍负责 sandbox、审批、持久化、模型路由和各类 registry。
 

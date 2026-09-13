@@ -6,10 +6,11 @@
   "type": "module",
   "files": [
     "presets",
+    "cordis.patch.yml",
     "README.md",
     "LICENSE"
   ],
-  "peerDependencies": {
+  "dependencies": {
     "@deepseek-ai/dsh-agent-presets": "^0.1.2-alpha.1"
   },
   "engines": {
@@ -25,5 +26,18 @@
     "workflow",
     "research",
     "optimization"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ArtlexYang/dsh-super-agent.git"
+  },
+  "homepage": "https://github.com/ArtlexYang/dsh-super-agent#readme",
+  "bugs": {
+    "url": "https://github.com/ArtlexYang/dsh-super-agent/issues"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
 }

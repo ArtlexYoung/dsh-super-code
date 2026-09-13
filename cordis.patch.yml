@@ -1,0 +1,12 @@
+# Register this package's preset directory in the host roster.
+# dsh-web-app already provides the agent-presets row; this patch replaces its
+# config so the package root is added without creating a second host registry.
+- id: agent-presets
+  name: '@deepseek-ai/dsh-agent-presets'
+  config:
+    default: solo
+    roots:
+      - path: !!js "process.getBuiltinModule('node:url').fileURLToPath(new URL('presets/', baseUrl))"
+        trust: system
+    includeShippedRoot: true
+    includeUserRoot: true

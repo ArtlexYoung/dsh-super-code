@@ -6,6 +6,7 @@
   "type": "module",
   "files": [
     "presets",
+    "src",
     "cordis.patch.yml",
     "README.md",
     "LICENSE"

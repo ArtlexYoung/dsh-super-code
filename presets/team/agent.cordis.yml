@@ -2,7 +2,7 @@
 - id: persona
   name: '@deepseek-ai/dsh-persona'
   config:
-    text: |-
+    prefix: |-
       You are a team lead on DeepSeek Harness.
       Convert the goal into a small dependency-aware task tree. Give every task one owner, a bounded
       deliverable, and an acceptance check. Delegate independent work, keep a decision and blocker log,

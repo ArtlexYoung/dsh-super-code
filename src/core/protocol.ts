@@ -1,23 +1,1062 @@
-export type TaskState = 'pending' | 'ready' | 'running' | 'waiting' | 'succeeded' | 'failed' | 'cancelled'
+import { createHash } from 'node:crypto'
 
+/** Lossless JSON values accepted at the durable protocol boundary. */
+export type JsonPrimitive = string | number | boolean | null
+export type JsonValue = JsonPrimitive | readonly JsonValue[] | { readonly [key: string]: JsonValue }
+export type JsonObject = { readonly [key: string]: JsonValue }
+
+/** Execution facts retained for compatibility with the first protocol draft. */
+export const TASK_STATES = [
+  'pending',
+  'ready',
+  'running',
+  'waiting',
+  'succeeded',
+  'failed',
+  'cancelled',
+] as const
+export type TaskState = typeof TASK_STATES[number]
+
+/** Canonical execution status. A completed run still needs review and delivery. */
+export const TASK_STATUSES = ['created', 'queued', 'running', 'completed', 'failed', 'cancelled'] as const
+export type TaskStatus = typeof TASK_STATUSES[number]
+
+/** Business stage kept separate from execution status. */
+export const TASK_STAGES = [
+  'pending',
+  'queued',
+  'working',
+  'awaiting_review',
+  'needs_attention',
+  'accepted',
+  'delivered',
+  'stopping',
+  'stopped',
+  'stop_unknown',
+  'deleted',
+] as const
+export type TaskStage = typeof TASK_STAGES[number]
+
+/** Acceptance criteria are versioned so an old review cannot authorize new work. */
+export interface AcceptanceSpec {
+  readonly name: string
+  readonly version: string
+  readonly checks: readonly string[]
+}
+
+/** A task dependency can carry the accepted upstream revision it was bound to. */
+export interface DependencyRef {
+  readonly taskId: string
+  readonly acceptedSubmissionId?: string
+  readonly acceptedArtifactDigest?: string
+}
+
+/** A named artifact snapshot. The digest is optional for references supplied by a host. */
+export interface ArtifactRef {
+  readonly artifactId: string
+  readonly uri: string
+  readonly digest?: string
+  readonly mediaType?: string
+  readonly sizeBytes?: number
+}
+
+/** Resource ceilings are checked before an executor is admitted. */
+export interface Budget {
+  readonly maxInputTokens?: number
+  readonly maxOutputTokens?: number
+  readonly maxTotalTokens?: number
+  readonly maxToolCalls?: number
+  readonly timeoutMs?: number
+}
+
+/** Evidence is an append-only pointer, never an assertion that an artifact passed. */
+export interface EvidenceRecord {
+  readonly evidenceId: string
+  readonly taskId?: string
+  readonly kind: 'source' | 'test' | 'metric' | 'artifact' | 'review' | 'log'
+  readonly summary: string
+  readonly ref?: string
+  readonly digest?: string
+  readonly recordedAt?: string
+}
+
+/** One immutable execution attempt. A later retry always receives another id. */
+export interface AttemptRecord {
+  readonly attemptId: string
+  readonly number: number
+  readonly owner?: string
+  readonly startedAt: string
+  readonly endedAt?: string
+  readonly outcome: 'running' | 'completed' | 'failed' | 'cancelled' | 'stop_unknown'
+  readonly error?: { readonly name: string; readonly message: string }
+}
+
+/** An owner change is retained so delegation can be audited independently of execution. */
+export interface AssignmentRecord {
+  readonly owner: string
+  readonly assignedAt: string
+  readonly reason?: string
+}
+
+/** A review finding is separate from the review conclusion. */
+export interface ReviewFinding {
+  readonly findingId: string
+  readonly reviewerId: string
+  readonly summary: string
+  readonly artifactId?: string
+  readonly location?: string
+  readonly severity?: 'info' | 'low' | 'medium' | 'high' | 'critical'
+}
+
+/** A conclusion is tied to one submission and one criteria version. */
+export interface ReviewRecord {
+  readonly reviewId: string
+  readonly reviewerId: string
+  readonly independent: boolean
+  readonly outcome: 'passed' | 'failed' | 'unverified' | 'stale'
+  readonly report: JsonObject
+  readonly findings: readonly ReviewFinding[]
+  readonly reviewedAt: string
+}
+
+/** One immutable candidate submitted for review. */
+export interface SubmissionRecord {
+  readonly submissionId: string
+  readonly requestId: string
+  readonly attemptId: string
+  readonly criteria: AcceptanceSpec
+  readonly artifacts: readonly ArtifactRef[]
+  readonly artifactDigest: string
+  readonly submittedAt: string
+  readonly findings: readonly ReviewFinding[]
+  readonly reviews: readonly ReviewRecord[]
+}
+
+/** Delivery is a separate durable fact after acceptance. */
+export interface DeliveryRecord {
+  readonly deliveryId: string
+  readonly requestId: string
+  readonly submissionId: string
+  readonly deliveredAt: string
+}
+
+/** Cancellation has a request phase and a host-confirmed stop phase. */
+export interface CancellationRecord {
+  readonly requestId: string
+  readonly reason: string
+  readonly requestedAt: string
+  readonly confirmedAt?: string
+  readonly evidence?: JsonObject
+  readonly outcome: 'requested' | 'confirmed' | 'unknown'
+}
+
+/** Immutable task snapshot shared by the graph, dispatcher, and adapters. */
 export interface TaskRecord {
   readonly taskId: string
   readonly title: string
   readonly owner?: string
-  readonly dependencies: readonly string[]
+  readonly dependencies: readonly DependencyRef[]
+  /** Human-readable compatibility projection of `criteria.checks`. */
   readonly acceptance: readonly string[]
+  readonly criteria: AcceptanceSpec
+  readonly status: TaskStatus
+  /** Deprecated execution projection retained for callers of the first draft. */
   readonly state: TaskState
+  readonly stage: TaskStage
+  readonly revision: number
   readonly attempts: number
+  readonly attemptId?: string
+  readonly attemptHistory: readonly AttemptRecord[]
+  readonly assignmentHistory: readonly AssignmentRecord[]
+  readonly returnReasons: readonly string[]
+  readonly result?: JsonValue
+  readonly artifacts: readonly ArtifactRef[]
+  readonly submissions: readonly SubmissionRecord[]
+  readonly delivery?: DeliveryRecord
+  readonly cancellation?: CancellationRecord
+  readonly evidence: readonly EvidenceRecord[]
+  readonly deleted: boolean
+  readonly createdAt: string
+  readonly updatedAt: string
 }
 
-export interface EvidenceRecord {
-  readonly evidenceId: string
+/** Input accepted by {@link createTask}. */
+export interface TaskDefinition {
   readonly taskId: string
-  readonly kind: 'source' | 'test' | 'metric' | 'artifact'
-  readonly summary: string
-  readonly ref?: string
+  readonly title: string
+  readonly owner?: string
+  readonly dependencies?: readonly (string | DependencyRef)[]
+  readonly acceptance?: readonly string[] | AcceptanceSpec
+  readonly criteria?: AcceptanceSpec
+  readonly now?: string
 }
 
+/** Every event carries the post-command snapshot, making replay deterministic. */
+export type TaskEventType =
+  | 'task.created'
+  | 'task.assigned'
+  | 'task.queued'
+  | 'task.started'
+  | 'task.completed'
+  | 'task.failed'
+  | 'task.submitted'
+  | 'task.review.finding'
+  | 'task.evidence'
+  | 'task.reviewed'
+  | 'task.accepted'
+  | 'task.criteria_changed'
+  | 'task.returned'
+  | 'task.cancel_requested'
+  | 'task.cancelled'
+  | 'task.stop_unknown'
+  | 'task.delivered'
+  | 'task.deleted'
+  | 'task.restored'
+
+/** Runtime event-type allowlist shared by encoding, validation, and replay. */
+export const TASK_EVENT_TYPES: readonly TaskEventType[] = [
+  'task.created',
+  'task.assigned',
+  'task.queued',
+  'task.started',
+  'task.completed',
+  'task.failed',
+  'task.submitted',
+  'task.review.finding',
+  'task.evidence',
+  'task.reviewed',
+  'task.accepted',
+  'task.criteria_changed',
+  'task.returned',
+  'task.cancel_requested',
+  'task.cancelled',
+  'task.stop_unknown',
+  'task.delivered',
+  'task.deleted',
+  'task.restored',
+]
+
+/** Versioned JSONL event. Unknown future versions must fail closed at decode. */
+export interface TaskEvent {
+  readonly version: 1
+  readonly sequence: number
+  readonly eventId: string
+  readonly type: TaskEventType
+  readonly taskId: string
+  readonly revision: number
+  readonly at: string
+  readonly requestId?: string
+  readonly task: TaskRecord
+  readonly data: JsonObject
+}
+
+/** Structured protocol failure with a stable machine-readable code. */
+export class ProtocolError extends Error {
+  readonly code: string
+
+  constructor(message: string, code = 'PROTOCOL_ERROR') {
+    super(message)
+    this.name = 'ProtocolError'
+    this.code = code
+  }
+}
+
+/** Return a detached lossless JSON value or throw at a persistence boundary. */
+export function toJsonValue(value: unknown, path = '$'): JsonValue {
+  if (value === null || typeof value === 'string' || typeof value === 'boolean') return value
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value)) throw new ProtocolError(`${path} must contain a finite number`, 'INVALID_JSON')
+    return value
+  }
+  if (Array.isArray(value)) return value.map((item, index) => toJsonValue(item, `${path}[${index}]`))
+  if (typeof value === 'object') {
+    const output: Record<string, JsonValue> = {}
+    for (const [key, item] of Object.entries(value)) {
+      if (item === undefined) continue
+      output[key] = toJsonValue(item, `${path}.${key}`)
+    }
+    return output
+  }
+  throw new ProtocolError(`${path} is not lossless JSON`, 'INVALID_JSON')
+}
+
+/** Clone a protocol value through the same JSON validation used for persistence. */
+export function cloneJson<T extends JsonValue>(value: T): T {
+  return toJsonValue(value) as T
+}
+
+function requiredText(value: unknown, field: string): string {
+  if (typeof value !== 'string' || value.trim() === '') {
+    throw new ProtocolError(`${field} must be a non-empty string`, 'INVALID_ARGUMENT')
+  }
+  return value.trim()
+}
+
+function isoNow(): string {
+  return new Date().toISOString()
+}
+
+function validTimestamp(value: unknown, field: string): string {
+  if (typeof value !== 'string' || value.trim() === '' || Number.isNaN(Date.parse(value))) {
+    throw new ProtocolError(`${field} must be an ISO timestamp`, 'INVALID_ARGUMENT')
+  }
+  return value
+}
+
+function normalizeCriteria(input: TaskDefinition): AcceptanceSpec {
+  const candidate = input.criteria ?? (input.acceptance && !Array.isArray(input.acceptance) ? input.acceptance : undefined)
+  if (candidate !== undefined) {
+    const criteria = candidate as AcceptanceSpec
+    const name = requiredText(criteria.name, 'criteria.name')
+    const version = requiredText(criteria.version, 'criteria.version')
+    const checks = criteria.checks.map((check: string, index: number) => requiredText(check, `criteria.checks[${index}]`))
+    if (checks.length === 0) throw new ProtocolError('criteria.checks must not be empty', 'INVALID_ARGUMENT')
+    return { name, version, checks: [...new Set(checks)] }
+  }
+  const checks = Array.isArray(input.acceptance)
+    ? input.acceptance.map((check, index) => requiredText(check, `acceptance[${index}]`))
+    : []
+  return { name: 'default', version: '1', checks: [...new Set(checks)] }
+}
+
+function normalizeDependencies(input: TaskDefinition): DependencyRef[] {
+  const result: DependencyRef[] = []
+  const seen = new Set<string>()
+  for (const raw of input.dependencies ?? []) {
+    const dependency = typeof raw === 'string' ? { taskId: raw } : raw
+    const taskId = requiredText(dependency.taskId, 'dependency.taskId')
+    if (taskId === input.taskId) throw new ProtocolError('task cannot depend on itself', 'TASK_DEPENDENCY_CYCLE')
+    if (seen.has(taskId)) throw new ProtocolError(`duplicate dependency ${taskId}`, 'INVALID_ARGUMENT')
+    seen.add(taskId)
+    result.push({
+      taskId,
+      ...dependency.acceptedSubmissionId === undefined ? {} : { acceptedSubmissionId: requiredText(dependency.acceptedSubmissionId, 'acceptedSubmissionId') },
+      ...dependency.acceptedArtifactDigest === undefined ? {} : { acceptedArtifactDigest: requiredText(dependency.acceptedArtifactDigest, 'acceptedArtifactDigest') },
+    })
+  }
+  return result
+}
+
+function stateFor(status: TaskStatus, stage: TaskStage, ready = false): TaskState {
+  if (status === 'running') return stage === 'awaiting_review' ? 'waiting' : 'running'
+  if (status === 'completed') return 'succeeded'
+  if (status === 'failed') return 'failed'
+  if (status === 'cancelled') return 'cancelled'
+  return ready ? 'ready' : 'pending'
+}
+
+/** Derive the legacy state projection from canonical status and business stage. */
+export function taskStateFor(status: TaskStatus, stage: TaskStage, ready = false): TaskState {
+  return stateFor(status, stage, ready)
+}
+
+/** Build a revision-one task with no external side effects. */
+export function createTask(input: TaskDefinition): TaskRecord {
+  const taskId = requiredText(input.taskId, 'taskId')
+  const title = requiredText(input.title, 'title')
+  const dependencies = normalizeDependencies({ ...input, taskId })
+  const criteria = normalizeCriteria(input)
+  const now = input.now === undefined ? isoNow() : validTimestamp(input.now, 'now')
+  return {
+    taskId,
+    title,
+    ...input.owner === undefined ? {} : { owner: requiredText(input.owner, 'owner') },
+    dependencies,
+    acceptance: [...criteria.checks],
+    criteria,
+    status: 'created',
+    state: stateFor('created', 'pending', dependencies.length === 0),
+    stage: 'pending',
+    revision: 1,
+    attempts: 0,
+    attemptHistory: [],
+    assignmentHistory: input.owner === undefined ? [] : [{ owner: requiredText(input.owner, 'owner'), assignedAt: now }],
+    returnReasons: [],
+    artifacts: [],
+    submissions: [],
+    evidence: [],
+    deleted: false,
+    createdAt: now,
+    updatedAt: now,
+  }
+}
+
+function snapshotFailure(message: string): never {
+  throw new ProtocolError(message, 'INVALID_SNAPSHOT')
+}
+
+function eventFailure(message: string): never {
+  throw new ProtocolError(message, 'INVALID_EVENT')
+}
+
+function snapshotRecord(value: unknown, field: string): Record<string, unknown> {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) snapshotFailure(`${field} must be an object`)
+  return value as Record<string, unknown>
+}
+
+function snapshotText(value: unknown, field: string): string {
+  if (typeof value !== 'string' || value.trim() === '') snapshotFailure(`${field} must be a non-empty string`)
+  return value.trim()
+}
+
+function snapshotTimestamp(value: unknown, field: string): string {
+  if (typeof value !== 'string' || value.trim() === '' || Number.isNaN(Date.parse(value))) snapshotFailure(`${field} must be an ISO timestamp`)
+  return value
+}
+
+function snapshotJson(value: unknown, field: string): void {
+  try {
+    toJsonValue(value, field)
+  } catch (error) {
+    if (error instanceof ProtocolError) snapshotFailure(`${field} is not lossless JSON: ${error.message}`)
+    snapshotFailure(`${field} is not lossless JSON`)
+  }
+}
+
+function snapshotCriteria(value: unknown, field: string): void {
+  const criteria = snapshotRecord(value, field)
+  snapshotText(criteria.name, `${field}.name`)
+  snapshotText(criteria.version, `${field}.version`)
+  if (!Array.isArray(criteria.checks)) snapshotFailure(`${field}.checks must be an array`)
+  const checks = criteria.checks.map((check, index) => snapshotText(check, `${field}.checks[${index}]`))
+  if (new Set(checks).size !== checks.length) snapshotFailure(`${field}.checks must not contain duplicates`)
+}
+
+function snapshotDependency(value: unknown, taskId: string, index: number): void {
+  const dependency = snapshotRecord(value, `task.dependencies[${index}]`)
+  const dependencyId = snapshotText(dependency.taskId, `task.dependencies[${index}].taskId`)
+  if (dependencyId === taskId) snapshotFailure('task cannot depend on itself')
+  const submission = dependency.acceptedSubmissionId
+  const digest = dependency.acceptedArtifactDigest
+  if ((submission === undefined) !== (digest === undefined)) snapshotFailure(`task.dependencies[${index}] must bind submission and artifact together`)
+  if (submission !== undefined) snapshotText(submission, `task.dependencies[${index}].acceptedSubmissionId`)
+  if (digest !== undefined) snapshotText(digest, `task.dependencies[${index}].acceptedArtifactDigest`)
+}
+
+function snapshotArtifact(value: unknown, field: string): void {
+  const artifact = snapshotRecord(value, field)
+  snapshotText(artifact.artifactId, `${field}.artifactId`)
+  snapshotText(artifact.uri, `${field}.uri`)
+  if (artifact.digest !== undefined) snapshotText(artifact.digest, `${field}.digest`)
+  if (artifact.mediaType !== undefined) snapshotText(artifact.mediaType, `${field}.mediaType`)
+  if (artifact.sizeBytes !== undefined && (!Number.isSafeInteger(artifact.sizeBytes) || (artifact.sizeBytes as number) < 0)) {
+    snapshotFailure(`${field}.sizeBytes must be a non-negative safe integer`)
+  }
+}
+
+function snapshotFinding(value: unknown, field: string): void {
+  const finding = snapshotRecord(value, field)
+  snapshotText(finding.findingId, `${field}.findingId`)
+  snapshotText(finding.reviewerId, `${field}.reviewerId`)
+  snapshotText(finding.summary, `${field}.summary`)
+  if (finding.artifactId !== undefined) snapshotText(finding.artifactId, `${field}.artifactId`)
+  if (finding.location !== undefined) snapshotText(finding.location, `${field}.location`)
+  if (finding.severity !== undefined && !['info', 'low', 'medium', 'high', 'critical'].includes(String(finding.severity))) {
+    snapshotFailure(`${field}.severity is invalid`)
+  }
+}
+
+function snapshotReview(value: unknown, field: string, owner: string | undefined): void {
+  const review = snapshotRecord(value, field)
+  const reviewerId = snapshotText(review.reviewerId, `${field}.reviewerId`)
+  snapshotText(review.reviewId, `${field}.reviewId`)
+  if (typeof review.independent !== 'boolean') snapshotFailure(`${field}.independent must be boolean`)
+  if (review.independent && reviewerId === owner) snapshotFailure('independent review must use a different reviewer')
+  if (!['passed', 'failed', 'unverified', 'stale'].includes(String(review.outcome))) snapshotFailure(`${field}.outcome is invalid`)
+  const report = snapshotRecord(review.report, `${field}.report`)
+  snapshotJson(report, `${field}.report`)
+  if (!Array.isArray(review.findings)) snapshotFailure(`${field}.findings must be an array`)
+  const findingIds = new Set<string>()
+  review.findings.forEach((finding, index) => {
+    snapshotFinding(finding, `${field}.findings[${index}]`)
+    const id = snapshotRecord(finding, `${field}.findings[${index}]`).findingId as string
+    if (findingIds.has(id)) snapshotFailure(`${field}.findings contains duplicate ${id}`)
+    findingIds.add(id)
+  })
+  snapshotTimestamp(review.reviewedAt, `${field}.reviewedAt`)
+}
+
+function snapshotAttempt(value: unknown, field: string, expectedNumber: number): { id: string; outcome: string } {
+  const attempt = snapshotRecord(value, field)
+  const id = snapshotText(attempt.attemptId, `${field}.attemptId`)
+  if (attempt.number !== expectedNumber) snapshotFailure(`${field}.number must be ${expectedNumber}`)
+  if (!['running', 'completed', 'failed', 'cancelled', 'stop_unknown'].includes(String(attempt.outcome))) snapshotFailure(`${field}.outcome is invalid`)
+  snapshotTimestamp(attempt.startedAt, `${field}.startedAt`)
+  if (attempt.endedAt === undefined && attempt.outcome !== 'running') snapshotFailure(`${field}.endedAt is required for a terminal attempt`)
+  if (attempt.endedAt !== undefined) snapshotTimestamp(attempt.endedAt, `${field}.endedAt`)
+  if (attempt.outcome === 'running' && attempt.endedAt !== undefined) snapshotFailure(`${field}.running attempt cannot have endedAt`)
+  if (attempt.owner !== undefined) snapshotText(attempt.owner, `${field}.owner`)
+  if (attempt.error !== undefined) {
+    const error = snapshotRecord(attempt.error, `${field}.error`)
+    snapshotText(error.name, `${field}.error.name`)
+    snapshotText(error.message, `${field}.error.message`)
+  }
+  return { id, outcome: String(attempt.outcome) }
+}
+
+function snapshotCancellation(value: unknown): string {
+  const cancellation = snapshotRecord(value, 'task.cancellation')
+  snapshotText(cancellation.requestId, 'task.cancellation.requestId')
+  snapshotText(cancellation.reason, 'task.cancellation.reason')
+  snapshotTimestamp(cancellation.requestedAt, 'task.cancellation.requestedAt')
+  const outcome = String(cancellation.outcome)
+  if (!['requested', 'confirmed', 'unknown'].includes(outcome)) snapshotFailure('task.cancellation.outcome is invalid')
+  if (outcome === 'requested' && cancellation.confirmedAt !== undefined) snapshotFailure('requested cancellation cannot have confirmedAt')
+  if (outcome === 'unknown' && cancellation.confirmedAt !== undefined) snapshotFailure('unknown cancellation cannot have confirmedAt')
+  if (outcome === 'confirmed' && cancellation.confirmedAt === undefined) snapshotFailure('confirmed cancellation requires confirmedAt')
+  if (cancellation.confirmedAt !== undefined) snapshotTimestamp(cancellation.confirmedAt, 'task.cancellation.confirmedAt')
+  if (cancellation.evidence !== undefined) {
+    snapshotRecord(cancellation.evidence, 'task.cancellation.evidence')
+    snapshotJson(cancellation.evidence, 'task.cancellation.evidence')
+  }
+  return outcome
+}
+
+/** Validate a complete task snapshot before it is stored or replayed. */
+export function validateTaskRecord(task: TaskRecord): TaskRecord {
+  const snapshot = snapshotRecord(task, 'task')
+  const taskId = snapshotText(snapshot.taskId, 'task.taskId')
+  snapshotText(snapshot.title, 'task.title')
+  if (!Number.isSafeInteger(snapshot.revision) || (snapshot.revision as number) < 1) snapshotFailure('task.revision must be positive')
+  if (!Number.isSafeInteger(snapshot.attempts) || (snapshot.attempts as number) < 0) snapshotFailure('task.attempts must be non-negative')
+  if (typeof snapshot.deleted !== 'boolean') snapshotFailure('task.deleted must be boolean')
+  const status = snapshot.status as TaskStatus
+  const stage = snapshot.stage as TaskStage
+  const state = snapshot.state as TaskState
+  if (!(TASK_STATUSES as readonly string[]).includes(String(status))) snapshotFailure(`unknown task status ${String(status)}`)
+  if (!(TASK_STAGES as readonly string[]).includes(String(stage))) snapshotFailure(`unknown task stage ${String(stage)}`)
+  if (!(TASK_STATES as readonly string[]).includes(String(state))) snapshotFailure(`unknown task state ${String(state)}`)
+
+  const stages: Record<TaskStatus, readonly TaskStage[]> = {
+    created: ['pending', 'stopping'],
+    queued: ['queued', 'stopping'],
+    running: ['working', 'awaiting_review', 'stopping'],
+    completed: ['awaiting_review', 'needs_attention', 'accepted', 'delivered'],
+    failed: ['needs_attention', 'stop_unknown'],
+    cancelled: ['stopped', 'deleted'],
+  }
+  if (!stages[status].includes(stage)) snapshotFailure(`task.stage ${String(stage)} is invalid for ${String(status)}`)
+  const expectedStates: readonly TaskState[] = status === 'created'
+    ? ['pending', 'ready']
+    : status === 'queued'
+      ? ['ready']
+      : status === 'running'
+        ? [stage === 'awaiting_review' ? 'waiting' : 'running']
+        : status === 'completed'
+          ? [stage === 'awaiting_review' ? 'waiting' : 'succeeded']
+          : status === 'failed'
+            ? ['failed']
+            : ['cancelled']
+  if (!expectedStates.includes(state)) snapshotFailure(`task.state ${String(state)} does not match status/stage`)
+
+  if (!Array.isArray(snapshot.acceptance)) snapshotFailure('task.acceptance must be an array')
+  snapshot.acceptance.forEach((check, index) => snapshotText(check, `task.acceptance[${index}]`))
+  snapshotCriteria(snapshot.criteria, 'task.criteria')
+  const criteria = snapshotRecord(snapshot.criteria, 'task.criteria')
+  if (snapshot.acceptance.length !== (criteria.checks as unknown[]).length || snapshot.acceptance.some((value, index) => value !== (criteria.checks as unknown[])[index])) {
+    snapshotFailure('task.acceptance must equal criteria.checks')
+  }
+
+  if (snapshot.owner !== undefined) snapshotText(snapshot.owner, 'task.owner')
+  if (!Array.isArray(snapshot.dependencies)) snapshotFailure('task.dependencies must be an array')
+  const dependencyIds = new Set<string>()
+  snapshot.dependencies.forEach((dependency, index) => {
+    snapshotDependency(dependency, taskId, index)
+    const id = snapshotRecord(dependency, `task.dependencies[${index}]`).taskId as string
+    if (dependencyIds.has(id)) snapshotFailure(`duplicate dependency ${id}`)
+    dependencyIds.add(id)
+  })
+
+  if (!Array.isArray(snapshot.attemptHistory) || snapshot.attempts !== snapshot.attemptHistory.length) snapshotFailure('task.attempts must equal attemptHistory.length')
+  const attempts = snapshot.attemptHistory.map((attempt, index) => snapshotAttempt(attempt, `task.attemptHistory[${index}]`, index + 1))
+  const attemptIds = new Set<string>()
+  attempts.forEach(attempt => {
+    if (attemptIds.has(attempt.id)) snapshotFailure(`duplicate attempt ${attempt.id}`)
+    attemptIds.add(attempt.id)
+  })
+  const runningAttempts = attempts.filter(attempt => attempt.outcome === 'running')
+  if (runningAttempts.length > 0 && status !== 'running') snapshotFailure('only a running task may contain a running attempt')
+  if (status === 'running') {
+    if (snapshot.attemptId === undefined) snapshotFailure('running task requires attemptId')
+    const currentAttemptId = snapshotText(snapshot.attemptId, 'task.attemptId')
+    if (attempts.length === 0 || attempts[attempts.length - 1]?.id !== currentAttemptId || runningAttempts.length !== 1 || attempts[attempts.length - 1]?.outcome !== 'running') {
+      snapshotFailure('running task attemptId must identify its only active attempt')
+    }
+  } else if (snapshot.attemptId !== undefined) {
+    const currentAttemptId = snapshotText(snapshot.attemptId, 'task.attemptId')
+    if (status === 'created' || status === 'queued' || attempts.length === 0 || attempts[attempts.length - 1]?.id !== currentAttemptId) snapshotFailure('terminal task attemptId must identify its latest attempt')
+  }
+  if (status === 'completed' && attempts.length === 0) snapshotFailure('completed task requires an attempt')
+  if (status === 'completed' && attempts.length > 0 && attempts[attempts.length - 1]?.outcome !== 'completed') snapshotFailure('completed task must reference a completed latest attempt')
+  if ((status === 'completed' || status === 'failed') && stage === 'needs_attention' && attempts.length === 0) snapshotFailure('needs-attention task requires an attempt')
+  if (status === 'failed' && stage === 'needs_attention' && attempts.length > 0 && attempts[attempts.length - 1]?.outcome !== 'failed') snapshotFailure('failed task must reference a failed latest attempt')
+  if (status === 'cancelled' && stage === 'stopped' && attempts.length > 0 && attempts[attempts.length - 1]?.outcome !== 'cancelled') snapshotFailure('stopped task must close its latest attempt as cancelled')
+  if (stage === 'stop_unknown' && attempts.length > 0 && attempts[attempts.length - 1]?.outcome !== 'stop_unknown') snapshotFailure('stop-unknown task must close its latest attempt as stop_unknown')
+
+  if (!Array.isArray(snapshot.assignmentHistory)) snapshotFailure('task.assignmentHistory must be an array')
+  snapshot.assignmentHistory.forEach((assignment, index) => {
+    const record = snapshotRecord(assignment, `task.assignmentHistory[${index}]`)
+    snapshotText(record.owner, `task.assignmentHistory[${index}].owner`)
+    snapshotTimestamp(record.assignedAt, `task.assignmentHistory[${index}].assignedAt`)
+    if (record.reason !== undefined) snapshotText(record.reason, `task.assignmentHistory[${index}].reason`)
+  })
+  if (snapshot.owner === undefined && snapshot.assignmentHistory.length > 0) snapshotFailure('assignment history requires task.owner')
+  if (snapshot.owner !== undefined && snapshot.assignmentHistory.at(-1)?.owner !== snapshot.owner) snapshotFailure('task.owner must match its latest assignment')
+  if (!Array.isArray(snapshot.returnReasons)) snapshotFailure('task.returnReasons must be an array')
+  snapshot.returnReasons.forEach((reason, index) => snapshotText(reason, `task.returnReasons[${index}]`))
+  if (snapshot.returnReasons.length > snapshot.attempts) snapshotFailure('task.returnReasons cannot exceed attempts')
+
+  if (!Array.isArray(snapshot.artifacts)) snapshotFailure('task.artifacts must be an array')
+  const artifactIds = new Set<string>()
+  snapshot.artifacts.forEach((artifact, index) => {
+    snapshotArtifact(artifact, `task.artifacts[${index}]`)
+    const id = snapshotRecord(artifact, `task.artifacts[${index}]`).artifactId as string
+    if (artifactIds.has(id)) snapshotFailure(`task.artifacts contains duplicate ${id}`)
+    artifactIds.add(id)
+  })
+  if (snapshot.result !== undefined) snapshotJson(snapshot.result, 'task.result')
+  if ((status === 'created' || status === 'queued' || status === 'running' || status === 'failed' || (status === 'cancelled' && stage === 'stopped'))
+    && (snapshot.result !== undefined || snapshot.artifacts.length > 0)) {
+    snapshotFailure(`${String(status)}/${String(stage)} task cannot retain execution payload`)
+  }
+
+  if (!Array.isArray(snapshot.submissions)) snapshotFailure('task.submissions must be an array')
+  const submissionIds = new Set<string>()
+  const submittedAttempts = new Set<string>()
+  let priorAttemptNumber = 0
+  snapshot.submissions.forEach((submission, index) => {
+    const record = snapshotRecord(submission, `task.submissions[${index}]`)
+    const submissionId = snapshotText(record.submissionId, `task.submissions[${index}].submissionId`)
+    if (submissionIds.has(submissionId)) snapshotFailure(`duplicate submission ${submissionId}`)
+    submissionIds.add(submissionId)
+    snapshotText(record.requestId, `task.submissions[${index}].requestId`)
+    const attemptId = snapshotText(record.attemptId, `task.submissions[${index}].attemptId`)
+    const attemptIndex = attempts.findIndex(attempt => attempt.id === attemptId)
+    if (attemptIndex < 0 || attempts[attemptIndex]?.outcome !== 'completed') snapshotFailure(`submission ${submissionId} must reference a completed attempt`)
+    if (submittedAttempts.has(attemptId)) snapshotFailure(`duplicate submission attempt ${attemptId}`)
+    submittedAttempts.add(attemptId)
+    const attemptNumber = attemptIndex + 1
+    if (attemptNumber <= priorAttemptNumber) snapshotFailure('submissions must follow attempt order')
+    priorAttemptNumber = attemptNumber
+    snapshotCriteria(record.criteria, `task.submissions[${index}].criteria`)
+    if (!Array.isArray(record.artifacts)) snapshotFailure(`task.submissions[${index}].artifacts must be an array`)
+    const submissionArtifactIds = new Set<string>()
+    record.artifacts.forEach((artifact, artifactIndex) => {
+      snapshotArtifact(artifact, `task.submissions[${index}].artifacts[${artifactIndex}]`)
+      const id = snapshotRecord(artifact, `task.submissions[${index}].artifacts[${artifactIndex}]`).artifactId as string
+      if (submissionArtifactIds.has(id)) snapshotFailure(`submission ${submissionId} contains duplicate artifact ${id}`)
+      submissionArtifactIds.add(id)
+    })
+    let computedDigest: string
+    try {
+      computedDigest = artifactDigest(record.artifacts as ArtifactRef[])
+    } catch (error) {
+      snapshotFailure(`submission ${submissionId} has invalid artifacts: ${error instanceof Error ? error.message : String(error)}`)
+    }
+    if (record.artifactDigest !== computedDigest) snapshotFailure(`submission ${submissionId} artifactDigest does not match artifacts`)
+    snapshotTimestamp(record.submittedAt, `task.submissions[${index}].submittedAt`)
+    if (!Array.isArray(record.findings)) snapshotFailure(`task.submissions[${index}].findings must be an array`)
+    const findingIds = new Set<string>()
+    record.findings.forEach((finding, findingIndex) => {
+      snapshotFinding(finding, `task.submissions[${index}].findings[${findingIndex}]`)
+      const id = snapshotRecord(finding, `task.submissions[${index}].findings[${findingIndex}]`).findingId as string
+      if (findingIds.has(id)) snapshotFailure(`submission ${submissionId} contains duplicate finding ${id}`)
+      findingIds.add(id)
+    })
+    if (!Array.isArray(record.reviews)) snapshotFailure(`task.submissions[${index}].reviews must be an array`)
+    const reviewIds = new Set<string>()
+    record.reviews.forEach((review, reviewIndex) => {
+      snapshotReview(review, `task.submissions[${index}].reviews[${reviewIndex}]`, snapshot.owner as string | undefined)
+      const id = snapshotRecord(review, `task.submissions[${index}].reviews[${reviewIndex}]`).reviewId as string
+      if (reviewIds.has(id)) snapshotFailure(`submission ${submissionId} contains duplicate review ${id}`)
+      reviewIds.add(id)
+    })
+  })
+
+  if (!Array.isArray(snapshot.evidence)) snapshotFailure('task.evidence must be an array')
+  const evidenceIds = new Set<string>()
+  snapshot.evidence.forEach((evidence, index) => {
+    const record = snapshotRecord(evidence, `task.evidence[${index}]`)
+    const id = snapshotText(record.evidenceId, `task.evidence[${index}].evidenceId`)
+    if (evidenceIds.has(id)) snapshotFailure(`duplicate evidence ${id}`)
+    evidenceIds.add(id)
+    if (record.taskId !== undefined && snapshotText(record.taskId, `task.evidence[${index}].taskId`) !== taskId) snapshotFailure('evidence.taskId must match task.taskId')
+    if (!['source', 'test', 'metric', 'artifact', 'review', 'log'].includes(String(record.kind))) snapshotFailure(`task.evidence[${index}].kind is invalid`)
+    snapshotText(record.summary, `task.evidence[${index}].summary`)
+    if (record.ref !== undefined) snapshotText(record.ref, `task.evidence[${index}].ref`)
+    if (record.digest !== undefined) snapshotText(record.digest, `task.evidence[${index}].digest`)
+    if (record.recordedAt !== undefined) snapshotTimestamp(record.recordedAt, `task.evidence[${index}].recordedAt`)
+  })
+
+  const cancellationOutcome = snapshot.cancellation === undefined ? undefined : snapshotCancellation(snapshot.cancellation)
+  if (stage === 'stopping' && cancellationOutcome !== 'requested') snapshotFailure('stopping task requires a requested cancellation')
+  if (stage === 'stopped' && cancellationOutcome !== 'confirmed') snapshotFailure('stopped task requires confirmed cancellation')
+  if (stage === 'stop_unknown' && cancellationOutcome !== 'unknown') snapshotFailure('stop-unknown task requires unknown cancellation')
+  if (stage !== 'stopping' && stage !== 'stopped' && stage !== 'stop_unknown' && stage !== 'deleted' && cancellationOutcome !== undefined) snapshotFailure('cancellation is only valid during stopping or after a stop')
+  if (stage === 'deleted' && cancellationOutcome !== undefined && cancellationOutcome !== 'confirmed') snapshotFailure('deleted task may retain only confirmed cancellation')
+
+  if (snapshot.delivery !== undefined) {
+    const delivery = snapshotRecord(snapshot.delivery, 'task.delivery')
+    snapshotText(delivery.deliveryId, 'task.delivery.deliveryId')
+    snapshotText(delivery.requestId, 'task.delivery.requestId')
+    const submissionId = snapshotText(delivery.submissionId, 'task.delivery.submissionId')
+    snapshotTimestamp(delivery.deliveredAt, 'task.delivery.deliveredAt')
+    if (stage !== 'delivered') snapshotFailure('delivery requires delivered stage')
+    if (!submissionIds.has(submissionId)) snapshotFailure('delivery must reference a task submission')
+  } else if (stage === 'delivered') {
+    snapshotFailure('delivered stage requires delivery')
+  }
+  if (stage === 'awaiting_review' || stage === 'accepted' || stage === 'delivered') {
+    if (snapshot.attemptId === undefined) snapshotFailure(`${String(stage)} stage requires a current attempt`)
+    const currentSubmission = [...snapshot.submissions].reverse().find((submission: unknown) => snapshotRecord(submission, 'task.submission').attemptId === snapshot.attemptId)
+    if (currentSubmission === undefined) snapshotFailure(`${String(stage)} stage requires a current submission`)
+    const current = snapshotRecord(currentSubmission, 'task.currentSubmission')
+    const currentCriteria = snapshotRecord(snapshot.criteria, 'task.criteria')
+    const submissionCriteria = snapshotRecord(current.criteria, 'task.currentSubmission.criteria')
+    if (submissionCriteria.name !== currentCriteria.name || submissionCriteria.version !== currentCriteria.version) snapshotFailure('current submission criteria are stale')
+    if (stage === 'accepted' || stage === 'delivered') {
+      if (current.artifactDigest !== artifactDigest(snapshot.artifacts as ArtifactRef[])) snapshotFailure('accepted submission artifacts do not match task artifacts')
+      if (!(current.reviews as unknown[]).some(review => snapshotRecord(review, 'task.currentSubmission.review').outcome === 'passed')) snapshotFailure('accepted stage requires a passed review')
+    }
+  }
+  if (snapshot.deleted && (status !== 'cancelled' || stage !== 'deleted')) snapshotFailure('deleted task requires cancelled/deleted status')
+  if (!snapshot.deleted && stage === 'deleted') snapshotFailure('deleted stage requires deleted flag')
+  if (snapshot.deleted && snapshot.delivery !== undefined) snapshotFailure('delivered task must be tombstoned before deletion')
+  snapshotTimestamp(snapshot.createdAt, 'task.createdAt')
+  snapshotTimestamp(snapshot.updatedAt, 'task.updatedAt')
+  return task
+}
+
+const STATE_TRANSITIONS: Record<TaskState, readonly TaskState[]> = {
+  pending: ['ready', 'cancelled'],
+  ready: ['running', 'cancelled'],
+  running: ['waiting', 'succeeded', 'failed', 'cancelled'],
+  waiting: ['running', 'failed', 'cancelled'],
+  succeeded: [],
+  failed: [],
+  cancelled: [],
+}
+
+/**
+ * Apply the legacy state projection while preserving a complete canonical snapshot.
+ *
+ * This helper predates the command-oriented {@link TaskGraph} API, so it has no
+ * result, artifact, reviewer, or executor inputs. Transitions that imply those
+ * facts use the smallest honest representation: an attempt is closed, and a
+ * `running -> waiting` transition appends an empty submission with no review.
+ * Callers that have real execution data should use `TaskGraph.completeTask()`
+ * and `TaskGraph.submitTaskResult()` instead. Every successful return is
+ * validated before it leaves this function; failed/succeeded states cannot be
+ * revived here and require explicit rework through the graph API.
+ */
+export function transitionTask(
+  task: TaskRecord,
+  next: TaskState,
+  dependencies: readonly TaskRecord[] = [],
+  now: string = isoNow(),
+): TaskRecord {
+  validateTaskRecord(task)
+  if (!(TASK_STATES as readonly string[]).includes(next)) throw new ProtocolError(`unknown task state ${String(next)}`, 'INVALID_TRANSITION')
+  if (!STATE_TRANSITIONS[task.state].includes(next)) throw new ProtocolError(`invalid transition ${task.state} -> ${next}`, 'INVALID_TRANSITION')
+  if (next === 'ready') {
+    const supplied = new Map(dependencies.map(dependency => [dependency.taskId, dependency]))
+    const unresolved = dependencies.some(dependency => dependency.state !== 'succeeded' || (dependency.stage !== 'accepted' && dependency.stage !== 'delivered'))
+      || task.dependencies.some(dependency => {
+        const upstream = supplied.get(dependency.taskId)
+        return upstream === undefined || upstream.state !== 'succeeded' || (upstream.stage !== 'accepted' && upstream.stage !== 'delivered')
+      })
+    if (unresolved) throw new ProtocolError('dependencies are not accepted', 'TASK_DEPENDENCY_BLOCKED')
+  }
+  if (task.cancellation !== undefined && next !== 'cancelled') {
+    throw new ProtocolError('a cancellation request must be resolved before this transition', 'CANCELLATION_PENDING')
+  }
+  const at = validTimestamp(now, 'now')
+  const usedIds = new Set([
+    ...task.attemptHistory.map(attempt => attempt.attemptId),
+    ...task.submissions.map(submission => submission.submissionId),
+  ])
+  const makeId = (kind: string, ordinal: number): string => {
+    const base = `legacy-${kind}-${task.taskId}-${task.revision + 1}-${ordinal}`
+    let candidate = base
+    let suffix = 1
+    while (usedIds.has(candidate)) candidate = `${base}-${suffix++}`
+    usedIds.add(candidate)
+    return candidate
+  }
+  const finish = (changes: Partial<TaskRecord>): TaskRecord => {
+    const result: TaskRecord = {
+      ...task,
+      ...changes,
+      revision: task.revision + 1,
+      updatedAt: at,
+    }
+    validateTaskRecord(result)
+    return result
+  }
+  const closeAttempt = (outcome: 'completed' | 'failed' | 'cancelled'): readonly AttemptRecord[] => {
+    const attemptId = task.attemptId
+    if (attemptId === undefined) throw new ProtocolError(`state ${task.state} requires an active attempt`, 'INVALID_TRANSITION')
+    const index = task.attemptHistory.findIndex(attempt => attempt.attemptId === attemptId)
+    if (index < 0 || task.attemptHistory[index]?.outcome !== 'running') throw new ProtocolError(`attempt ${attemptId} is not running`, 'INVALID_TRANSITION')
+    return task.attemptHistory.map((attempt, position) => position === index
+      ? { ...attempt, outcome, endedAt: at, ...outcome === 'failed' ? { error: { name: 'LegacyTransition', message: 'legacy transition marked the attempt failed' } } : {} }
+      : attempt)
+  }
+  const appendAttempt = (outcome: 'running' | 'failed' | 'cancelled'): { attempt: AttemptRecord; history: readonly AttemptRecord[] } => {
+    const attemptId = makeId('attempt', task.attempts + 1)
+    const attempt: AttemptRecord = {
+      attemptId,
+      number: task.attempts + 1,
+      ...task.owner === undefined ? {} : { owner: task.owner },
+      startedAt: at,
+      ...outcome === 'running' ? { outcome } : {
+        outcome,
+        endedAt: at,
+        ...outcome === 'failed' ? { error: { name: 'LegacyTransition', message: 'legacy transition marked the attempt failed' } } : {},
+      },
+    }
+    return { attempt, history: [...task.attemptHistory, attempt] }
+  }
+
+  if (next === 'ready') return finish({ status: 'created', state: 'ready', stage: 'pending' })
+
+  if (next === 'running') {
+    if (task.state === 'waiting') {
+      const { attempt, history } = appendAttempt('running')
+      return finish({
+        status: 'running',
+        state: 'running',
+        stage: 'working',
+        attempts: task.attempts + 1,
+        attemptId: attempt.attemptId,
+        attemptHistory: history,
+        result: undefined,
+        artifacts: [],
+        cancellation: undefined,
+      })
+    }
+    const { attempt, history } = appendAttempt('running')
+    return finish({
+      status: 'running',
+      state: 'running',
+      stage: 'working',
+      attempts: task.attempts + 1,
+      attemptId: attempt.attemptId,
+      attemptHistory: history,
+      result: undefined,
+      artifacts: [],
+      cancellation: undefined,
+    })
+  }
+
+  if (next === 'waiting') {
+    if (task.cancellation !== undefined) throw new ProtocolError('a cancellation request must be resolved before review', 'CANCELLATION_PENDING')
+    const history = closeAttempt('completed')
+    const attemptId = task.attemptId
+    if (attemptId === undefined) throw new ProtocolError('waiting state requires an active attempt', 'INVALID_TRANSITION')
+    const submission: SubmissionRecord = {
+      submissionId: makeId('submission', task.attempts),
+      requestId: makeId('request', task.attempts),
+      attemptId,
+      criteria: { ...task.criteria, checks: [...task.criteria.checks] },
+      artifacts: task.artifacts.map(artifact => ({ ...artifact })),
+      artifactDigest: artifactDigest(task.artifacts),
+      submittedAt: at,
+      findings: [],
+      reviews: [],
+    }
+    return finish({
+      status: 'completed',
+      state: 'waiting',
+      stage: 'awaiting_review',
+      attemptHistory: history,
+      submissions: [...task.submissions, submission],
+    })
+  }
+
+  if (next === 'succeeded') {
+    return finish({
+      status: 'completed',
+      state: 'succeeded',
+      stage: 'needs_attention',
+      attemptHistory: closeAttempt('completed'),
+    })
+  }
+
+  if (next === 'failed') {
+    if (task.state === 'waiting') {
+      const { attempt, history } = appendAttempt('failed')
+      return finish({
+        status: 'failed',
+        state: 'failed',
+        stage: 'needs_attention',
+        attempts: task.attempts + 1,
+        attemptId: attempt.attemptId,
+        attemptHistory: history,
+        result: undefined,
+        artifacts: [],
+      })
+    }
+    return finish({
+      status: 'failed',
+      state: 'failed',
+      stage: 'needs_attention',
+      attemptHistory: closeAttempt('failed'),
+      result: undefined,
+      artifacts: [],
+    })
+  }
+
+  if (next === 'cancelled') {
+    const cancellation: CancellationRecord = task.cancellation?.outcome === 'requested'
+      ? { ...task.cancellation, confirmedAt: at, outcome: 'confirmed' }
+      : {
+        requestId: makeId('cancel', task.attempts),
+        reason: 'legacy transition requested cancellation',
+        requestedAt: at,
+        confirmedAt: at,
+        outcome: 'confirmed',
+      }
+    if (task.state === 'waiting') {
+      const { attempt, history } = appendAttempt('cancelled')
+      return finish({
+        status: 'cancelled',
+        state: 'cancelled',
+        stage: 'stopped',
+        attempts: task.attempts + 1,
+        attemptId: attempt.attemptId,
+        attemptHistory: history,
+        result: undefined,
+        artifacts: [],
+        cancellation,
+      })
+    }
+    const history = task.state === 'running' ? closeAttempt('cancelled') : task.attemptHistory
+    return finish({
+      status: 'cancelled',
+      state: 'cancelled',
+      stage: 'stopped',
+      attemptHistory: history,
+      result: undefined,
+      artifacts: [],
+      cancellation,
+    })
+  }
+
+  throw new ProtocolError(`unsupported legacy transition ${task.state} -> ${next}`, 'INVALID_TRANSITION')
+}
+
+/** Validate a budget and return a detached copy. */
+export function validateBudget(budget: Budget): Budget {
+  if (!budget || typeof budget !== 'object') throw new ProtocolError('budget must be an object', 'INVALID_ARGUMENT')
+  for (const [name, value] of Object.entries(budget)) {
+    if (value !== undefined && (!Number.isSafeInteger(value) || value < 0)) {
+      throw new ProtocolError(`${name} must be a non-negative safe integer`, 'INVALID_ARGUMENT')
+    }
+  }
+  if (budget.maxTotalTokens !== undefined
+    && budget.maxInputTokens !== undefined
+    && budget.maxOutputTokens !== undefined
+    && budget.maxTotalTokens < budget.maxInputTokens + budget.maxOutputTokens) {
+    throw new ProtocolError('maxTotalTokens must cover maxInputTokens + maxOutputTokens', 'INVALID_ARGUMENT')
+  }
+  return { ...budget }
+}
+
+/** Compute a stable digest for an artifact snapshot. */
+export function artifactDigest(artifacts: readonly ArtifactRef[]): string {
+  const seen = new Set<string>()
+  const normalized = artifacts.map((artifact, index) => {
+    if (!artifact || typeof artifact !== 'object') throw new ProtocolError(`artifacts[${index}] must be an object`, 'INVALID_ARGUMENT')
+    const artifactId = requiredText(artifact.artifactId, `artifacts[${index}].artifactId`)
+    if (seen.has(artifactId)) throw new ProtocolError(`artifacts contains duplicate ${artifactId}`, 'INVALID_ARGUMENT')
+    seen.add(artifactId)
+    if (artifact.sizeBytes !== undefined && (!Number.isSafeInteger(artifact.sizeBytes) || artifact.sizeBytes < 0)) {
+      throw new ProtocolError(`artifacts[${index}].sizeBytes must be a non-negative safe integer`, 'INVALID_ARGUMENT')
+    }
+    return {
+      artifactId,
+      uri: requiredText(artifact.uri, `artifacts[${index}].uri`),
+      ...artifact.digest === undefined ? {} : { digest: requiredText(artifact.digest, `artifacts[${index}].digest`) },
+      ...artifact.mediaType === undefined ? {} : { mediaType: requiredText(artifact.mediaType, `artifacts[${index}].mediaType`) },
+      ...artifact.sizeBytes === undefined ? {} : { sizeBytes: artifact.sizeBytes },
+    }
+  }).sort((left, right) => left.artifactId.localeCompare(right.artifactId))
+  return createHash('sha256').update(stableStringify(normalized)).digest('hex')
+}
+
+/** Stable object-key ordering used by request idempotency and JSONL. */
+export function stableStringify(value: unknown): string {
+  const normalize = (candidate: unknown): JsonValue => {
+    if (candidate === null || typeof candidate === 'string' || typeof candidate === 'boolean') return candidate
+    if (typeof candidate === 'number') {
+      if (!Number.isFinite(candidate)) throw new ProtocolError('cannot stringify a non-finite number', 'INVALID_JSON')
+      return candidate
+    }
+    if (Array.isArray(candidate)) return candidate.map(normalize)
+    if (typeof candidate === 'object') {
+      const output: Record<string, JsonValue> = {}
+      for (const key of Object.keys(candidate as object).sort()) {
+        const valueAtKey = (candidate as Record<string, unknown>)[key]
+        if (valueAtKey !== undefined) output[key] = normalize(valueAtKey)
+      }
+      return output
+    }
+    throw new ProtocolError('cannot stringify a non-JSON value', 'INVALID_JSON')
+  }
+  return JSON.stringify(normalize(value))
+}
+
+/** Encode one event as one newline-free JSONL record. */
+export function encodeEvent(event: TaskEvent): string {
+  validateEvent(event)
+  return stableStringify(event)
+}
+
+/** Encode a contiguous event stream as JSONL. */
+export function encodeEvents(events: readonly TaskEvent[]): string {
+  return events.map(encodeEvent).join('\n') + (events.length === 0 ? '' : '\n')
+}
+
+/** Decode one JSONL record and reject unknown versions or malformed snapshots. */
+export function decodeEvent(line: string): TaskEvent {
+  if (typeof line !== 'string' || line.trim() === '') throw new ProtocolError('event line is empty', 'INVALID_EVENT')
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(line)
+  } catch (error) {
+    throw new ProtocolError(`event line is not JSON: ${error instanceof Error ? error.message : String(error)}`, 'INVALID_EVENT')
+  }
+  validateEvent(parsed as TaskEvent)
+  return parsed as TaskEvent
+}
+
+/** Validate event identity, sequence, and post-command snapshot. */
+export function validateEvent(event: TaskEvent): TaskEvent {
+  try {
+    const record = snapshotRecord(event, 'event')
+    if (record.version !== 1) eventFailure('unsupported task event version')
+    if (!Number.isSafeInteger(record.sequence) || (record.sequence as number) < 1) eventFailure('event.sequence must be positive')
+    snapshotText(record.eventId, 'event.eventId')
+    const taskId = snapshotText(record.taskId, 'event.taskId')
+    const type = snapshotText(record.type, 'event.type')
+    if (type !== record.type) eventFailure('event.type must not contain surrounding whitespace')
+    if (!(TASK_EVENT_TYPES as readonly string[]).includes(type)) eventFailure(`unknown task event type ${type}`)
+    snapshotTimestamp(record.at, 'event.at')
+    const task = snapshotRecord(record.task, 'event.task')
+    if (record.revision !== task.revision || taskId !== task.taskId) eventFailure('event identity does not match its task snapshot')
+    validateTaskRecord(task as unknown as TaskRecord)
+    const data = snapshotRecord(record.data, 'event.data')
+    toJsonValue(data, 'event.data')
+  } catch (error) {
+    if (error instanceof ProtocolError && error.code === 'INVALID_EVENT') throw error
+    if (error instanceof ProtocolError) throw new ProtocolError(error.message, 'INVALID_EVENT')
+    throw new ProtocolError(`event is invalid: ${error instanceof Error ? error.message : String(error)}`, 'INVALID_EVENT')
+  }
+  return event
+}
+
+/** A benchmark measurement used by the optimization ledger. */
 export interface MetricSnapshot {
   readonly mode: 'real' | 'mock' | 'replay'
   readonly score: number
@@ -25,32 +1064,60 @@ export interface MetricSnapshot {
   readonly outputTokens: number
   readonly latencyMs: number
   readonly toolCalls: number
+  readonly workloadId?: string
+  readonly model?: string
+  readonly contextLimit?: number
 }
 
-export class ProtocolError extends Error {}
-
-export function createTask(input: Omit<TaskRecord, 'state' | 'attempts'>): TaskRecord {
-  if (!input.taskId || !input.title) throw new ProtocolError('taskId and title are required')
-  if (input.dependencies.includes(input.taskId)) throw new ProtocolError('task cannot depend on itself')
-  return { ...input, state: input.dependencies.length === 0 ? 'ready' : 'pending', attempts: 0 }
+/** Result of comparing two matched measurements. */
+export interface MetricComparison {
+  readonly scoreDelta: number
+  readonly totalTokensDelta: number
+  readonly latencyDelta: number
+  readonly toolCallsDelta: number
+  readonly accepted: boolean
+  readonly reason: string
 }
 
-export function transitionTask(task: TaskRecord, next: TaskState, dependencies: readonly TaskRecord[] = []): TaskRecord {
-  const allowed: Record<TaskState, readonly TaskState[]> = {
-    pending: ['ready', 'cancelled'], ready: ['running', 'cancelled'], running: ['waiting', 'succeeded', 'failed', 'cancelled'],
-    waiting: ['running', 'failed', 'cancelled'], succeeded: [], failed: ['ready', 'cancelled'], cancelled: [],
+function metricNumber(value: number, field: string): number {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) throw new ProtocolError(`${field} must be a non-negative finite number`, 'INVALID_METRIC')
+  return value
+}
+
+/**
+ * Compare matched real measurements. Mock and replay values remain useful for
+ * debugging but cannot authorize a release.
+ */
+export function compareMetrics(baseline: MetricSnapshot, candidate: MetricSnapshot): MetricComparison {
+  if (baseline.mode !== 'real' || candidate.mode !== 'real') throw new ProtocolError('release comparison requires real results', 'METRIC_MODE_UNVERIFIED')
+  for (const [name, value] of Object.entries(baseline)) {
+    if (['mode', 'workloadId', 'model', 'contextLimit'].includes(name)) continue
+    metricNumber(value as number, `baseline.${name}`)
   }
-  if (!allowed[task.state].includes(next)) throw new ProtocolError(`invalid transition ${task.state} -> ${next}`)
-  if (next === 'ready' && dependencies.some(dep => dep.state !== 'succeeded')) throw new ProtocolError('dependencies are not complete')
-  return { ...task, state: next, attempts: next === 'running' ? task.attempts + 1 : task.attempts }
-}
-
-export function compareMetrics(baseline: MetricSnapshot, candidate: MetricSnapshot) {
-  if (baseline.mode !== 'real' || candidate.mode !== 'real') throw new ProtocolError('release comparison requires real results')
+  for (const [name, value] of Object.entries(candidate)) {
+    if (['mode', 'workloadId', 'model', 'contextLimit'].includes(name)) continue
+    metricNumber(value as number, `candidate.${name}`)
+  }
+  for (const key of ['workloadId', 'model', 'contextLimit'] as const) {
+    if (baseline[key] !== undefined && candidate[key] !== undefined && baseline[key] !== candidate[key]) {
+      throw new ProtocolError(`${key} must match between baseline and candidate`, 'METRIC_MISMATCH')
+    }
+  }
+  const scoreDelta = candidate.score - baseline.score
+  const totalTokensDelta = candidate.inputTokens + candidate.outputTokens - baseline.inputTokens - baseline.outputTokens
+  const latencyDelta = candidate.latencyMs - baseline.latencyMs
+  const toolCallsDelta = candidate.toolCalls - baseline.toolCalls
+  const accepted = candidate.score >= baseline.score && totalTokensDelta < 0
   return {
-    scoreDelta: candidate.score - baseline.score,
-    totalTokensDelta: candidate.inputTokens + candidate.outputTokens - baseline.inputTokens - baseline.outputTokens,
-    latencyDelta: candidate.latencyMs - baseline.latencyMs,
-    accepted: candidate.score >= baseline.score && candidate.inputTokens + candidate.outputTokens < baseline.inputTokens + baseline.outputTokens,
+    scoreDelta,
+    totalTokensDelta,
+    latencyDelta,
+    toolCallsDelta,
+    accepted,
+    reason: accepted
+      ? 'candidate score is no lower and total tokens are lower'
+      : candidate.score < baseline.score
+        ? 'candidate score is lower than baseline'
+        : 'candidate total tokens are not strictly lower than baseline',
   }
 }

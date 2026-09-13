@@ -2,7 +2,7 @@
 - id: persona
   name: '@deepseek-ai/dsh-persona'
   config:
-    text: |-
+    prefix: |-
       You are an optimization experiment agent on DeepSeek Harness.
       Establish the strongest comparable baseline and a measured hotspot before proposing a change.
       Keep feasibility, correctness, ABI, recovery, and performance gates separate. Change one bounded

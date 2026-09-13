@@ -1,18 +1,59 @@
 {
   "name": "dsh-super-agent",
-  "version": "0.0.1",
-  "description": "Scenario-focused agent presets for DeepSeek Harness.",
+  "version": "0.0.2",
+  "description": "Scenario presets and an event-sourced task protocol for DeepSeek Harness.",
   "license": "MIT",
   "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./core/*": {
+      "types": "./lib/core/*.d.ts",
+      "default": "./lib/core/*.js"
+    },
+    "./dsh": {
+      "types": "./lib/dsh/index.d.ts",
+      "default": "./lib/dsh/index.js"
+    },
+    "./presets/*": "./presets/*",
+    "./package.json": "./package.json"
+  },
   "files": [
+    "lib",
     "presets",
-    "src",
     "cordis.patch.yml",
     "README.md",
     "LICENSE"
   ],
   "dependencies": {
     "@deepseek-ai/dsh-agent-presets": "^0.1.2-alpha.2"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.2",
+    "@deepseek-ai/schemastery": "^3.18.2"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/cordis": {
+      "optional": true
+    },
+    "@deepseek-ai/schemastery": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsx --test test/**/*.test.ts",
+    "pack:check": "npm pack --dry-run"
   },
   "engines": {
     "node": ">=22"

@@ -1,58 +1,129 @@
 # dsh-super-agent
 
-`dsh-super-agent` 是 DeepSeek Harness 的场景化 Agent preset 包。一个发布入口提供四个可独立选择的 preset：`solo`、`team`、`research` 和 `optimization`。安装包不会把四个场景合并成一个默认的“大而全” Agent；部署者或用户在创建 session 时选择需要的场景。
+`dsh-super-agent` 是 DeepSeek Harness 的场景 preset 和任务协议包。一个 npm 包提供四个可按 session 选择的 preset，以及一套可被宿主调用的 TypeScript 任务域：任务树、负责人、attempt、提交、review、验收、交付、取消确认、证据和实验指标都使用可重放的 JSONL 事件表示。
 
 ## 安装和装配
-
-这是一个包含 preset 配置和一个最小 bundle patch 的包，依赖 DeepSeek Harness 官方插件。推荐直接安装到 profile：
 
 ```bash
 dsh plugin --profile my-profile add dsh-super-agent
 ```
 
-安装后，包的 `cordis.patch.yml` 会自动把自己的 `presets/` 目录加入 `dsh-agent-presets` 的 system roots，并将默认 preset 设为 `solo`。启动 profile 后可以在 session 创建时选择 `team`、`research` 或 `optimization`。如果 profile 是 headless 或其他不含 `agent-presets` 的组合，需要先装配 `@deepseek-ai/dsh-agent-presets`，或在 profile patch 中插入该 row。
+包内的 `cordis.patch.yml` 做两件事：把 `presets/` 加入 `dsh-agent-presets` 的 system roots，并注册一个名为 `ctx.superAgent` 的轻量服务。该服务只管理显式创建的 task workspace，不创建 Agent、不启动模型、不授予 shell/web 权限。模型、sandbox、approval、持久化和官方 subagent/jobs provider 仍由 Harness profile 负责。
 
-如果部署不使用 bundle 自动装配，也可以手工在宿主 composition 中启用 `@deepseek-ai/dsh-agent-presets`，并把本包的 `presets` 目录加入 roots：
+如果 profile 没有 `agent-presets`，先在宿主 composition 中装配它，再把本包的 `presets` 目录加入 roots。也可以只装配任务服务：
 
 ```yaml
-- name: '@deepseek-ai/dsh-agent-presets'
+- id: super-agent
+  name: dsh-super-agent/dsh
   config:
-    default: solo
-    roots:
-      - path: ./node_modules/dsh-super-agent/presets
-        trust: system
+    maxTasks: 256
+    maxDepth: 32
+    maxConcurrent: 8
+    timeoutMs: 0
+    stopGraceMs: 100
 ```
 
-`path` 必须改成部署环境中实际的绝对路径或工作目录相对路径。bundle 安装路径由 DSH profile 的 pnpm 管理，不要把 `node_modules` 路径硬编码进提交文件。也可以关闭 `includeShippedRoot`，只保留自己的 preset；root 按顺序扫描，重复 id 由先出现的 root 获胜。
-
-安装本包不会自动修改宿主 composition、启用网络、授予 shell 权限或配置模型账号。宿主仍负责 sandbox、审批、持久化、模型路由和各类 registry。
+所有配置都在加载时校验。`timeoutMs: 0` 表示由调用方或 executor 自己决定超时；大于零时，Dispatcher 在期限到达后把未确认停止的 attempt 记录为 `stop_unknown`。`stopGraceMs` 是取消信号发出后等待 executor 提交停止证据的上限。
 
 ## 四个 preset
 
-| preset | 用途 | 主要能力 |
+| preset | 用途 | 默认提示和工具边界 |
 | --- | --- | --- |
-| `solo` | 单 Agent 交付 | 文件读写、shell、goal、Skill 目录 |
-| `team` | 负责人式协作 | `dsh-subagent` 委派、`dsh-jobs` 后台任务、任务树/负责人/验收提示词 |
-| `research` | 可复核调研 | Web 搜索/抓取工具、来源和反例核验、证据报告提示词 |
-| `optimization` | 性能和系统实验 | goal、todo、jobs、plan mode、基线/指标/回滚/停止条件提示词 |
+| `solo` | 单 Agent 交付 | 目标、文件、命令、验证；不加载多 Agent 调度 |
+| `team` | 负责人式协作 | 任务拆分、owner、依赖、并行派发、review/rework/交付；复用 Harness 官方 subagent 和 jobs |
+| `research` | 可复核资料研究 | 查询计划、原始来源、URL 去重、反例和不确定性 |
+| `optimization` | 可重复实验迭代 | baseline、单变量假设、匹配 workload、指标账本、回滚和停止条件 |
 
-`team` 的 `spawn` provider 需要宿主已装配对应的 in-process subagent provider。`research` 的 web 工具需要宿主同时装配 `@deepseek-ai/dsh-web` 和至少一个搜索或抓取 backend；本包只声明模型看到的工具。缺少宿主服务时，Harness 会在挂载或调用阶段报告依赖错误，不会由 preset 绕过权限。
+preset 是 session 级组合，同一个进程可以选择不同场景。默认只挂载 `solo`；选择 `team`、`research` 或 `optimization` 不会把其它场景的工具全部暴露给当前 session。
 
-每个 preset 旁边的 `preset.yml` 只用于选择器显示名称、说明和排序；真正的能力声明在 `agent.cordis.yml` 中。预设是 session 级组合：同一进程可以同时运行不同 preset，session 状态仍然彼此隔离。
+`team` 的多 Agent 创建仍需要宿主装配对应的 in-process subagent provider。`research` 的 web 工具仍需要宿主的 `dsh-web` 和搜索/抓取 backend。缺少宿主能力时，Harness 会报告依赖不可用，不会由本包伪造结果。
 
-## 为什么是一个发布入口、多个 preset
+## 任务协议
 
-发布入口是一个 npm 包和一个 roots 路径，便于版本、兼容性和审计统一管理。多个 preset 是包内的四个目录，用户按任务选择其中一个，子 Agent 继承父 Agent 的 preset。这样可以共享发布和升级流程，同时避免每个场景都维护一套安装脚本，也避免默认加载全部工具造成权限和提示词膨胀。
+纯领域 API 位于 `dsh-super-agent` 根导出，也可以从 `dsh-super-agent/core/task-graph` 等子路径导入。根入口只加载无宿主依赖的 core，不导入 Cordis 或 Schemastery，因此可在 Node 单元测试、宿主适配器和离线评测中复用。需要挂载到 Harness 时使用 `dsh-super-agent/dsh`；该子路径才会加载可选的 Cordis/Schemastery peer。
 
-这个设计不会把 Super Agent 的完整企业任务系统塞进 preset。当前任务树、负责人、提交/评审/返工/验收/交付等规则以场景提示词表达，委派和后台执行复用 Harness 官方 `dsh-subagent`、`dsh-jobs`、`dsh-goal`。如果未来需要跨 session 的组织数据库、审计事件或强制验收，应另做 host-plane 服务插件，并由 preset 通过稳定协议消费；不要在每个 `agent.cordis.yml` 里复制第二套 runtime。
+```ts
+import { TaskGraph } from 'dsh-super-agent'
 
-## 兼容性和权限边界
+const graph = new TaskGraph([
+  { taskId: 'compile', title: 'Compile', acceptance: ['tests pass'] },
+  { taskId: 'package', title: 'Package', dependencies: ['compile'], acceptance: ['archive exists'] },
+])
 
-- 目标 Harness 版本：`0.1.2-alpha.x`；当前源码验证基线为 pinned commit `cd5ef814`（runtime `0.1.2-alpha.1`），npm 依赖从 `0.1.2-alpha.2` 起可用。
-- 本包只包含声明式 YAML、显示元数据和文档，不执行安装脚本。
-- preset 的实际权限等于它列出的官方工具以及宿主为这些工具提供的服务；`trust: system` 只表示部署信任来源，不是额外沙箱。
-- `tool-bash`/`tool-pwsh`、文件工具和 web 工具仍受宿主 sandbox、审批和网络策略约束。
-- 修改 `agent.cordis.yml` 会影响新挂载的 preset generation；正在运行的 session 保持原组合。修改旁边的 Skill 或资源文件后，按 Harness 的 generation 规则重启或触发 composition 文件变更。
+const running = graph.startTask('compile')
+graph.completeTask(running.taskId, running.attemptId!, { ok: true }, [
+  { artifactId: 'build', uri: 'memory:build', digest: '<sha256>' },
+])
+graph.submitTaskResult('compile', 'submit-1')
+graph.recordReview('compile', {
+  reviewId: 'review-1', reviewerId: 'reviewer', independent: true,
+  outcome: 'passed', report: { passed: true }, findings: [],
+  reviewedAt: new Date().toISOString(),
+})
+graph.acceptTask('compile', undefined, 'accept-1')
+
+// Only the accepted version satisfies `package`'s dependency.
+const next = graph.startTask('package')
+```
+
+生命周期有意分开：运行完成不会自动验收，review 通过不会自动交付，失败 attempt 不会隐式回到 ready。要重试必须显式调用 `returnForRework()`，这会保留旧 attempt 并让下一次 `startTask()` 获得新的 attempt id。依赖在启动时绑定上游的 accepted submission 和 artifact digest；上游返工后，旧绑定自动失效。
+
+每次改变都会追加带完整任务快照的版本化事件：
+
+```ts
+const jsonl = graph.toJSONL()
+const restored = TaskGraph.fromEvents(graph.eventsSince())
+```
+
+同一个 request id 重放会返回同一结果；使用不同内容重用 request id 会得到结构化 `ProtocolError`。事件序号、任务 revision、状态迁移和依赖环在写入与重放时都会检查。正在运行的任务收到取消请求后处于 `stopping`，只有 executor 或宿主提交停止证据后才变为 `cancelled/stopped`；无法确认时记录 `failed/stop_unknown`，不会把迟到结果交付。
+
+### Cordis 服务
+
+适配层从 `dsh-super-agent/dsh` 导出 `SuperAgentService`，并通过 `ctx.superAgent.workspace(scope)` 创建一个显式 workspace：
+
+```ts
+const workspace = ctx.superAgent.workspace('release')
+const task = workspace.graph.add({ taskId: 'verify', title: 'Verify' })
+await workspace.dispatcher.runReady(
+  () => 'worker-name',
+  async (_task, signal) => {
+    signal.throwIfAborted()
+    return { result: { passed: true } }
+  },
+)
+```
+
+适配层不猜测 `ctx.agents` 的身份、不复制 Harness Agent Teams 的 roster/mailbox，也不自行写 session 数据库。宿主如果需要跨 session 持久化，可保存 `eventsSince()` 的 JSONL，并在恢复时显式调用 `TaskGraph.fromEvents()`；恢复中的 active attempt 会被标为 `stop_unknown`，不会自动重跑。
+
+## Review、Research 和 Optimization
+
+- `summarizeReviews()` 会按 artifact/location/结论规范化发现并去重。独立 reviewer 不足或结论冲突时返回 `inconclusive`，不会把执行者自检当独立审查。
+- `ResearchLedger` 只记录调用方已经取得的来源；URL 会去掉追踪参数并规范化，缺少来源的 claim 不能标为已验证。它不执行网络请求。
+- `OptimizationLedger` 要求匹配 workload、单一 changed factor 和 rollback ref。只有相同模型/上下文/工作负载下的真实 baseline/candidate 同时满足得分不下降且 total tokens 严格下降，决策才是 `stop`；mock/replay 结果只能是 `inconclusive`。
+
+这些账本是纯内存对象。它们提供证据和摘要出口，但不宣称已经跑过 HumanEval、SWE-bench、真实硬件或真实模型评测。
+
+## 兼容性和权限
+
+- 当前包版本：`0.0.2`。
+- 目标 Harness：`0.1.2-alpha.2` 或更新的 0.1.2 发行线；当前包对 `@deepseek-ai/dsh-agent-presets` 的依赖从 `0.1.2-alpha.2` 开始，npm lock 当前解析为 `0.1.2-rc.1`。pinned `cd5ef814`（runtime `0.1.2-alpha.1`）上的四个 preset 解析和 `deepseek-v4.1-flash` smoke 属于 0.0.1 历史基线，不作为当前包的完整兼容证明。
+- 本包的 Cordis 适配器（`dsh-super-agent/dsh`）依赖宿主提供的 `@deepseek-ai/cordis ^4.0.2` 和 `@deepseek-ai/schemastery ^3.18.2`；两个 peer 对只使用根 core 的消费者保持 optional。
+- 包不执行安装脚本，不写 API key、profile 路径或用户内容，不改变宿主的 sandbox、approval、网络和模型路由。
+- `lib/` 是发布时的 JavaScript 和 declaration 产物；`src/`、测试、`eval/` 和 `.development/` 不进入 npm tarball。
+
+## 开发和验证
+
+```bash
+npm install
+npm run typecheck
+npm test
+npm run build
+npm pack --dry-run
+```
+
+`test/` 覆盖状态迁移、CAS、依赖验收版本、幂等事件、JSONL 重放、取消/超时、review 多样性、来源规范化和指标门禁。`eval/` 是被 `.gitignore` 忽略的本地评测工作区，数据集清单只保存公开来源和固定 revision。
+
+发布前还应在目标 profile 中执行四个 preset 的 roster discovery、挂载和真实模型 smoke，并用相同模型、上下文上限、任务集和工具策略做 baseline/candidate 对照。没有真实结果时，报告必须标记为 `mock` 或 `replay`，不能据此声称 token 或质量提升。
 
 ## 目录
 
@@ -62,23 +133,10 @@ presets/
 ├── team/agent.cordis.yml
 ├── research/agent.cordis.yml
 └── optimization/agent.cordis.yml
+src/
+├── core/                 # 无宿主依赖的协议、任务图、调度和账本
+├── dsh/                  # 薄 Cordis service adapter
+└── index.ts              # 稳定导出面
+cordis.patch.yml         # preset root 和 ctx.superAgent 的统一入口
 ```
 
-
-## 本地评测
-
-可在仓库外生成 `eval/` 评测工作区。该目录被 `.gitignore` 忽略，不会进入 Git 或 npm 包；其中的
-`datasets/manifest.json` 记录公开数据集的来源、许可证和固定 revision，`datasets/fixtures/` 只放置
-用于快速回归的小样本。评测应使用同一模型、上下文上限和任务集，对 baseline 与候选 preset 分别运行，
-记录成功率、输入/输出/总 token、延迟、工具调用数和可验收 artifact。没有真实模型或目标服务时，报告必须标记为 mock/replay，不能当作效果提升证据。
-
-## 发布
-
-发布前执行：
-
-```bash
-npm pack --dry-run
-npm publish --dry-run
-```
-
-确认 tarball 只包含 `presets/`、`cordis.patch.yml`、README、License 和 package manifest 后，再执行 `npm publish`。发布是外部操作，需要 npm 登录和包名写权限；GitHub 仓库地址已写入 manifest，但本地提交不会自动 push。

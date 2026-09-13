@@ -1,12 +1,30 @@
 # Register this package's preset directory in the host roster.
 # dsh-web-app already provides the agent-presets row; this patch replaces its
 # config so the package root is added without creating a second host registry.
+# DSH boots a profile from <profile>/cordis.yml and installs bundle packages in
+# that profile's node_modules (or the parent profiles fallback). Resolving from
+# that stable anchor works for both pnpm links and the packaged fallback; a bare
+# `presets/` path would incorrectly point beside the profile config instead.
 - id: agent-presets
   name: '@deepseek-ai/dsh-agent-presets'
   config:
     default: solo
     roots:
-      - path: !!js "process.getBuiltinModule('node:url').fileURLToPath(new URL('presets/', baseUrl))"
+      - path: !!js "process.getBuiltinModule('node:url').fileURLToPath(new URL('node_modules/dsh-super-agent/presets/', baseUrl))"
         trust: system
     includeShippedRoot: true
     includeUserRoot: true
+
+# Expose the optional host-plane task protocol. It owns no model, tool, or
+# agent provider; those remain Harness services selected by the profile. This
+# is an insert (rather than an id-targeted override) because a profile may use
+# this bundle without a pre-existing host row for the service.
+- insert:
+    - id: super-agent
+      name: dsh-super-agent/dsh
+      config:
+        maxTasks: 256
+        maxDepth: 32
+        maxConcurrent: 8
+        timeoutMs: 0
+        stopGraceMs: 100

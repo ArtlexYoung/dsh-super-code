@@ -1,6 +1,10 @@
 # Local maintainer notes are intentionally excluded from published history.
 .development/
 
+# Local evaluation datasets, runners, and reports are reproducible artifacts,
+# kept out of source and npm packages.
+eval/
+
 # Local package/build state.
 node_modules/
 dist/

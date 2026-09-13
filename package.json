@@ -1,6 +1,6 @@
 {
   "name": "dsh-super-agent",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "Scenario-focused agent presets for DeepSeek Harness.",
   "license": "MIT",
   "type": "module",

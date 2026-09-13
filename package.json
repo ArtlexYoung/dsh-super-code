@@ -1,8 +1,8 @@
 {
   "name": "dsh-super-agent",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Scenario presets and an event-sourced task protocol for DeepSeek Harness.",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",

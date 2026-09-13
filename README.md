@@ -76,6 +76,10 @@ npm pack --dry-run
 
 测试覆盖状态迁移、并发、依赖、幂等、取消、超时、评审、研究来源和优化指标。
 
+## 许可证
+
+Apache License 2.0，见 [LICENSE](LICENSE)。
+
 ## 目录
 
 ```text

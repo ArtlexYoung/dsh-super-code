@@ -37,7 +37,6 @@
   config:
     provider: spawn
     toolName: subagent
-    modelSelectionSettings: true
     backgroundMode: continuable
 - id: skill-filesystem
   name: '@deepseek-ai/dsh-skill-filesystem'

@@ -32,6 +32,7 @@ dsh plugin --profile web add dsh-super-agent
 
 发布判断可使用 `evaluateReleaseGate`，默认要求候选正确率至少提升 10 个百分点、总 token 至少减少 10%，且耗时不增加；任一条件不满足都会返回 `accepted: false`。
 多次独立 matched run 可先用 `aggregateEvaluationRuns` 聚合，再交给 release gate，避免一次 max 推理随机结果影响判断。
+如果要判断整个插件版本，使用 `evaluateScenarioBatchRelease`。它要求同一批结果同时包含 `solo`、`team`、`research` 和 `optimization`，并分别计算四个场景的门槛；任一场景缺失或未通过，整体结果都会是 `accepted: false`。
 
 如果使用 Cordis 服务，也可以调用 `ctx.superAgent.programmingWorkflow(...)`；两种入口共享同一实现。服务配置中的 `maxRepairAttempts`、`maxFeedbackChars`、`maxInputTokens`、`maxOutputTokens`、`maxTotalTokens`、`maxToolCalls` 和 `timeoutMs` 可由 profile/page settings 调整，单次调用可以覆盖这些默认值。
 

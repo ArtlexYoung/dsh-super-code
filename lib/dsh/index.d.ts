@@ -13,6 +13,8 @@ export declare const name = "super-agent";
 export declare const inject: readonly string[];
 /** Deployment limits for graph and dispatcher instances. */
 export interface Config {
+    readonly modelPools?: import('../ui.js').ModelPoolConfig;
+    readonly tokenStats?: boolean;
     readonly maxTasks?: number;
     readonly maxDepth?: number;
     readonly maxConcurrent?: number;
@@ -36,6 +38,8 @@ export interface Config {
 export declare const Config: z<Config>;
 /** Resolved adapter defaults. */
 export interface ResolvedConfig {
+    readonly modelPools: import('../ui.js').ModelPoolConfig;
+    readonly tokenStats: boolean;
     readonly maxTasks: number;
     readonly maxDepth: number;
     readonly maxConcurrent: number;

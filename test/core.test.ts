@@ -10,7 +10,7 @@ import { OptimizationLedger } from '../src/core/optimization.js'
 import { compactFeedback, runProgrammingWorkflow, shouldPlanSeparately } from '../src/core/programming.js'
 import { resolveConfig, SuperAgentService } from '../src/dsh/index.js'
 import { extractConversationContract, runConversationWorkflow } from '../src/core/conversation.js'
-import { aggregateEvaluationRuns, evaluateReleaseGate } from '../src/core/evaluation.js'
+import { aggregateEvaluationRuns, aggregateScenarioEvaluationRuns, evaluateReleaseGate, evaluateScenarioBatchRelease } from '../src/core/evaluation.js'
 import { ProtocolError, artifactDigest, validateEvent, validateTaskRecord } from '../src/core/protocol.js'
 import { profileForPreset, resolveScenarioProfile } from '../src/core/scenario.js'
 
@@ -570,6 +570,31 @@ describe('evaluation release gate', () => {
     assert.equal(aggregate.baseline.successRate, 0.7)
     assert.equal(aggregate.tokenReduction, 0.22727272727272727)
     assert.ok(Math.abs(aggregate.deltas.successRate - 0.15) < 1e-12)
+  })
+
+  it('requires all four extension scenarios in a release batch', () => {
+    const base = { successRate: 0.7, totalTokens: 100, latencyMs: 10 }
+    const candidate = { successRate: 0.9, totalTokens: 80, latencyMs: 9 }
+    const scenarios = ['solo', 'team', 'research', 'optimization'] as const
+    const runs = scenarios.map(scenario => ({ scenario, baseline: base, candidate }))
+    const aggregate = aggregateScenarioEvaluationRuns(runs)
+    assert.deepEqual(Object.keys(aggregate).sort(), [...scenarios].sort())
+    const gate = evaluateScenarioBatchRelease(runs)
+    assert.equal(gate.accepted, true)
+    assert.throws(() => aggregateScenarioEvaluationRuns(runs.slice(0, 3)), /scenario batch is incomplete/)
+  })
+
+  it('does not hide a failed scenario behind passing scenarios', () => {
+    const runs = (['solo', 'team', 'research', 'optimization'] as const).map(scenario => ({
+      scenario,
+      baseline: { successRate: 0.7, totalTokens: 100, latencyMs: 10 },
+      candidate: scenario === 'research'
+        ? { successRate: 0.7, totalTokens: 80, latencyMs: 9 }
+        : { successRate: 0.9, totalTokens: 80, latencyMs: 9 },
+    }))
+    const gate = evaluateScenarioBatchRelease(runs)
+    assert.equal(gate.accepted, false)
+    assert.equal(gate.byScenario.research.accepted, false)
   })
 })
 

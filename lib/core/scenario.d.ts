@@ -4,6 +4,9 @@ export type ExecutionMode = 'solo' | 'team' | 'auto';
 export type WorkScenario = 'delivery' | 'research' | 'optimization';
 /** Optimization target when {@link WorkScenario} is `optimization`. */
 export type OptimizationTarget = 'performance' | 'quality' | 'both';
+/** Names of the four shipped compatibility preset entries. */
+export declare const SHIPPED_PRESET_NAMES: readonly ["solo", "team", "research", "optimization"];
+export type ShippedPresetName = typeof SHIPPED_PRESET_NAMES[number];
 /** The two independent axes used to describe a preset. */
 export interface ScenarioProfile {
     readonly executionMode: ExecutionMode;
@@ -12,7 +15,7 @@ export interface ScenarioProfile {
 }
 export type ScenarioProfileInput = Partial<ScenarioProfile>;
 /** Stable compatibility mapping for the four shipped preset names. */
-export declare const PRESET_PROFILES: Readonly<Record<string, ScenarioProfile>>;
+export declare const PRESET_PROFILES: Readonly<Record<ShippedPresetName, ScenarioProfile>>;
 /** Normalize an explicit profile while preserving the delivery defaults. */
 export declare function resolveScenarioProfile(input?: ScenarioProfileInput): ScenarioProfile;
 /** Resolve a shipped preset name to its two-axis profile. */

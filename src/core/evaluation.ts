@@ -1,4 +1,6 @@
 import { ProtocolError } from './protocol.js'
+import { SHIPPED_PRESET_NAMES } from './scenario.js'
+import type { ShippedPresetName } from './scenario.js'
 
 export interface EvaluationSnapshot {
   readonly successRate: number
@@ -25,6 +27,11 @@ export interface EvaluationRun {
   readonly candidate: EvaluationSnapshot
 }
 
+/** One matched baseline/candidate run for a shipped extension scenario. */
+export interface ScenarioEvaluationRun extends EvaluationRun {
+  readonly scenario: ShippedPresetName
+}
+
 export interface EvaluationAggregate {
   readonly runs: number
   readonly baseline: EvaluationSnapshot
@@ -32,6 +39,12 @@ export interface EvaluationAggregate {
   readonly deltas: { readonly successRate: number; readonly totalTokens: number; readonly latencyMs: number }
   readonly tokenReduction: number | null
   readonly latencyReduction: number | null
+}
+
+/** Per-scenario release result for a complete four-scenario batch. */
+export interface ScenarioBatchGateResult {
+  readonly accepted: boolean
+  readonly byScenario: Readonly<Record<ShippedPresetName, EvaluationGateResult>>
 }
 
 function rate(value: number, field: string): number {
@@ -65,6 +78,38 @@ export function aggregateEvaluationRuns(runs: readonly EvaluationRun[]): Evaluat
   const average = { baseline: { successRate: baseline.successRate / count, totalTokens: baseline.totalTokens / count, latencyMs: baseline.latencyMs / count }, candidate: { successRate: candidate.successRate / count, totalTokens: candidate.totalTokens / count, latencyMs: candidate.latencyMs / count } }
   const deltas = { successRate: average.candidate.successRate - average.baseline.successRate, totalTokens: average.candidate.totalTokens - average.baseline.totalTokens, latencyMs: average.candidate.latencyMs - average.baseline.latencyMs }
   return { runs: count, ...average, deltas, tokenReduction: average.baseline.totalTokens > 0 ? (average.baseline.totalTokens - average.candidate.totalTokens) / average.baseline.totalTokens : null, latencyReduction: average.baseline.latencyMs > 0 ? (average.baseline.latencyMs - average.candidate.latencyMs) / average.baseline.latencyMs : null }
+}
+
+/**
+ * Aggregate one matched batch and reject partial batches. Keeping this check
+ * in the domain module prevents an evaluator from silently optimizing only
+ * one preset while reporting a package-level result.
+ */
+export function aggregateScenarioEvaluationRuns(runs: readonly ScenarioEvaluationRun[]): Readonly<Record<ShippedPresetName, EvaluationAggregate>> {
+  if (!Array.isArray(runs) || runs.length === 0) throw new ProtocolError('scenario runs must be non-empty', 'INVALID_ARGUMENT')
+  const groups = new Map<ShippedPresetName, EvaluationRun[]>()
+  for (const run of runs) {
+    if (!SHIPPED_PRESET_NAMES.includes(run.scenario)) throw new ProtocolError(`unknown scenario ${String(run.scenario)}`, 'INVALID_ARGUMENT')
+    const group = groups.get(run.scenario) ?? []
+    group.push(run)
+    groups.set(run.scenario, group)
+  }
+  const missing = SHIPPED_PRESET_NAMES.filter(name => !groups.has(name))
+  if (missing.length > 0) throw new ProtocolError(`scenario batch is incomplete; missing: ${missing.join(', ')}`, 'INCOMPLETE_BATCH')
+  return Object.fromEntries(SHIPPED_PRESET_NAMES.map(name => [name, aggregateEvaluationRuns(groups.get(name)!)])) as Record<ShippedPresetName, EvaluationAggregate>
+}
+
+/** Apply the release gate independently to all four scenarios. */
+export function evaluateScenarioBatchRelease(
+  runs: readonly ScenarioEvaluationRun[],
+  thresholds: EvaluationThresholds = {},
+): ScenarioBatchGateResult {
+  const aggregates = aggregateScenarioEvaluationRuns(runs)
+  const byScenario = Object.fromEntries(SHIPPED_PRESET_NAMES.map(name => {
+    const aggregate = aggregates[name]
+    return [name, evaluateReleaseGate(aggregate.baseline, aggregate.candidate, thresholds)]
+  })) as Record<ShippedPresetName, EvaluationGateResult>
+  return { accepted: SHIPPED_PRESET_NAMES.every(name => byScenario[name].accepted), byScenario }
 }
 
 export default evaluateReleaseGate

@@ -9,6 +9,10 @@ export type WorkScenario = 'delivery' | 'research' | 'optimization'
 /** Optimization target when {@link WorkScenario} is `optimization`. */
 export type OptimizationTarget = 'performance' | 'quality' | 'both'
 
+/** Names of the four shipped compatibility preset entries. */
+export const SHIPPED_PRESET_NAMES = ['solo', 'team', 'research', 'optimization'] as const
+export type ShippedPresetName = typeof SHIPPED_PRESET_NAMES[number]
+
 /** The two independent axes used to describe a preset. */
 export interface ScenarioProfile {
   readonly executionMode: ExecutionMode
@@ -25,7 +29,7 @@ const DEFAULT_PROFILE: ScenarioProfile = {
 }
 
 /** Stable compatibility mapping for the four shipped preset names. */
-export const PRESET_PROFILES: Readonly<Record<string, ScenarioProfile>> = Object.freeze({
+export const PRESET_PROFILES: Readonly<Record<ShippedPresetName, ScenarioProfile>> = Object.freeze({
   solo: { executionMode: 'solo', workScenario: 'delivery', optimizationTarget: 'both' },
   team: { executionMode: 'team', workScenario: 'delivery', optimizationTarget: 'both' },
   research: { executionMode: 'auto', workScenario: 'research', optimizationTarget: 'both' },
@@ -50,8 +54,9 @@ export function resolveScenarioProfile(input: ScenarioProfileInput = {}): Scenar
 /** Resolve a shipped preset name to its two-axis profile. */
 export function profileForPreset(name: string): ScenarioProfile {
   if (typeof name !== 'string' || name.trim() === '') throw new ProtocolError('preset name must be a non-empty string', 'INVALID_ARGUMENT')
-  const profile = PRESET_PROFILES[name.trim()]
-  if (profile === undefined) throw new ProtocolError(`unknown preset ${name}`, 'INVALID_ARGUMENT')
+  const key = name.trim()
+  if (!(SHIPPED_PRESET_NAMES as readonly string[]).includes(key)) throw new ProtocolError(`unknown preset ${name}`, 'INVALID_ARGUMENT')
+  const profile = PRESET_PROFILES[key as ShippedPresetName]
   return { ...profile }
 }
 

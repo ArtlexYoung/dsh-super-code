@@ -5,6 +5,7 @@ import { TaskGraph } from '../core/task-graph.js';
 import type { TaskInput } from '../core/task-graph.js';
 import { Dispatcher } from '../core/dispatcher.js';
 import type { ProgrammingWorkflowCallbacks, ProgrammingWorkflowOptions, ProgrammingWorkflowResult } from '../core/programming.js';
+import type { ConversationCallbacks, ConversationOptions, ConversationResult } from '../core/conversation.js';
 import type { Budget } from '../core/protocol.js';
 import type { ModelOption, ModelTier, TokenUsage, TokenSummary } from '../ui.js';
 import type { ExecutionMode, OptimizationTarget, ScenarioProfile, WorkScenario } from '../core/scenario.js';
@@ -101,6 +102,12 @@ export declare class SuperAgentService extends Service {
      * caller supplies model generation and local verification callbacks.
      */
     programmingWorkflow(task: string, callbacks: ProgrammingWorkflowCallbacks, options?: ProgrammingWorkflowOptions, signal?: AbortSignal): Promise<ProgrammingWorkflowResult>;
+    /**
+     * Run a bounded multi-turn conversation with the configured model pools.
+     * Usage from every turn is recorded in the same token projection as coding
+     * workflows, while the host retains ownership of transport and tools.
+     */
+    conversationWorkflow(turns: readonly string[], callbacks: ConversationCallbacks, options?: ConversationOptions, signal?: AbortSignal): Promise<ConversationResult>;
 }
 /** Cordis function-plugin entry. */
 export declare function apply(ctx: Context, config?: Config): void;

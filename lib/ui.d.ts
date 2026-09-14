@@ -2,17 +2,17 @@
 export type ModelTier = 'high' | 'normal' | 'low';
 export interface ModelOption {
     id: string;
+    /** Provider id for a Host model route; omitted keeps legacy id-only configs valid. */
+    provider?: string;
     strengths?: readonly string[];
+    /** Strength selected for this invocation from the configured strengths. */
+    strength?: string;
     available?: boolean;
 }
 export interface ModelPoolConfig {
     high: readonly ModelOption[];
     normal: readonly ModelOption[];
     low: readonly ModelOption[];
-}
-export interface SuperAgentSettings {
-    modelPools: ModelPoolConfig;
-    tokenStats: boolean;
 }
 export interface TokenUsage {
     model: string;

@@ -175,9 +175,9 @@ export class SuperAgentService extends Service {
     ctx.inject(['settings'], (settingsCtx: Context) => {
       const scope = settingsCtx.settings.register(SUPER_AGENT_SETTINGS_NAMESPACE, SuperAgentSettingsSchema, {
         base: { modelPools: {
-          high: this.resolved.modelPools.high.map(m => ({ id: m.id, strengths: [...(m.strengths ?? [])], available: m.available !== false })),
-          normal: this.resolved.modelPools.normal.map(m => ({ id: m.id, strengths: [...(m.strengths ?? [])], available: m.available !== false })),
-          low: this.resolved.modelPools.low.map(m => ({ id: m.id, strengths: [...(m.strengths ?? [])], available: m.available !== false })),
+          high: this.resolved.modelPools.high.map(m => ({ id: m.id, ...m.provider === undefined ? {} : { provider: m.provider }, strengths: [...(m.strengths ?? [])], available: m.available !== false })),
+          normal: this.resolved.modelPools.normal.map(m => ({ id: m.id, ...m.provider === undefined ? {} : { provider: m.provider }, strengths: [...(m.strengths ?? [])], available: m.available !== false })),
+          low: this.resolved.modelPools.low.map(m => ({ id: m.id, ...m.provider === undefined ? {} : { provider: m.provider }, strengths: [...(m.strengths ?? [])], available: m.available !== false })),
         }, tokenStats: this.resolved.tokenStats },
       })
       this.resolved = { ...this.resolved, ...scope.get() }
@@ -253,7 +253,9 @@ export class SuperAgentService extends Service {
         const input = usage.inputTokens ?? 0
         const cached = Math.min(input, usage.cachedTokens ?? 0)
         this.recordTokenUsage({
-          model: context.model?.id ?? 'host-default',
+          model: context.model === undefined
+            ? 'host-default'
+            : context.model.provider === undefined ? context.model.id : `${context.model.provider}/${context.model.id}`,
           cacheHit: cached,
           uncachedInput: Math.max(0, input - cached),
           cacheRead: cached,
@@ -291,7 +293,9 @@ export class SuperAgentService extends Service {
         const input = usage.inputTokens ?? 0
         const cached = Math.min(input, usage.cachedTokens ?? 0)
         this.recordTokenUsage({
-          model: context.model?.id ?? 'host-default',
+          model: context.model === undefined
+            ? 'host-default'
+            : context.model.provider === undefined ? context.model.id : `${context.model.provider}/${context.model.id}`,
           cacheHit: cached,
           uncachedInput: Math.max(0, input - cached),
           cacheRead: cached,

@@ -19,6 +19,17 @@ dsh plugin --profile web add dsh-super-agent
 
 插件会自动注册 preset 目录和 `super-agent` 服务。宿主仍负责模型、sandbox、审批、持久化和网络权限。
 
+## Harness 页面适配
+
+Web client 通过 Harness 的公开 slots、Remote 和 session projection 接入四个页面能力：
+
+- 对话输入栏模型控件左侧的 `Agent 预设` 选择器从 `agentPresets.list()` 动态读取 roster，并用 `agentPresets.select()` 切换当前仍为空白的会话；已开始首轮的会话遵循 Harness 组合不可变规则并显示拒绝原因。
+- 设置 → 插件配置中的 `super-agent` 卡片读取 `session/modelCatalog`，按高/常规/低三个模型池勾选真实可路由模型，并为每个模型选择可用 reasoning strength。保存后写入 `super-agent` settings namespace，不依赖硬编码模型名称。
+- 对话底部的 token 摘要读取 `superAgentUsage` projection，显示总量、平均缓存命中率、未缓存输入、缓存读取、输出以及按 provider/model 的明细；没有该投影时回退到 Harness 原生 `tokenUsage`。
+- 右侧 Sidebar 的 `Agent 执行树` 使用 Session Controller 的 subagent catalog 和 `openSubagent` 地址导航，点击节点直接打开对应 Agent 的执行对话，不复制宿主的会话持久化。
+
+模型池设置会真实影响 `ctx.superAgent.programmingWorkflow()` 和 `conversationWorkflow()`：分析/计划优先高智能池，常规草稿按任务复杂度选择低或常规池，修复和研究回到常规池；空池或不可用模型只向更高等级回退，绝不降级。选中的 strength 通过 workflow context 传给宿主模型适配器。模型调用返回的 usage 会同时进入服务汇总和 `superAgentUsage` 持久投影。
+
 `team` 需要宿主提供 subagent/jobs；`research` 的联网能力需要宿主提供 web backend。插件不会自行创建模型或绕过权限策略。核心配置可通过 `executionMode`（`solo`、`team`、`auto`）和 `workScenario`（`delivery`、`research`、`optimization`）表达二维组合。
 
 `optimization` 同时支持三种目标：`quality`（输出质量或正确率）、`performance`（延迟、token 或工具调用成本）和 `both`。默认是 `both`，保持质量不下降并要求成本下降；质量优化允许成本上升但必须达到质量门槛；性能优化要求质量不下降且至少改善一种成本指标。模型、基准和验收器由宿主传入。

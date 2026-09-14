@@ -3,6 +3,7 @@ import z from '@deepseek-ai/schemastery';
 export declare const SUPER_AGENT_SETTINGS_NAMESPACE = "super-agent";
 export declare const SuperAgentModelSchema: z<{
     id: string;
+    provider?: string;
     strengths: string[];
     available: boolean;
 }>;
@@ -10,16 +11,19 @@ export declare const SuperAgentSettingsSchema: z<{
     modelPools: {
         high: {
             id: string;
+            provider?: string;
             strengths: string[];
             available: boolean;
         }[];
         normal: {
             id: string;
+            provider?: string;
             strengths: string[];
             available: boolean;
         }[];
         low: {
             id: string;
+            provider?: string;
             strengths: string[];
             available: boolean;
         }[];

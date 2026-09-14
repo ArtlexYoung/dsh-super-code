@@ -17,4 +17,6 @@ export * from './core/conversation-contract.js';
 export * from './core/evaluation.js';
 export * from './core/scenario.js';
 export * from './ui.js';
+export * from './settings.js';
+export * from './super-agent-usage.js';
 //# sourceMappingURL=index.d.ts.map

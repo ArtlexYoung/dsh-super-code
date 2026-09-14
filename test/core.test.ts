@@ -375,6 +375,17 @@ describe('programming workflow', () => {
     assert.equal(result.usage.totalTokens, 30)
   })
 
+  it('can skip a separate planning turn for directly verifiable tasks', async () => {
+    const phases: string[] = []
+    const result = await runProgrammingWorkflow('implement a function', {
+      generate: async context => { phases.push(context.phase); return { text: 'candidate', usage: { inputTokens: 2, outputTokens: 2 } } },
+      verify: async () => ({ passed: true }),
+    }, { planning: 'skip' })
+    assert.equal(result.status, 'passed')
+    assert.deepEqual(phases, ['draft'])
+    assert.equal(result.attempts, 1)
+  })
+
   it('feeds bounded verifier diagnostics into a repair and stops on success', async () => {
     const contexts: { phase: string; feedback?: string; messages: readonly { role: string; content: string }[] }[] = []
     let verifyCount = 0

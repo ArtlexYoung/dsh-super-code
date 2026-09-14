@@ -63,6 +63,8 @@ export interface ProgrammingWorkflowOptions {
     readonly budget?: Budget;
     readonly maxRepairAttempts?: number;
     readonly maxFeedbackChars?: number;
+    /** Generate a separate planning turn, or start with a directly verifiable draft. */
+    readonly planning?: 'separate' | 'skip';
 }
 export interface WorkflowPhaseRecord {
     readonly phase: 'analysis' | 'draft' | 'repair';

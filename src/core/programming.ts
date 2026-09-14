@@ -68,6 +68,8 @@ export interface ProgrammingWorkflowOptions {
   readonly budget?: Budget
   readonly maxRepairAttempts?: number
   readonly maxFeedbackChars?: number
+  /** Generate a separate planning turn, or start with a directly verifiable draft. */
+  readonly planning?: 'separate' | 'skip'
 }
 
 export interface WorkflowPhaseRecord {
@@ -201,6 +203,8 @@ export async function runProgrammingWorkflow(task: string, callbacks: Programmin
   const budget = validateBudget(options.budget ?? {})
   const maxRepairAttempts = options.maxRepairAttempts === undefined ? DEFAULT_MAX_REPAIR_ATTEMPTS : positiveInteger(options.maxRepairAttempts, DEFAULT_MAX_REPAIR_ATTEMPTS, 'maxRepairAttempts')
   const maxFeedbackChars = options.maxFeedbackChars === undefined ? DEFAULT_MAX_FEEDBACK_CHARS : positiveInteger(options.maxFeedbackChars, DEFAULT_MAX_FEEDBACK_CHARS, 'maxFeedbackChars')
+  const planning = options.planning ?? 'separate'
+  if (planning !== 'separate' && planning !== 'skip') throw new ProtocolError('planning must be separate or skip', 'INVALID_ARGUMENT')
   const phases: WorkflowPhaseRecord[] = []
   let usage = emptyUsage()
   let analysis: string | undefined
@@ -228,11 +232,13 @@ export async function runProgrammingWorkflow(task: string, callbacks: Programmin
   }
 
   if (signal.aborted) return { status: 'aborted', attempts: 0, phases, messages: contextMessages(), usage, finalAcceptance }
-  const analysisGeneration = await invoke('analysis', 0)
-  if (analysisGeneration === undefined) return { status: signal.aborted ? 'aborted' : 'budget_exhausted', attempts: 0, phases, messages: contextMessages(), usage, finalAcceptance }
-  analysis = analysisGeneration.text
-  phases.push({ phase: 'analysis', attempt: 0, generation: analysisGeneration })
-  if (exceeds(usage, budget) || deadlineExceeded() || signal.aborted) return { status: signal.aborted ? 'aborted' : 'budget_exhausted', attempts: 0, phases, messages: contextMessages(), usage, finalAcceptance }
+  if (planning === 'separate') {
+    const analysisGeneration = await invoke('analysis', 0)
+    if (analysisGeneration === undefined) return { status: signal.aborted ? 'aborted' : 'budget_exhausted', attempts: 0, phases, messages: contextMessages(), usage, finalAcceptance }
+    analysis = analysisGeneration.text
+    phases.push({ phase: 'analysis', attempt: 0, generation: analysisGeneration })
+    if (exceeds(usage, budget) || deadlineExceeded() || signal.aborted) return { status: signal.aborted ? 'aborted' : 'budget_exhausted', attempts: 0, phases, messages: contextMessages(), usage, finalAcceptance }
+  }
 
   for (let attempt = 1; attempt <= maxRepairAttempts + 1; attempt += 1) {
     const phase = attempt === 1 ? 'draft' : 'repair'

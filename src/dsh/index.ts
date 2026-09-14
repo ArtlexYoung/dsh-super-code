@@ -30,6 +30,7 @@ export interface Config {
   readonly maxOutputTokens?: number
   readonly maxTotalTokens?: number
   readonly maxToolCalls?: number
+  readonly planning?: 'separate' | 'skip'
 }
 
 /** Schemastery config schema; cross-field checks happen in {@link resolveConfig}. */
@@ -45,6 +46,7 @@ export const Config: z<Config> = z.object({
   maxOutputTokens: z.number().step(1),
   maxTotalTokens: z.number().step(1),
   maxToolCalls: z.number().step(1),
+  planning: z.string() as unknown as z<Config['planning']>,
 })
 
 /** Resolved adapter defaults. */
@@ -57,6 +59,7 @@ export interface ResolvedConfig {
   readonly maxRepairAttempts: number
   readonly maxFeedbackChars: number
   readonly programmingBudget: Budget
+  readonly planning: 'separate' | 'skip'
 }
 
 function positive(name: string, value: number): number {
@@ -84,6 +87,8 @@ export function resolveConfig(config: Config = {}): ResolvedConfig {
     ...config.maxToolCalls === undefined ? {} : { maxToolCalls: nonNegative('maxToolCalls', config.maxToolCalls) },
     timeoutMs: timer('timeoutMs', config.timeoutMs ?? 0),
   })
+  const planning = config.planning ?? 'separate'
+  if (planning !== 'separate' && planning !== 'skip') throw new Error('super-agent: planning must be separate or skip')
   return {
     maxTasks: positive('maxTasks', config.maxTasks ?? 256),
     maxDepth: positive('maxDepth', config.maxDepth ?? 32),
@@ -93,6 +98,7 @@ export function resolveConfig(config: Config = {}): ResolvedConfig {
     maxRepairAttempts: positive('maxRepairAttempts', config.maxRepairAttempts ?? 2),
     maxFeedbackChars: positive('maxFeedbackChars', config.maxFeedbackChars ?? 2_000),
     programmingBudget,
+    planning,
   }
 }
 
@@ -184,6 +190,7 @@ export class SuperAgentService extends Service {
       ...options,
       maxRepairAttempts: options.maxRepairAttempts ?? this.resolved.maxRepairAttempts,
       maxFeedbackChars: options.maxFeedbackChars ?? this.resolved.maxFeedbackChars,
+      planning: options.planning ?? this.resolved.planning,
       budget: mergedBudget,
     }, signal)
   }

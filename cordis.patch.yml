@@ -30,3 +30,4 @@
         stopGraceMs: 100
         maxRepairAttempts: 2
         maxFeedbackChars: 2000
+        planning: separate

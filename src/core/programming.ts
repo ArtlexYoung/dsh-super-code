@@ -2,7 +2,7 @@ import { ProtocolError, validateBudget } from './protocol.js'
 import type { Budget, EvidenceRecord } from './protocol.js'
 import { extractConversationContract } from './conversation-contract.js'
 import type { ConversationContract } from './conversation-contract.js'
-import { resolveScenarioProfile } from './scenario.js'
+import { defaultPlanningForProfile, resolveScenarioProfile } from './scenario.js'
 import type { ScenarioProfile, ScenarioProfileInput } from './scenario.js'
 
 /** Provider-neutral conversation roles used by host adapters. */
@@ -228,11 +228,11 @@ export async function runProgrammingWorkflow(task: string, callbacks: Programmin
   const budget = validateBudget(options.budget ?? {})
   const maxRepairAttempts = options.maxRepairAttempts === undefined ? DEFAULT_MAX_REPAIR_ATTEMPTS : positiveInteger(options.maxRepairAttempts, DEFAULT_MAX_REPAIR_ATTEMPTS, 'maxRepairAttempts')
   const maxFeedbackChars = options.maxFeedbackChars === undefined ? DEFAULT_MAX_FEEDBACK_CHARS : positiveInteger(options.maxFeedbackChars, DEFAULT_MAX_FEEDBACK_CHARS, 'maxFeedbackChars')
-  const planning = options.planning ?? 'auto'
+  const profile = resolveScenarioProfile(options.profile)
+  const planning = options.planning ?? defaultPlanningForProfile(profile)
   if (planning !== 'separate' && planning !== 'skip' && planning !== 'auto') throw new ProtocolError('planning must be separate, skip, or auto', 'INVALID_ARGUMENT')
   const useSeparatePlanning = planning === 'separate' || (planning === 'auto' && shouldPlanSeparately(normalizedTask))
   const stopOnRepeatedFeedback = options.stopOnRepeatedFeedback ?? true
-  const profile = resolveScenarioProfile(options.profile)
   const contract = extractConversationContract([normalizedTask])
   const phases: WorkflowPhaseRecord[] = []
   let usage = emptyUsage()

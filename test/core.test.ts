@@ -12,7 +12,7 @@ import { resolveConfig, SuperAgentService } from '../src/dsh/index.js'
 import { extractConversationContract, runConversationWorkflow } from '../src/core/conversation.js'
 import { aggregateEvaluationRuns, aggregateScenarioEvaluationRuns, evaluateReleaseGate, evaluateScenarioBatchRelease } from '../src/core/evaluation.js'
 import { ProtocolError, artifactDigest, validateEvent, validateTaskRecord } from '../src/core/protocol.js'
-import { profileForPreset, resolveScenarioProfile } from '../src/core/scenario.js'
+import { defaultPlanningForProfile, profileForPreset, resolveScenarioProfile } from '../src/core/scenario.js'
 
 const digest = 'a'.repeat(64)
 
@@ -390,6 +390,10 @@ describe('two-axis scenario profiles', () => {
   it('defaults to adaptive delivery and validates optimization targets', () => {
     assert.deepEqual(resolveScenarioProfile(), { executionMode: 'auto', workScenario: 'delivery', optimizationTarget: 'both' })
     assert.deepEqual(resolveScenarioProfile({ workScenario: 'optimization', optimizationTarget: 'performance' }), { executionMode: 'auto', workScenario: 'optimization', optimizationTarget: 'performance' })
+    assert.equal(defaultPlanningForProfile(resolveScenarioProfile({ executionMode: 'solo', workScenario: 'delivery' })), 'auto')
+    assert.equal(defaultPlanningForProfile(resolveScenarioProfile({ executionMode: 'team', workScenario: 'delivery' })), 'separate')
+    assert.equal(defaultPlanningForProfile(resolveScenarioProfile({ workScenario: 'research' })), 'separate')
+    assert.equal(defaultPlanningForProfile(resolveScenarioProfile({ workScenario: 'optimization' })), 'separate')
     assert.throws(() => resolveScenarioProfile({ executionMode: 'invalid' as never }), /executionMode must be one of/)
   })
 })
@@ -434,6 +438,27 @@ describe('programming workflow', () => {
       verify: async () => ({ passed: true }),
     })
     assert.deepEqual(phases, ['draft'])
+  })
+
+  it('uses the profile planning default for all four shipped scenarios', async () => {
+    const phases = new Map<string, string[]>()
+    for (const [name, profile] of [
+      ['solo', { executionMode: 'solo' as const, workScenario: 'delivery' as const }],
+      ['team', { executionMode: 'team' as const, workScenario: 'delivery' as const }],
+      ['research', { executionMode: 'auto' as const, workScenario: 'research' as const }],
+      ['optimization', { executionMode: 'auto' as const, workScenario: 'optimization' as const }],
+    ] as const) {
+      const seen: string[] = []
+      await runProgrammingWorkflow('implement a function', {
+        generate: async context => { seen.push(context.phase); return { text: context.phase } },
+        verify: async () => ({ passed: true }),
+      }, { profile })
+      phases.set(name, seen)
+    }
+    assert.deepEqual(phases.get('solo'), ['draft'])
+    assert.deepEqual(phases.get('team'), ['analysis', 'draft'])
+    assert.deepEqual(phases.get('research'), ['analysis', 'draft'])
+    assert.deepEqual(phases.get('optimization'), ['analysis', 'draft'])
   })
 
   it('feeds bounded verifier diagnostics into a repair and stops on success', async () => {

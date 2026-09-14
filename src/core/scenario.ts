@@ -22,6 +22,9 @@ export interface ScenarioProfile {
 
 export type ScenarioProfileInput = Partial<ScenarioProfile>
 
+/** Planning default shared by programming workflows for all shipped modes. */
+export type ScenarioPlanning = 'separate' | 'auto'
+
 const DEFAULT_PROFILE: ScenarioProfile = {
   executionMode: 'auto',
   workScenario: 'delivery',
@@ -49,6 +52,16 @@ export function resolveScenarioProfile(input: ScenarioProfileInput = {}): Scenar
   const workScenario = oneOf(input.workScenario ?? DEFAULT_PROFILE.workScenario, ['delivery', 'research', 'optimization'], 'workScenario')
   const optimizationTarget = oneOf(input.optimizationTarget ?? DEFAULT_PROFILE.optimizationTarget, ['performance', 'quality', 'both'], 'optimizationTarget')
   return { executionMode, workScenario, optimizationTarget }
+}
+
+/**
+ * Choose a planning default from the two axes. Explicit workflow options can
+ * still override this choice. Structured work disciplines and team execution
+ * need an analysis record; solo delivery keeps the low-cost adaptive path.
+ */
+export function defaultPlanningForProfile(profile: ScenarioProfile): ScenarioPlanning {
+  const normalized = resolveScenarioProfile(profile)
+  return normalized.executionMode === 'team' || normalized.workScenario !== 'delivery' ? 'separate' : 'auto'
 }
 
 /** Resolve a shipped preset name to its two-axis profile. */

@@ -14,10 +14,18 @@ export interface ScenarioProfile {
     readonly optimizationTarget: OptimizationTarget;
 }
 export type ScenarioProfileInput = Partial<ScenarioProfile>;
+/** Planning default shared by programming workflows for all shipped modes. */
+export type ScenarioPlanning = 'separate' | 'auto';
 /** Stable compatibility mapping for the four shipped preset names. */
 export declare const PRESET_PROFILES: Readonly<Record<ShippedPresetName, ScenarioProfile>>;
 /** Normalize an explicit profile while preserving the delivery defaults. */
 export declare function resolveScenarioProfile(input?: ScenarioProfileInput): ScenarioProfile;
+/**
+ * Choose a planning default from the two axes. Explicit workflow options can
+ * still override this choice. Structured work disciplines and team execution
+ * need an analysis record; solo delivery keeps the low-cost adaptive path.
+ */
+export declare function defaultPlanningForProfile(profile: ScenarioProfile): ScenarioPlanning;
 /** Resolve a shipped preset name to its two-axis profile. */
 export declare function profileForPreset(name: string): ScenarioProfile;
 export default resolveScenarioProfile;

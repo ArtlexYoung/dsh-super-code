@@ -9,6 +9,7 @@ import { ResearchLedger, normalizeUrl } from '../src/core/research.js'
 import { OptimizationLedger } from '../src/core/optimization.js'
 import { compactFeedback, runProgrammingWorkflow, shouldPlanSeparately } from '../src/core/programming.js'
 import { resolveConfig, SuperAgentService } from '../src/dsh/index.js'
+import { runConversationWorkflow } from '../src/core/conversation.js'
 import { ProtocolError, artifactDigest, validateEvent, validateTaskRecord } from '../src/core/protocol.js'
 
 const digest = 'a'.repeat(64)
@@ -449,6 +450,19 @@ describe('programming workflow', () => {
     }, { budget: { timeoutMs: 10 } })
     assert.equal(result.status, 'budget_exhausted')
     assert.equal(aborted, true)
+  })
+})
+
+describe('multi-turn conversation workflow', () => {
+  it('bounds history while preserving the first and latest messages', async () => {
+    const contexts: readonly { role: string; content: string }[][] = []
+    const result = await runConversationWorkflow(['first task', 'second task', 'third task'], {
+      generate: async context => { contexts.push([...context.messages]); return { text: `answer-${context.turn} `.repeat(30), usage: { inputTokens: 1, outputTokens: 1 } } },
+    }, { maxHistoryChars: 128 })
+    assert.equal(result.generations.length, 3)
+    assert.equal(contexts[2]?.[0]?.content, 'first task')
+    assert.equal(contexts[2]?.at(-1)?.content, 'third task')
+    assert.equal(contexts[2]?.some(message => message.content.includes('omitted')), true)
   })
 })
 

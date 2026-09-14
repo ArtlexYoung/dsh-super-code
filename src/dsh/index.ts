@@ -46,7 +46,7 @@ export const Config: z<Config> = z.object({
   maxOutputTokens: z.number().step(1),
   maxTotalTokens: z.number().step(1),
   maxToolCalls: z.number().step(1),
-  planning: z.string() as unknown as z<Config['planning']>,
+  planning: z.union([z.const('separate'), z.const('skip')]),
 })
 
 /** Resolved adapter defaults. */

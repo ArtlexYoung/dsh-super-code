@@ -64,7 +64,7 @@ export interface ProgrammingWorkflowOptions {
     readonly maxRepairAttempts?: number;
     readonly maxFeedbackChars?: number;
     /** Generate a separate planning turn, or start with a directly verifiable draft. */
-    readonly planning?: 'separate' | 'skip';
+    readonly planning?: 'separate' | 'skip' | 'auto';
 }
 export interface WorkflowPhaseRecord {
     readonly phase: 'analysis' | 'draft' | 'repair';
@@ -83,6 +83,12 @@ export interface ProgrammingWorkflowResult {
     readonly usage: Required<Pick<WorkflowUsage, 'inputTokens' | 'outputTokens' | 'totalTokens' | 'cachedTokens' | 'toolCalls' | 'latencyMs'>>;
     readonly finalAcceptance?: VerificationResult;
 }
+/**
+ * Use a separate plan when the request is structurally complex. The heuristic
+ * is deliberately domain-agnostic: it only considers shape and common
+ * planning signals, never dataset names, task IDs, or expected answers.
+ */
+export declare function shouldPlanSeparately(task: string): boolean;
 /** Keep verifier diagnostics useful without replaying an unbounded tool log. */
 export declare function compactFeedback(value: string | undefined, maxChars?: number): string;
 /**

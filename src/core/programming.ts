@@ -69,7 +69,7 @@ export interface ProgrammingWorkflowOptions {
   readonly maxRepairAttempts?: number
   readonly maxFeedbackChars?: number
   /** Generate a separate planning turn, or start with a directly verifiable draft. */
-  readonly planning?: 'separate' | 'skip'
+  readonly planning?: 'separate' | 'skip' | 'auto'
 }
 
 export interface WorkflowPhaseRecord {
@@ -94,6 +94,17 @@ export interface ProgrammingWorkflowResult {
 
 const DEFAULT_MAX_REPAIR_ATTEMPTS = 2
 const DEFAULT_MAX_FEEDBACK_CHARS = 2_000
+
+/**
+ * Use a separate plan when the request is structurally complex. The heuristic
+ * is deliberately domain-agnostic: it only considers shape and common
+ * planning signals, never dataset names, task IDs, or expected answers.
+ */
+export function shouldPlanSeparately(task: string): boolean {
+  const normalized = task.trim()
+  if (normalized.length > 1_200 || normalized.split(/\r?\n/).length > 16) return true
+  return /\b(architecture|decompose|dependencies|migration|refactor|trade[- ]?off|multiple\s+(?:files|components|stages)|acceptance\s+criteria)\b|架构|拆分|依赖|迁移|重构|权衡|验收标准/i.test(normalized)
+}
 
 function positiveInteger(value: number | undefined, fallback: number, field: string): number {
   const normalized = value ?? fallback
@@ -204,7 +215,8 @@ export async function runProgrammingWorkflow(task: string, callbacks: Programmin
   const maxRepairAttempts = options.maxRepairAttempts === undefined ? DEFAULT_MAX_REPAIR_ATTEMPTS : positiveInteger(options.maxRepairAttempts, DEFAULT_MAX_REPAIR_ATTEMPTS, 'maxRepairAttempts')
   const maxFeedbackChars = options.maxFeedbackChars === undefined ? DEFAULT_MAX_FEEDBACK_CHARS : positiveInteger(options.maxFeedbackChars, DEFAULT_MAX_FEEDBACK_CHARS, 'maxFeedbackChars')
   const planning = options.planning ?? 'separate'
-  if (planning !== 'separate' && planning !== 'skip') throw new ProtocolError('planning must be separate or skip', 'INVALID_ARGUMENT')
+  if (planning !== 'separate' && planning !== 'skip' && planning !== 'auto') throw new ProtocolError('planning must be separate, skip, or auto', 'INVALID_ARGUMENT')
+  const useSeparatePlanning = planning === 'separate' || (planning === 'auto' && shouldPlanSeparately(normalizedTask))
   const phases: WorkflowPhaseRecord[] = []
   let usage = emptyUsage()
   let analysis: string | undefined
@@ -232,7 +244,7 @@ export async function runProgrammingWorkflow(task: string, callbacks: Programmin
   }
 
   if (signal.aborted) return { status: 'aborted', attempts: 0, phases, messages: contextMessages(), usage, finalAcceptance }
-  if (planning === 'separate') {
+  if (useSeparatePlanning) {
     const analysisGeneration = await invoke('analysis', 0)
     if (analysisGeneration === undefined) return { status: signal.aborted ? 'aborted' : 'budget_exhausted', attempts: 0, phases, messages: contextMessages(), usage, finalAcceptance }
     analysis = analysisGeneration.text

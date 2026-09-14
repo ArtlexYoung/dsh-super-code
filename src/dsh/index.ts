@@ -30,7 +30,7 @@ export interface Config {
   readonly maxOutputTokens?: number
   readonly maxTotalTokens?: number
   readonly maxToolCalls?: number
-  readonly planning?: 'separate' | 'skip'
+  readonly planning?: 'separate' | 'skip' | 'auto'
 }
 
 /** Schemastery config schema; cross-field checks happen in {@link resolveConfig}. */
@@ -46,7 +46,7 @@ export const Config: z<Config> = z.object({
   maxOutputTokens: z.number().step(1),
   maxTotalTokens: z.number().step(1),
   maxToolCalls: z.number().step(1),
-  planning: z.union([z.const('separate'), z.const('skip')]),
+  planning: z.union([z.const('separate'), z.const('skip'), z.const('auto')]),
 })
 
 /** Resolved adapter defaults. */
@@ -59,7 +59,7 @@ export interface ResolvedConfig {
   readonly maxRepairAttempts: number
   readonly maxFeedbackChars: number
   readonly programmingBudget: Budget
-  readonly planning: 'separate' | 'skip'
+  readonly planning: 'separate' | 'skip' | 'auto'
 }
 
 function positive(name: string, value: number): number {
@@ -88,7 +88,7 @@ export function resolveConfig(config: Config = {}): ResolvedConfig {
     timeoutMs: timer('timeoutMs', config.timeoutMs ?? 0),
   })
   const planning = config.planning ?? 'separate'
-  if (planning !== 'separate' && planning !== 'skip') throw new Error('super-agent: planning must be separate or skip')
+  if (planning !== 'separate' && planning !== 'skip' && planning !== 'auto') throw new Error('super-agent: planning must be separate, skip, or auto')
   return {
     maxTasks: positive('maxTasks', config.maxTasks ?? 256),
     maxDepth: positive('maxDepth', config.maxDepth ?? 32),

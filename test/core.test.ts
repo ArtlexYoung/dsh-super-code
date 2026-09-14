@@ -7,7 +7,7 @@ import type { TaskRecord } from '../src/core/protocol.js'
 import { summarizeReviews } from '../src/core/review.js'
 import { ResearchLedger, normalizeUrl } from '../src/core/research.js'
 import { OptimizationLedger } from '../src/core/optimization.js'
-import { compactFeedback, runProgrammingWorkflow } from '../src/core/programming.js'
+import { compactFeedback, runProgrammingWorkflow, shouldPlanSeparately } from '../src/core/programming.js'
 import { resolveConfig, SuperAgentService } from '../src/dsh/index.js'
 import { ProtocolError, artifactDigest, validateEvent, validateTaskRecord } from '../src/core/protocol.js'
 
@@ -384,6 +384,11 @@ describe('programming workflow', () => {
     assert.equal(result.status, 'passed')
     assert.deepEqual(phases, ['draft'])
     assert.equal(result.attempts, 1)
+  })
+
+  it('selects planning from task shape without dataset-specific rules', () => {
+    assert.equal(shouldPlanSeparately('write a function that adds two numbers'), false)
+    assert.equal(shouldPlanSeparately('Design the architecture, dependencies, and acceptance criteria for a multi-component migration'), true)
   })
 
   it('feeds bounded verifier diagnostics into a repair and stops on success', async () => {

@@ -21,7 +21,7 @@ dsh plugin --profile web add dsh-super-agent
 
 `team` 需要宿主提供 subagent/jobs；`research` 的联网能力需要宿主提供 web backend。插件不会自行创建模型或绕过权限策略。
 
-编程任务可以使用根入口提供的 `runProgrammingWorkflow`。宿主传入 `generate` 和 `verify` 回调：默认先生成一次分析再生成草稿，草稿验收失败后才进入有界修复，并把压缩后的测试反馈传给下一次调用。对于能直接验收的简单任务，可设置 `planning: 'skip'` 省掉独立分析轮；token、工具调用和修复次数都可以设置预算，模型和测试环境仍由宿主决定。
+编程任务可以使用根入口提供的 `runProgrammingWorkflow`。宿主传入 `generate` 和 `verify` 回调：默认 `planning: 'auto'`，简单任务直接生成可验收草稿，复杂任务先生成一次分析；草稿验收失败后才进入有界修复，并把压缩后的测试反馈传给下一次调用。也可以显式设置 `planning: 'separate'` 或 `planning: 'skip'`。token、工具调用和修复次数都可以设置预算，模型和测试环境仍由宿主决定。
 
 如果使用 Cordis 服务，也可以调用 `ctx.superAgent.programmingWorkflow(...)`；两种入口共享同一实现。服务配置中的 `maxRepairAttempts`、`maxFeedbackChars`、`maxInputTokens`、`maxOutputTokens`、`maxTotalTokens`、`maxToolCalls` 和 `timeoutMs` 可由 profile/page settings 调整，单次调用可以覆盖这些默认值。
 

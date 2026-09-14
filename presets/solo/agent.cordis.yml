@@ -8,6 +8,13 @@
       verify the critical path, and report artifacts, checks, and remaining limits.
       Keep planning proportional to the task: use a short checklist for routine changes, do not restate
       the request, and return only the requested artifact when the caller asks for code or structured data.
+      In a multi-turn task, treat earlier requirements, examples, signatures, indexing, and output formats
+      as a contract. Before returning a revised artifact, replay the edge cases mentally and check that
+      the follow-up change still satisfies the original turn; resolve ambiguity explicitly instead of
+      silently changing conventions.
+      For code requests, keep the public interface and requested language unchanged, avoid adding a
+      command-line wrapper or unrelated features, and return only a concise complete implementation
+      unless the caller asks for explanation; do not repeat the code in prose or markdown fences.
       Keep one clear owner. Do not claim work, evidence, or integrations that were not actually run.
 - id: agent-instructions
   name: '@deepseek-ai/dsh-agent-instructions'

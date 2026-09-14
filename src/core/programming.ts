@@ -2,6 +2,8 @@ import { ProtocolError, validateBudget } from './protocol.js'
 import type { Budget, EvidenceRecord } from './protocol.js'
 import { extractConversationContract } from './conversation-contract.js'
 import type { ConversationContract } from './conversation-contract.js'
+import { resolveScenarioProfile } from './scenario.js'
+import type { ScenarioProfile, ScenarioProfileInput } from './scenario.js'
 
 /** Provider-neutral conversation roles used by host adapters. */
 export type WorkflowMessageRole = 'user' | 'assistant' | 'tool'
@@ -55,6 +57,8 @@ export interface ProgrammingWorkflowContext {
   readonly messages: readonly WorkflowMessage[]
   /** Deterministic, bounded requirements extracted from the task text. */
   readonly contract: ConversationContract
+  /** The execution/work-scenario profile selected by the host or preset. */
+  readonly profile: ScenarioProfile
   readonly analysis?: string
   readonly candidate?: string
   readonly feedback?: string
@@ -78,6 +82,8 @@ export interface ProgrammingWorkflowOptions {
   readonly planning?: 'separate' | 'skip' | 'auto'
   /** Stop when consecutive repairs receive the same verifier feedback. */
   readonly stopOnRepeatedFeedback?: boolean
+  /** Explicit execution mode and work scenario for host composition. */
+  readonly profile?: ScenarioProfileInput
 }
 
 export interface WorkflowPhaseRecord {
@@ -226,6 +232,7 @@ export async function runProgrammingWorkflow(task: string, callbacks: Programmin
   if (planning !== 'separate' && planning !== 'skip' && planning !== 'auto') throw new ProtocolError('planning must be separate, skip, or auto', 'INVALID_ARGUMENT')
   const useSeparatePlanning = planning === 'separate' || (planning === 'auto' && shouldPlanSeparately(normalizedTask))
   const stopOnRepeatedFeedback = options.stopOnRepeatedFeedback ?? true
+  const profile = resolveScenarioProfile(options.profile)
   const contract = extractConversationContract([normalizedTask])
   const phases: WorkflowPhaseRecord[] = []
   let usage = emptyUsage()
@@ -245,7 +252,7 @@ export async function runProgrammingWorkflow(task: string, callbacks: Programmin
 
   const invoke = async (phase: 'analysis' | 'draft' | 'repair', attempt: number, feedback?: string): Promise<WorkflowGeneration | undefined> => {
     if (signal.aborted || deadlineExceeded() || exceeds(usage, budget)) return undefined
-    const call = await boundedCall(callSignal => callbacks.generate({ phase, task: normalizedTask, messages: contextMessages(feedback), contract, ...analysis === undefined ? {} : { analysis }, ...candidate === undefined ? {} : { candidate }, ...feedback === undefined ? {} : { feedback }, attempt, remainingBudget: remaining(usage, budget, elapsed()), signal: callSignal }), signal, budget.timeoutMs === undefined ? undefined : Math.max(1, budget.timeoutMs - elapsed()))
+    const call = await boundedCall(callSignal => callbacks.generate({ phase, task: normalizedTask, messages: contextMessages(feedback), contract, profile, ...analysis === undefined ? {} : { analysis }, ...candidate === undefined ? {} : { candidate }, ...feedback === undefined ? {} : { feedback }, attempt, remainingBudget: remaining(usage, budget, elapsed()), signal: callSignal }), signal, budget.timeoutMs === undefined ? undefined : Math.max(1, budget.timeoutMs - elapsed()))
     if (call.kind !== 'completed') return undefined
     const generation = call.value
     const text = nonEmpty(generation.text, `${phase}.text`)

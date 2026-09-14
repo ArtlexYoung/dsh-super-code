@@ -1,11 +1,11 @@
 # dsh-super-agent
 
 `dsh-super-agent` 是 DeepSeek Harness 的场景化 preset 和任务协议插件。
-一个包提供四种工作方式：单人交付、团队协作、资料研究和性能优化。
+一个包提供“执行方式 × 工作场景”的组合：执行方式决定由一个 Agent 还是任务团队完成，工作场景决定交付、研究或优化时使用的验收纪律。
 
 ## 为什么
 
-不同任务需要不同的提示词和工具。把这些配置放在同一个插件中，可以统一版本和安装方式，使用时按 session 选择场景，不必为每个场景维护一套插件。
+不同任务需要不同的执行方式、提示词和验收规则。把这些配置放在同一个插件中，可以统一版本和安装方式，使用时按 session 选择组合，不必为每个组合维护一套插件。
 
 插件还提供一个轻量任务协议，用来记录任务树、负责人、执行尝试、提交、评审、返工、验收、交付和取消。事件以 JSONL 保存，便于重放和审计。
 
@@ -19,7 +19,9 @@ dsh plugin --profile web add dsh-super-agent
 
 插件会自动注册 preset 目录和 `super-agent` 服务。宿主仍负责模型、sandbox、审批、持久化和网络权限。
 
-`team` 需要宿主提供 subagent/jobs；`research` 的联网能力需要宿主提供 web backend。插件不会自行创建模型或绕过权限策略。
+`team` 需要宿主提供 subagent/jobs；`research` 的联网能力需要宿主提供 web backend。插件不会自行创建模型或绕过权限策略。核心配置可通过 `executionMode`（`solo`、`team`、`auto`）和 `workScenario`（`delivery`、`research`、`optimization`）表达二维组合。
+
+`optimization` 同时支持三种目标：`quality`（输出质量或正确率）、`performance`（延迟、token 或工具调用成本）和 `both`。默认是 `both`，保持质量不下降并要求成本下降；质量优化允许成本上升但必须达到质量门槛；性能优化要求质量不下降且至少改善一种成本指标。模型、基准和验收器由宿主传入。
 
 编程任务可以使用根入口提供的 `runProgrammingWorkflow`。宿主传入 `generate` 和 `verify` 回调：默认 `planning: 'auto'`，简单任务直接生成可验收草稿，复杂任务先生成一次分析；草稿验收失败后才进入有界修复，并把压缩后的测试反馈传给下一次调用。也可以显式设置 `planning: 'separate'` 或 `planning: 'skip'`。token、工具调用和修复次数都可以设置预算，模型和测试环境仍由宿主决定。
 
@@ -35,12 +37,18 @@ dsh plugin --profile web add dsh-super-agent
 
 ## 选择 preset
 
-| preset | 用途 |
-| --- | --- |
-| `solo` | 单 Agent 完成交付任务 |
-| `team` | 拆分任务、分配 owner、并行执行和评审 |
-| `research` | 收集来源、核对事实、记录不确定性 |
-| `optimization` | 建立 baseline、做受控实验并记录指标 |
+| preset | 执行方式 × 工作场景 | 用途 |
+| --- | --- | --- |
+| `solo` | `solo × delivery` | 单 Agent 完成交付任务 |
+| `team` | `team × delivery` | 拆分任务、分配 owner、并行执行和评审 |
+| `research` | `auto × research` | 收集来源、核对事实、记录不确定性 |
+| `optimization` | `auto × optimization` | 建立 baseline、按质量/性能/综合目标做受控实验 |
+
+四个名称是兼容入口，不限制组合。需要陌生 API 资料时可以使用 `research` 场景并采用 team 执行；需要并行 benchmark 时可以使用 `optimization` 场景并采用 team 执行。宿主可以直接传入二维 profile：
+
+```ts
+{ executionMode: 'team', workScenario: 'optimization', optimizationTarget: 'performance' }
+```
 
 创建 session 时传入 `agentPreset`：
 
@@ -95,8 +103,9 @@ Apache License 2.0，见 [LICENSE](LICENSE)。
 ## 目录
 
 ```text
-presets/{solo,team,research,optimization}/agent.cordis.yml
+presets/{solo,team,research,optimization}/agent.cordis.yml  # 兼容组合入口
 src/core/                 # 任务协议、任务图、调度和账本
+src/core/scenario.ts      # 执行方式 × 工作场景和优化目标
 src/dsh/                  # Cordis 适配层
 cordis.patch.yml          # DSH bundle patch
 ```

@@ -31,3 +31,6 @@
         maxRepairAttempts: 2
         maxFeedbackChars: 2000
         planning: auto
+        executionMode: auto
+        workScenario: delivery
+        optimizationTarget: both

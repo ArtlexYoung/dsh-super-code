@@ -1,5 +1,6 @@
 import type { Budget, EvidenceRecord } from './protocol.js';
 import type { ConversationContract } from './conversation-contract.js';
+import type { ScenarioProfile, ScenarioProfileInput } from './scenario.js';
 /** Provider-neutral conversation roles used by host adapters. */
 export type WorkflowMessageRole = 'user' | 'assistant' | 'tool';
 /** A compact message history; the workflow keeps the task prompt once. */
@@ -46,6 +47,8 @@ export interface ProgrammingWorkflowContext {
     readonly messages: readonly WorkflowMessage[];
     /** Deterministic, bounded requirements extracted from the task text. */
     readonly contract: ConversationContract;
+    /** The execution/work-scenario profile selected by the host or preset. */
+    readonly profile: ScenarioProfile;
     readonly analysis?: string;
     readonly candidate?: string;
     readonly feedback?: string;
@@ -72,6 +75,8 @@ export interface ProgrammingWorkflowOptions {
     readonly planning?: 'separate' | 'skip' | 'auto';
     /** Stop when consecutive repairs receive the same verifier feedback. */
     readonly stopOnRepeatedFeedback?: boolean;
+    /** Explicit execution mode and work scenario for host composition. */
+    readonly profile?: ScenarioProfileInput;
 }
 export interface WorkflowPhaseRecord {
     readonly phase: 'analysis' | 'draft' | 'repair';

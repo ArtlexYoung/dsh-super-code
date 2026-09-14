@@ -1,4 +1,5 @@
-# Research preset. Network access remains governed by the host policy and web stack.
+# Research work scenario. It can be combined with solo or team execution; the
+# host still governs network access and the web stack.
 - id: persona
   name: '@deepseek-ai/dsh-persona'
   config:

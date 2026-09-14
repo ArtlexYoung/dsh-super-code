@@ -1,4 +1,5 @@
-# Team lead preset. Subagent providers and registries are host-plane services.
+# Team execution × delivery work scenario. Subagent providers and registries
+# are host-plane services.
 - id: persona
   name: '@deepseek-ai/dsh-persona'
   config:

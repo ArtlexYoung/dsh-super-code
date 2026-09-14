@@ -6,6 +6,7 @@ import type { TaskInput } from '../core/task-graph.js';
 import { Dispatcher } from '../core/dispatcher.js';
 import type { ProgrammingWorkflowCallbacks, ProgrammingWorkflowOptions, ProgrammingWorkflowResult } from '../core/programming.js';
 import type { Budget } from '../core/protocol.js';
+import type { ExecutionMode, OptimizationTarget, ScenarioProfile, WorkScenario } from '../core/scenario.js';
 /** Cordis plugin name. */
 export declare const name = "super-agent";
 /** This adapter has no mandatory host service; callers opt into graphs explicitly. */
@@ -25,6 +26,11 @@ export interface Config {
     readonly maxToolCalls?: number;
     readonly planning?: 'separate' | 'skip' | 'auto';
     readonly stopOnRepeatedFeedback?: boolean;
+    /** Two-axis profile: execution mode × work scenario. */
+    readonly executionMode?: ExecutionMode;
+    readonly workScenario?: WorkScenario;
+    /** Applies when workScenario is optimization; both is the compatible default. */
+    readonly optimizationTarget?: OptimizationTarget;
 }
 /** Schemastery config schema; cross-field checks happen in {@link resolveConfig}. */
 export declare const Config: z<Config>;
@@ -40,6 +46,7 @@ export interface ResolvedConfig {
     readonly programmingBudget: Budget;
     readonly planning: 'separate' | 'skip' | 'auto';
     readonly stopOnRepeatedFeedback: boolean;
+    readonly profile: ScenarioProfile;
 }
 /** Materialize and validate deployment defaults once at load. */
 export declare function resolveConfig(config?: Config): ResolvedConfig;

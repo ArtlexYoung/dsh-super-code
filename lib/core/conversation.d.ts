@@ -1,5 +1,6 @@
 import type { WorkflowGeneration, WorkflowMessage, WorkflowUsage } from './programming.js';
 import type { ConversationContract } from './conversation-contract.js';
+import type { ScenarioProfile, ScenarioProfileInput } from './scenario.js';
 export { extractConversationContract } from './conversation-contract.js';
 export type { ConversationContract } from './conversation-contract.js';
 export interface ConversationContext {
@@ -7,6 +8,7 @@ export interface ConversationContext {
     readonly user: string;
     readonly messages: readonly WorkflowMessage[];
     readonly contract: ConversationContract;
+    readonly profile: ScenarioProfile;
     readonly signal: AbortSignal;
 }
 export interface ConversationCallbacks {
@@ -18,6 +20,8 @@ export interface ConversationOptions {
     /** Keep a compact, deterministic ledger of constraints found in user turns. */
     readonly preserveContract?: boolean;
     readonly maxContractChars?: number;
+    /** Explicit execution mode and work scenario for host composition. */
+    readonly profile?: ScenarioProfileInput;
 }
 export interface ConversationResult {
     readonly messages: readonly WorkflowMessage[];

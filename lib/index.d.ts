@@ -15,4 +15,5 @@ export * from './core/programming.js';
 export * from './core/conversation.js';
 export * from './core/conversation-contract.js';
 export * from './core/evaluation.js';
+export * from './core/scenario.js';
 //# sourceMappingURL=index.d.ts.map

@@ -1,4 +1,5 @@
 import type { MetricSnapshot, MetricComparison, JsonObject } from './protocol.js';
+import type { OptimizationTarget } from './scenario.js';
 /** Lifecycle decision for one optimization candidate. */
 export type OptimizationDecision = 'continue' | 'stop' | 'branch' | 'rejected' | 'inconclusive';
 /** Baseline/candidate pair with the context needed for reproducibility. */
@@ -11,6 +12,8 @@ export interface ExperimentRecord {
     readonly workloadId: string;
     readonly rollbackRef?: string;
     readonly decision: OptimizationDecision;
+    /** Whether this experiment targets speed/cost, quality, or both. */
+    readonly target: OptimizationTarget;
     readonly comparison?: MetricComparison;
     readonly notes: readonly string[];
 }
@@ -25,7 +28,11 @@ export interface OptimizationReport {
  * Decide whether a candidate should continue, stop, branch, or remain
  * inconclusive. A real candidate can be accepted only when it passes the same
  * score/token gate used by {@link compareMetrics}; mock/replay is evidence for
- * debugging and never a release signal.
+ * debugging and never a release signal. `quality` uses score as its objective,
+ * `performance` requires a non-lower score plus an improvement in latency,
+ * tokens, or tool calls, and `both` preserves the legacy score-plus-token gate.
+ * Set `minimumScoreDelta` when a quality experiment must improve by a strict
+ * amount rather than merely avoid regression.
  */
 export declare function decideOptimization(baseline: MetricSnapshot, candidate: MetricSnapshot | undefined, options?: {
     readonly changedFactor?: string;
@@ -33,6 +40,7 @@ export declare function decideOptimization(baseline: MetricSnapshot, candidate: 
     readonly rollbackRef?: string;
     readonly minimumScoreDelta?: number;
     readonly requireTokenReduction?: boolean;
+    readonly target?: OptimizationTarget;
 }): {
     readonly decision: OptimizationDecision;
     readonly comparison?: MetricComparison;
@@ -52,6 +60,7 @@ export declare class OptimizationLedger {
         readonly rollbackRef?: string;
         readonly minimumScoreDelta?: number;
         readonly requireTokenReduction?: boolean;
+        readonly target?: OptimizationTarget;
     }): ExperimentRecord;
     /** Produce a report and identify the best accepted candidate. */
     report(maxChars?: number): OptimizationReport;

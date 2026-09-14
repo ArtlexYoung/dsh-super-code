@@ -9,6 +9,8 @@ import { runProgrammingWorkflow } from '../core/programming.js'
 import type { ProgrammingWorkflowCallbacks, ProgrammingWorkflowOptions, ProgrammingWorkflowResult } from '../core/programming.js'
 import { validateBudget } from '../core/protocol.js'
 import type { Budget } from '../core/protocol.js'
+import { resolveScenarioProfile } from '../core/scenario.js'
+import type { ExecutionMode, OptimizationTarget, ScenarioProfile, WorkScenario } from '../core/scenario.js'
 
 /** Cordis plugin name. */
 export const name = 'super-agent'
@@ -32,6 +34,11 @@ export interface Config {
   readonly maxToolCalls?: number
   readonly planning?: 'separate' | 'skip' | 'auto'
   readonly stopOnRepeatedFeedback?: boolean
+  /** Two-axis profile: execution mode × work scenario. */
+  readonly executionMode?: ExecutionMode
+  readonly workScenario?: WorkScenario
+  /** Applies when workScenario is optimization; both is the compatible default. */
+  readonly optimizationTarget?: OptimizationTarget
 }
 
 /** Schemastery config schema; cross-field checks happen in {@link resolveConfig}. */
@@ -49,6 +56,9 @@ export const Config: z<Config> = z.object({
   maxToolCalls: z.number().step(1),
   planning: z.union([z.const('separate'), z.const('skip'), z.const('auto')]),
   stopOnRepeatedFeedback: z.boolean(),
+  executionMode: z.union([z.const('solo'), z.const('team'), z.const('auto')]),
+  workScenario: z.union([z.const('delivery'), z.const('research'), z.const('optimization')]),
+  optimizationTarget: z.union([z.const('performance'), z.const('quality'), z.const('both')]),
 })
 
 /** Resolved adapter defaults. */
@@ -63,6 +73,7 @@ export interface ResolvedConfig {
   readonly programmingBudget: Budget
   readonly planning: 'separate' | 'skip' | 'auto'
   readonly stopOnRepeatedFeedback: boolean
+  readonly profile: ScenarioProfile
 }
 
 function positive(name: string, value: number): number {
@@ -92,6 +103,11 @@ export function resolveConfig(config: Config = {}): ResolvedConfig {
   })
   const planning = config.planning ?? 'auto'
   if (planning !== 'separate' && planning !== 'skip' && planning !== 'auto') throw new Error('super-agent: planning must be separate, skip, or auto')
+  const profile = resolveScenarioProfile({
+    executionMode: config.executionMode,
+    workScenario: config.workScenario,
+    optimizationTarget: config.optimizationTarget,
+  })
   return {
     maxTasks: positive('maxTasks', config.maxTasks ?? 256),
     maxDepth: positive('maxDepth', config.maxDepth ?? 32),
@@ -103,6 +119,7 @@ export function resolveConfig(config: Config = {}): ResolvedConfig {
     programmingBudget,
     planning,
     stopOnRepeatedFeedback: config.stopOnRepeatedFeedback ?? true,
+    profile,
   }
 }
 
@@ -196,6 +213,7 @@ export class SuperAgentService extends Service {
       maxFeedbackChars: options.maxFeedbackChars ?? this.resolved.maxFeedbackChars,
       planning: options.planning ?? this.resolved.planning,
       stopOnRepeatedFeedback: options.stopOnRepeatedFeedback ?? this.resolved.stopOnRepeatedFeedback,
+      profile: options.profile ?? this.resolved.profile,
       budget: mergedBudget,
     }, signal)
   }

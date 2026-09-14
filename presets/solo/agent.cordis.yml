@@ -1,4 +1,5 @@
-# Solo delivery preset. Host composition owns registries, persistence, and policy.
+# Solo execution × delivery work scenario. Host composition owns registries,
+# persistence, and policy.
 - id: persona
   name: '@deepseek-ai/dsh-persona'
   config:

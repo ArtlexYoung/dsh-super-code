@@ -1,5 +1,6 @@
 import { ProtocolError, compareMetrics, stableStringify } from './protocol.js'
 import type { MetricSnapshot, MetricComparison, JsonObject } from './protocol.js'
+import type { OptimizationTarget } from './scenario.js'
 
 /** Lifecycle decision for one optimization candidate. */
 export type OptimizationDecision = 'continue' | 'stop' | 'branch' | 'rejected' | 'inconclusive'
@@ -14,6 +15,8 @@ export interface ExperimentRecord {
   readonly workloadId: string
   readonly rollbackRef?: string
   readonly decision: OptimizationDecision
+  /** Whether this experiment targets speed/cost, quality, or both. */
+  readonly target: OptimizationTarget
   readonly comparison?: MetricComparison
   readonly notes: readonly string[]
 }
@@ -44,7 +47,11 @@ function metric(value: MetricSnapshot, field: string): MetricSnapshot {
  * Decide whether a candidate should continue, stop, branch, or remain
  * inconclusive. A real candidate can be accepted only when it passes the same
  * score/token gate used by {@link compareMetrics}; mock/replay is evidence for
- * debugging and never a release signal.
+ * debugging and never a release signal. `quality` uses score as its objective,
+ * `performance` requires a non-lower score plus an improvement in latency,
+ * tokens, or tool calls, and `both` preserves the legacy score-plus-token gate.
+ * Set `minimumScoreDelta` when a quality experiment must improve by a strict
+ * amount rather than merely avoid regression.
  */
 export function decideOptimization(
   baseline: MetricSnapshot,
@@ -55,9 +62,12 @@ export function decideOptimization(
     readonly rollbackRef?: string
     readonly minimumScoreDelta?: number
     readonly requireTokenReduction?: boolean
+    readonly target?: OptimizationTarget
   } = {},
 ): { readonly decision: OptimizationDecision; readonly comparison?: MetricComparison; readonly notes: readonly string[] } {
   const base = metric(baseline, 'baseline')
+  const target = options.target ?? 'both'
+  if (!['performance', 'quality', 'both'].includes(target)) throw new ProtocolError('target must be performance, quality, or both', 'INVALID_ARGUMENT')
   text(options.workloadId ?? base.workloadId ?? 'workload', 'workloadId')
   if (candidate === undefined) return { decision: 'continue', notes: ['candidate measurement is not available'] }
   const next = metric(candidate, 'candidate')
@@ -68,10 +78,17 @@ export function decideOptimization(
   const comparison = compareMetrics(base, next)
   const minimumScoreDelta = options.minimumScoreDelta ?? 0
   if (!Number.isFinite(minimumScoreDelta)) throw new ProtocolError('minimumScoreDelta must be finite', 'INVALID_ARGUMENT')
-  const requireTokenReduction = options.requireTokenReduction ?? true
-  if (comparison.scoreDelta < minimumScoreDelta) return { decision: 'rejected', comparison, notes: ['candidate score did not meet the minimum delta'] }
-  if (requireTokenReduction && comparison.totalTokensDelta >= 0) return { decision: 'branch', comparison, notes: ['score is acceptable but token cost did not decrease; branch another hypothesis'] }
-  if (comparison.accepted) return { decision: 'stop', comparison, notes: ['candidate satisfies the score and token gate'] }
+  const requireTokenReduction = options.requireTokenReduction ?? (target === 'both')
+  const qualityPass = comparison.scoreDelta >= minimumScoreDelta
+  if ((target === 'quality' || target === 'both') && !qualityPass) return { decision: 'rejected', comparison, notes: ['candidate score did not meet the minimum delta'] }
+  if (target === 'performance' && comparison.scoreDelta < 0) return { decision: 'rejected', comparison, notes: ['candidate quality score is lower than baseline'] }
+  const tokenPass = !requireTokenReduction || comparison.totalTokensDelta < 0
+  const efficiencyPass = comparison.totalTokensDelta < 0 || comparison.latencyDelta < 0 || comparison.toolCallsDelta < 0
+  if (!tokenPass) return { decision: target === 'quality' ? 'continue' : 'branch', comparison, notes: ['candidate did not reduce token cost'] }
+  if (target === 'performance' && !efficiencyPass) return { decision: 'branch', comparison, notes: ['candidate did not reduce latency, token, or tool-call cost'] }
+  if (target === 'quality') return { decision: 'stop', comparison, notes: ['candidate satisfies the quality gate'] }
+  if (target === 'performance') return { decision: 'stop', comparison, notes: ['candidate preserves quality and improves token or latency cost'] }
+  if (comparison.accepted) return { decision: 'stop', comparison, notes: ['candidate satisfies the quality and token gate'] }
   return { decision: 'continue', comparison, notes: ['candidate needs another controlled experiment'] }
 }
 
@@ -90,6 +107,7 @@ export class OptimizationLedger {
     readonly rollbackRef?: string
     readonly minimumScoreDelta?: number
     readonly requireTokenReduction?: boolean
+    readonly target?: OptimizationTarget
   }): ExperimentRecord {
     const experimentId = text(input.experimentId, 'experimentId')
     if (this.experiments.has(experimentId)) throw new ProtocolError(`experiment ${experimentId} already exists`, 'EXPERIMENT_DUPLICATE')
@@ -101,6 +119,7 @@ export class OptimizationLedger {
       rollbackRef: input.rollbackRef,
       minimumScoreDelta: input.minimumScoreDelta,
       requireTokenReduction: input.requireTokenReduction,
+      target: input.target,
     })
     const record: ExperimentRecord = {
       experimentId,
@@ -111,6 +130,7 @@ export class OptimizationLedger {
       workloadId: text(input.workloadId, 'workloadId'),
       ...input.rollbackRef === undefined ? {} : { rollbackRef: text(input.rollbackRef, 'rollbackRef') },
       decision: decision.decision,
+      target: input.target ?? 'both',
       ...decision.comparison === undefined ? {} : { comparison: decision.comparison },
       notes: decision.notes,
     }

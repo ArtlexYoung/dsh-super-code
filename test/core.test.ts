@@ -12,6 +12,7 @@ import { resolveConfig, SuperAgentService } from '../src/dsh/index.js'
 import { extractConversationContract, runConversationWorkflow } from '../src/core/conversation.js'
 import { aggregateEvaluationRuns, evaluateReleaseGate } from '../src/core/evaluation.js'
 import { ProtocolError, artifactDigest, validateEvent, validateTaskRecord } from '../src/core/protocol.js'
+import { profileForPreset, resolveScenarioProfile } from '../src/core/scenario.js'
 
 const digest = 'a'.repeat(64)
 
@@ -360,6 +361,37 @@ describe('review, research, and optimization ledgers', () => {
     assert.equal(mock.decision, 'inconclusive')
     assert.equal(ledger.report().best?.experimentId, 'e1')
   })
+
+  it('supports quality, performance, and combined optimization targets', () => {
+    const ledger = new OptimizationLedger()
+    const quality = ledger.record({
+      experimentId: 'quality', hypothesis: 'better prompt', workloadId: 'w', changedFactor: 'prompt', rollbackRef: 'git:q', target: 'quality',
+      baseline: { mode: 'real', score: 0.8, inputTokens: 100, outputTokens: 20, latencyMs: 4, toolCalls: 2, workloadId: 'w' },
+      candidate: { mode: 'real', score: 0.9, inputTokens: 130, outputTokens: 30, latencyMs: 5, toolCalls: 3, workloadId: 'w' },
+    })
+    assert.equal(quality.decision, 'stop')
+    const performance = ledger.record({
+      experimentId: 'performance', hypothesis: 'faster path', workloadId: 'w', changedFactor: 'cache', rollbackRef: 'git:p', target: 'performance',
+      baseline: { mode: 'real', score: 0.9, inputTokens: 100, outputTokens: 20, latencyMs: 10, toolCalls: 2, workloadId: 'w' },
+      candidate: { mode: 'real', score: 0.9, inputTokens: 100, outputTokens: 20, latencyMs: 7, toolCalls: 2, workloadId: 'w' },
+    })
+    assert.equal(performance.decision, 'stop')
+  })
+})
+
+describe('two-axis scenario profiles', () => {
+  it('keeps shipped preset names as compatibility combinations', () => {
+    assert.deepEqual(profileForPreset('solo'), { executionMode: 'solo', workScenario: 'delivery', optimizationTarget: 'both' })
+    assert.deepEqual(profileForPreset('team'), { executionMode: 'team', workScenario: 'delivery', optimizationTarget: 'both' })
+    assert.deepEqual(profileForPreset('research'), { executionMode: 'auto', workScenario: 'research', optimizationTarget: 'both' })
+    assert.deepEqual(profileForPreset('optimization'), { executionMode: 'auto', workScenario: 'optimization', optimizationTarget: 'both' })
+  })
+
+  it('defaults to adaptive delivery and validates optimization targets', () => {
+    assert.deepEqual(resolveScenarioProfile(), { executionMode: 'auto', workScenario: 'delivery', optimizationTarget: 'both' })
+    assert.deepEqual(resolveScenarioProfile({ workScenario: 'optimization', optimizationTarget: 'performance' }), { executionMode: 'auto', workScenario: 'optimization', optimizationTarget: 'performance' })
+    assert.throws(() => resolveScenarioProfile({ executionMode: 'invalid' as never }), /executionMode must be one of/)
+  })
 })
 
 describe('programming workflow', () => {
@@ -368,7 +400,7 @@ describe('programming workflow', () => {
     const contracts: string[] = []
     let verified = 0
     const result = await runProgrammingWorkflow('implement a function', {
-      generate: async context => { phases.push(context.phase); contracts.push(context.contract.text); return { text: context.phase === 'analysis' ? 'analysis' : 'draft', usage: { inputTokens: 10, outputTokens: 5 } } },
+      generate: async context => { phases.push(context.phase); contracts.push(context.contract.text); assert.equal(context.profile.workScenario, 'delivery'); return { text: context.phase === 'analysis' ? 'analysis' : 'draft', usage: { inputTokens: 10, outputTokens: 5 } } },
       verify: async () => { verified += 1; return { passed: true, feedback: 'tests passed' } },
     }, { planning: 'separate' })
     assert.equal(result.status, 'passed')
@@ -550,6 +582,9 @@ describe('Cordis programming settings', () => {
     assert.equal(config.maxTasks, 256)
     assert.equal(config.planning, 'auto')
     assert.equal(config.stopOnRepeatedFeedback, true)
+    assert.deepEqual(config.profile, { executionMode: 'auto', workScenario: 'delivery', optimizationTarget: 'both' })
+    const optimization = resolveConfig({ executionMode: 'team', workScenario: 'optimization', optimizationTarget: 'performance' })
+    assert.deepEqual(optimization.profile, { executionMode: 'team', workScenario: 'optimization', optimizationTarget: 'performance' })
   })
 
   it('merges service settings with per-call workflow overrides', async () => {

@@ -7,6 +7,8 @@ import { Dispatcher } from '../core/dispatcher.js'
 import type { DispatcherOptions } from '../core/dispatcher.js'
 import { runProgrammingWorkflow } from '../core/programming.js'
 import type { ProgrammingWorkflowCallbacks, ProgrammingWorkflowOptions, ProgrammingWorkflowResult } from '../core/programming.js'
+import { validateBudget } from '../core/protocol.js'
+import type { Budget } from '../core/protocol.js'
 
 /** Cordis plugin name. */
 export const name = 'super-agent'
@@ -22,6 +24,12 @@ export interface Config {
   readonly maxConcurrent?: number
   readonly timeoutMs?: number
   readonly stopGraceMs?: number
+  readonly maxRepairAttempts?: number
+  readonly maxFeedbackChars?: number
+  readonly maxInputTokens?: number
+  readonly maxOutputTokens?: number
+  readonly maxTotalTokens?: number
+  readonly maxToolCalls?: number
 }
 
 /** Schemastery config schema; cross-field checks happen in {@link resolveConfig}. */
@@ -31,6 +39,12 @@ export const Config: z<Config> = z.object({
   maxConcurrent: z.number().step(1),
   timeoutMs: z.number().step(1),
   stopGraceMs: z.number().step(1),
+  maxRepairAttempts: z.number().step(1),
+  maxFeedbackChars: z.number().step(1),
+  maxInputTokens: z.number().step(1),
+  maxOutputTokens: z.number().step(1),
+  maxTotalTokens: z.number().step(1),
+  maxToolCalls: z.number().step(1),
 })
 
 /** Resolved adapter defaults. */
@@ -40,6 +54,9 @@ export interface ResolvedConfig {
   readonly maxConcurrent: number
   readonly timeoutMs: number
   readonly stopGraceMs: number
+  readonly maxRepairAttempts: number
+  readonly maxFeedbackChars: number
+  readonly programmingBudget: Budget
 }
 
 function positive(name: string, value: number): number {
@@ -60,12 +77,22 @@ function timer(name: string, value: number): number {
 
 /** Materialize and validate deployment defaults once at load. */
 export function resolveConfig(config: Config = {}): ResolvedConfig {
+  const programmingBudget = validateBudget({
+    ...config.maxInputTokens === undefined ? {} : { maxInputTokens: nonNegative('maxInputTokens', config.maxInputTokens) },
+    ...config.maxOutputTokens === undefined ? {} : { maxOutputTokens: nonNegative('maxOutputTokens', config.maxOutputTokens) },
+    ...config.maxTotalTokens === undefined ? {} : { maxTotalTokens: nonNegative('maxTotalTokens', config.maxTotalTokens) },
+    ...config.maxToolCalls === undefined ? {} : { maxToolCalls: nonNegative('maxToolCalls', config.maxToolCalls) },
+    timeoutMs: timer('timeoutMs', config.timeoutMs ?? 0),
+  })
   return {
     maxTasks: positive('maxTasks', config.maxTasks ?? 256),
     maxDepth: positive('maxDepth', config.maxDepth ?? 32),
     maxConcurrent: positive('maxConcurrent', config.maxConcurrent ?? 8),
     timeoutMs: timer('timeoutMs', config.timeoutMs ?? 0),
     stopGraceMs: timer('stopGraceMs', config.stopGraceMs ?? 100),
+    maxRepairAttempts: positive('maxRepairAttempts', config.maxRepairAttempts ?? 2),
+    maxFeedbackChars: positive('maxFeedbackChars', config.maxFeedbackChars ?? 2_000),
+    programmingBudget,
   }
 }
 
@@ -152,7 +179,13 @@ export class SuperAgentService extends Service {
    * caller supplies model generation and local verification callbacks.
    */
   programmingWorkflow(task: string, callbacks: ProgrammingWorkflowCallbacks, options: ProgrammingWorkflowOptions = {}, signal?: AbortSignal): Promise<ProgrammingWorkflowResult> {
-    return runProgrammingWorkflow(task, callbacks, options, signal)
+    const mergedBudget: Budget = { ...this.resolved.programmingBudget, ...options.budget }
+    return runProgrammingWorkflow(task, callbacks, {
+      ...options,
+      maxRepairAttempts: options.maxRepairAttempts ?? this.resolved.maxRepairAttempts,
+      maxFeedbackChars: options.maxFeedbackChars ?? this.resolved.maxFeedbackChars,
+      budget: mergedBudget,
+    }, signal)
   }
 }
 

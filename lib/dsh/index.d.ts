@@ -5,6 +5,7 @@ import { TaskGraph } from '../core/task-graph.js';
 import type { TaskInput } from '../core/task-graph.js';
 import { Dispatcher } from '../core/dispatcher.js';
 import type { ProgrammingWorkflowCallbacks, ProgrammingWorkflowOptions, ProgrammingWorkflowResult } from '../core/programming.js';
+import type { Budget } from '../core/protocol.js';
 /** Cordis plugin name. */
 export declare const name = "super-agent";
 /** This adapter has no mandatory host service; callers opt into graphs explicitly. */
@@ -16,6 +17,12 @@ export interface Config {
     readonly maxConcurrent?: number;
     readonly timeoutMs?: number;
     readonly stopGraceMs?: number;
+    readonly maxRepairAttempts?: number;
+    readonly maxFeedbackChars?: number;
+    readonly maxInputTokens?: number;
+    readonly maxOutputTokens?: number;
+    readonly maxTotalTokens?: number;
+    readonly maxToolCalls?: number;
 }
 /** Schemastery config schema; cross-field checks happen in {@link resolveConfig}. */
 export declare const Config: z<Config>;
@@ -26,6 +33,9 @@ export interface ResolvedConfig {
     readonly maxConcurrent: number;
     readonly timeoutMs: number;
     readonly stopGraceMs: number;
+    readonly maxRepairAttempts: number;
+    readonly maxFeedbackChars: number;
+    readonly programmingBudget: Budget;
 }
 /** Materialize and validate deployment defaults once at load. */
 export declare function resolveConfig(config?: Config): ResolvedConfig;

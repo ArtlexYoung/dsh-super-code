@@ -28,3 +28,5 @@
         maxConcurrent: 8
         timeoutMs: 0
         stopGraceMs: 100
+        maxRepairAttempts: 2
+        maxFeedbackChars: 2000

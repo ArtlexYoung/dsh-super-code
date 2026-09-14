@@ -208,7 +208,7 @@ export async function runProgrammingWorkflow(task: string, callbacks: Programmin
   let finalAcceptance: VerificationResult | undefined
   const startedAt = Date.now()
   const elapsed = (): number => Date.now() - startedAt
-  const deadlineExceeded = (): boolean => budget.timeoutMs !== undefined && elapsed() >= budget.timeoutMs
+  const deadlineExceeded = (): boolean => budget.timeoutMs !== undefined && budget.timeoutMs > 0 && elapsed() >= budget.timeoutMs
   const contextMessages = (feedback?: string): readonly WorkflowMessage[] => [
     { role: 'user', content: normalizedTask },
     ...(analysis === undefined ? [] : [{ role: 'assistant' as const, content: analysis }]),

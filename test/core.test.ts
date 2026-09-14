@@ -8,6 +8,7 @@ import { summarizeReviews } from '../src/core/review.js'
 import { ResearchLedger, normalizeUrl } from '../src/core/research.js'
 import { OptimizationLedger } from '../src/core/optimization.js'
 import { compactFeedback, runProgrammingWorkflow } from '../src/core/programming.js'
+import { resolveConfig, SuperAgentService } from '../src/dsh/index.js'
 import { ProtocolError, artifactDigest, validateEvent, validateTaskRecord } from '../src/core/protocol.js'
 
 const digest = 'a'.repeat(64)
@@ -423,5 +424,27 @@ describe('programming workflow', () => {
     }, { budget: { timeoutMs: 10 } })
     assert.equal(result.status, 'budget_exhausted')
     assert.equal(aborted, true)
+  })
+})
+
+describe('Cordis programming settings', () => {
+  it('resolves bounded workflow defaults without changing legacy graph defaults', () => {
+    const config = resolveConfig({ maxRepairAttempts: 1, maxFeedbackChars: 128, maxTotalTokens: 100 })
+    assert.equal(config.maxRepairAttempts, 1)
+    assert.equal(config.maxFeedbackChars, 128)
+    assert.equal(config.programmingBudget.maxTotalTokens, 100)
+    assert.equal(config.maxTasks, 256)
+  })
+
+  it('merges service settings with per-call workflow overrides', async () => {
+    const ctx = new (await import('@deepseek-ai/cordis')).Context()
+    const service = new SuperAgentService(ctx, { maxRepairAttempts: 1, maxFeedbackChars: 64, maxTotalTokens: 20 })
+    let calls = 0
+    const result = await service.programmingWorkflow('settings task', {
+      generate: async context => { calls += 1; assert.equal(context.remainingBudget.maxTotalTokens, calls === 1 ? 20 : 18); return { text: context.phase, usage: { inputTokens: 1, outputTokens: 1 } } },
+      verify: async () => ({ passed: true }),
+    }, { maxFeedbackChars: 32 })
+    assert.equal(result.status, 'passed')
+    assert.equal(calls, 2)
   })
 })

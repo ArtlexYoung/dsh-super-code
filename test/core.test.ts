@@ -414,4 +414,14 @@ describe('programming workflow', () => {
     assert.equal(calls, 4)
     assert.ok(timeouts.every(timeout => timeout >= 0 && timeout <= 1_000))
   })
+
+  it('aborts a host callback that exceeds the workflow deadline', async () => {
+    let aborted = false
+    const result = await runProgrammingWorkflow('hanging task', {
+      generate: async ({ signal }) => await new Promise(resolve => signal.addEventListener('abort', () => { aborted = true; resolve({ text: 'late' }) }, { once: true })),
+      verify: async () => ({ passed: true }),
+    }, { budget: { timeoutMs: 10 } })
+    assert.equal(result.status, 'budget_exhausted')
+    assert.equal(aborted, true)
+  })
 })

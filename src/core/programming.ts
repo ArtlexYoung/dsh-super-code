@@ -154,6 +154,30 @@ function remaining(usage: NormalizedUsage, budget: Budget, elapsedMs = 0): Budge
   }
 }
 
+type BoundedCall<T> = { readonly kind: 'completed'; readonly value: T } | { readonly kind: 'aborted' | 'timeout' }
+
+async function boundedCall<T>(callback: (signal: AbortSignal) => Promise<T>, parent: AbortSignal, timeoutMs: number | undefined): Promise<BoundedCall<T>> {
+  const controller = new AbortController()
+  let timer: ReturnType<typeof setTimeout> | undefined
+  let finishAbort: (() => void) | undefined
+  const parentAbort = new Promise<BoundedCall<T>>(resolve => {
+    finishAbort = () => { controller.abort(parent.reason); resolve({ kind: 'aborted' }) }
+    if (parent.aborted) finishAbort()
+    else parent.addEventListener('abort', finishAbort, { once: true })
+  })
+  const deadline = timeoutMs !== undefined && timeoutMs > 0
+    ? new Promise<BoundedCall<T>>(resolve => { timer = setTimeout(() => { controller.abort(new ProtocolError('programming workflow deadline exceeded', 'WORKFLOW_TIMEOUT')); resolve({ kind: 'timeout' }) }, timeoutMs) })
+    : undefined
+  const operation = Promise.resolve().then(() => callback(controller.signal)).then(value => ({ kind: 'completed' as const, value }))
+  try {
+    return await Promise.race([operation, parentAbort, ...(deadline === undefined ? [] : [deadline])])
+  } finally {
+    if (timer !== undefined) clearTimeout(timer)
+    if (finishAbort !== undefined) parent.removeEventListener('abort', finishAbort)
+    void operation.catch(() => undefined)
+  }
+}
+
 /** Keep verifier diagnostics useful without replaying an unbounded tool log. */
 export function compactFeedback(value: string | undefined, maxChars: number = DEFAULT_MAX_FEEDBACK_CHARS): string {
   const limit = positiveInteger(maxChars, DEFAULT_MAX_FEEDBACK_CHARS, 'maxFeedbackChars')
@@ -194,7 +218,9 @@ export async function runProgrammingWorkflow(task: string, callbacks: Programmin
 
   const invoke = async (phase: 'analysis' | 'draft' | 'repair', attempt: number, feedback?: string): Promise<WorkflowGeneration | undefined> => {
     if (signal.aborted || deadlineExceeded() || exceeds(usage, budget)) return undefined
-    const generation = await callbacks.generate({ phase, task: normalizedTask, messages: contextMessages(feedback), ...analysis === undefined ? {} : { analysis }, ...candidate === undefined ? {} : { candidate }, ...feedback === undefined ? {} : { feedback }, attempt, remainingBudget: remaining(usage, budget, elapsed()), signal })
+    const call = await boundedCall(callSignal => callbacks.generate({ phase, task: normalizedTask, messages: contextMessages(feedback), ...analysis === undefined ? {} : { analysis }, ...candidate === undefined ? {} : { candidate }, ...feedback === undefined ? {} : { feedback }, attempt, remainingBudget: remaining(usage, budget, elapsed()), signal: callSignal }), signal, budget.timeoutMs === undefined ? undefined : Math.max(1, budget.timeoutMs - elapsed()))
+    if (call.kind !== 'completed') return undefined
+    const generation = call.value
     const text = nonEmpty(generation.text, `${phase}.text`)
     const normalized = { ...generation, text, usage: generation.usage === undefined ? undefined : { ...generation.usage }, timing: normalizeTiming(generation.timing) }
     usage = addUsage(usage, normalizeUsage(generation.usage))
@@ -213,8 +239,11 @@ export async function runProgrammingWorkflow(task: string, callbacks: Programmin
     const feedback = phase === 'repair' ? compactFeedback(finalAcceptance?.feedback, maxFeedbackChars) : undefined
     const generation = await invoke(phase, attempt, feedback)
     if (generation === undefined) return { status: signal.aborted ? 'aborted' : 'budget_exhausted', candidate, attempts: attempt - 1, phases, messages: contextMessages(feedback), usage, finalAcceptance }
-    candidate = generation.text
-    const acceptance = await callbacks.verify({ task: normalizedTask, candidate, attempt, signal })
+    const currentCandidate = generation.text
+    candidate = currentCandidate
+    const verification = await boundedCall(callSignal => callbacks.verify({ task: normalizedTask, candidate: currentCandidate, attempt, signal: callSignal }), signal, budget.timeoutMs === undefined ? undefined : Math.max(1, budget.timeoutMs - elapsed()))
+    if (verification.kind !== 'completed') return { status: verification.kind === 'aborted' ? 'aborted' : 'budget_exhausted', candidate, attempts: attempt, phases, messages: contextMessages(finalAcceptance?.feedback), usage, finalAcceptance }
+    const acceptance = verification.value
     if (!acceptance || typeof acceptance.passed !== 'boolean') throw new ProtocolError('verify must return a passed boolean', 'INVALID_RESULT')
     finalAcceptance = acceptance
     phases.push({ phase, attempt, generation, acceptance })

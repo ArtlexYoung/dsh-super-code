@@ -39,31 +39,66 @@ function add(left: ReturnType<typeof emptyUsage>, right: WorkflowUsage | undefin
   return { inputTokens: left.inputTokens + inputTokens, outputTokens: left.outputTokens + outputTokens, totalTokens: left.totalTokens + (right?.totalTokens === undefined ? inputTokens + outputTokens : totalTokens), cachedTokens: left.cachedTokens + usage(right?.cachedTokens, 'usage.cachedTokens'), toolCalls: left.toolCalls + usage(right?.toolCalls, 'usage.toolCalls'), latencyMs: left.latencyMs + usage(right?.latencyMs, 'usage.latencyMs') }
 }
 
+function lastMatching(messages: readonly WorkflowMessage[], predicate: (message: WorkflowMessage) => boolean): WorkflowMessage | undefined {
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    const message = messages[index]
+    if (message !== undefined && predicate(message)) return message
+  }
+  return undefined
+}
+
 function compact(messages: readonly WorkflowMessage[], maxChars: number): readonly WorkflowMessage[] {
   const total = messages.reduce((sum, message) => sum + message.content.length, 0)
   if (total <= maxChars) return messages
-  const marker: WorkflowMessage = { role: 'tool', content: '[earlier conversation omitted]' }
-  const first = messages[0]
-  const last = messages.at(-1)
-  if (first === undefined || last === undefined) return []
-  const previous = messages.length > 1 ? messages.at(-2) : undefined
-  const required = [first, ...(previous === undefined || previous === first ? [] : [previous]), ...(last === first || last === previous ? [] : [last])]
-  const available = Math.max(0, maxChars - marker.content.length)
-  const weights = required.map((message, index) => index === 0 ? 0.25 : index === required.length - 1 ? 0.35 : 0.4)
-  const clipped = required.map((message, index) => {
-    const limit = Math.max(1, Math.floor(available * (weights[index] ?? 0)))
-    return message.content.length <= limit ? message : { ...message, content: `${message.content.slice(0, Math.max(0, limit - 1))}…` }
-  })
-  const requiredLength = clipped.reduce((sum, message) => sum + message.content.length, 0)
-  const middleBudget = Math.max(0, available - requiredLength)
-  let middleLength = 0
-  const middle = messages.slice(1, -2).reduceRight<WorkflowMessage[]>((acc, message) => {
-    if (middleLength + message.content.length > middleBudget) return acc
-    middleLength += message.content.length
-    acc.unshift(message)
-    return acc
-  }, [])
-  return [clipped[0]!, marker, ...middle, ...clipped.slice(1)]
+  const markerText = '[earlier conversation omitted]'
+  // A previous compaction may already have inserted a marker. Rebuild from
+  // the substantive messages so markers never accumulate across turns.
+  const hadMarker = messages.some(message => message.content === markerText)
+  const source = messages.filter(message => message.content !== markerText)
+  const firstUser = source.find(message => message.role === 'user')
+  const lastUser = lastMatching(source, message => message.role === 'user')
+  const fallback = source.at(-1)
+  const users: WorkflowMessage[] = [firstUser, ...(lastUser !== undefined && lastUser !== firstUser ? [lastUser] : [])].filter((message): message is WorkflowMessage => message !== undefined)
+  const required: WorkflowMessage[] = users.length > 0 ? users : (fallback === undefined ? [] : [fallback])
+  if (required.length === 0) return []
+
+  const truncate = (message: WorkflowMessage, limit: number): WorkflowMessage | undefined => {
+    if (limit <= 0) return undefined
+    if (message.content.length <= limit) return message
+    if (limit === 1) return { ...message, content: '…' }
+    return { ...message, content: `${message.content.slice(0, limit - 1)}…` }
+  }
+
+  // User turns are the durable task specification. Fit them first, keeping
+  // the first task and the current task even when both are long.
+  const keptUsers: WorkflowMessage[] = []
+  let remaining = maxChars
+  for (const message of required) {
+    const reserve = required.length > 1 && message === required[0] ? 1 : 0
+    const limit = Math.min(message.content.length, Math.max(0, remaining - reserve))
+    const value = truncate(message, limit)
+    if (value !== undefined) {
+      keptUsers.push(value)
+      remaining -= value.content.length
+    }
+  }
+  if (keptUsers.length === 0) return []
+
+  // Add a compact omission marker and the latest assistant answer only when
+  // there is room after the required user turns. Never create empty messages.
+  const marker: WorkflowMessage = { role: 'tool', content: markerText }
+  const omitted = hadMarker || source.length > required.length
+  const result = [...keptUsers]
+  if (omitted && remaining >= marker.content.length) {
+    const insertion = result.length > 1 ? result.length - 1 : result.length
+    result.splice(insertion, 0, marker)
+    remaining -= marker.content.length
+    const assistant = lastMatching(source, message => message.role === 'assistant')
+    const value = assistant === undefined ? undefined : truncate(assistant, remaining)
+    if (value !== undefined) result.splice(insertion + 1, 0, value)
+  }
+
+  return result
 }
 
 /** Run a multi-turn conversation while bounding the history sent to the host. */

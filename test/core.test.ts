@@ -476,7 +476,10 @@ describe('multi-turn conversation workflow', () => {
     assert.equal(contexts[2]?.at(-1)?.content, 'third task')
     assert.equal(contexts[2]?.some(message => message.role === 'assistant' && message.content.startsWith('answer-2')), true)
     assert.equal(contexts[2]?.some(message => message.content.includes('omitted')), true)
+    assert.ok(contexts[2]?.every(message => message.content.length > 0))
+    assert.equal(contexts[2]?.filter(message => message.content.includes('omitted')).length, 1)
     assert.ok(result.messages.reduce((sum, message) => sum + message.content.length, 0) <= 128)
+    assert.ok(result.messages.every(message => message.content.length > 0))
   })
 
   it('can avoid retaining every generation for long-running sessions', async () => {
@@ -485,6 +488,15 @@ describe('multi-turn conversation workflow', () => {
     }, { retainGenerations: false })
     assert.deepEqual(result.generations, [])
     assert.equal(result.usage.totalTokens, 0)
+  })
+
+  it('never drops the task text before old assistant history', async () => {
+    const task = 'task '.repeat(20).trim()
+    const contexts: readonly { role: string; content: string }[][] = []
+    await runConversationWorkflow([task, 'follow up'], {
+      generate: async context => { contexts.push([...context.messages]); return { text: 'ok' } },
+    }, { maxHistoryChars: 128 })
+    assert.equal(contexts[1]?.find(message => message.role === 'user')?.content, task)
   })
 })
 

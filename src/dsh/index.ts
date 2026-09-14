@@ -9,6 +9,8 @@ import { runProgrammingWorkflow } from '../core/programming.js'
 import type { ProgrammingWorkflowCallbacks, ProgrammingWorkflowOptions, ProgrammingWorkflowResult } from '../core/programming.js'
 import { validateBudget } from '../core/protocol.js'
 import type { Budget } from '../core/protocol.js'
+import { selectModel, summarizeTokens } from '../ui.js'
+import type { ModelOption, ModelTier, TokenUsage, TokenSummary } from '../ui.js'
 import { resolveScenarioProfile } from '../core/scenario.js'
 import type { ExecutionMode, OptimizationTarget, ScenarioProfile, WorkScenario } from '../core/scenario.js'
 
@@ -152,6 +154,7 @@ export class SuperAgentService extends Service {
   private readonly resolved: ResolvedConfig
   private readonly workspaces = new Map<string, SuperAgentWorkspace>()
   private closing = false
+  private readonly usage: TokenUsage[] = []
 
   /**
    * @param ctx - Cordis context receiving `ctx.superAgent`.
@@ -202,6 +205,14 @@ export class SuperAgentService extends Service {
   listWorkspaces(): readonly string[] {
     return [...this.workspaces.keys()]
   }
+
+  /** Resolve a model from configured pools and record provider usage. */
+  selectModel(tier: ModelTier, difficulty = 0.5): ModelOption | undefined {
+    return selectModel(this.resolved.modelPools, tier, difficulty)
+  }
+
+  recordTokenUsage(usage: TokenUsage): void { if (this.resolved.tokenStats) this.usage.push({ ...usage }) }
+  tokenSummary(): TokenSummary { return summarizeTokens(this.usage) }
 
   /** Remove one workspace and its in-memory event log. */
   removeWorkspace(scope: string): void {

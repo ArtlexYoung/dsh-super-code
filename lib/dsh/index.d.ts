@@ -4,6 +4,7 @@ import z from '@deepseek-ai/schemastery';
 import { TaskGraph } from '../core/task-graph.js';
 import type { TaskInput } from '../core/task-graph.js';
 import { Dispatcher } from '../core/dispatcher.js';
+import type { ProgrammingWorkflowCallbacks, ProgrammingWorkflowOptions, ProgrammingWorkflowResult } from '../core/programming.js';
 /** Cordis plugin name. */
 export declare const name = "super-agent";
 /** This adapter has no mandatory host service; callers opt into graphs explicitly. */
@@ -64,6 +65,11 @@ export declare class SuperAgentService extends Service {
     listWorkspaces(): readonly string[];
     /** Remove one workspace and its in-memory event log. */
     removeWorkspace(scope: string): void;
+    /**
+     * Run the provider-neutral programming loop inside this service scope. The
+     * caller supplies model generation and local verification callbacks.
+     */
+    programmingWorkflow(task: string, callbacks: ProgrammingWorkflowCallbacks, options?: ProgrammingWorkflowOptions, signal?: AbortSignal): Promise<ProgrammingWorkflowResult>;
 }
 /** Cordis function-plugin entry. */
 export declare function apply(ctx: Context, config?: Config): void;

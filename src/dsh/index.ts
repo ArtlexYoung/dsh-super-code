@@ -5,6 +5,8 @@ import { TaskGraph } from '../core/task-graph.js'
 import type { TaskGraphOptions, TaskInput } from '../core/task-graph.js'
 import { Dispatcher } from '../core/dispatcher.js'
 import type { DispatcherOptions } from '../core/dispatcher.js'
+import { runProgrammingWorkflow } from '../core/programming.js'
+import type { ProgrammingWorkflowCallbacks, ProgrammingWorkflowOptions, ProgrammingWorkflowResult } from '../core/programming.js'
 
 /** Cordis plugin name. */
 export const name = 'super-agent'
@@ -143,6 +145,14 @@ export class SuperAgentService extends Service {
   removeWorkspace(scope: string): void {
     const key = scope.trim()
     if (!this.workspaces.delete(key)) throw new Error(`workspace ${key} does not exist`)
+  }
+
+  /**
+   * Run the provider-neutral programming loop inside this service scope. The
+   * caller supplies model generation and local verification callbacks.
+   */
+  programmingWorkflow(task: string, callbacks: ProgrammingWorkflowCallbacks, options: ProgrammingWorkflowOptions = {}, signal?: AbortSignal): Promise<ProgrammingWorkflowResult> {
+    return runProgrammingWorkflow(task, callbacks, options, signal)
   }
 }
 

@@ -21,6 +21,10 @@ dsh plugin --profile web add dsh-super-agent
 
 `team` 需要宿主提供 subagent/jobs；`research` 的联网能力需要宿主提供 web backend。插件不会自行创建模型或绕过权限策略。
 
+编程任务可以使用根入口提供的 `runProgrammingWorkflow`。宿主传入 `generate` 和 `verify` 回调：工作流只生成一次分析和草稿，草稿验收失败后才进入有界修复，并把压缩后的测试反馈传给下一次调用。token、工具调用和修复次数都可以设置预算，模型和测试环境仍由宿主决定。
+
+如果使用 Cordis 服务，也可以调用 `ctx.superAgent.programmingWorkflow(...)`；两种入口共享同一实现。
+
 ## 选择 preset
 
 | preset | 用途 |
@@ -43,7 +47,7 @@ dsh plugin --profile web add dsh-super-agent
 ## 使用任务协议
 
 ```ts
-import { TaskGraph } from 'dsh-super-agent'
+import { TaskGraph, runProgrammingWorkflow } from 'dsh-super-agent'
 
 const graph = new TaskGraph([
   { taskId: 'build', title: 'Build', acceptance: ['tests pass'] },

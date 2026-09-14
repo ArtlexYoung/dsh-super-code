@@ -7,6 +7,7 @@ import type { TaskRecord } from '../src/core/protocol.js'
 import { summarizeReviews } from '../src/core/review.js'
 import { ResearchLedger, normalizeUrl } from '../src/core/research.js'
 import { OptimizationLedger } from '../src/core/optimization.js'
+import { compactFeedback, runProgrammingWorkflow } from '../src/core/programming.js'
 import { ProtocolError, artifactDigest, validateEvent, validateTaskRecord } from '../src/core/protocol.js'
 
 const digest = 'a'.repeat(64)
@@ -355,5 +356,60 @@ describe('review, research, and optimization ledgers', () => {
     const mock = ledger.record({ experimentId: 'e2', hypothesis: 'mock', workloadId: 'w', changedFactor: 'x', rollbackRef: 'git:2', baseline: { mode: 'mock', score: 1, inputTokens: 1, outputTokens: 1, latencyMs: 1, toolCalls: 1 }, candidate: { mode: 'mock', score: 1, inputTokens: 0, outputTokens: 1, latencyMs: 1, toolCalls: 1 } })
     assert.equal(mock.decision, 'inconclusive')
     assert.equal(ledger.report().best?.experimentId, 'e1')
+  })
+})
+
+describe('programming workflow', () => {
+  it('stops after a verified draft and does not create a repair call', async () => {
+    const phases: string[] = []
+    let verified = 0
+    const result = await runProgrammingWorkflow('implement a function', {
+      generate: async context => { phases.push(context.phase); return { text: context.phase === 'analysis' ? 'analysis' : 'draft', usage: { inputTokens: 10, outputTokens: 5 } } },
+      verify: async () => { verified += 1; return { passed: true, feedback: 'tests passed' } },
+    })
+    assert.equal(result.status, 'passed')
+    assert.equal(result.attempts, 1)
+    assert.deepEqual(phases, ['analysis', 'draft'])
+    assert.equal(verified, 1)
+    assert.equal(result.usage.totalTokens, 30)
+  })
+
+  it('feeds bounded verifier diagnostics into a repair and stops on success', async () => {
+    const contexts: { phase: string; feedback?: string }[] = []
+    let verifyCount = 0
+    const result = await runProgrammingWorkflow('fix the function', {
+      generate: async context => { contexts.push({ phase: context.phase, feedback: context.feedback }); return { text: `${context.phase}-${context.attempt}`, usage: { inputTokens: 3, outputTokens: 2 } } },
+      verify: async () => { verifyCount += 1; return verifyCount === 1 ? { passed: false, feedback: 'x'.repeat(100) } : { passed: true, evidence: [] } },
+    }, { maxRepairAttempts: 2, maxFeedbackChars: 24 })
+    assert.equal(result.status, 'passed')
+    assert.equal(result.attempts, 2)
+    assert.equal(verifyCount, 2)
+    assert.deepEqual(contexts.map(context => context.phase), ['analysis', 'draft', 'repair'])
+    assert.equal(contexts[2]?.feedback?.length, compactFeedback('x'.repeat(100), 24).length)
+    assert.ok((contexts[2]?.feedback?.length ?? 0) <= 24)
+    assert.equal(result.phases[2]?.acceptance?.passed, true)
+  })
+
+  it('reports budget exhaustion before starting another model call', async () => {
+    let calls = 0
+    const result = await runProgrammingWorkflow('bounded task', {
+      generate: async () => { calls += 1; return { text: 'x', usage: { inputTokens: 6, outputTokens: 5 } } },
+      verify: async () => ({ passed: false, feedback: 'retry' }),
+    }, { budget: { maxTotalTokens: 10 }, maxRepairAttempts: 2 })
+    assert.equal(result.status, 'budget_exhausted')
+    assert.equal(calls, 1)
+    assert.equal(result.attempts, 0)
+  })
+
+  it('passes remaining timeout to the host and stops admission after the deadline', async () => {
+    const timeouts: number[] = []
+    let calls = 0
+    const result = await runProgrammingWorkflow('deadline task', {
+      generate: async context => { calls += 1; timeouts.push(context.remainingBudget.timeoutMs ?? -1); return { text: context.phase, usage: { inputTokens: 1, outputTokens: 1 } } },
+      verify: async () => ({ passed: false, feedback: 'retry' }),
+    }, { budget: { timeoutMs: 1_000 }, maxRepairAttempts: 2 })
+    assert.equal(result.status, 'failed')
+    assert.equal(calls, 4)
+    assert.ok(timeouts.every(timeout => timeout >= 0 && timeout <= 1_000))
   })
 })

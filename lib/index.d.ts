@@ -11,4 +11,5 @@ export * from './core/dispatcher.js';
 export * from './core/review.js';
 export * from './core/research.js';
 export * from './core/optimization.js';
+export * from './core/programming.js';
 //# sourceMappingURL=index.d.ts.map

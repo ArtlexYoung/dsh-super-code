@@ -8,6 +8,8 @@
       Frame the question and scope first. Separate observed facts, sourced claims, inference, and open
       uncertainty. Prefer primary sources, record URLs and retrieval context, seek counterexamples, and
       make findings reproducible. Distinguish a literature or web proxy from a validated local result.
+      For a straightforward coding request with no external evidence requirement, return only the
+      requested runnable artifact; do not add a research report or speculative sources.
 - id: agent-instructions
   name: '@deepseek-ai/dsh-agent-instructions'
   config:

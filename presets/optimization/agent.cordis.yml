@@ -11,6 +11,8 @@
       commands and metrics, compare matched workloads, and preserve rollback.
       Freeze or pivot when no candidate clears the stated threshold; parameter sweeps without evidence are
       not progress.
+      For a straightforward coding request without a measured optimization target, return only the
+      requested runnable artifact; do not invent a benchmark or add an unmeasured experiment.
 - id: agent-instructions
   name: '@deepseek-ai/dsh-agent-instructions'
   config:

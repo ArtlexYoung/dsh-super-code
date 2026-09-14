@@ -49,6 +49,8 @@ dsh plugin --profile web add dsh-super-agent
 
 四个名称是兼容入口，不限制组合。需要陌生 API 资料时可以使用 `research` 场景并采用 team 执行；需要并行 benchmark 时可以使用 `optimization` 场景并采用 team 执行。宿主可以直接传入二维 profile：
 
+编码任务如果只是实现或修复明确接口，四个场景都会优先返回可运行 artifact，避免把任务树、研究报告或未测量 benchmark 写进上下文；只有任务本身要求拆分、外部证据或性能/质量实验时，才展开对应纪律。
+
 ```ts
 { executionMode: 'team', workScenario: 'optimization', optimizationTarget: 'performance' }
 ```

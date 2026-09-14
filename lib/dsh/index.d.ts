@@ -6,6 +6,7 @@ import type { TaskInput } from '../core/task-graph.js';
 import { Dispatcher } from '../core/dispatcher.js';
 import type { ProgrammingWorkflowCallbacks, ProgrammingWorkflowOptions, ProgrammingWorkflowResult } from '../core/programming.js';
 import type { Budget } from '../core/protocol.js';
+import type { ModelOption, ModelTier, TokenUsage, TokenSummary } from '../ui.js';
 import type { ExecutionMode, OptimizationTarget, ScenarioProfile, WorkScenario } from '../core/scenario.js';
 /** Cordis plugin name. */
 export declare const name = "super-agent";
@@ -70,9 +71,10 @@ declare module '@deepseek-ai/cordis' {
  * create agents, run models, or grant tools; those remain Harness capabilities.
  */
 export declare class SuperAgentService extends Service {
-    private readonly resolved;
+    private resolved;
     private readonly workspaces;
     private closing;
+    private readonly usage;
     /**
      * @param ctx - Cordis context receiving `ctx.superAgent`.
      * @param config - deployment limits.
@@ -88,6 +90,10 @@ export declare class SuperAgentService extends Service {
     workspace(scope?: string, inputs?: readonly TaskInput[]): SuperAgentWorkspace;
     /** List currently owned workspaces by creation order. */
     listWorkspaces(): readonly string[];
+    /** Resolve a model from configured pools and record provider usage. */
+    selectModel(tier: ModelTier, difficulty?: number): ModelOption | undefined;
+    recordTokenUsage(usage: TokenUsage): void;
+    tokenSummary(): TokenSummary;
     /** Remove one workspace and its in-memory event log. */
     removeWorkspace(scope: string): void;
     /**

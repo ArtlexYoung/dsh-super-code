@@ -21,13 +21,15 @@
     },
     "./presets/*": "./presets/*",
     "./package.json": "./package.json"
+    ,"./client": "./client/index.js"
   },
   "files": [
     "lib",
     "presets",
     "cordis.patch.yml",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "client"
   ],
   "dependencies": {
     "@deepseek-ai/dsh-agent-presets": "^0.1.2-alpha.2"
@@ -80,6 +82,16 @@
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-api-remotes",
+        "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-client-ui-renderer",
+        "@deepseek-ai/dsh-client-ui-session",
+        "@deepseek-ai/dsh-client-locale"
+      ]
     }
   }
 }

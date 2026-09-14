@@ -13,6 +13,8 @@ import { selectModel, summarizeTokens } from '../ui.js'
 import type { ModelOption, ModelTier, TokenUsage, TokenSummary } from '../ui.js'
 import { resolveScenarioProfile } from '../core/scenario.js'
 import type { ExecutionMode, OptimizationTarget, ScenarioProfile, WorkScenario } from '../core/scenario.js'
+import type {} from '@deepseek-ai/dsh-settings'
+import { SUPER_AGENT_SETTINGS_NAMESPACE, SuperAgentSettingsSchema } from '../settings.js'
 
 /** Cordis plugin name. */
 export const name = 'super-agent'
@@ -151,7 +153,7 @@ declare module '@deepseek-ai/cordis' {
  * create agents, run models, or grant tools; those remain Harness capabilities.
  */
 export class SuperAgentService extends Service {
-  private readonly resolved: ResolvedConfig
+  private resolved: ResolvedConfig
   private readonly workspaces = new Map<string, SuperAgentWorkspace>()
   private closing = false
   private readonly usage: TokenUsage[] = []
@@ -163,6 +165,17 @@ export class SuperAgentService extends Service {
   constructor(ctx: Context, config: Config = {}) {
     super(ctx, 'superAgent')
     this.resolved = resolveConfig(config)
+    ctx.inject(['settings'], (settingsCtx: Context) => {
+      const scope = settingsCtx.settings.register(SUPER_AGENT_SETTINGS_NAMESPACE, SuperAgentSettingsSchema, {
+        base: { modelPools: {
+          high: this.resolved.modelPools.high.map(m => ({ id: m.id, strengths: [...(m.strengths ?? [])], available: m.available !== false })),
+          normal: this.resolved.modelPools.normal.map(m => ({ id: m.id, strengths: [...(m.strengths ?? [])], available: m.available !== false })),
+          low: this.resolved.modelPools.low.map(m => ({ id: m.id, strengths: [...(m.strengths ?? [])], available: m.available !== false })),
+        }, tokenStats: this.resolved.tokenStats },
+      })
+      this.resolved = { ...this.resolved, ...scope.get() }
+      scope.watch((next) => { this.resolved = { ...this.resolved, ...next } })
+    })
     ctx.effect(() => () => {
       this.closing = true
       this.workspaces.clear()

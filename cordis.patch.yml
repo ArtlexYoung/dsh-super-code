@@ -39,3 +39,8 @@
           high: []
           normal: []
           low: []
+
+# Browser contribution: preset picker, settings form, token footer, and Agent tree.
+- insert:
+    - id: super-agent-client
+      name: dsh-super-agent/client

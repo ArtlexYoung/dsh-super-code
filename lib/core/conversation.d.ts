@@ -10,6 +10,7 @@ export interface ConversationCallbacks {
 }
 export interface ConversationOptions {
     readonly maxHistoryChars?: number;
+    readonly retainGenerations?: boolean;
 }
 export interface ConversationResult {
     readonly messages: readonly WorkflowMessage[];

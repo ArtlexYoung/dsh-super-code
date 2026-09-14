@@ -478,6 +478,14 @@ describe('multi-turn conversation workflow', () => {
     assert.equal(contexts[2]?.some(message => message.content.includes('omitted')), true)
     assert.ok(result.messages.reduce((sum, message) => sum + message.content.length, 0) <= 128)
   })
+
+  it('can avoid retaining every generation for long-running sessions', async () => {
+    const result = await runConversationWorkflow(['first', 'second'], {
+      generate: async ({ turn }) => ({ text: `answer-${turn}` }),
+    }, { retainGenerations: false })
+    assert.deepEqual(result.generations, [])
+    assert.equal(result.usage.totalTokens, 0)
+  })
 })
 
 describe('evaluation release gate', () => {

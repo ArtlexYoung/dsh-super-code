@@ -14,6 +14,7 @@ export interface ConversationCallbacks {
 
 export interface ConversationOptions {
   readonly maxHistoryChars?: number
+  readonly retainGenerations?: boolean
 }
 
 export interface ConversationResult {
@@ -70,6 +71,7 @@ export async function runConversationWorkflow(turns: readonly string[], callback
   if (!Array.isArray(turns) || turns.length === 0 || turns.some(turn => typeof turn !== 'string' || turn.trim() === '')) throw new ProtocolError('turns must contain non-empty strings', 'INVALID_ARGUMENT')
   if (!callbacks || typeof callbacks.generate !== 'function') throw new ProtocolError('generate callback is required', 'INVALID_ARGUMENT')
   const maxHistoryChars = options.maxHistoryChars ?? 12_000
+  const retainGenerations = options.retainGenerations ?? true
   if (!Number.isSafeInteger(maxHistoryChars) || maxHistoryChars < 128) throw new ProtocolError('maxHistoryChars must be at least 128', 'INVALID_ARGUMENT')
   const messages: WorkflowMessage[] = []
   const generations: WorkflowGeneration[] = []
@@ -80,7 +82,7 @@ export async function runConversationWorkflow(turns: readonly string[], callback
     const context = compact([...messages, { role: 'user' as const, content: user }], maxHistoryChars)
     const generation = await callbacks.generate({ turn: index + 1, user, messages: context, signal })
     if (!generation || typeof generation.text !== 'string' || generation.text.trim() === '') throw new ProtocolError(`turn ${index + 1} generation must contain text`, 'INVALID_RESULT')
-    generations.push(generation)
+    if (retainGenerations) generations.push(generation)
     aggregate = add(aggregate, generation.usage)
     messages.push({ role: 'user', content: user }, { role: 'assistant', content: generation.text.trim() })
     const bounded = compact(messages, maxHistoryChars)

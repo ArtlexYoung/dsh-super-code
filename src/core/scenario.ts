@@ -55,14 +55,13 @@ export function resolveScenarioProfile(input: ScenarioProfileInput = {}): Scenar
 }
 
 /**
- * Choose a planning default from the two axes. Explicit workflow options can
- * still override this choice. Team execution needs a task-tree record; the
- * research and optimization disciplines remain adaptive so simple tasks do
- * not pay for a needless planning turn.
+ * Choose an adaptive planning default from the two axes. The programming
+ * workflow still creates a separate analysis record for structurally complex
+ * requests; routine tasks in every scenario avoid an extra model turn.
  */
 export function defaultPlanningForProfile(profile: ScenarioProfile): ScenarioPlanning {
-  const normalized = resolveScenarioProfile(profile)
-  return normalized.executionMode === 'team' ? 'separate' : 'auto'
+  resolveScenarioProfile(profile)
+  return 'auto'
 }
 
 /** Resolve a shipped preset name to its two-axis profile. */

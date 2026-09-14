@@ -391,7 +391,7 @@ describe('two-axis scenario profiles', () => {
     assert.deepEqual(resolveScenarioProfile(), { executionMode: 'auto', workScenario: 'delivery', optimizationTarget: 'both' })
     assert.deepEqual(resolveScenarioProfile({ workScenario: 'optimization', optimizationTarget: 'performance' }), { executionMode: 'auto', workScenario: 'optimization', optimizationTarget: 'performance' })
     assert.equal(defaultPlanningForProfile(resolveScenarioProfile({ executionMode: 'solo', workScenario: 'delivery' })), 'auto')
-    assert.equal(defaultPlanningForProfile(resolveScenarioProfile({ executionMode: 'team', workScenario: 'delivery' })), 'separate')
+    assert.equal(defaultPlanningForProfile(resolveScenarioProfile({ executionMode: 'team', workScenario: 'delivery' })), 'auto')
     assert.equal(defaultPlanningForProfile(resolveScenarioProfile({ workScenario: 'research' })), 'auto')
     assert.equal(defaultPlanningForProfile(resolveScenarioProfile({ workScenario: 'optimization' })), 'auto')
     assert.throws(() => resolveScenarioProfile({ executionMode: 'invalid' as never }), /executionMode must be one of/)
@@ -456,7 +456,7 @@ describe('programming workflow', () => {
       phases.set(name, seen)
     }
     assert.deepEqual(phases.get('solo'), ['draft'])
-    assert.deepEqual(phases.get('team'), ['analysis', 'draft'])
+    assert.deepEqual(phases.get('team'), ['draft'])
     assert.deepEqual(phases.get('research'), ['draft'])
     assert.deepEqual(phases.get('optimization'), ['draft'])
   })

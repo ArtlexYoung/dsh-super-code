@@ -1,5 +1,5 @@
 import type { Budget, EvidenceRecord } from './protocol.js';
-import type { ConversationContract } from './conversation.js';
+import type { ConversationContract } from './conversation-contract.js';
 /** Provider-neutral conversation roles used by host adapters. */
 export type WorkflowMessageRole = 'user' | 'assistant' | 'tool';
 /** A compact message history; the workflow keeps the task prompt once. */

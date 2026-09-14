@@ -13,5 +13,6 @@ export * from './core/research.js';
 export * from './core/optimization.js';
 export * from './core/programming.js';
 export * from './core/conversation.js';
+export * from './core/conversation-contract.js';
 export * from './core/evaluation.js';
 //# sourceMappingURL=index.d.ts.map

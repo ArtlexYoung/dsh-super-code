@@ -256,7 +256,7 @@ export async function runProgrammingWorkflow(task: string, callbacks: Programmin
 
   for (let attempt = 1; attempt <= maxRepairAttempts + 1; attempt += 1) {
     const phase = attempt === 1 ? 'draft' : 'repair'
-    const feedback = phase === 'repair' ? compactFeedback([finalAcceptance?.repairHint, finalAcceptance?.feedback].filter(value => value !== undefined && value.trim() !== '').join('\n'), maxFeedbackChars) : undefined
+    const feedback = phase === 'repair' ? compactFeedback([finalAcceptance?.repairHint, finalAcceptance?.feedback].filter((value): value is string => typeof value === 'string' && value.trim() !== '').join('\n'), maxFeedbackChars) : undefined
     const generation = await invoke(phase, attempt, feedback)
     if (generation === undefined) return { status: signal.aborted ? 'aborted' : 'budget_exhausted', candidate, attempts: attempt - 1, phases, messages: contextMessages(feedback), usage, finalAcceptance }
     const currentCandidate = generation.text

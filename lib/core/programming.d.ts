@@ -34,6 +34,8 @@ export interface WorkflowTiming {
 export interface VerificationResult {
     readonly passed: boolean;
     readonly feedback?: string;
+    /** Short, machine-produced repair contract (for example a required arity). */
+    readonly repairHint?: string;
     readonly evidence?: readonly EvidenceRecord[];
 }
 /** Context supplied to each host callback. */

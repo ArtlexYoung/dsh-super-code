@@ -406,7 +406,7 @@ describe('programming workflow', () => {
     let verifyCount = 0
     const result = await runProgrammingWorkflow('fix the function', {
       generate: async context => { contexts.push({ phase: context.phase, feedback: context.feedback, messages: context.messages }); return { text: `${context.phase}-${context.attempt}`, usage: { inputTokens: 3, outputTokens: 2 } } },
-      verify: async () => { verifyCount += 1; return verifyCount === 1 ? { passed: false, feedback: 'x'.repeat(100) } : { passed: true, evidence: [] } },
+      verify: async () => { verifyCount += 1; return verifyCount === 1 ? { passed: false, repairHint: 'keep the required callable signature', feedback: 'x'.repeat(100) } : { passed: true, evidence: [] } },
     }, { maxRepairAttempts: 2, maxFeedbackChars: 24, planning: 'separate' })
     assert.equal(result.status, 'passed')
     assert.equal(result.attempts, 2)

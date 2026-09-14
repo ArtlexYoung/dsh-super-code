@@ -406,7 +406,7 @@ describe('programming workflow', () => {
     const result = await runProgrammingWorkflow('fix the function', {
       generate: async context => { contexts.push({ phase: context.phase, feedback: context.feedback, messages: context.messages }); return { text: `${context.phase}-${context.attempt}`, usage: { inputTokens: 3, outputTokens: 2 } } },
       verify: async () => { verifyCount += 1; return verifyCount === 1 ? { passed: false, feedback: 'x'.repeat(100) } : { passed: true, evidence: [] } },
-    }, { maxRepairAttempts: 2, maxFeedbackChars: 24 })
+    }, { maxRepairAttempts: 2, maxFeedbackChars: 24, planning: 'separate' })
     assert.equal(result.status, 'passed')
     assert.equal(result.attempts, 2)
     assert.equal(verifyCount, 2)
@@ -423,7 +423,7 @@ describe('programming workflow', () => {
     const result = await runProgrammingWorkflow('bounded task', {
       generate: async () => { calls += 1; return { text: 'x', usage: { inputTokens: 6, outputTokens: 5 } } },
       verify: async () => ({ passed: false, feedback: 'retry' }),
-    }, { budget: { maxTotalTokens: 10 }, maxRepairAttempts: 2 })
+    }, { budget: { maxTotalTokens: 10 }, maxRepairAttempts: 2, planning: 'separate' })
     assert.equal(result.status, 'budget_exhausted')
     assert.equal(calls, 1)
     assert.equal(result.attempts, 0)
@@ -435,7 +435,7 @@ describe('programming workflow', () => {
     const result = await runProgrammingWorkflow('deadline task', {
       generate: async context => { calls += 1; timeouts.push(context.remainingBudget.timeoutMs ?? -1); return { text: context.phase, usage: { inputTokens: 1, outputTokens: 1 } } },
       verify: async () => ({ passed: false, feedback: 'retry' }),
-    }, { budget: { timeoutMs: 1_000 }, maxRepairAttempts: 2 })
+    }, { budget: { timeoutMs: 1_000 }, maxRepairAttempts: 2, planning: 'separate' })
     assert.equal(result.status, 'failed')
     assert.equal(calls, 4)
     assert.ok(timeouts.every(timeout => timeout >= 0 && timeout <= 1_000))
@@ -459,6 +459,7 @@ describe('Cordis programming settings', () => {
     assert.equal(config.maxFeedbackChars, 128)
     assert.equal(config.programmingBudget.maxTotalTokens, 100)
     assert.equal(config.maxTasks, 256)
+    assert.equal(config.planning, 'auto')
   })
 
   it('merges service settings with per-call workflow overrides', async () => {

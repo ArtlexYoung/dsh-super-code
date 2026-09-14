@@ -5,6 +5,7 @@ export interface ConversationContext {
   readonly turn: number
   readonly user: string
   readonly messages: readonly WorkflowMessage[]
+  readonly contract: ConversationContract
   readonly signal: AbortSignal
 }
 
@@ -15,6 +16,15 @@ export interface ConversationCallbacks {
 export interface ConversationOptions {
   readonly maxHistoryChars?: number
   readonly retainGenerations?: boolean
+  /** Keep a compact, deterministic ledger of constraints found in user turns. */
+  readonly preserveContract?: boolean
+  readonly maxContractChars?: number
+}
+
+/** Stable requirements extracted from the user side of a multi-turn task. */
+export interface ConversationContract {
+  readonly requirements: readonly string[]
+  readonly text: string
 }
 
 export interface ConversationResult {
@@ -29,6 +39,46 @@ function usage(value: number | undefined, field: string): number {
   if (value === undefined) return 0
   if (!Number.isFinite(value) || value < 0) throw new ProtocolError(`${field} must be a non-negative finite number`, 'INVALID_USAGE')
   return value
+}
+
+const CONTRACT_PATTERNS = [
+  /\b(?:Python|C\+\+|JavaScript|TypeScript|Java|Go|Rust|HTML|CSS|SQL)\b/gi,
+  /\b(?:zero|one|0|1)[ -]based\s+index(?:ing)?\b/gi,
+  /\bO\s*\([^\n)]{1,32}\)/gi,
+  /\b(?:without|avoid|must|should|only|return|preserve|keep|do not|don't)\b[^.!?\n]{0,100}/gi,
+  /`[^`\n]{1,100}`/g,
+]
+
+function contractRequirements(turns: readonly string[]): readonly string[] {
+  const values: string[] = []
+  const seen = new Set<string>()
+  for (const turn of turns) {
+    for (const pattern of CONTRACT_PATTERNS) {
+      pattern.lastIndex = 0
+      for (const match of turn.matchAll(pattern)) {
+        const value = match[0].replace(/\s+/g, ' ').trim()
+        const key = value.toLocaleLowerCase()
+        if (value.length < 2 || seen.has(key)) continue
+        seen.add(key)
+        values.push(value)
+      }
+    }
+  }
+  return values
+}
+
+/** Build a bounded contract without interpreting or rewriting task semantics. */
+export function extractConversationContract(turns: readonly string[], maxChars = 1_200): ConversationContract {
+  if (!Number.isSafeInteger(maxChars) || maxChars < 64) throw new ProtocolError('maxContractChars must be at least 64', 'INVALID_ARGUMENT')
+  const requirements: string[] = []
+  let length = 0
+  for (const value of contractRequirements(turns)) {
+    const line = `- ${value}`
+    if (length + line.length + (requirements.length === 0 ? 0 : 1) > maxChars) break
+    requirements.push(value)
+    length += line.length + (requirements.length === 1 ? 0 : 1)
+  }
+  return { requirements, text: requirements.length === 0 ? '' : `Stable task constraints:\n${requirements.map(value => `- ${value}`).join('\n')}` }
 }
 
 function add(left: ReturnType<typeof emptyUsage>, right: WorkflowUsage | undefined) {
@@ -107,15 +157,20 @@ export async function runConversationWorkflow(turns: readonly string[], callback
   if (!callbacks || typeof callbacks.generate !== 'function') throw new ProtocolError('generate callback is required', 'INVALID_ARGUMENT')
   const maxHistoryChars = options.maxHistoryChars ?? 12_000
   const retainGenerations = options.retainGenerations ?? true
+  const preserveContract = options.preserveContract ?? true
+  const maxContractChars = options.maxContractChars ?? 1_200
   if (!Number.isSafeInteger(maxHistoryChars) || maxHistoryChars < 128) throw new ProtocolError('maxHistoryChars must be at least 128', 'INVALID_ARGUMENT')
   const messages: WorkflowMessage[] = []
   const generations: WorkflowGeneration[] = []
+  const contractTurns: string[] = []
   let aggregate = emptyUsage()
   for (let index = 0; index < turns.length; index += 1) {
     if (signal.aborted) throw signal.reason ?? new Error('conversation aborted')
     const user = turns[index].trim()
+    contractTurns.push(user)
     const context = compact([...messages, { role: 'user' as const, content: user }], maxHistoryChars)
-    const generation = await callbacks.generate({ turn: index + 1, user, messages: context, signal })
+    const contract = preserveContract ? extractConversationContract(contractTurns, maxContractChars) : { requirements: [], text: '' }
+    const generation = await callbacks.generate({ turn: index + 1, user, messages: context, contract, signal })
     if (!generation || typeof generation.text !== 'string' || generation.text.trim() === '') throw new ProtocolError(`turn ${index + 1} generation must contain text`, 'INVALID_RESULT')
     if (retainGenerations) generations.push(generation)
     aggregate = add(aggregate, generation.usage)

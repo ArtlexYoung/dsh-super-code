@@ -26,7 +26,7 @@ dsh plugin --profile web add dsh-super-agent
 `verify` 可以返回 `repairHint` 提供短的结构化修复契约（例如必需的函数签名）；workflow 会把它和有界诊断一起传给下一轮，避免模型从冗长日志中猜测接口。
 如果连续修复收到完全相同的契约和诊断，默认会停止并返回 `failed`，避免在没有新证据时重复消耗模型调用；可通过 `stopOnRepeatedFeedback: false` 关闭。该策略也可在 Cordis profile/page settings 中配置。
 
-非编程的连续对话可使用 `runConversationWorkflow`。它按 turn 调用宿主模型，并在历史超过 `maxHistoryChars` 时保留首轮 user、最近 assistant 和当前 user，避免把完整旧日志重复发送。长会话可设置 `retainGenerations: false`，不在内存中保留每一轮完整输出。
+连续对话可使用 `runConversationWorkflow`。它按 turn 调用宿主模型，并在历史超过 `maxHistoryChars` 时保留首轮 user、最近 assistant 和当前 user，避免把完整旧日志重复发送。工作流还会从 user turns 提取一个有界的 `contract` ledger，记录语言、接口、下标、复杂度和输出约束等原文片段；宿主可将 `context.contract.text` 放入请求上下文，帮助后续 turn 保持前轮约束，不需要额外模型调用。长会话可设置 `retainGenerations: false`，不在内存中保留每一轮完整输出。
 
 发布判断可使用 `evaluateReleaseGate`，默认要求候选正确率至少提升 10 个百分点、总 token 至少减少 10%，且耗时不增加；任一条件不满足都会返回 `accepted: false`。
 多次独立 matched run 可先用 `aggregateEvaluationRuns` 聚合，再交给 release gate，避免一次 max 推理随机结果影响判断。

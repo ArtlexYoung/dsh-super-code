@@ -9,7 +9,7 @@ import { ResearchLedger, normalizeUrl } from '../src/core/research.js'
 import { OptimizationLedger } from '../src/core/optimization.js'
 import { compactFeedback, runProgrammingWorkflow, shouldPlanSeparately } from '../src/core/programming.js'
 import { resolveConfig, SuperAgentService } from '../src/dsh/index.js'
-import { runConversationWorkflow } from '../src/core/conversation.js'
+import { extractConversationContract, runConversationWorkflow } from '../src/core/conversation.js'
 import { aggregateEvaluationRuns, evaluateReleaseGate } from '../src/core/evaluation.js'
 import { ProtocolError, artifactDigest, validateEvent, validateTaskRecord } from '../src/core/protocol.js'
 
@@ -466,6 +466,24 @@ describe('programming workflow', () => {
 })
 
 describe('multi-turn conversation workflow', () => {
+  it('extracts a bounded stable contract from user turns without another model call', () => {
+    const contract = extractConversationContract(['Write a Python function using 0-based indexing.', 'Keep the signature `find_kth` and return only code.'])
+    assert.match(contract.text, /Python/)
+    assert.match(contract.text, /0-based indexing/)
+    assert.match(contract.text, /find_kth/)
+    assert.ok(contract.text.length <= 1200)
+  })
+
+  it('passes the evolving contract to every turn', async () => {
+    const contracts: string[] = []
+    await runConversationWorkflow(['Write Python code.', 'Keep the same signature.'], {
+      generate: async context => { contracts.push(context.contract.text); return { text: 'ok' } },
+    })
+    assert.equal(contracts.length, 2)
+    assert.match(contracts[1] ?? '', /Python/)
+    assert.match(contracts[1] ?? '', /same signature/)
+  })
+
   it('bounds history while preserving the first and latest messages', async () => {
     const contexts: readonly { role: string; content: string }[][] = []
     const result = await runConversationWorkflow(['first task', 'second task', 'third task'], {

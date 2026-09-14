@@ -375,10 +375,10 @@ describe('programming workflow', () => {
   })
 
   it('feeds bounded verifier diagnostics into a repair and stops on success', async () => {
-    const contexts: { phase: string; feedback?: string }[] = []
+    const contexts: { phase: string; feedback?: string; messages: readonly { role: string; content: string }[] }[] = []
     let verifyCount = 0
     const result = await runProgrammingWorkflow('fix the function', {
-      generate: async context => { contexts.push({ phase: context.phase, feedback: context.feedback }); return { text: `${context.phase}-${context.attempt}`, usage: { inputTokens: 3, outputTokens: 2 } } },
+      generate: async context => { contexts.push({ phase: context.phase, feedback: context.feedback, messages: context.messages }); return { text: `${context.phase}-${context.attempt}`, usage: { inputTokens: 3, outputTokens: 2 } } },
       verify: async () => { verifyCount += 1; return verifyCount === 1 ? { passed: false, feedback: 'x'.repeat(100) } : { passed: true, evidence: [] } },
     }, { maxRepairAttempts: 2, maxFeedbackChars: 24 })
     assert.equal(result.status, 'passed')
@@ -387,6 +387,8 @@ describe('programming workflow', () => {
     assert.deepEqual(contexts.map(context => context.phase), ['analysis', 'draft', 'repair'])
     assert.equal(contexts[2]?.feedback?.length, compactFeedback('x'.repeat(100), 24).length)
     assert.ok((contexts[2]?.feedback?.length ?? 0) <= 24)
+    assert.equal(contexts[2]?.messages.some(message => message.content === 'draft-1'), true)
+    assert.equal(contexts[2]?.messages.filter(message => message.content === 'draft-1').length, 1)
     assert.equal(result.phases[2]?.acceptance?.passed, true)
   })
 

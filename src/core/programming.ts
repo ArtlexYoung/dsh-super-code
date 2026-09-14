@@ -177,7 +177,6 @@ export async function runProgrammingWorkflow(task: string, callbacks: Programmin
   const budget = validateBudget(options.budget ?? {})
   const maxRepairAttempts = options.maxRepairAttempts === undefined ? DEFAULT_MAX_REPAIR_ATTEMPTS : positiveInteger(options.maxRepairAttempts, DEFAULT_MAX_REPAIR_ATTEMPTS, 'maxRepairAttempts')
   const maxFeedbackChars = options.maxFeedbackChars === undefined ? DEFAULT_MAX_FEEDBACK_CHARS : positiveInteger(options.maxFeedbackChars, DEFAULT_MAX_FEEDBACK_CHARS, 'maxFeedbackChars')
-  const messages: WorkflowMessage[] = [{ role: 'user', content: normalizedTask }]
   const phases: WorkflowPhaseRecord[] = []
   let usage = emptyUsage()
   let analysis: string | undefined
@@ -186,39 +185,43 @@ export async function runProgrammingWorkflow(task: string, callbacks: Programmin
   const startedAt = Date.now()
   const elapsed = (): number => Date.now() - startedAt
   const deadlineExceeded = (): boolean => budget.timeoutMs !== undefined && elapsed() >= budget.timeoutMs
+  const contextMessages = (feedback?: string): readonly WorkflowMessage[] => [
+    { role: 'user', content: normalizedTask },
+    ...(analysis === undefined ? [] : [{ role: 'assistant' as const, content: analysis }]),
+    ...(candidate === undefined ? [] : [{ role: 'assistant' as const, content: candidate }]),
+    ...(feedback === undefined ? [] : [{ role: 'tool' as const, content: feedback }]),
+  ]
 
   const invoke = async (phase: 'analysis' | 'draft' | 'repair', attempt: number, feedback?: string): Promise<WorkflowGeneration | undefined> => {
     if (signal.aborted || deadlineExceeded() || exceeds(usage, budget)) return undefined
-    const generation = await callbacks.generate({ phase, task: normalizedTask, messages: [...messages], ...analysis === undefined ? {} : { analysis }, ...candidate === undefined ? {} : { candidate }, ...feedback === undefined ? {} : { feedback }, attempt, remainingBudget: remaining(usage, budget, elapsed()), signal })
+    const generation = await callbacks.generate({ phase, task: normalizedTask, messages: contextMessages(feedback), ...analysis === undefined ? {} : { analysis }, ...candidate === undefined ? {} : { candidate }, ...feedback === undefined ? {} : { feedback }, attempt, remainingBudget: remaining(usage, budget, elapsed()), signal })
     const text = nonEmpty(generation.text, `${phase}.text`)
     const normalized = { ...generation, text, usage: generation.usage === undefined ? undefined : { ...generation.usage }, timing: normalizeTiming(generation.timing) }
     usage = addUsage(usage, normalizeUsage(generation.usage))
-    messages.push({ role: 'assistant', content: text })
     return normalized
   }
 
-  if (signal.aborted) return { status: 'aborted', attempts: 0, phases, messages, usage, finalAcceptance }
+  if (signal.aborted) return { status: 'aborted', attempts: 0, phases, messages: contextMessages(), usage, finalAcceptance }
   const analysisGeneration = await invoke('analysis', 0)
-  if (analysisGeneration === undefined) return { status: signal.aborted ? 'aborted' : 'budget_exhausted', attempts: 0, phases, messages, usage, finalAcceptance }
+  if (analysisGeneration === undefined) return { status: signal.aborted ? 'aborted' : 'budget_exhausted', attempts: 0, phases, messages: contextMessages(), usage, finalAcceptance }
   analysis = analysisGeneration.text
   phases.push({ phase: 'analysis', attempt: 0, generation: analysisGeneration })
-  if (exceeds(usage, budget) || deadlineExceeded() || signal.aborted) return { status: signal.aborted ? 'aborted' : 'budget_exhausted', attempts: 0, phases, messages, usage, finalAcceptance }
+  if (exceeds(usage, budget) || deadlineExceeded() || signal.aborted) return { status: signal.aborted ? 'aborted' : 'budget_exhausted', attempts: 0, phases, messages: contextMessages(), usage, finalAcceptance }
 
   for (let attempt = 1; attempt <= maxRepairAttempts + 1; attempt += 1) {
     const phase = attempt === 1 ? 'draft' : 'repair'
     const feedback = phase === 'repair' ? compactFeedback(finalAcceptance?.feedback, maxFeedbackChars) : undefined
-    if (feedback !== undefined) messages.push({ role: 'tool', content: feedback })
     const generation = await invoke(phase, attempt, feedback)
-    if (generation === undefined) return { status: signal.aborted ? 'aborted' : 'budget_exhausted', candidate, attempts: attempt - 1, phases, messages, usage, finalAcceptance }
+    if (generation === undefined) return { status: signal.aborted ? 'aborted' : 'budget_exhausted', candidate, attempts: attempt - 1, phases, messages: contextMessages(feedback), usage, finalAcceptance }
     candidate = generation.text
     const acceptance = await callbacks.verify({ task: normalizedTask, candidate, attempt, signal })
     if (!acceptance || typeof acceptance.passed !== 'boolean') throw new ProtocolError('verify must return a passed boolean', 'INVALID_RESULT')
     finalAcceptance = acceptance
     phases.push({ phase, attempt, generation, acceptance })
-    if (acceptance.passed) return { status: 'passed', candidate, attempts: attempt, phases, messages, usage, finalAcceptance }
-    if (exceeds(usage, budget) || deadlineExceeded() || signal.aborted) return { status: signal.aborted ? 'aborted' : 'budget_exhausted', candidate, attempts: attempt, phases, messages, usage, finalAcceptance }
+    if (acceptance.passed) return { status: 'passed', candidate, attempts: attempt, phases, messages: contextMessages(), usage, finalAcceptance }
+    if (exceeds(usage, budget) || deadlineExceeded() || signal.aborted) return { status: signal.aborted ? 'aborted' : 'budget_exhausted', candidate, attempts: attempt, phases, messages: contextMessages(acceptance.feedback), usage, finalAcceptance }
   }
-  return { status: 'failed', candidate, attempts: maxRepairAttempts + 1, phases, messages, usage, finalAcceptance }
+  return { status: 'failed', candidate, attempts: maxRepairAttempts + 1, phases, messages: contextMessages(finalAcceptance?.feedback), usage, finalAcceptance }
 }
 
 export default runProgrammingWorkflow

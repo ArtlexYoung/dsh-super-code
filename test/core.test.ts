@@ -543,6 +543,12 @@ describe('multi-turn conversation workflow', () => {
     assert.match(contracts[1] ?? '', /same signature/)
   })
 
+  it('retains algorithmic constraints across follow-up changes', () => {
+    const contract = extractConversationContract(['Write a C++ function using recursion.', 'Now use the same interface for a three-term sequence.'])
+    assert.match(contract.text, /recursion/i)
+    assert.match(contract.text, /C\+\+/)
+  })
+
   it('bounds history while preserving the first and latest messages', async () => {
     const contexts: readonly { role: string; content: string }[][] = []
     const result = await runConversationWorkflow(['first task', 'second task', 'third task'], {
@@ -647,5 +653,30 @@ describe('Cordis programming settings', () => {
     }, { maxFeedbackChars: 32 })
     assert.equal(result.status, 'passed')
     assert.equal(calls, 2)
+  })
+
+  it('uses configured model pools for each workflow phase', async () => {
+    const ctx = new (await import('@deepseek-ai/cordis')).Context()
+    const service = new SuperAgentService(ctx, {
+      planning: 'separate',
+      modelPools: {
+        high: [{ id: 'planner', strengths: ['balanced', 'deep'], available: true }],
+        normal: [{ id: 'fallback', strengths: ['standard'], available: true }],
+        low: [{ id: 'cheap', strengths: ['fast', 'balanced'], available: true }],
+      },
+    })
+    const selected: { phase: string; id?: string; strength?: string }[] = []
+    const result = await service.programmingWorkflow('write a small function', {
+      generate: async context => {
+        selected.push({ phase: context.phase, id: context.model?.id, strength: context.model?.strength })
+        return { text: context.phase }
+      },
+      verify: async () => ({ passed: true }),
+    })
+    assert.equal(result.status, 'passed')
+    assert.deepEqual(selected, [
+      { phase: 'analysis', id: 'planner', strength: 'deep' },
+      { phase: 'draft', id: 'cheap', strength: 'balanced' },
+    ])
   })
 })

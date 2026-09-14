@@ -34,3 +34,8 @@
         executionMode: auto
         workScenario: delivery
         optimizationTarget: both
+        tokenStats: true
+        modelPools:
+          high: []
+          normal: []
+          low: []

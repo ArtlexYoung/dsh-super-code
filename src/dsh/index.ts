@@ -21,6 +21,8 @@ const MAX_TIMER_MS = 2_147_000_000
 
 /** Deployment limits for graph and dispatcher instances. */
 export interface Config {
+  readonly modelPools?: import('../ui.js').ModelPoolConfig
+  readonly tokenStats?: boolean
   readonly maxTasks?: number
   readonly maxDepth?: number
   readonly maxConcurrent?: number
@@ -43,6 +45,8 @@ export interface Config {
 
 /** Schemastery config schema; cross-field checks happen in {@link resolveConfig}. */
 export const Config: z<Config> = z.object({
+  modelPools: z.any(),
+  tokenStats: z.boolean(),
   maxTasks: z.number().step(1),
   maxDepth: z.number().step(1),
   maxConcurrent: z.number().step(1),
@@ -63,6 +67,8 @@ export const Config: z<Config> = z.object({
 
 /** Resolved adapter defaults. */
 export interface ResolvedConfig {
+  readonly modelPools: import('../ui.js').ModelPoolConfig
+  readonly tokenStats: boolean
   readonly maxTasks: number
   readonly maxDepth: number
   readonly maxConcurrent: number
@@ -109,6 +115,8 @@ export function resolveConfig(config: Config = {}): ResolvedConfig {
     optimizationTarget: config.optimizationTarget,
   })
   return {
+    modelPools: config.modelPools ?? { high: [], normal: [], low: [] },
+    tokenStats: config.tokenStats ?? true,
     maxTasks: positive('maxTasks', config.maxTasks ?? 256),
     maxDepth: positive('maxDepth', config.maxDepth ?? 32),
     maxConcurrent: positive('maxConcurrent', config.maxConcurrent ?? 8),

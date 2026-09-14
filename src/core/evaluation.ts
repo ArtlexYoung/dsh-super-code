@@ -20,6 +20,20 @@ export interface EvaluationGateResult {
   readonly accepted: boolean
 }
 
+export interface EvaluationRun {
+  readonly baseline: EvaluationSnapshot
+  readonly candidate: EvaluationSnapshot
+}
+
+export interface EvaluationAggregate {
+  readonly runs: number
+  readonly baseline: EvaluationSnapshot
+  readonly candidate: EvaluationSnapshot
+  readonly deltas: { readonly successRate: number; readonly totalTokens: number; readonly latencyMs: number }
+  readonly tokenReduction: number | null
+  readonly latencyReduction: number | null
+}
+
 function rate(value: number, field: string): number {
   if (!Number.isFinite(value) || value < 0 || value > 1) throw new ProtocolError(`${field} must be between 0 and 1`, 'INVALID_ARGUMENT')
   return value
@@ -40,6 +54,17 @@ export function evaluateReleaseGate(baseline: EvaluationSnapshot, candidate: Eva
   const reduction = { totalTokens: base.totalTokens > 0 ? (base.totalTokens - next.totalTokens) / base.totalTokens : null, latency: base.latencyMs > 0 ? (base.latencyMs - next.latencyMs) / base.latencyMs : null }
   const checks = { accuracyUplift: delta.successRate >= resolved.minAccuracyUplift, tokenReduction: reduction.totalTokens !== null && reduction.totalTokens >= resolved.minTokenReduction, latencyReduction: reduction.latency !== null && reduction.latency >= resolved.minLatencyReduction }
   return { delta, reduction, thresholds: resolved, checks, accepted: Object.values(checks).every(Boolean) }
+}
+
+/** Aggregate independent matched runs before applying a release gate. */
+export function aggregateEvaluationRuns(runs: readonly EvaluationRun[]): EvaluationAggregate {
+  if (!Array.isArray(runs) || runs.length === 0) throw new ProtocolError('runs must be non-empty', 'INVALID_ARGUMENT')
+  const baseline = runs.reduce((sum, run) => ({ successRate: sum.successRate + rate(run.baseline.successRate, 'baseline.successRate'), totalTokens: sum.totalTokens + nonNegative(run.baseline.totalTokens, 'baseline.totalTokens'), latencyMs: sum.latencyMs + nonNegative(run.baseline.latencyMs, 'baseline.latencyMs') }), { successRate: 0, totalTokens: 0, latencyMs: 0 })
+  const candidate = runs.reduce((sum, run) => ({ successRate: sum.successRate + rate(run.candidate.successRate, 'candidate.successRate'), totalTokens: sum.totalTokens + nonNegative(run.candidate.totalTokens, 'candidate.totalTokens'), latencyMs: sum.latencyMs + nonNegative(run.candidate.latencyMs, 'candidate.latencyMs') }), { successRate: 0, totalTokens: 0, latencyMs: 0 })
+  const count = runs.length
+  const average = { baseline: { successRate: baseline.successRate / count, totalTokens: baseline.totalTokens / count, latencyMs: baseline.latencyMs / count }, candidate: { successRate: candidate.successRate / count, totalTokens: candidate.totalTokens / count, latencyMs: candidate.latencyMs / count } }
+  const deltas = { successRate: average.candidate.successRate - average.baseline.successRate, totalTokens: average.candidate.totalTokens - average.baseline.totalTokens, latencyMs: average.candidate.latencyMs - average.baseline.latencyMs }
+  return { runs: count, ...average, deltas, tokenReduction: average.baseline.totalTokens > 0 ? (average.baseline.totalTokens - average.candidate.totalTokens) / average.baseline.totalTokens : null, latencyReduction: average.baseline.latencyMs > 0 ? (average.baseline.latencyMs - average.candidate.latencyMs) / average.baseline.latencyMs : null }
 }
 
 export default evaluateReleaseGate

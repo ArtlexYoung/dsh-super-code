@@ -10,7 +10,7 @@ import { OptimizationLedger } from '../src/core/optimization.js'
 import { compactFeedback, runProgrammingWorkflow, shouldPlanSeparately } from '../src/core/programming.js'
 import { resolveConfig, SuperAgentService } from '../src/dsh/index.js'
 import { runConversationWorkflow } from '../src/core/conversation.js'
-import { evaluateReleaseGate } from '../src/core/evaluation.js'
+import { aggregateEvaluationRuns, evaluateReleaseGate } from '../src/core/evaluation.js'
 import { ProtocolError, artifactDigest, validateEvent, validateTaskRecord } from '../src/core/protocol.js'
 
 const digest = 'a'.repeat(64)
@@ -487,6 +487,17 @@ describe('evaluation release gate', () => {
     const flatQuality = evaluateReleaseGate({ successRate: 1, totalTokens: 100, latencyMs: 10 }, { successRate: 1, totalTokens: 50, latencyMs: 5 })
     assert.equal(flatQuality.accepted, false)
     assert.equal(flatQuality.checks.accuracyUplift, false)
+  })
+
+  it('aggregates independent matched runs before release decisions', () => {
+    const aggregate = aggregateEvaluationRuns([
+      { baseline: { successRate: 0.8, totalTokens: 100, latencyMs: 10 }, candidate: { successRate: 0.9, totalTokens: 80, latencyMs: 8 } },
+      { baseline: { successRate: 0.6, totalTokens: 120, latencyMs: 12 }, candidate: { successRate: 0.8, totalTokens: 90, latencyMs: 9 } },
+    ])
+    assert.equal(aggregate.runs, 2)
+    assert.equal(aggregate.baseline.successRate, 0.7)
+    assert.equal(aggregate.tokenReduction, 0.22727272727272727)
+    assert.ok(Math.abs(aggregate.deltas.successRate - 0.15) < 1e-12)
   })
 })
 

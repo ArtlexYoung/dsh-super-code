@@ -367,7 +367,7 @@ describe('programming workflow', () => {
     const result = await runProgrammingWorkflow('implement a function', {
       generate: async context => { phases.push(context.phase); return { text: context.phase === 'analysis' ? 'analysis' : 'draft', usage: { inputTokens: 10, outputTokens: 5 } } },
       verify: async () => { verified += 1; return { passed: true, feedback: 'tests passed' } },
-    })
+    }, { planning: 'separate' })
     assert.equal(result.status, 'passed')
     assert.equal(result.attempts, 1)
     assert.deepEqual(phases, ['analysis', 'draft'])
@@ -389,6 +389,15 @@ describe('programming workflow', () => {
   it('selects planning from task shape without dataset-specific rules', () => {
     assert.equal(shouldPlanSeparately('write a function that adds two numbers'), false)
     assert.equal(shouldPlanSeparately('Design the architecture, dependencies, and acceptance criteria for a multi-component migration'), true)
+  })
+
+  it('uses automatic planning by default', async () => {
+    const phases: string[] = []
+    await runProgrammingWorkflow('write a small pure function', {
+      generate: async context => { phases.push(context.phase); return { text: 'candidate' } },
+      verify: async () => ({ passed: true }),
+    })
+    assert.deepEqual(phases, ['draft'])
   })
 
   it('feeds bounded verifier diagnostics into a repair and stops on success', async () => {
@@ -454,7 +463,7 @@ describe('Cordis programming settings', () => {
 
   it('merges service settings with per-call workflow overrides', async () => {
     const ctx = new (await import('@deepseek-ai/cordis')).Context()
-    const service = new SuperAgentService(ctx, { maxRepairAttempts: 1, maxFeedbackChars: 64, maxTotalTokens: 20 })
+    const service = new SuperAgentService(ctx, { maxRepairAttempts: 1, maxFeedbackChars: 64, maxTotalTokens: 20, planning: 'separate' })
     let calls = 0
     const result = await service.programmingWorkflow('settings task', {
       generate: async context => { calls += 1; assert.equal(context.remainingBudget.maxTotalTokens, calls === 1 ? 20 : 18); return { text: context.phase, usage: { inputTokens: 1, outputTokens: 1 } } },

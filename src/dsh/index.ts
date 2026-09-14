@@ -87,7 +87,7 @@ export function resolveConfig(config: Config = {}): ResolvedConfig {
     ...config.maxToolCalls === undefined ? {} : { maxToolCalls: nonNegative('maxToolCalls', config.maxToolCalls) },
     timeoutMs: timer('timeoutMs', config.timeoutMs ?? 0),
   })
-  const planning = config.planning ?? 'separate'
+  const planning = config.planning ?? 'auto'
   if (planning !== 'separate' && planning !== 'skip' && planning !== 'auto') throw new Error('super-agent: planning must be separate, skip, or auto')
   return {
     maxTasks: positive('maxTasks', config.maxTasks ?? 256),

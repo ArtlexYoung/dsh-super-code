@@ -4,6 +4,7 @@ import { extractConversationContract } from './conversation-contract.js'
 import type { ConversationContract } from './conversation-contract.js'
 import { defaultPlanningForProfile, resolveScenarioProfile } from './scenario.js'
 import type { ScenarioProfile, ScenarioProfileInput } from './scenario.js'
+import type { ModelOption, ModelTier } from '../ui.js'
 
 /** Provider-neutral conversation roles used by host adapters. */
 export type WorkflowMessageRole = 'user' | 'assistant' | 'tool'
@@ -65,6 +66,8 @@ export interface ProgrammingWorkflowContext {
   readonly attempt: number
   readonly remainingBudget: Budget
   readonly signal: AbortSignal
+  /** Model selected by the host's configured model-pool policy. */
+  readonly model?: ModelOption
 }
 
 /** Host callbacks adapt this workflow to AgentLoop, HTTP, or a test double. */
@@ -84,6 +87,8 @@ export interface ProgrammingWorkflowOptions {
   readonly stopOnRepeatedFeedback?: boolean
   /** Explicit execution mode and work scenario for host composition. */
   readonly profile?: ScenarioProfileInput
+  /** Host model-pool resolver; called before each model invocation. */
+  readonly modelSelector?: (phase: 'analysis' | 'draft' | 'repair', difficulty: number) => ModelOption | undefined
 }
 
 export interface WorkflowPhaseRecord {
@@ -252,7 +257,9 @@ export async function runProgrammingWorkflow(task: string, callbacks: Programmin
 
   const invoke = async (phase: 'analysis' | 'draft' | 'repair', attempt: number, feedback?: string): Promise<WorkflowGeneration | undefined> => {
     if (signal.aborted || deadlineExceeded() || exceeds(usage, budget)) return undefined
-    const call = await boundedCall(callSignal => callbacks.generate({ phase, task: normalizedTask, messages: contextMessages(feedback), contract, profile, ...analysis === undefined ? {} : { analysis }, ...candidate === undefined ? {} : { candidate }, ...feedback === undefined ? {} : { feedback }, attempt, remainingBudget: remaining(usage, budget, elapsed()), signal: callSignal }), signal, budget.timeoutMs === undefined ? undefined : Math.max(1, budget.timeoutMs - elapsed()))
+    const difficulty = phase === 'analysis' ? 0.9 : phase === 'repair' ? 0.75 : 0.55
+    const model = options.modelSelector?.(phase, difficulty)
+    const call = await boundedCall(callSignal => callbacks.generate({ phase, task: normalizedTask, messages: contextMessages(feedback), contract, profile, ...model === undefined ? {} : { model }, ...analysis === undefined ? {} : { analysis }, ...candidate === undefined ? {} : { candidate }, ...feedback === undefined ? {} : { feedback }, attempt, remainingBudget: remaining(usage, budget, elapsed()), signal: callSignal }), signal, budget.timeoutMs === undefined ? undefined : Math.max(1, budget.timeoutMs - elapsed()))
     if (call.kind !== 'completed') return undefined
     const generation = call.value
     const text = nonEmpty(generation.text, `${phase}.text`)

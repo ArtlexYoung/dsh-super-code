@@ -1,6 +1,7 @@
 import type { Budget, EvidenceRecord } from './protocol.js';
 import type { ConversationContract } from './conversation-contract.js';
 import type { ScenarioProfile, ScenarioProfileInput } from './scenario.js';
+import type { ModelOption } from '../ui.js';
 /** Provider-neutral conversation roles used by host adapters. */
 export type WorkflowMessageRole = 'user' | 'assistant' | 'tool';
 /** A compact message history; the workflow keeps the task prompt once. */
@@ -55,6 +56,8 @@ export interface ProgrammingWorkflowContext {
     readonly attempt: number;
     readonly remainingBudget: Budget;
     readonly signal: AbortSignal;
+    /** Model selected by the host's configured model-pool policy. */
+    readonly model?: ModelOption;
 }
 /** Host callbacks adapt this workflow to AgentLoop, HTTP, or a test double. */
 export interface ProgrammingWorkflowCallbacks {
@@ -77,6 +80,8 @@ export interface ProgrammingWorkflowOptions {
     readonly stopOnRepeatedFeedback?: boolean;
     /** Explicit execution mode and work scenario for host composition. */
     readonly profile?: ScenarioProfileInput;
+    /** Host model-pool resolver; called before each model invocation. */
+    readonly modelSelector?: (phase: 'analysis' | 'draft' | 'repair', difficulty: number) => ModelOption | undefined;
 }
 export interface WorkflowPhaseRecord {
     readonly phase: 'analysis' | 'draft' | 'repair';

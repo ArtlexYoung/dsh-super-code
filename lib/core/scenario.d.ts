@@ -22,8 +22,9 @@ export declare const PRESET_PROFILES: Readonly<Record<ShippedPresetName, Scenari
 export declare function resolveScenarioProfile(input?: ScenarioProfileInput): ScenarioProfile;
 /**
  * Choose a planning default from the two axes. Explicit workflow options can
- * still override this choice. Structured work disciplines and team execution
- * need an analysis record; solo delivery keeps the low-cost adaptive path.
+ * still override this choice. Team execution needs a task-tree record; the
+ * research and optimization disciplines remain adaptive so simple tasks do
+ * not pay for a needless planning turn.
  */
 export declare function defaultPlanningForProfile(profile: ScenarioProfile): ScenarioPlanning;
 /** Resolve a shipped preset name to its two-axis profile. */

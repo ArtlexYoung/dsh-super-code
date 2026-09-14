@@ -27,6 +27,8 @@ dsh plugin --profile web add dsh-super-agent
 
 非编程的连续对话可使用 `runConversationWorkflow`。它按 turn 调用宿主模型，并在历史超过 `maxHistoryChars` 时保留首轮 user、最近 assistant 和当前 user，避免把完整旧日志重复发送。
 
+发布判断可使用 `evaluateReleaseGate`，默认要求候选正确率至少提升 10 个百分点、总 token 至少减少 10%，且耗时不增加；任一条件不满足都会返回 `accepted: false`。
+
 如果使用 Cordis 服务，也可以调用 `ctx.superAgent.programmingWorkflow(...)`；两种入口共享同一实现。服务配置中的 `maxRepairAttempts`、`maxFeedbackChars`、`maxInputTokens`、`maxOutputTokens`、`maxTotalTokens`、`maxToolCalls` 和 `timeoutMs` 可由 profile/page settings 调整，单次调用可以覆盖这些默认值。
 
 ## 选择 preset

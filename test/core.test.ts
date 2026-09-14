@@ -10,6 +10,7 @@ import { OptimizationLedger } from '../src/core/optimization.js'
 import { compactFeedback, runProgrammingWorkflow, shouldPlanSeparately } from '../src/core/programming.js'
 import { resolveConfig, SuperAgentService } from '../src/dsh/index.js'
 import { runConversationWorkflow } from '../src/core/conversation.js'
+import { evaluateReleaseGate } from '../src/core/evaluation.js'
 import { ProtocolError, artifactDigest, validateEvent, validateTaskRecord } from '../src/core/protocol.js'
 
 const digest = 'a'.repeat(64)
@@ -465,6 +466,16 @@ describe('multi-turn conversation workflow', () => {
     assert.equal(contexts[2]?.some(message => message.role === 'assistant' && message.content.startsWith('answer-2')), true)
     assert.equal(contexts[2]?.some(message => message.content.includes('omitted')), true)
     assert.ok(result.messages.reduce((sum, message) => sum + message.content.length, 0) <= 128)
+  })
+})
+
+describe('evaluation release gate', () => {
+  it('requires both quality uplift and efficiency reduction', () => {
+    const accepted = evaluateReleaseGate({ successRate: 0.8, totalTokens: 100, latencyMs: 10 }, { successRate: 0.92, totalTokens: 80, latencyMs: 8 })
+    assert.equal(accepted.accepted, true)
+    const flatQuality = evaluateReleaseGate({ successRate: 1, totalTokens: 100, latencyMs: 10 }, { successRate: 1, totalTokens: 50, latencyMs: 5 })
+    assert.equal(flatQuality.accepted, false)
+    assert.equal(flatQuality.checks.accuracyUplift, false)
   })
 })
 

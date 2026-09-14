@@ -24,7 +24,17 @@ export interface WorkflowUsage {
 export interface WorkflowGeneration {
   readonly text: string
   readonly usage?: WorkflowUsage
+  readonly timing?: WorkflowTiming
   readonly metadata?: Readonly<Record<string, string>>
+}
+
+/** Optional request timing captured by a host adapter. */
+export interface WorkflowTiming {
+  readonly requestWaitMs?: number
+  readonly inputWaitMs?: number
+  readonly ttftMs?: number
+  readonly outputMs?: number
+  readonly totalLatencyMs?: number
 }
 
 /** External acceptance result, normally produced by a local test runner. */
@@ -100,6 +110,17 @@ function usageValue(value: number | undefined, field: string): number {
   return value
 }
 
+function normalizeTiming(timing: WorkflowTiming | undefined): WorkflowTiming | undefined {
+  if (timing === undefined) return undefined
+  const fields = ['requestWaitMs', 'inputWaitMs', 'ttftMs', 'outputMs', 'totalLatencyMs'] as const
+  const normalized: Partial<Record<typeof fields[number], number>> = {}
+  for (const field of fields) {
+    const value = timing[field]
+    if (value !== undefined) normalized[field] = usageValue(value, `timing.${field}`)
+  }
+  return normalized
+}
+
 type NormalizedUsage = Required<Pick<WorkflowUsage, 'inputTokens' | 'outputTokens' | 'totalTokens' | 'cachedTokens' | 'toolCalls' | 'latencyMs'>>
 
 function normalizeUsage(usage: WorkflowUsage | undefined): NormalizedUsage {
@@ -170,7 +191,7 @@ export async function runProgrammingWorkflow(task: string, callbacks: Programmin
     if (signal.aborted || deadlineExceeded() || exceeds(usage, budget)) return undefined
     const generation = await callbacks.generate({ phase, task: normalizedTask, messages: [...messages], ...analysis === undefined ? {} : { analysis }, ...candidate === undefined ? {} : { candidate }, ...feedback === undefined ? {} : { feedback }, attempt, remainingBudget: remaining(usage, budget, elapsed()), signal })
     const text = nonEmpty(generation.text, `${phase}.text`)
-    const normalized = { ...generation, text, usage: generation.usage === undefined ? undefined : { ...generation.usage } }
+    const normalized = { ...generation, text, usage: generation.usage === undefined ? undefined : { ...generation.usage }, timing: normalizeTiming(generation.timing) }
     usage = addUsage(usage, normalizeUsage(generation.usage))
     messages.push({ role: 'assistant', content: text })
     return normalized

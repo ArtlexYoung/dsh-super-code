@@ -19,7 +19,16 @@ export interface WorkflowUsage {
 export interface WorkflowGeneration {
     readonly text: string;
     readonly usage?: WorkflowUsage;
+    readonly timing?: WorkflowTiming;
     readonly metadata?: Readonly<Record<string, string>>;
+}
+/** Optional request timing captured by a host adapter. */
+export interface WorkflowTiming {
+    readonly requestWaitMs?: number;
+    readonly inputWaitMs?: number;
+    readonly ttftMs?: number;
+    readonly outputMs?: number;
+    readonly totalLatencyMs?: number;
 }
 /** External acceptance result, normally produced by a local test runner. */
 export interface VerificationResult {

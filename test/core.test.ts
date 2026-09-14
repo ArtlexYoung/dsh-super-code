@@ -498,6 +498,7 @@ describe('Cordis programming settings', () => {
     assert.equal(config.programmingBudget.maxTotalTokens, 100)
     assert.equal(config.maxTasks, 256)
     assert.equal(config.planning, 'auto')
+    assert.equal(config.stopOnRepeatedFeedback, true)
   })
 
   it('merges service settings with per-call workflow overrides', async () => {

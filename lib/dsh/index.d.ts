@@ -24,6 +24,7 @@ export interface Config {
     readonly maxTotalTokens?: number;
     readonly maxToolCalls?: number;
     readonly planning?: 'separate' | 'skip' | 'auto';
+    readonly stopOnRepeatedFeedback?: boolean;
 }
 /** Schemastery config schema; cross-field checks happen in {@link resolveConfig}. */
 export declare const Config: z<Config>;
@@ -38,6 +39,7 @@ export interface ResolvedConfig {
     readonly maxFeedbackChars: number;
     readonly programmingBudget: Budget;
     readonly planning: 'separate' | 'skip' | 'auto';
+    readonly stopOnRepeatedFeedback: boolean;
 }
 /** Materialize and validate deployment defaults once at load. */
 export declare function resolveConfig(config?: Config): ResolvedConfig;

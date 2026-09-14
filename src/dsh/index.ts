@@ -31,6 +31,7 @@ export interface Config {
   readonly maxTotalTokens?: number
   readonly maxToolCalls?: number
   readonly planning?: 'separate' | 'skip' | 'auto'
+  readonly stopOnRepeatedFeedback?: boolean
 }
 
 /** Schemastery config schema; cross-field checks happen in {@link resolveConfig}. */
@@ -47,6 +48,7 @@ export const Config: z<Config> = z.object({
   maxTotalTokens: z.number().step(1),
   maxToolCalls: z.number().step(1),
   planning: z.union([z.const('separate'), z.const('skip'), z.const('auto')]),
+  stopOnRepeatedFeedback: z.boolean(),
 })
 
 /** Resolved adapter defaults. */
@@ -60,6 +62,7 @@ export interface ResolvedConfig {
   readonly maxFeedbackChars: number
   readonly programmingBudget: Budget
   readonly planning: 'separate' | 'skip' | 'auto'
+  readonly stopOnRepeatedFeedback: boolean
 }
 
 function positive(name: string, value: number): number {
@@ -99,6 +102,7 @@ export function resolveConfig(config: Config = {}): ResolvedConfig {
     maxFeedbackChars: positive('maxFeedbackChars', config.maxFeedbackChars ?? 2_000),
     programmingBudget,
     planning,
+    stopOnRepeatedFeedback: config.stopOnRepeatedFeedback ?? true,
   }
 }
 
@@ -191,6 +195,7 @@ export class SuperAgentService extends Service {
       maxRepairAttempts: options.maxRepairAttempts ?? this.resolved.maxRepairAttempts,
       maxFeedbackChars: options.maxFeedbackChars ?? this.resolved.maxFeedbackChars,
       planning: options.planning ?? this.resolved.planning,
+      stopOnRepeatedFeedback: options.stopOnRepeatedFeedback ?? this.resolved.stopOnRepeatedFeedback,
       budget: mergedBudget,
     }, signal)
   }

@@ -7,6 +7,8 @@ import { Dispatcher } from '../core/dispatcher.js'
 import type { DispatcherOptions } from '../core/dispatcher.js'
 import { runProgrammingWorkflow } from '../core/programming.js'
 import type { ProgrammingWorkflowCallbacks, ProgrammingWorkflowOptions, ProgrammingWorkflowResult } from '../core/programming.js'
+import { runConversationWorkflow } from '../core/conversation.js'
+import type { ConversationCallbacks, ConversationOptions, ConversationResult } from '../core/conversation.js'
 import { validateBudget } from '../core/protocol.js'
 import type { Budget } from '../core/protocol.js'
 import { selectModel, summarizeTokens } from '../ui.js'
@@ -15,6 +17,8 @@ import { resolveScenarioProfile } from '../core/scenario.js'
 import type { ExecutionMode, OptimizationTarget, ScenarioProfile, WorkScenario } from '../core/scenario.js'
 import type {} from '@deepseek-ai/dsh-settings'
 import { SUPER_AGENT_SETTINGS_NAMESPACE, SuperAgentSettingsSchema } from '../settings.js'
+import { superAgentUsageProjectionDefinition } from '../super-agent-usage.js'
+import type {} from '@deepseek-ai/dsh-session-projection'
 
 /** Cordis plugin name. */
 export const name = 'super-agent'
@@ -165,6 +169,9 @@ export class SuperAgentService extends Service {
   constructor(ctx: Context, config: Config = {}) {
     super(ctx, 'superAgent')
     this.resolved = resolveConfig(config)
+    ctx.inject(['sessionProjections'], (projectionCtx: Context) => {
+      projectionCtx.sessionProjections.register(superAgentUsageProjectionDefinition)
+    })
     ctx.inject(['settings'], (settingsCtx: Context) => {
       const scope = settingsCtx.settings.register(SUPER_AGENT_SETTINGS_NAMESPACE, SuperAgentSettingsSchema, {
         base: { modelPools: {
@@ -239,7 +246,23 @@ export class SuperAgentService extends Service {
    */
   programmingWorkflow(task: string, callbacks: ProgrammingWorkflowCallbacks, options: ProgrammingWorkflowOptions = {}, signal?: AbortSignal): Promise<ProgrammingWorkflowResult> {
     const mergedBudget: Budget = { ...this.resolved.programmingBudget, ...options.budget }
-    return runProgrammingWorkflow(task, callbacks, {
+    const generate: ProgrammingWorkflowCallbacks['generate'] = async (context) => {
+      const generation = await callbacks.generate(context)
+      const usage = generation.usage
+      if (usage !== undefined) {
+        const input = usage.inputTokens ?? 0
+        const cached = Math.min(input, usage.cachedTokens ?? 0)
+        this.recordTokenUsage({
+          model: context.model?.id ?? 'host-default',
+          cacheHit: cached,
+          uncachedInput: Math.max(0, input - cached),
+          cacheRead: cached,
+          output: usage.outputTokens ?? 0,
+        })
+      }
+      return generation
+    }
+    return runProgrammingWorkflow(task, { ...callbacks, generate }, {
       ...options,
       maxRepairAttempts: options.maxRepairAttempts ?? this.resolved.maxRepairAttempts,
       maxFeedbackChars: options.maxFeedbackChars ?? this.resolved.maxFeedbackChars,
@@ -247,7 +270,45 @@ export class SuperAgentService extends Service {
       stopOnRepeatedFeedback: options.stopOnRepeatedFeedback ?? this.resolved.stopOnRepeatedFeedback,
       profile: options.profile ?? this.resolved.profile,
       budget: mergedBudget,
-      modelSelector: options.modelSelector ?? ((phase, difficulty) => this.selectModel(phase === 'analysis' ? 'high' : phase === 'repair' ? 'normal' : 'normal', difficulty)),
+      modelSelector: options.modelSelector ?? ((phase, difficulty) => {
+        const simple = task.trim().length < 240 && !/architecture|migration|refactor|benchmark|验收|重构|迁移/i.test(task)
+        const tier = phase === 'analysis' ? 'high' : phase === 'repair' ? 'normal' : simple ? 'low' : 'normal'
+        return this.selectModel(tier, difficulty)
+      }),
+    }, signal)
+  }
+
+  /**
+   * Run a bounded multi-turn conversation with the configured model pools.
+   * Usage from every turn is recorded in the same token projection as coding
+   * workflows, while the host retains ownership of transport and tools.
+   */
+  conversationWorkflow(turns: readonly string[], callbacks: ConversationCallbacks, options: ConversationOptions = {}, signal?: AbortSignal): Promise<ConversationResult> {
+    const generate: ConversationCallbacks['generate'] = async (context) => {
+      const generation = await callbacks.generate(context)
+      const usage = generation.usage
+      if (usage !== undefined) {
+        const input = usage.inputTokens ?? 0
+        const cached = Math.min(input, usage.cachedTokens ?? 0)
+        this.recordTokenUsage({
+          model: context.model?.id ?? 'host-default',
+          cacheHit: cached,
+          uncachedInput: Math.max(0, input - cached),
+          cacheRead: cached,
+          output: usage.outputTokens ?? 0,
+        })
+      }
+      return generation
+    }
+    const profile = options.profile ?? this.resolved.profile
+    return runConversationWorkflow(turns, { ...callbacks, generate }, {
+      ...options,
+      profile,
+      modelSelector: options.modelSelector ?? ((turn) => {
+        const difficulty = turn === 1 ? 0.65 : 0.5
+        const tier = profile.executionMode === 'team' && turn === 1 ? 'high' : profile.workScenario === 'delivery' ? 'low' : 'normal'
+        return this.selectModel(tier, difficulty)
+      }),
     }, signal)
   }
 }

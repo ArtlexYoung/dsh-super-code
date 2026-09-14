@@ -4,6 +4,7 @@ import { extractConversationContract } from './conversation-contract.js'
 import type { ConversationContract } from './conversation-contract.js'
 import { resolveScenarioProfile } from './scenario.js'
 import type { ScenarioProfile, ScenarioProfileInput } from './scenario.js'
+import type { ModelOption } from '../ui.js'
 
 export { extractConversationContract } from './conversation-contract.js'
 export type { ConversationContract } from './conversation-contract.js'
@@ -14,6 +15,8 @@ export interface ConversationContext {
   readonly messages: readonly WorkflowMessage[]
   readonly contract: ConversationContract
   readonly profile: ScenarioProfile
+  /** Model selected by the host's configured model-pool policy. */
+  readonly model?: ModelOption
   readonly signal: AbortSignal
 }
 
@@ -29,6 +32,8 @@ export interface ConversationOptions {
   readonly maxContractChars?: number
   /** Explicit execution mode and work scenario for host composition. */
   readonly profile?: ScenarioProfileInput
+  /** Host model-pool resolver, called once for each user turn. */
+  readonly modelSelector?: (turn: number, profile: ScenarioProfile) => ModelOption | undefined
 }
 
 export interface ConversationResult {
@@ -135,7 +140,8 @@ export async function runConversationWorkflow(turns: readonly string[], callback
     contractTurns.push(user)
     const context = compact([...messages, { role: 'user' as const, content: user }], maxHistoryChars)
     const contract = preserveContract ? extractConversationContract(contractTurns, maxContractChars) : { requirements: [], text: '' }
-    const generation = await callbacks.generate({ turn: index + 1, user, messages: context, contract, profile, signal })
+    const model = options.modelSelector?.(index + 1, profile)
+    const generation = await callbacks.generate({ turn: index + 1, user, messages: context, contract, profile, ...model === undefined ? {} : { model }, signal })
     if (!generation || typeof generation.text !== 'string' || generation.text.trim() === '') throw new ProtocolError(`turn ${index + 1} generation must contain text`, 'INVALID_RESULT')
     if (retainGenerations) generations.push(generation)
     aggregate = add(aggregate, generation.usage)

@@ -1,6 +1,7 @@
 import type { WorkflowGeneration, WorkflowMessage, WorkflowUsage } from './programming.js';
 import type { ConversationContract } from './conversation-contract.js';
 import type { ScenarioProfile, ScenarioProfileInput } from './scenario.js';
+import type { ModelOption } from '../ui.js';
 export { extractConversationContract } from './conversation-contract.js';
 export type { ConversationContract } from './conversation-contract.js';
 export interface ConversationContext {
@@ -9,6 +10,8 @@ export interface ConversationContext {
     readonly messages: readonly WorkflowMessage[];
     readonly contract: ConversationContract;
     readonly profile: ScenarioProfile;
+    /** Model selected by the host's configured model-pool policy. */
+    readonly model?: ModelOption;
     readonly signal: AbortSignal;
 }
 export interface ConversationCallbacks {
@@ -22,6 +25,8 @@ export interface ConversationOptions {
     readonly maxContractChars?: number;
     /** Explicit execution mode and work scenario for host composition. */
     readonly profile?: ScenarioProfileInput;
+    /** Host model-pool resolver, called once for each user turn. */
+    readonly modelSelector?: (turn: number, profile: ScenarioProfile) => ModelOption | undefined;
 }
 export interface ConversationResult {
     readonly messages: readonly WorkflowMessage[];

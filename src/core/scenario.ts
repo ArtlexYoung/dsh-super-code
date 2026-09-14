@@ -56,12 +56,13 @@ export function resolveScenarioProfile(input: ScenarioProfileInput = {}): Scenar
 
 /**
  * Choose a planning default from the two axes. Explicit workflow options can
- * still override this choice. Structured work disciplines and team execution
- * need an analysis record; solo delivery keeps the low-cost adaptive path.
+ * still override this choice. Team execution needs a task-tree record; the
+ * research and optimization disciplines remain adaptive so simple tasks do
+ * not pay for a needless planning turn.
  */
 export function defaultPlanningForProfile(profile: ScenarioProfile): ScenarioPlanning {
   const normalized = resolveScenarioProfile(profile)
-  return normalized.executionMode === 'team' || normalized.workScenario !== 'delivery' ? 'separate' : 'auto'
+  return normalized.executionMode === 'team' ? 'separate' : 'auto'
 }
 
 /** Resolve a shipped preset name to its two-axis profile. */

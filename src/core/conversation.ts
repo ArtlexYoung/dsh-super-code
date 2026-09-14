@@ -83,6 +83,8 @@ export async function runConversationWorkflow(turns: readonly string[], callback
     generations.push(generation)
     aggregate = add(aggregate, generation.usage)
     messages.push({ role: 'user', content: user }, { role: 'assistant', content: generation.text.trim() })
+    const bounded = compact(messages, maxHistoryChars)
+    messages.splice(0, messages.length, ...bounded)
   }
   return { messages: compact(messages, maxHistoryChars), generations, usage: aggregate }
 }

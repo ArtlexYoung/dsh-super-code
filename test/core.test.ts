@@ -464,6 +464,7 @@ describe('multi-turn conversation workflow', () => {
     assert.equal(contexts[2]?.at(-1)?.content, 'third task')
     assert.equal(contexts[2]?.some(message => message.role === 'assistant' && message.content.startsWith('answer-2')), true)
     assert.equal(contexts[2]?.some(message => message.content.includes('omitted')), true)
+    assert.ok(result.messages.reduce((sum, message) => sum + message.content.length, 0) <= 128)
   })
 })
 

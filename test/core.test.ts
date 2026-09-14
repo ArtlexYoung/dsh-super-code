@@ -365,14 +365,16 @@ describe('review, research, and optimization ledgers', () => {
 describe('programming workflow', () => {
   it('stops after a verified draft and does not create a repair call', async () => {
     const phases: string[] = []
+    const contracts: string[] = []
     let verified = 0
     const result = await runProgrammingWorkflow('implement a function', {
-      generate: async context => { phases.push(context.phase); return { text: context.phase === 'analysis' ? 'analysis' : 'draft', usage: { inputTokens: 10, outputTokens: 5 } } },
+      generate: async context => { phases.push(context.phase); contracts.push(context.contract.text); return { text: context.phase === 'analysis' ? 'analysis' : 'draft', usage: { inputTokens: 10, outputTokens: 5 } } },
       verify: async () => { verified += 1; return { passed: true, feedback: 'tests passed' } },
     }, { planning: 'separate' })
     assert.equal(result.status, 'passed')
     assert.equal(result.attempts, 1)
     assert.deepEqual(phases, ['analysis', 'draft'])
+    assert.equal(contracts.length, 2)
     assert.equal(verified, 1)
     assert.equal(result.usage.totalTokens, 30)
   })

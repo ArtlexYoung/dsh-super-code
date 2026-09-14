@@ -1,4 +1,5 @@
 import type { Budget, EvidenceRecord } from './protocol.js';
+import type { ConversationContract } from './conversation.js';
 /** Provider-neutral conversation roles used by host adapters. */
 export type WorkflowMessageRole = 'user' | 'assistant' | 'tool';
 /** A compact message history; the workflow keeps the task prompt once. */
@@ -43,6 +44,8 @@ export interface ProgrammingWorkflowContext {
     readonly phase: 'analysis' | 'draft' | 'repair';
     readonly task: string;
     readonly messages: readonly WorkflowMessage[];
+    /** Deterministic, bounded requirements extracted from the task text. */
+    readonly contract: ConversationContract;
     readonly analysis?: string;
     readonly candidate?: string;
     readonly feedback?: string;

@@ -24,6 +24,7 @@ dsh plugin --profile web add dsh-super-agent
 编程任务可以使用根入口提供的 `runProgrammingWorkflow`。宿主传入 `generate` 和 `verify` 回调：默认 `planning: 'auto'`，简单任务直接生成可验收草稿，复杂任务先生成一次分析；草稿验收失败后才进入有界修复，并把压缩后的测试反馈传给下一次调用。也可以显式设置 `planning: 'separate'` 或 `planning: 'skip'`。token、工具调用和修复次数都可以设置预算，模型和测试环境仍由宿主决定。
 
 `verify` 可以返回 `repairHint` 提供短的结构化修复契约（例如必需的函数签名）；workflow 会把它和有界诊断一起传给下一轮，避免模型从冗长日志中猜测接口。
+如果连续修复收到完全相同的契约和诊断，默认会停止并返回 `failed`，避免在没有新证据时重复消耗模型调用；可通过 `stopOnRepeatedFeedback: false` 关闭。
 
 非编程的连续对话可使用 `runConversationWorkflow`。它按 turn 调用宿主模型，并在历史超过 `maxHistoryChars` 时保留首轮 user、最近 assistant 和当前 user，避免把完整旧日志重复发送。
 

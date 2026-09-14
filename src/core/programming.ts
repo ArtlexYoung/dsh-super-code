@@ -72,6 +72,8 @@ export interface ProgrammingWorkflowOptions {
   readonly maxFeedbackChars?: number
   /** Generate a separate planning turn, or start with a directly verifiable draft. */
   readonly planning?: 'separate' | 'skip' | 'auto'
+  /** Stop when consecutive repairs receive the same verifier feedback. */
+  readonly stopOnRepeatedFeedback?: boolean
 }
 
 export interface WorkflowPhaseRecord {
@@ -219,11 +221,13 @@ export async function runProgrammingWorkflow(task: string, callbacks: Programmin
   const planning = options.planning ?? 'auto'
   if (planning !== 'separate' && planning !== 'skip' && planning !== 'auto') throw new ProtocolError('planning must be separate, skip, or auto', 'INVALID_ARGUMENT')
   const useSeparatePlanning = planning === 'separate' || (planning === 'auto' && shouldPlanSeparately(normalizedTask))
+  const stopOnRepeatedFeedback = options.stopOnRepeatedFeedback ?? true
   const phases: WorkflowPhaseRecord[] = []
   let usage = emptyUsage()
   let analysis: string | undefined
   let candidate: string | undefined
   let finalAcceptance: VerificationResult | undefined
+  let previousFeedback: string | undefined
   const startedAt = Date.now()
   const elapsed = (): number => Date.now() - startedAt
   const deadlineExceeded = (): boolean => budget.timeoutMs !== undefined && budget.timeoutMs > 0 && elapsed() >= budget.timeoutMs
@@ -268,6 +272,9 @@ export async function runProgrammingWorkflow(task: string, callbacks: Programmin
     finalAcceptance = acceptance
     phases.push({ phase, attempt, generation, acceptance })
     if (acceptance.passed) return { status: 'passed', candidate, attempts: attempt, phases, messages: contextMessages(), usage, finalAcceptance }
+    const fingerprint = [acceptance.repairHint, acceptance.feedback].filter((value): value is string => typeof value === 'string' && value.trim() !== '').join('\n').trim()
+    if (stopOnRepeatedFeedback && fingerprint !== '' && fingerprint === previousFeedback) return { status: 'failed', candidate, attempts: attempt, phases, messages: contextMessages(fingerprint), usage, finalAcceptance }
+    previousFeedback = fingerprint || undefined
     if (exceeds(usage, budget) || deadlineExceeded() || signal.aborted) return { status: signal.aborted ? 'aborted' : 'budget_exhausted', candidate, attempts: attempt, phases, messages: contextMessages(acceptance.feedback), usage, finalAcceptance }
   }
   return { status: 'failed', candidate, attempts: maxRepairAttempts + 1, phases, messages: contextMessages(finalAcceptance?.feedback), usage, finalAcceptance }

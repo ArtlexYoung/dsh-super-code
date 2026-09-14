@@ -431,6 +431,17 @@ describe('programming workflow', () => {
     assert.equal(result.attempts, 0)
   })
 
+  it('stops repeated verifier feedback instead of wasting repair calls', async () => {
+    let calls = 0
+    const result = await runProgrammingWorkflow('stalled task', {
+      generate: async context => { calls += 1; return { text: `${context.phase}-${calls}` } },
+      verify: async () => ({ passed: false, repairHint: 'required signature: f(x)', feedback: 'same failure' }),
+    }, { planning: 'skip', maxRepairAttempts: 5 })
+    assert.equal(result.status, 'failed')
+    assert.equal(calls, 2)
+    assert.equal(result.attempts, 2)
+  })
+
   it('passes remaining timeout to the host and stops admission after the deadline', async () => {
     const timeouts: number[] = []
     let calls = 0
@@ -439,7 +450,7 @@ describe('programming workflow', () => {
       verify: async () => ({ passed: false, feedback: 'retry' }),
     }, { budget: { timeoutMs: 1_000 }, maxRepairAttempts: 2, planning: 'separate' })
     assert.equal(result.status, 'failed')
-    assert.equal(calls, 4)
+    assert.equal(calls, 3)
     assert.ok(timeouts.every(timeout => timeout >= 0 && timeout <= 1_000))
   })
 

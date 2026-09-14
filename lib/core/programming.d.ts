@@ -67,6 +67,8 @@ export interface ProgrammingWorkflowOptions {
     readonly maxFeedbackChars?: number;
     /** Generate a separate planning turn, or start with a directly verifiable draft. */
     readonly planning?: 'separate' | 'skip' | 'auto';
+    /** Stop when consecutive repairs receive the same verifier feedback. */
+    readonly stopOnRepeatedFeedback?: boolean;
 }
 export interface WorkflowPhaseRecord {
     readonly phase: 'analysis' | 'draft' | 'repair';

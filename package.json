@@ -80,11 +80,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ArtlexYang/dsh-super-agent.git"
+    "url": "git+https://github.com/ArtlexYoung/dsh-super-agent.git"
   },
-  "homepage": "https://github.com/ArtlexYang/dsh-super-agent#readme",
+  "homepage": "https://github.com/ArtlexYoung/dsh-super-agent#readme",
   "bugs": {
-    "url": "https://github.com/ArtlexYang/dsh-super-agent/issues"
+    "url": "https://github.com/ArtlexYoung/dsh-super-agent/issues"
   },
   "dsh": {
     "bundle": {

@@ -22,8 +22,8 @@ export declare const PRESET_PROFILES: Readonly<Record<ShippedPresetName, Scenari
 export declare function resolveScenarioProfile(input?: ScenarioProfileInput): ScenarioProfile;
 /**
  * Choose an adaptive planning default from the two axes. The programming
- * workflow still creates a separate analysis record for structurally complex
- * requests; routine tasks in every scenario avoid an extra model turn.
+ * workflow creates a separate analysis record for team execution, while
+ * routine solo/research/optimization tasks stay adaptive to control cost.
  */
 export declare function defaultPlanningForProfile(profile: ScenarioProfile): ScenarioPlanning;
 /** Resolve a shipped preset name to its two-axis profile. */

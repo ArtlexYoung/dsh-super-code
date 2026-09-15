@@ -13,7 +13,7 @@ import { validateBudget } from '../core/protocol.js'
 import type { Budget } from '../core/protocol.js'
 import { selectModel, summarizeTokens } from '../ui.js'
 import type { ModelOption, ModelTier, TokenUsage, TokenSummary } from '../ui.js'
-import { resolveScenarioProfile } from '../core/scenario.js'
+import { defaultPlanningForProfile, resolveScenarioProfile } from '../core/scenario.js'
 import type { ExecutionMode, OptimizationTarget, ScenarioProfile, WorkScenario } from '../core/scenario.js'
 import type {} from '@deepseek-ai/dsh-settings'
 import { SUPER_AGENT_SETTINGS_NAMESPACE, SuperAgentSettingsSchema } from '../settings.js'
@@ -246,6 +246,8 @@ export class SuperAgentService extends Service {
    */
   programmingWorkflow(task: string, callbacks: ProgrammingWorkflowCallbacks, options: ProgrammingWorkflowOptions = {}, signal?: AbortSignal): Promise<ProgrammingWorkflowResult> {
     const mergedBudget: Budget = { ...this.resolved.programmingBudget, ...options.budget }
+    const profile = resolveScenarioProfile(options.profile ?? this.resolved.profile)
+    const planning = options.planning ?? (this.resolved.planning === 'auto' ? defaultPlanningForProfile(profile) : this.resolved.planning)
     const generate: ProgrammingWorkflowCallbacks['generate'] = async (context) => {
       const generation = await callbacks.generate(context)
       const usage = generation.usage
@@ -268,13 +270,12 @@ export class SuperAgentService extends Service {
       ...options,
       maxRepairAttempts: options.maxRepairAttempts ?? this.resolved.maxRepairAttempts,
       maxFeedbackChars: options.maxFeedbackChars ?? this.resolved.maxFeedbackChars,
-      planning: options.planning ?? this.resolved.planning,
+      planning,
       stopOnRepeatedFeedback: options.stopOnRepeatedFeedback ?? this.resolved.stopOnRepeatedFeedback,
-      profile: options.profile ?? this.resolved.profile,
+      profile,
       budget: mergedBudget,
       modelSelector: options.modelSelector ?? ((phase, difficulty) => {
-        const simple = task.trim().length < 240 && !/architecture|migration|refactor|benchmark|验收|重构|迁移/i.test(task)
-        const tier = phase === 'analysis' ? 'high' : phase === 'repair' ? 'normal' : simple ? 'low' : 'normal'
+        const tier = phase === 'analysis' ? 'high' : 'normal'
         return this.selectModel(tier, difficulty)
       }),
     }, signal)

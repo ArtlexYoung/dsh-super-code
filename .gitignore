@@ -9,6 +9,7 @@ eval/
 node_modules/
 dist/
 .DS_Store
+results/
 .githooks/
 MEMORY.md
 AGENTS.md

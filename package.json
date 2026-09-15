@@ -62,7 +62,8 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "tsx --test test/**/*.test.ts",
-    "pack:check": "npm pack --dry-run"
+    "pack:check": "npm pack --dry-run",
+    "provider:health": "node eval/runners/provider-health.mjs"
   },
   "engines": {
     "node": ">=22"

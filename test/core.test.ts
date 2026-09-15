@@ -391,7 +391,7 @@ describe('two-axis scenario profiles', () => {
     assert.deepEqual(resolveScenarioProfile(), { executionMode: 'auto', workScenario: 'delivery', optimizationTarget: 'both' })
     assert.deepEqual(resolveScenarioProfile({ workScenario: 'optimization', optimizationTarget: 'performance' }), { executionMode: 'auto', workScenario: 'optimization', optimizationTarget: 'performance' })
     assert.equal(defaultPlanningForProfile(resolveScenarioProfile({ executionMode: 'solo', workScenario: 'delivery' })), 'auto')
-    assert.equal(defaultPlanningForProfile(resolveScenarioProfile({ executionMode: 'team', workScenario: 'delivery' })), 'auto')
+    assert.equal(defaultPlanningForProfile(resolveScenarioProfile({ executionMode: 'team', workScenario: 'delivery' })), 'separate')
     assert.equal(defaultPlanningForProfile(resolveScenarioProfile({ workScenario: 'research' })), 'auto')
     assert.equal(defaultPlanningForProfile(resolveScenarioProfile({ workScenario: 'optimization' })), 'auto')
     assert.throws(() => resolveScenarioProfile({ executionMode: 'invalid' as never }), /executionMode must be one of/)
@@ -456,7 +456,7 @@ describe('programming workflow', () => {
       phases.set(name, seen)
     }
     assert.deepEqual(phases.get('solo'), ['draft'])
-    assert.deepEqual(phases.get('team'), ['draft'])
+    assert.deepEqual(phases.get('team'), ['analysis', 'draft'])
     assert.deepEqual(phases.get('research'), ['draft'])
     assert.deepEqual(phases.get('optimization'), ['draft'])
   })
@@ -476,6 +476,8 @@ describe('programming workflow', () => {
     assert.ok((contexts[2]?.feedback?.length ?? 0) <= 24)
     assert.equal(contexts[2]?.messages.some(message => message.content === 'draft-1'), true)
     assert.equal(contexts[2]?.messages.filter(message => message.content === 'draft-1').length, 1)
+    assert.equal(contexts[2]?.messages.filter(message => message.content === 'fix the function').length, 1)
+    assert.equal(contexts[2]?.messages.filter(message => message.content === 'analysis-0').length, 1)
     assert.equal(result.phases[2]?.acceptance?.passed, true)
   })
 
@@ -676,7 +678,26 @@ describe('Cordis programming settings', () => {
     assert.equal(result.status, 'passed')
     assert.deepEqual(selected, [
       { phase: 'analysis', id: 'planner', strength: 'deep' },
-      { phase: 'draft', id: 'cheap', strength: 'balanced' },
+      { phase: 'draft', id: 'fallback', strength: 'standard' },
     ])
+  })
+
+  it('keeps team implementation on the normal model tier after high-level planning', async () => {
+    const ctx = new (await import('@deepseek-ai/cordis')).Context()
+    const service = new SuperAgentService(ctx, {
+      executionMode: 'team',
+      modelPools: {
+        high: [{ id: 'planner', strengths: ['deep'], available: true }],
+        normal: [{ id: 'builder', strengths: ['standard'], available: true }],
+        low: [{ id: 'cheap', strengths: ['fast'], available: true }],
+      },
+    })
+    const selected: string[] = []
+    const result = await service.programmingWorkflow('implement a small function', {
+      generate: async context => { selected.push(context.model?.id ?? 'none'); return { text: context.phase } },
+      verify: async () => ({ passed: true }),
+    })
+    assert.equal(result.status, 'passed')
+    assert.deepEqual(selected, ['planner', 'builder'])
   })
 })

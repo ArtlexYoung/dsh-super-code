@@ -56,12 +56,12 @@ export function resolveScenarioProfile(input: ScenarioProfileInput = {}): Scenar
 
 /**
  * Choose an adaptive planning default from the two axes. The programming
- * workflow still creates a separate analysis record for structurally complex
- * requests; routine tasks in every scenario avoid an extra model turn.
+ * workflow creates a separate analysis record for team execution, while
+ * routine solo/research/optimization tasks stay adaptive to control cost.
  */
 export function defaultPlanningForProfile(profile: ScenarioProfile): ScenarioPlanning {
-  resolveScenarioProfile(profile)
-  return 'auto'
+  const resolved = resolveScenarioProfile(profile)
+  return resolved.executionMode === 'team' ? 'separate' : 'auto'
 }
 
 /** Resolve a shipped preset name to its two-axis profile. */

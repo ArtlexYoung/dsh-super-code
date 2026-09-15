@@ -28,7 +28,7 @@ Web client 通过 Harness 的公开 slots、Remote 和 session projection 接入
 - 对话底部的 token 摘要读取 `superAgentUsage` projection，显示总量、平均缓存命中率、未缓存输入、缓存读取、输出以及按 provider/model 的明细；没有该投影时回退到 Harness 原生 `tokenUsage`。
 - 右侧 Sidebar 的 `Agent 执行树` 使用 Session Controller 的 subagent catalog 和 `openSubagent` 地址导航，点击节点直接打开对应 Agent 的执行对话，不复制宿主的会话持久化。
 
-模型池设置会真实影响 `ctx.superAgent.programmingWorkflow()` 和 `conversationWorkflow()`：分析/计划优先高智能池，常规草稿按任务复杂度选择低或常规池，修复和研究回到常规池；空池或不可用模型只向更高等级回退，绝不降级。选中的 strength 通过 workflow context 传给宿主模型适配器。模型调用返回的 usage 会同时进入服务汇总和 `superAgentUsage` 持久投影。
+模型池设置会真实影响 `ctx.superAgent.programmingWorkflow()` 和 `conversationWorkflow()`：编程工作流的分析使用高智能池，草稿和修复使用常规池；连续对话的 team 首轮使用高智能池，其余 delivery 使用低智能池，research 和 optimization 使用常规池。空池或不可用模型只向更高等级回退，绝不降级。选中的 strength 通过 workflow context 传给宿主模型适配器。模型调用返回的 usage 会同时进入服务汇总和 `superAgentUsage` 持久投影。
 
 `team` 需要宿主提供 subagent/jobs；`research` 的联网能力需要宿主提供 web backend。插件不会自行创建模型或绕过权限策略。核心配置可通过 `executionMode`（`solo`、`team`、`auto`）和 `workScenario`（`delivery`、`research`、`optimization`）表达二维组合。
 
@@ -111,6 +111,8 @@ npm pack --dry-run
 ```
 
 测试覆盖状态迁移、并发、依赖、幂等、取消、超时、评审、研究来源和优化指标。
+
+维护者准备好本地 `eval/` 工作区后，可用 `npm run provider:health` 检查评测模型服务。该命令依赖的 `eval/runners/provider-health.mjs` 随本地评测资料维护，不进入 Git 和 npm 包。
 
 ## 许可证
 

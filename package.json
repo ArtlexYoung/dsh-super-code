@@ -1,11 +1,14 @@
 {
   "name": "dsh-super-agent",
   "version": "0.0.6",
-  "description": "Scenario presets and an event-sourced task protocol for DeepSeek Harness.",
+  "description": "One super-code preset with specialist teams and durable task memory for DeepSeek Harness.",
   "license": "Apache-2.0",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
+  "bin": {
+    "super-code-eval": "lib/evaluate.js"
+  },
   "exports": {
     ".": {
       "types": "./lib/index.d.ts",
@@ -18,6 +21,10 @@
     "./dsh": {
       "types": "./lib/dsh/index.d.ts",
       "default": "./lib/dsh/index.js"
+    },
+    "./super-code": {
+      "types": "./lib/dsh/super-code.d.ts",
+      "default": "./lib/dsh/super-code.js"
     },
     "./presets/*": "./presets/*",
     "./package.json": "./package.json",
@@ -35,11 +42,15 @@
     "zod": "^4.4.3"
   },
   "peerDependencies": {
-    "@deepseek-ai/dsh-agent-presets": "^0.1.2-alpha.2",
+    "@deepseek-ai/dsh-agent": "^0.1.2-rc.1",
+    "@deepseek-ai/dsh-agent-presets": "^0.1.2-rc.1",
     "@deepseek-ai/cordis": "^4.0.2",
     "@deepseek-ai/dsh-llm": "^0.1.2-rc.1",
     "@deepseek-ai/dsh-session": "^0.1.2-rc.1",
     "@deepseek-ai/dsh-session-projection": "^0.1.2-rc.1",
+    "@deepseek-ai/dsh-scope": "^0.1.2-rc.1",
+    "@deepseek-ai/dsh-system-prompt": "^0.1.2-rc.1",
+    "@deepseek-ai/dsh-tools": "^0.1.2-rc.1",
     "@deepseek-ai/schemastery": "^3.18.2"
   },
   "peerDependenciesMeta": {
@@ -63,6 +74,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "tsx --test test/**/*.test.ts",
     "pack:check": "npm pack --dry-run",
+    "eval:super-code": "node lib/evaluate.js",
+    "eval:prepare-super-code": "node eval/runners/prepare-super-code-v2.mjs",
     "provider:health": "node eval/runners/provider-health.mjs"
   },
   "engines": {

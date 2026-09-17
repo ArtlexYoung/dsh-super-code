@@ -1,3 +1,0 @@
-name: Solo delivery
-description: One agent that turns a request into a scoped plan, implementation, verification, and delivery.
-order: 10

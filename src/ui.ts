@@ -32,6 +32,29 @@ export function selectModel(pool: ModelPoolConfig, tier: ModelTier, difficulty =
 }
 
 export interface TokenSummary { total: number; averageCacheHitRate: number; details: { cacheHit: number; uncachedInput: number; cacheRead: number; output: number } }
+/** Constant-space usage accumulation for a process serving long conversations. */
+export class TokenCounter {
+  private cached = 0
+  private uncached = 0
+  private reads = 0
+  private output = 0
+
+  add(usage: TokenUsage): void {
+    for (const value of [usage.cacheHit, usage.uncachedInput, usage.cacheRead, usage.output]) {
+      if (!Number.isFinite(value) || value < 0) throw new Error('Token usage must be finite and non-negative')
+    }
+    const next = [this.cached + Math.max(usage.cacheHit, usage.cacheRead), this.uncached + usage.uncachedInput, this.reads + usage.cacheRead, this.output + usage.output]
+    if (next.some(value => !Number.isSafeInteger(value)) || !Number.isSafeInteger(next[0]! + next[1]! + next[3]!)) throw new Error('Token counters exceed safe integer capacity')
+    ;[this.cached, this.uncached, this.reads, this.output] = next as [number, number, number, number]
+  }
+
+  summary(): TokenSummary {
+    const input = this.cached + this.uncached
+    return { total: input + this.output, averageCacheHitRate: input === 0 ? 0 : this.cached / input,
+      details: { cacheHit: this.cached, uncachedInput: this.uncached, cacheRead: this.reads, output: this.output } }
+  }
+}
+
 export function summarizeTokens(usages: readonly TokenUsage[]): TokenSummary {
   // `cacheHit` is the UI hit-rate bucket while `cacheRead` is the provider's
   // detailed read counter. Host adapters may report both for the same tokens,

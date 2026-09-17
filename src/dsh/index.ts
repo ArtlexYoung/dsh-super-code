@@ -11,13 +11,14 @@ import { runConversationWorkflow } from '../core/conversation.js'
 import type { ConversationCallbacks, ConversationOptions, ConversationResult } from '../core/conversation.js'
 import { validateBudget } from '../core/protocol.js'
 import type { Budget } from '../core/protocol.js'
-import { selectModel, summarizeTokens } from '../ui.js'
+import { selectModel, TokenCounter } from '../ui.js'
 import type { ModelOption, ModelTier, TokenUsage, TokenSummary } from '../ui.js'
 import { defaultPlanningForProfile, resolveScenarioProfile } from '../core/scenario.js'
 import type { ExecutionMode, OptimizationTarget, ScenarioProfile, WorkScenario } from '../core/scenario.js'
 import type {} from '@deepseek-ai/dsh-settings'
 import { SUPER_AGENT_SETTINGS_NAMESPACE, SuperAgentSettingsSchema } from '../settings.js'
 import { superAgentUsageProjectionDefinition } from '../super-agent-usage.js'
+import { taskMemoryProjection } from '../task-memory-projection.js'
 import type {} from '@deepseek-ai/dsh-session-projection'
 
 /** Cordis plugin name. */
@@ -160,7 +161,7 @@ export class SuperAgentService extends Service {
   private resolved: ResolvedConfig
   private readonly workspaces = new Map<string, SuperAgentWorkspace>()
   private closing = false
-  private readonly usage: TokenUsage[] = []
+  private readonly usage = new TokenCounter()
 
   /**
    * @param ctx - Cordis context receiving `ctx.superAgent`.
@@ -171,6 +172,7 @@ export class SuperAgentService extends Service {
     this.resolved = resolveConfig(config)
     ctx.inject(['sessionProjections'], (projectionCtx: Context) => {
       projectionCtx.sessionProjections.register(superAgentUsageProjectionDefinition)
+      projectionCtx.sessionProjections.register(taskMemoryProjection)
     })
     ctx.inject(['settings'], (settingsCtx: Context) => {
       const scope = settingsCtx.settings.register(SUPER_AGENT_SETTINGS_NAMESPACE, SuperAgentSettingsSchema, {
@@ -231,8 +233,8 @@ export class SuperAgentService extends Service {
     return selectModel(this.resolved.modelPools, tier, difficulty)
   }
 
-  recordTokenUsage(usage: TokenUsage): void { if (this.resolved.tokenStats) this.usage.push({ ...usage }) }
-  tokenSummary(): TokenSummary { return summarizeTokens(this.usage) }
+  recordTokenUsage(usage: TokenUsage): void { if (this.resolved.tokenStats) this.usage.add(usage) }
+  tokenSummary(): TokenSummary { return this.usage.summary() }
 
   /** Remove one workspace and its in-memory event log. */
   removeWorkspace(scope: string): void {

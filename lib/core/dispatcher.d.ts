@@ -27,6 +27,13 @@ export interface DispatcherOptions {
      */
     readonly stopGraceMs?: number;
 }
+export interface DispatchAvailableOptions {
+    readonly signal?: AbortSignal;
+    /** Bound total starts, including work added by an acceptance callback. */
+    readonly maxStarted?: number;
+    /** Explicit acceptance remains the caller's responsibility. */
+    readonly afterEach?: (task: TaskRecord) => Promise<void>;
+}
 /**
  * Event-driven finite dispatcher over {@link TaskGraph}. It assigns and starts
  * a bounded batch atomically, waits on executor promises, and records each
@@ -36,6 +43,7 @@ export interface DispatcherOptions {
 export declare class Dispatcher {
     private readonly graph;
     private readonly options;
+    private readonly liveExecutions;
     /**
      * @param graph - task graph owning all lifecycle mutations.
      * @param options - concurrency, timeout, and stop-confirmation limits.
@@ -47,6 +55,9 @@ export declare class Dispatcher {
      * the graph unchanged.
      */
     runReady(assign: (task: TaskRecord) => string | undefined, execute: TaskExecutor): Promise<DispatchResult>;
+    /** Refill free slots on completion/acceptance events, without model-driven polling or retries. */
+    runAvailable(assign: (task: TaskRecord) => string | undefined, execute: TaskExecutor, options?: DispatchAvailableOptions): Promise<DispatchResult>;
+    private activeCount;
     /** Cancel tasks that have not acquired an attempt. */
     cancelPending(reason?: string): readonly TaskRecord[];
     private executeOne;

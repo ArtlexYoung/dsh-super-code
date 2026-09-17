@@ -33,6 +33,14 @@ export interface DispatcherOptions {
   readonly stopGraceMs?: number
 }
 
+export interface DispatchAvailableOptions {
+  readonly signal?: AbortSignal
+  /** Bound total starts, including work added by an acceptance callback. */
+  readonly maxStarted?: number
+  /** Explicit acceptance remains the caller's responsibility. */
+  readonly afterEach?: (task: TaskRecord) => Promise<void>
+}
+
 type ExecutionOutcome =
   | { readonly kind: 'result'; readonly value: TaskExecutionResult | void }
   | { readonly kind: 'error'; readonly error: unknown }
@@ -53,6 +61,7 @@ const DEFAULT_STOP_GRACE_MS = 100
  */
 export class Dispatcher {
   private readonly options: Required<Pick<DispatcherOptions, 'maxConcurrent' | 'timeoutMs' | 'stopGraceMs'>>
+  private readonly liveExecutions = new Set<string>()
 
   /**
    * @param graph - task graph owning all lifecycle mutations.
@@ -82,10 +91,10 @@ export class Dispatcher {
    */
   async runReady(assign: (task: TaskRecord) => string | undefined, execute: TaskExecutor): Promise<DispatchResult> {
     if (typeof assign !== 'function' || typeof execute !== 'function') throw new ProtocolError('assign and execute must be functions', 'INVALID_ARGUMENT')
-    const active = this.graph.all().filter(task => task.status === 'running' || task.status === 'queued').length
+    const active = this.activeCount()
     const capacity = Math.max(0, this.options.maxConcurrent - active)
     if (capacity === 0) return emptyDispatchResult()
-    const candidates = this.graph.ready().slice(0, capacity)
+    const candidates = this.graph.ready().filter(task => !this.liveExecutions.has(task.taskId)).slice(0, capacity)
     const assignments = candidates.map(task => ({ task, owner: assign(task) }))
     if (assignments.some(item => typeof item.owner !== 'string' || item.owner.trim() === '')) return emptyDispatchResult()
     const started = this.graph.startBatch(assignments.map(item => ({ taskId: item.task.taskId, owner: item.owner as string, expectedRevision: item.task.revision })))
@@ -105,6 +114,63 @@ export class Dispatcher {
     return { started: started.map(task => task.taskId), completed, failed, timedOut, cancelled, stopUnknown }
   }
 
+  /** Refill free slots on completion/acceptance events, without model-driven polling or retries. */
+  async runAvailable(assign: (task: TaskRecord) => string | undefined, execute: TaskExecutor, options: DispatchAvailableOptions = {}): Promise<DispatchResult> {
+    if (typeof assign !== 'function' || typeof execute !== 'function') throw new ProtocolError('assign and execute must be functions', 'INVALID_ARGUMENT')
+    const maxStarted = options.maxStarted ?? 256
+    if (!Number.isSafeInteger(maxStarted) || maxStarted < 1) throw new ProtocolError('maxStarted must be a positive safe integer', 'INVALID_CONFIG')
+    const result = { started: [] as string[], completed: [] as string[], failed: [] as string[], timedOut: [] as string[], cancelled: [] as string[], stopUnknown: [] as string[] }
+    const running = new Map<string, Promise<void>>()
+    const callbackErrors: unknown[] = []
+    const cancel = (): void => {
+      for (const taskId of running.keys()) {
+        const current = this.graph.get(taskId)
+        if (current.status === 'running' && current.cancellation === undefined) this.graph.requestCancellation(taskId, 'dispatch cancelled')
+      }
+    }
+    options.signal?.addEventListener('abort', cancel, { once: true })
+    try {
+      for (;;) {
+        if (!options.signal?.aborted && callbackErrors.length === 0) {
+          // Reserve admission until the prior completion callback settles as well.
+          const capacity = Math.min(this.options.maxConcurrent - this.activeCount(running.keys()), maxStarted - result.started.length)
+          const candidates = this.graph.ready().filter(task => !this.liveExecutions.has(task.taskId)).slice(0, Math.max(0, capacity))
+          const assignments = candidates.map(task => ({ taskId: task.taskId, owner: assign(task), expectedRevision: task.revision }))
+          if (assignments.every(item => typeof item.owner === 'string' && item.owner.trim() !== '')) {
+            const started = this.graph.startBatch(assignments as { taskId: string; owner: string; expectedRevision: number }[])
+            for (const task of started) {
+              result.started.push(task.taskId)
+              const promise = this.executeOne(task, execute).then(async outcome => {
+                const key = outcome.kind === 'timeout' ? 'timedOut' : outcome.kind === 'stop_unknown' ? 'stopUnknown' : outcome.kind
+                result[key].push(task.taskId)
+                await options.afterEach?.(this.graph.get(task.taskId))
+              }).catch(error => { callbackErrors.push(error); cancel() }).finally(() => { running.delete(task.taskId) })
+              running.set(task.taskId, promise)
+            }
+          }
+        }
+        if (running.size === 0) break
+        // Acceptance by another owner can unlock work while a slow sibling is still running.
+        const watcher = new AbortController()
+        try { await Promise.race([...running.values(), this.graph.waitForChange(this.graph.version, 30_000, watcher.signal)]) }
+        finally { watcher.abort() }
+      }
+      if (callbackErrors.length > 0) throw new AggregateError(callbackErrors, 'Dispatch acceptance callback failed')
+      return result
+    } finally {
+      options.signal?.removeEventListener('abort', cancel)
+      // A synchronous assignment error must not leave owned executors detached.
+      cancel()
+      await Promise.allSettled(running.values())
+    }
+  }
+
+  private activeCount(pending: Iterable<string> = []): number {
+    const ids = new Set([...this.liveExecutions, ...pending])
+    for (const task of this.graph.all()) if (task.status === 'running' || task.status === 'queued') ids.add(task.taskId)
+    return ids.size
+  }
+
   /** Cancel tasks that have not acquired an attempt. */
   cancelPending(reason = 'cancelled before dispatch'): readonly TaskRecord[] {
     return this.graph.cancelUnstarted(reason)
@@ -115,9 +181,11 @@ export class Dispatcher {
     if (attemptId === undefined) throw new ProtocolError(`started task ${task.taskId} has no attempt`, 'INVALID_SNAPSHOT')
     const controller = new AbortController()
     const watcherController = new AbortController()
+    this.liveExecutions.add(task.taskId)
     const execution: Promise<ExecutionOutcome> = Promise.resolve()
       .then(() => execute(task, controller.signal))
       .then(value => ({ kind: 'result', value } as ExecutionOutcome), error => ({ kind: 'error', error } as ExecutionOutcome))
+      .finally(() => { this.liveExecutions.delete(task.taskId) })
     const cancellation: Promise<CancellationObservation> = this.watchCancellation(task, watcherController.signal)
     let timeout: ReturnType<typeof setTimeout> | undefined
     const timeoutOutcome = this.options.timeoutMs > 0

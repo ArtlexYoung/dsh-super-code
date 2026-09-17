@@ -40,6 +40,15 @@ export interface TokenSummary {
         output: number;
     };
 }
+/** Constant-space usage accumulation for a process serving long conversations. */
+export declare class TokenCounter {
+    private cached;
+    private uncached;
+    private reads;
+    private output;
+    add(usage: TokenUsage): void;
+    summary(): TokenSummary;
+}
 export declare function summarizeTokens(usages: readonly TokenUsage[]): TokenSummary;
 /** Dynamic preset injection: derives entries from the host roster at runtime. */
 export declare function injectPresets<T extends {

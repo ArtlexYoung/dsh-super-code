@@ -1,6 +1,7 @@
 import { ProtocolError } from './protocol.js'
-import { SHIPPED_PRESET_NAMES } from './scenario.js'
-import type { ShippedPresetName } from './scenario.js'
+/** Frozen v1 evaluation labels; these are not currently installed presets. */
+const V1_SCENARIO_NAMES = ['solo', 'team', 'research', 'optimization'] as const
+type V1ScenarioName = typeof V1_SCENARIO_NAMES[number]
 
 export interface EvaluationSnapshot {
   readonly successRate: number
@@ -27,9 +28,9 @@ export interface EvaluationRun {
   readonly candidate: EvaluationSnapshot
 }
 
-/** One matched baseline/candidate run for a shipped extension scenario. */
+/** One matched baseline/candidate run in the frozen v1 evaluation protocol. */
 export interface ScenarioEvaluationRun extends EvaluationRun {
-  readonly scenario: ShippedPresetName
+  readonly scenario: V1ScenarioName
 }
 
 export interface EvaluationAggregate {
@@ -44,7 +45,7 @@ export interface EvaluationAggregate {
 /** Per-scenario release result for a complete four-scenario batch. */
 export interface ScenarioBatchGateResult {
   readonly accepted: boolean
-  readonly byScenario: Readonly<Record<ShippedPresetName, EvaluationGateResult>>
+  readonly byScenario: Readonly<Record<V1ScenarioName, EvaluationGateResult>>
 }
 
 function rate(value: number, field: string): number {
@@ -85,18 +86,18 @@ export function aggregateEvaluationRuns(runs: readonly EvaluationRun[]): Evaluat
  * in the domain module prevents an evaluator from silently optimizing only
  * one preset while reporting a package-level result.
  */
-export function aggregateScenarioEvaluationRuns(runs: readonly ScenarioEvaluationRun[]): Readonly<Record<ShippedPresetName, EvaluationAggregate>> {
+export function aggregateScenarioEvaluationRuns(runs: readonly ScenarioEvaluationRun[]): Readonly<Record<V1ScenarioName, EvaluationAggregate>> {
   if (!Array.isArray(runs) || runs.length === 0) throw new ProtocolError('scenario runs must be non-empty', 'INVALID_ARGUMENT')
-  const groups = new Map<ShippedPresetName, EvaluationRun[]>()
+  const groups = new Map<V1ScenarioName, EvaluationRun[]>()
   for (const run of runs) {
-    if (!SHIPPED_PRESET_NAMES.includes(run.scenario)) throw new ProtocolError(`unknown scenario ${String(run.scenario)}`, 'INVALID_ARGUMENT')
+    if (!V1_SCENARIO_NAMES.includes(run.scenario)) throw new ProtocolError(`unknown scenario ${String(run.scenario)}`, 'INVALID_ARGUMENT')
     const group = groups.get(run.scenario) ?? []
     group.push(run)
     groups.set(run.scenario, group)
   }
-  const missing = SHIPPED_PRESET_NAMES.filter(name => !groups.has(name))
+  const missing = V1_SCENARIO_NAMES.filter(name => !groups.has(name))
   if (missing.length > 0) throw new ProtocolError(`scenario batch is incomplete; missing: ${missing.join(', ')}`, 'INCOMPLETE_BATCH')
-  return Object.fromEntries(SHIPPED_PRESET_NAMES.map(name => [name, aggregateEvaluationRuns(groups.get(name)!)])) as Record<ShippedPresetName, EvaluationAggregate>
+  return Object.fromEntries(V1_SCENARIO_NAMES.map(name => [name, aggregateEvaluationRuns(groups.get(name)!)])) as Record<V1ScenarioName, EvaluationAggregate>
 }
 
 /** Apply the release gate independently to all four scenarios. */
@@ -105,11 +106,11 @@ export function evaluateScenarioBatchRelease(
   thresholds: EvaluationThresholds = {},
 ): ScenarioBatchGateResult {
   const aggregates = aggregateScenarioEvaluationRuns(runs)
-  const byScenario = Object.fromEntries(SHIPPED_PRESET_NAMES.map(name => {
+  const byScenario = Object.fromEntries(V1_SCENARIO_NAMES.map(name => {
     const aggregate = aggregates[name]
     return [name, evaluateReleaseGate(aggregate.baseline, aggregate.candidate, thresholds)]
-  })) as Record<ShippedPresetName, EvaluationGateResult>
-  return { accepted: SHIPPED_PRESET_NAMES.every(name => byScenario[name].accepted), byScenario }
+  })) as Record<V1ScenarioName, EvaluationGateResult>
+  return { accepted: V1_SCENARIO_NAMES.every(name => byScenario[name].accepted), byScenario }
 }
 
 export default evaluateReleaseGate

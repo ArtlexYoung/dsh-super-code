@@ -88,6 +88,19 @@ function TokenFooter({ useProjection, settingsScope }) {
     ))
 }
 
+function TaskMemoryPanel({ useProjection }) {
+  const state = useProjection?.('superCodeTasks')
+  const tasks = Object.values(state?.tasks || {})
+  if (!tasks.length) return null
+  const current = state.focus?.kind === 'task' ? state.tasks[state.focus.id] : undefined
+  const labels = { active: '进行中', paused: '已暂停', completed: '已完成', cancelled: '已取消' }
+  return React.createElement('details', { className: 'dsh-super-agent-task-memory' },
+    React.createElement('summary', null, current ? `当前任务：${current.title}` : `${tasks.length} 个任务记录`),
+    current?.next && React.createElement('p', null, current.next),
+    React.createElement('ul', null, tasks.map(task => React.createElement('li', { key: task.id }, `${task.title} · ${labels[task.status] || task.status}`))),
+  )
+}
+
 function catalogValue(result) {
   if (!result || result.ok === false) return undefined
   return result.ok === true ? result.value : result
@@ -299,6 +312,10 @@ function apply(ctx) {
     name: 'conversation.composer.dock', id: 'super-agent-token-stats', order: 20,
     inject: () => ({ settingsScope: ctx.settingsScope.bind({ namespace: 'super-agent' }) }),
   }, TokenFooter))
+
+  ctx.slots.inject('conversation.composer.dock', () => ctx.slots.register({
+    name: 'conversation.composer.dock', id: 'super-code-task-memory', order: 15,
+  }, TaskMemoryPanel))
 
   ctx.slots.inject('settings.plugin.item', () => ctx.slots.register({
     name: 'settings.plugin.item', key: 'super-agent',

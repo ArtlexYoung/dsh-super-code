@@ -1,104 +1,103 @@
 # dsh-super-agent
 
-`dsh-super-agent` 是 DeepSeek Harness 的场景化 preset 和任务协议插件。
-一个包提供“执行方式 × 工作场景”的组合：执行方式决定由一个 Agent 还是任务团队完成，工作场景决定交付、研究或优化时使用的验收纪律。
+DeepSeek Harness 编码插件。用户只选择 `super-code`；Agent 按交付目标选择内部专业团队，简单任务直接完成，需要时再加载方法、建立任务档案或并行委派。没有独立路由模型调用、强制五阶段流程或统一反思循环。
 
-## 为什么
+## 效果基准
 
-不同任务需要不同的执行方式、提示词和验收规则。把这些配置放在同一个插件中，可以统一版本和安装方式，使用时按 session 选择组合，不必为每个组合维护一套插件。
+SWE-bench Lite 前 100 题，`deepseek-v4.1-flash`、reasoning `high`，两组都通过完整 DeepSeek Harness Agent 流程：
 
-插件还提供一个轻量任务协议，用来记录任务树、负责人、执行尝试、提交、评审、返工、验收、交付和取消。事件以 JSONL 保存，便于重放和审计。
+| | DSH minimal | super-code |
+|---|---:|---:|
+| 正确率 | 99% | 99% |
+| 平均总 token | 737,421 | 419,145（-43%） |
+| 平均耗时 | 314 秒 | 89 秒（-72%） |
 
-## 安装
+在这批题上，super-code 保持了相同正确率，同时减少了 token 和耗时。结果使用本地 focused tests，不是官方 Docker SWE-bench 分数。
 
-在 DSH profile 中安装：
+## 安装与选择
+
+要求 Node.js 22+、Harness **0.1.2-rc.1 或满足 peer 约束的版本**。使用宿主的模型、工具、权限、子 Agent 和 Session 持久化。
 
 ```bash
 dsh plugin --profile web add dsh-super-agent
 ```
 
-插件会自动注册 preset 目录和 `super-agent` 服务。宿主仍负责模型、sandbox、审批、持久化和网络权限。
-
-## Harness 页面适配
-
-Web client 通过 Harness 的公开 slots、Remote 和 session projection 接入四个页面能力：
-
-- 对话输入栏模型控件左侧的 `Agent 预设` 选择器从 `agentPresets.list()` 动态读取 roster，并用 `agentPresets.select()` 切换当前仍为空白的会话；已开始首轮的会话遵循 Harness 组合不可变规则并显示拒绝原因。
-- 设置 → 插件配置中的 `super-agent` 卡片读取 `session/modelCatalog`，按高/常规/低三个模型池勾选真实可路由模型，并为每个模型选择可用 reasoning strength。保存后写入 `super-agent` settings namespace，不依赖硬编码模型名称。
-- 对话底部的 token 摘要读取 `superAgentUsage` projection，显示总量、平均缓存命中率、未缓存输入、缓存读取、输出以及按 provider/model 的明细；没有该投影时回退到 Harness 原生 `tokenUsage`。
-- 右侧 Sidebar 的 `Agent 执行树` 使用 Session Controller 的 subagent catalog 和 `openSubagent` 地址导航，点击节点直接打开对应 Agent 的执行对话，不复制宿主的会话持久化。
-
-模型池设置会真实影响 `ctx.superAgent.programmingWorkflow()` 和 `conversationWorkflow()`：编程工作流的分析使用高智能池，草稿和修复使用常规池；连续对话的 team 首轮使用高智能池，其余 delivery 使用低智能池，research 和 optimization 使用常规池。空池或不可用模型只向更高等级回退，绝不降级。选中的 strength 通过 workflow context 传给宿主模型适配器。模型调用返回的 usage 会同时进入服务汇总和 `superAgentUsage` 持久投影。
-
-`team` 需要宿主提供 subagent/jobs；`research` 的联网能力需要宿主提供 web backend。插件不会自行创建模型或绕过权限策略。核心配置可通过 `executionMode`（`solo`、`team`、`auto`）和 `workScenario`（`delivery`、`research`、`optimization`）表达二维组合。
-
-`optimization` 同时支持三种目标：`quality`（输出质量或正确率）、`performance`（延迟、token 或工具调用成本）和 `both`。默认是 `both`，保持质量不下降并要求成本下降；质量优化允许成本上升但必须达到质量门槛；性能优化要求质量不下降且至少改善一种成本指标。模型、基准和验收器由宿主传入。
-
-编程任务可以使用根入口提供的 `runProgrammingWorkflow`。宿主传入 `generate` 和 `verify` 回调：默认 `planning: 'auto'`，简单任务直接生成可验收草稿，复杂任务先生成一次分析；草稿验收失败后才进入有界修复，并把压缩后的测试反馈传给下一次调用。也可以显式设置 `planning: 'separate'` 或 `planning: 'skip'`。token、工具调用和修复次数都可以设置预算，模型和测试环境仍由宿主决定。
-
-未显式设置 `planning` 时，工作流会根据 profile 选择默认值：`solo × delivery`、`research` 和 `optimization` 使用复杂度自适应路径，简单任务直接生成草稿；`team × delivery` 默认先生成结构化分析，以便记录任务拆分和依赖。显式的 `planning` 选项始终优先。
-
-`verify` 可以返回 `repairHint` 提供短的结构化修复契约（例如必需的函数签名）；workflow 会把它和有界诊断一起传给下一轮，避免模型从冗长日志中猜测接口。
-如果连续修复收到完全相同的契约和诊断，默认会停止并返回 `failed`，避免在没有新证据时重复消耗模型调用；可通过 `stopOnRepeatedFeedback: false` 关闭。该策略也可在 Cordis profile/page settings 中配置。
-
-连续对话可使用 `runConversationWorkflow`。它按 turn 调用宿主模型，并在历史超过 `maxHistoryChars` 时保留首轮 user、最近 assistant 和当前 user，避免把完整旧日志重复发送。工作流还会从 user turns 提取一个有界的 `contract` ledger，记录语言、接口、下标、复杂度和输出约束等原文片段；宿主可将 `context.contract.text` 放入请求上下文，帮助后续 turn 保持前轮约束，不需要额外模型调用。长会话可设置 `retainGenerations: false`，不在内存中保留每一轮完整输出。
-
-发布判断可使用 `evaluateReleaseGate`，默认要求候选正确率至少提升 10 个百分点、总 token 至少减少 10%，且耗时不增加；任一条件不满足都会返回 `accepted: false`。
-多次独立 matched run 可先用 `aggregateEvaluationRuns` 聚合，再交给 release gate，避免一次 max 推理随机结果影响判断。
-如果要判断整个插件版本，使用 `evaluateScenarioBatchRelease`。它要求同一批结果同时包含 `solo`、`team`、`research` 和 `optimization`，并分别计算四个场景的门槛；任一场景缺失或未通过，整体结果都会是 `accepted: false`。
-
-如果使用 Cordis 服务，也可以调用 `ctx.superAgent.programmingWorkflow(...)`；两种入口共享同一实现。服务配置中的 `maxRepairAttempts`、`maxFeedbackChars`、`maxInputTokens`、`maxOutputTokens`、`maxTotalTokens`、`maxToolCalls` 和 `timeoutMs` 可由 profile/page settings 调整，单次调用可以覆盖这些默认值。
-
-## 选择 preset
-
-| preset | 执行方式 × 工作场景 | 用途 |
-| --- | --- | --- |
-| `solo` | `solo × delivery` | 单 Agent 完成交付任务 |
-| `team` | `team × delivery` | 拆分任务、分配 owner、并行执行和评审 |
-| `research` | `auto × research` | 收集来源、核对事实、记录不确定性 |
-| `optimization` | `auto × optimization` | 建立 baseline、按质量/性能/综合目标做受控实验 |
-
-四个名称是兼容入口，不限制组合。需要陌生 API 资料时可以使用 `research` 场景并采用 team 执行；需要并行 benchmark 时可以使用 `optimization` 场景并采用 team 执行。宿主可以直接传入二维 profile：
-
-编码任务如果只是实现或修复明确接口，四个场景都会优先返回可运行 artifact，避免把任务树、研究报告或未测量 benchmark 写进上下文；只有任务本身要求拆分、外部证据或性能/质量实验时，才展开对应纪律。
-
-```ts
-{ executionMode: 'team', workScenario: 'optimization', optimizationTarget: 'performance' }
-```
-
-创建 session 时传入 `agentPreset`：
+插件注册唯一的 `super-code` preset 并设为默认；宿主自带和用户自定义 preset 仍可用。Web 输入栏可在空白会话选择预设；已开始的会话遵循宿主组合不可变规则。
 
 ```json
-{
-  "request": {
-    "agentPreset": "team"
-  }
-}
+{ "request": { "agentPreset": "super-code" } }
 ```
 
-## 使用任务协议
+原 `solo`、`team`、`research`、`optimization` preset 已删除，不提供别名、迁移或旧会话恢复兼容。升级后请新建 `super-code` 会话。联网调研使用宿主 web backend 和权限；没有可用 backend 时必须报告限制。
+
+## 内部团队与方法
+
+| 主责 | 交付目标 | 常用专项方法 |
+| --- | --- | --- |
+| research 调研 | 有证据的事实、诊断、技术判断 | 调查、集成 |
+| design 设计 | 可实施的产品、接口、算法或架构方案 | 产品、架构、算法 |
+| develop 开发 | 功能、修复、重构、迁移、集成 | 产品、bug 修复、架构、集成 |
+| verify 测试 | 测试、审查发现、验收证据 | 测试、集成 |
+| optimize 优化 | 有测量依据的改进 | 性能、算法、架构、质量 |
+
+团队是专业方法集合，不是五个常驻 Agent。主 Agent 根据任务含义选择主责，通过 `super_code_method` 按需读取；专项方法跨团队共享。没有独立分类的工作按简单/复杂深度处理。架构优化与性能优化分别确定目标，不能把代码更短当作性能提升。
+
+只解释或设计不授权改代码。独立、有收益的工作可用宿主 subagent 并行执行；共享文件需要单一写入者或隔离工作区。短简报明确目标、所有权、约束、验收和预算，负责人继续本地工作并整合结果。
+
+## 长对话与任务档案
+
+`super_code_task` 为复杂或跨轮任务保存有来源的要求、验收标准、决策、证据、下一步、工作区和代码版本。简单任务不强制建档。
+
+- `create/read/list/update/focus`：要求以 id 合并，未修改的约束保留；修改必须引用本会话真实用户消息。并发写使用 `expectedRevision`，拒绝旧版本覆盖。
+- `source`：通过用户事件序号取回原文。当前上下文只包含任务目录、最近用户事件序号和焦点任务；硬约束不静默截断，超预算的更新会明确失败。
+- `archive/archives/history/restore`：完成或取消的任务可归档；每页最多扫描 256 个事件、返回 10 个归档摘要，历史全文留在宿主日志。用户要求继续时，恢复工具要求新的用户来源和检查后的代码版本；保留约束、清空旧决策并让旧证据失效，不自动启动工作。
+- `delegate/validate_member`：简报绑定会话、任务身份、要求版本、代码版本和成员责任。过期、失败、未确认停止或成本不全的返回不能进入验收。可评审不等于已验收，仍需负责人核对产物和检查。
+
+任务焦点与执行状态分离，切换话题不自动取消工作。暂停再激活会改变委派版本，旧成员返回仍然过期；普通进度更新不影响有效简报。完成或取消的任务只能归档后凭归档之后的新用户消息恢复，不能直接改回 active。归档是显式操作，工作集默认最多 32 个任务，上限 128；上下文默认最多 32 KiB，可在 preset 的 `super-code` 插件配置中调整 `maxTasks`、`maxContextBytes`（1–256 KiB）。要求和证据还有各自条数/长度限制。
+
+档案通过宿主支持的 plugin-source `user/message` 事件和 `superCodeTasks` projection 保存，写工具在宿主 `flush` 成功后才返回成功；失败后的下一次工具调用重试 checkpoint，不重复追加事件。宿主先发布内存 projection 再 flush，因此磁盘失败时 UI 可能短暂显示尚未确认持久化的记录。插件此时阻止模型动态上下文把该 checkpoint 当作已确认事实，但不提供跨 UI/磁盘事务保证。
+
+这些工具验证来源引用和版本，不证明模型对原文的解释正确，也不强制模型调用工具。真实长程理解和 token 收益需要模型评测。
+
+## Web 界面与可选底层 API
+
+Web client 使用公开 slots、Remote 和 Session projection：输入栏显示预设选择与可折叠任务档案；底部显示 token 汇总；右侧执行树打开宿主子 Agent 会话。token 服务使用固定大小计数器，不积累无限 usage 数组。浏览器交互和大规模宿主历史性能需要单独验证。
+
+根入口提供 `TaskGraph`、`Dispatcher`、评审/研究/优化账本，依赖 Node.js 与 Zod；Cordis 服务入口为 `dsh-super-agent/dsh`。`dsh-super-agent/super-code` 只能装配在 Agent scope，不能全局覆盖其他 preset。
 
 ```ts
-import { TaskGraph, runProgrammingWorkflow } from 'dsh-super-agent'
+import { TaskGraph, Dispatcher } from 'dsh-super-agent'
 
 const graph = new TaskGraph([
   { taskId: 'build', title: 'Build', acceptance: ['tests pass'] },
-  { taskId: 'release', title: 'Release', dependencies: ['build'] },
+  { taskId: 'integrate', title: 'Integrate', dependencies: ['build'] },
 ])
-
-const attempt = graph.startTask('build')
-graph.completeTask(attempt.taskId, attempt.attemptId!, { ok: true }, [])
-graph.submitTaskResult('build', 'submit-1')
-// 评审通过并验收后，release 才能启动。
+const dispatcher = new Dispatcher(graph, { maxConcurrent: 2 })
+// runAvailable(assign, execute, { signal, maxStarted, afterEach }) 按空槽补位。
+// afterEach 可显式提交、评审并验收；仅执行完成不会解锁依赖。
 ```
 
-根入口只依赖 TypeScript/Node，可用于测试和离线任务处理。需要挂载 Cordis 服务时使用 `dsh-super-agent/dsh`：
+`runAvailable` 是事件驱动的有界调度工具，不是 super-code 的强制模型循环；实际会话成员由宿主 subagent 执行。取消只影响本轮拥有的执行，超时且未确认停止的执行仍占容量；不自动重试。
 
-```ts
-const workspace = ctx.superAgent.workspace('release')
+已有 `runProgrammingWorkflow`、`runConversationWorkflow` 是调用方显式选择的独立工具，不会被 super-code 自动运行。设置页的 high/normal/low 模型池只影响这些显式 workflow；super-code 主 Agent 和成员的模型由宿主管理。不要用旧 workflow 测量替代 preset 的真实结果。
+
+## 单候选评测
+
+`evaluateSuperCodeBatch` 使用 `super-code/v2`：运行前固定 manifest，每题一条 `minimal` 基线和一条 `super-code` 候选。任务类别用于覆盖与退化检查，运行时团队只作诊断，不能逐题挑最优场景。
+
+```bash
+npm run build
+npm run eval:super-code -- manifest.json measurements.jsonl
+# 安装后也可使用 super-code-eval manifest.json measurements.jsonl
 ```
 
-任务状态不会自动跳过评审或验收；失败尝试也不会自动重跑。调用方可以通过 `eventsSince()` 导出事件，并用 `TaskGraph.fromEvents()` 恢复。
+该命令只读取证据、输出 JSON，不运行模型或修改历史。退出码：0 表示通过，1 表示未通过/未测量完整，2 表示无效输入。
+
+manifest 字段见 `SuperCodeManifest`，逐行测量见 `SuperCodeMeasurement`（`src/core/evaluation-v2.ts` / 包内声明）。必须固定任务、评测器、模型、推理档位、工具、资源、环境与宿主版本；版本标识应绑定实际源码/数据摘要。评测器必须完整提供主 Agent、成员、重试、工具和记忆维护成本，区分缓存/未缓存输入、输出、工具次数、墙钟耗时。此命令不会自动收集子 Agent 账单。
+
+重复题拒绝，缺题为 `incomplete`，条件不匹配为 `unmatched`，mock/replay/基础设施故障/成本不全为 `unmeasured`。只有完整成对真实测量才为 `measured`；默认门槛仍是正确率提升至少 10 个百分点、token 减少至少 10%、耗时不增加，并禁止固定类别质量退化。失败题的成本也计入。
+
+历史四场景聚合 API 保持原评测语义，仅用于读旧结果，不是当前发布入口。
 
 ## 开发
 
@@ -107,23 +106,20 @@ npm install
 npm run typecheck
 npm test
 npm run build
+node --check client/index.js
 npm pack --dry-run
 ```
 
-测试覆盖状态迁移、并发、依赖、幂等、取消、超时、评审、研究来源和优化指标。
-
-维护者准备好本地 `eval/` 工作区后，可用 `npm run provider:health` 检查评测模型服务。该命令依赖的 `eval/runners/provider-health.mjs` 随本地评测资料维护，不进入 Git 和 npm 包。
-
-## 许可证
-
-Apache License 2.0，见 [LICENSE](LICENSE)。
-
-## 目录
 
 ```text
-presets/{solo,team,research,optimization}/agent.cordis.yml  # 兼容组合入口
-src/core/                 # 任务协议、任务图、调度和账本
-src/core/scenario.ts      # 执行方式 × 工作场景和优化目标
-src/dsh/                  # Cordis 适配层
-cordis.patch.yml          # DSH bundle patch
+presets/super-code/       # 唯一产品预设
+src/core/teams.ts         # 五团队与共享方法
+src/core/task-memory.ts   # 有界工作集和要求修订
+src/core/delegation.ts    # 委派简报与结果版本核对
+src/core/evaluation-v2.ts # 单候选成对验收
+src/dsh/super-code.ts     # scoped 工具与动态上下文
+src/evaluate.ts          # 离线评测 CLI
+client/index.js          # 宿主 Web slots
 ```
+
+Apache License 2.0，见 [LICENSE](LICENSE)。

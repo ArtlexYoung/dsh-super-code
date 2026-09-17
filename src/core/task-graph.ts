@@ -945,13 +945,12 @@ export class TaskGraph {
   private notifyWaiters(): void {
     this.notifyPending = false
     if (this.waiters.size === 0) return
-    const currentEvents = this.log.map(event => detached(event))
     for (const waiter of [...this.waiters]) {
       if (this.log.length <= waiter.after) continue
       this.waiters.delete(waiter)
       if (waiter.timer !== undefined) clearTimeout(waiter.timer)
       if (waiter.signal !== undefined && waiter.onAbort !== undefined) waiter.signal.removeEventListener('abort', waiter.onAbort)
-      waiter.resolve({ timedOut: false, sequence: this.log.length, events: currentEvents.slice(waiter.after) })
+      waiter.resolve({ timedOut: false, sequence: this.log.length, events: this.eventsSince(waiter.after) })
     }
   }
 

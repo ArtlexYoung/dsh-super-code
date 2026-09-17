@@ -380,11 +380,9 @@ describe('review, research, and optimization ledgers', () => {
 })
 
 describe('two-axis scenario profiles', () => {
-  it('keeps shipped preset names as compatibility combinations', () => {
-    assert.deepEqual(profileForPreset('solo'), { executionMode: 'solo', workScenario: 'delivery', optimizationTarget: 'both' })
-    assert.deepEqual(profileForPreset('team'), { executionMode: 'team', workScenario: 'delivery', optimizationTarget: 'both' })
-    assert.deepEqual(profileForPreset('research'), { executionMode: 'auto', workScenario: 'research', optimizationTarget: 'both' })
-    assert.deepEqual(profileForPreset('optimization'), { executionMode: 'auto', workScenario: 'optimization', optimizationTarget: 'both' })
+  it('exposes only super-code and rejects removed preset names', () => {
+    assert.deepEqual(profileForPreset('super-code'), { executionMode: 'auto', workScenario: 'delivery', optimizationTarget: 'both' })
+    for (const old of ['solo', 'team', 'research', 'optimization']) assert.throws(() => profileForPreset(old), /unknown preset/)
   })
 
   it('defaults to adaptive delivery and validates optimization targets', () => {
@@ -440,7 +438,7 @@ describe('programming workflow', () => {
     assert.deepEqual(phases, ['draft'])
   })
 
-  it('uses the profile planning default for all four shipped scenarios', async () => {
+  it('uses the profile planning default for explicit low-level profiles', async () => {
     const phases = new Map<string, string[]>()
     for (const [name, profile] of [
       ['solo', { executionMode: 'solo' as const, workScenario: 'delivery' as const }],

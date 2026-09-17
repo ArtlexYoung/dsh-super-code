@@ -8,7 +8,7 @@
 - id: agent-presets
   name: '@deepseek-ai/dsh-agent-presets'
   config:
-    default: solo
+    default: super-code
     roots:
       - path: !!js "process.getBuiltinModule('node:url').fileURLToPath(new URL('node_modules/dsh-super-agent/presets/', baseUrl))"
         trust: system

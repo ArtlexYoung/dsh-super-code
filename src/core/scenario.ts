@@ -9,8 +9,8 @@ export type WorkScenario = 'delivery' | 'research' | 'optimization'
 /** Optimization target when {@link WorkScenario} is `optimization`. */
 export type OptimizationTarget = 'performance' | 'quality' | 'both'
 
-/** Names of the four shipped compatibility preset entries. */
-export const SHIPPED_PRESET_NAMES = ['solo', 'team', 'research', 'optimization'] as const
+/** One user-facing preset; professional teams are selected inside a session. */
+export const SHIPPED_PRESET_NAMES = ['super-code'] as const
 export type ShippedPresetName = typeof SHIPPED_PRESET_NAMES[number]
 
 /** The two independent axes used to describe a preset. */
@@ -31,12 +31,9 @@ const DEFAULT_PROFILE: ScenarioProfile = {
   optimizationTarget: 'both',
 }
 
-/** Stable compatibility mapping for the four shipped preset names. */
+/** Default workflow axes; a task's professional discipline is independent. */
 export const PRESET_PROFILES: Readonly<Record<ShippedPresetName, ScenarioProfile>> = Object.freeze({
-  solo: { executionMode: 'solo', workScenario: 'delivery', optimizationTarget: 'both' },
-  team: { executionMode: 'team', workScenario: 'delivery', optimizationTarget: 'both' },
-  research: { executionMode: 'auto', workScenario: 'research', optimizationTarget: 'both' },
-  optimization: { executionMode: 'auto', workScenario: 'optimization', optimizationTarget: 'both' },
+  'super-code': { executionMode: 'auto', workScenario: 'delivery', optimizationTarget: 'both' },
 })
 
 function oneOf<T extends string>(value: unknown, values: readonly T[], field: string): T {

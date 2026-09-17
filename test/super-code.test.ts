@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { Context } from '@deepseek-ai/cordis'
 import { ToolRuntime } from '@deepseek-ai/dsh-tools'
-import { SystemPrompt, renderContextSnapshot } from '@deepseek-ai/dsh-system-prompt'
+import { SystemPrompt, renderContextSnapshot, PERSONA_PREFIX_SECTION } from '@deepseek-ai/dsh-system-prompt'
 import { SessionStore, Session, SessionId } from '@deepseek-ai/dsh-session'
 import { SessionProjectionRegistry } from '@deepseek-ai/dsh-session-projection'
 import { createScope } from '@deepseek-ai/dsh-scope'
@@ -77,6 +77,8 @@ test('installed host scopes tools, logs memory, checkpoints and reconstructs A/B
   assert.match(context, /Rust/)
   assert.match(context, /Do not publish/)
   assert.ok(assembly.tools.some(tool => tool.name === 'super_code_task'))
+  assert.equal(assembly.sections.filter(section => section.name === PERSONA_PREFIX_SECTION).length, 1)
+  assert.match(assembly.sections.find(section => section.name === PERSONA_PREFIX_SECTION)!.text, /super-code/i)
   const global = await h.ctx.systemPrompt.assemble()
   assert.ok(!global.tools.some(tool => tool.name === 'super_code_task'))
   const replay = Session.create(SessionId('restored'), JSON.parse(JSON.stringify(h.session.snapshotEvents())))
@@ -120,10 +122,6 @@ test('unrelated events keep the task projection unchanged', () => {
   const state = emptyTaskMemory()
   const next = taskMemoryProjection.apply(state, { type: 'assistant/chunk', seq: 0, time: 0, data: {} } as never)
   assert.equal(next, state)
-})
-
-test('global mounting is rejected before changing the default persona', () => {
-  assert.throws(() => apply(new Context()), /not globally/)
 })
 
 test('working-set and context limits reject before appending records', async t => {

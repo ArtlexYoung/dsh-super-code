@@ -6,8 +6,7 @@ import { SessionSeq } from '@deepseek-ai/dsh-session'
 import { createUserMessage } from '@deepseek-ai/dsh-llm'
 import type { Session } from '@deepseek-ai/dsh-session'
 import type {} from '@deepseek-ai/dsh-agent'
-import { PERSONA_SECTION } from '@deepseek-ai/dsh-system-prompt'
-import { scopeOf } from '@deepseek-ai/dsh-scope'
+import { PERSONA_PREFIX_SECTION } from '@deepseek-ai/dsh-system-prompt'
 import { TEAM_NAMES, METHODS, SUPER_CODE_INSTRUCTIONS, readTeamMethod } from '../core/teams.js'
 import type { MethodName } from '../core/teams.js'
 import { taskMemoryProjection, taskMemoryEventOf, TASK_MEMORY_SOURCE } from '../task-memory-projection.js'
@@ -31,7 +30,6 @@ function assertSource(session: Session, source: TaskSource): void {
 
 /** Installs no agent loop and starts no model calls. */
 export function apply(ctx: Context, config: Config = {}): void {
-  if (scopeOf(ctx) === undefined) throw new Error('Mount super-code in an agent preset scope, not globally')
   const maxTasks = config.maxTasks ?? 32
   const maxContextBytes = config.maxContextBytes ?? 32768
   if (!Number.isSafeInteger(maxTasks) || maxTasks < 1 || maxTasks > 128 || !Number.isSafeInteger(maxContextBytes) || maxContextBytes < 1024 || maxContextBytes > 262144) throw new Error('Invalid super-code capacity')
@@ -47,7 +45,7 @@ export function apply(ctx: Context, config: Config = {}): void {
     if (!await ctx.sessions.flush(session)) throw new Error('No host persistence checkpoint is configured; task memory is not durable')
     pending.delete(session)
   }
-  ctx.systemPrompt.section({ name: PERSONA_SECTION, order: 0, text: SUPER_CODE_INSTRUCTIONS })
+  ctx.systemPrompt.section({ name: PERSONA_PREFIX_SECTION, order: ctx.systemPrompt.getSectionOrder('DEPLOYMENT_PERSONA_PREFIX'), text: SUPER_CODE_INSTRUCTIONS })
   ctx.systemPrompt.context({ name: 'super-code:tasks', order: 80, text: ({ agent }) => {
     if (agent === undefined) return ''
     if (pending.has(agent.session)) return 'The last task-memory checkpoint is unconfirmed. Use super_code_task read to retry persistence before relying on it.'

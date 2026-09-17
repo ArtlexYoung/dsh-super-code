@@ -74,6 +74,6 @@ export declare function requireTaskMemory(state: TaskMemoryState, taskId: string
 export declare function reviseTaskMemory(task: TaskMemory, patch: TaskMemoryPatch, expectedRevision: number): TaskMemory;
 /** Deterministic replay; old evidence stays recorded but is never current after revision. */
 export declare function foldTaskMemory(state: TaskMemoryState, input: TaskMemoryEvent): TaskMemoryState;
-/** Critical requirements are never shortened to fit a context budget. */
+/** Compact current state; full sources and evidence remain available via read. */
 export declare function taskMemoryContext(state: TaskMemoryState, maxBytes: number): string;
 //# sourceMappingURL=task-memory.d.ts.map

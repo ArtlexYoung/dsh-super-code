@@ -2,7 +2,9 @@
 
 DeepSeek Harness 编码插件。用户只选择 `super-code`；Agent 按交付目标选择内部专业团队，简单任务直接完成，需要时再加载方法、建立任务档案或并行委派。没有独立路由模型调用、强制五阶段流程或统一反思循环。
 
-## 效果基准
+0.0.7 增加紧凑任务上下文与侧栏 Agent 节点图，支持拖动、缩放、独立只读详情和分层用量；专业方法进一步明确交付与验证要求。已进行独立 Harness 安装和页面验收，模型端使用本地确定性 fixture；本版尚无新的真实模型质量或成本改善结论。
+
+## 效果基准（0.0.6 历史结果）
 
 SWE-bench Lite 前 100 题，`deepseek-v4.1-flash`、reasoning `high`，两组都通过完整 DeepSeek Harness Agent 流程：
 
@@ -16,13 +18,13 @@ SWE-bench Lite 前 100 题，`deepseek-v4.1-flash`、reasoning `high`，两组�
 
 ## 安装与选择
 
-要求 Node.js 22+、Harness **0.1.2-rc.1 或满足 peer 约束的版本**。使用宿主的模型、工具、权限、子 Agent 和 Session 持久化。
+要求 Node.js 22+、Harness **0.1.5-rc.2+**，使用当前 persona-prefix API 和右侧栏服务，不兼容 0.1.2-rc.1。使用宿主的模型、工具、权限、子 Agent 和 Session 持久化。
 
 ```bash
 dsh plugin --profile web add dsh-super-agent
 ```
 
-插件注册唯一的 `super-code` preset 并设为默认；宿主自带和用户自定义 preset 仍可用。Web 输入栏可在空白会话选择预设；已开始的会话遵循宿主组合不可变规则。
+插件注册唯一的 `super-code` preset 并设为默认；宿主自带和用户自定义 preset 仍可用。插件不再增加预设切换控件；宿主原生预设入口及已开始会话的组合不可变规则保持不变。
 
 ```json
 { "request": { "agentPreset": "super-code" } }
@@ -49,7 +51,7 @@ dsh plugin --profile web add dsh-super-agent
 `super_code_task` 为复杂或跨轮任务保存有来源的要求、验收标准、决策、证据、下一步、工作区和代码版本。简单任务不强制建档。
 
 - `create/read/list/update/focus`：要求以 id 合并，未修改的约束保留；修改必须引用本会话真实用户消息。并发写使用 `expectedRevision`，拒绝旧版本覆盖。
-- `source`：通过用户事件序号取回原文。当前上下文只包含任务目录、最近用户事件序号和焦点任务；硬约束不静默截断，超预算的更新会明确失败。
+- `source`：通过用户事件序号取回原文。动态上下文包含任务目录、最近用户事件序号和焦点任务的紧凑视图：保留全部要求、验收、决策和来源序号，不重复原文；最多展示最近 3 条有效证据，预算不足时优先省略证据并标明数量，可通过 `read` 读取完整档案。硬约束不静默截断，必需字段超预算的更新会明确失败。
 - `archive/archives/history/restore`：完成或取消的任务可归档；每页最多扫描 256 个事件、返回 10 个归档摘要，历史全文留在宿主日志。用户要求继续时，恢复工具要求新的用户来源和检查后的代码版本；保留约束、清空旧决策并让旧证据失效，不自动启动工作。
 - `delegate/validate_member`：简报绑定会话、任务身份、要求版本、代码版本和成员责任。过期、失败、未确认停止或成本不全的返回不能进入验收。可评审不等于已验收，仍需负责人核对产物和检查。
 
@@ -57,13 +59,15 @@ dsh plugin --profile web add dsh-super-agent
 
 档案通过宿主支持的 plugin-source `user/message` 事件和 `superCodeTasks` projection 保存，写工具在宿主 `flush` 成功后才返回成功；失败后的下一次工具调用重试 checkpoint，不重复追加事件。宿主先发布内存 projection 再 flush，因此磁盘失败时 UI 可能短暂显示尚未确认持久化的记录。插件此时阻止模型动态上下文把该 checkpoint 当作已确认事实，但不提供跨 UI/磁盘事务保证。
 
-这些工具验证来源引用和版本，不证明模型对原文的解释正确，也不强制模型调用工具。真实长程理解和 token 收益需要模型评测。
+紧凑视图只减少动态上下文的重复内容。当前完整快照仍通过上述消息事件持久化，并可能重复出现在模型历史中；尚未解决历史快照累积，不能据视图字节数推算整段对话的 token 节省。这些工具验证来源引用和版本，不证明模型对原文的解释正确，也不强制模型调用工具。真实长程理解和 token 收益需要模型评测。
 
 ## Web 界面与可选底层 API
 
-Web client 使用公开 slots、Remote 和 Session projection：输入栏显示预设选择与可折叠任务档案；底部显示 token 汇总；右侧执行树打开宿主子 Agent 会话。token 服务使用固定大小计数器，不积累无限 usage 数组。浏览器交互和大规模宿主历史性能需要单独验证。
+Web client 使用公开 slots、Remote 和 Session projection：任务档案与插件用量统一收口到侧栏，输入区不再重复展示档案、用量汇总或预设选择。根 Agent 详情展示当前任务的目标、状态和下一步，其他任务按需展开。右侧节点树只展示当前会话及其成员；点击节点或按 Enter/空格在右侧打开该 Agent 的只读标签，重复打开会复用标签，不切换主对话。详情顶部展示层级路径、token 总量和缓存命中率，输入/输出及缓存读取/写入在“用量详情”展开；下面按时间展示用户任务、Agent 回复和执行错误，隐藏内部上下文、推理及工具调用和结果（包括 super_code_task）。宿主原生用量展示不受影响。
 
-根入口提供 `TaskGraph`、`Dispatcher`、评审/研究/优化账本，依赖 Node.js 与 Zod；Cordis 服务入口为 `dsh-super-agent/dsh`。`dsh-super-agent/super-code` 只能装配在 Agent scope，不能全局覆盖其他 preset。
+执行树采用从上到下的紧凑圆形节点图，自动读取可见节点的下级目录，无需逐层展开。点击节点直接打开侧栏详情，主对话不变；实色背景表示运行、待命、停止和不可用，摘要只显示子树 token 和按累计输入计算的缓存命中率。支持鼠标/触屏拖动平移、滚轮及按钮缩放（40%–200%）、适应窗口；双击空白处适应窗口，切换标签保留视图位置。首批最多渲染 200 个节点，大树分批显示。详情使用宿主 SessionEventStream 读取持久记录，按页加载历史、最多保留 200 条展示记录，隐藏/关闭详情时释放订阅。状态采用宿主活动事实，停止不等于验收成功；不可读记录和缺失用量单独标识，不伪造结果。token 服务使用固定大小计数器，不积累无限 usage 数组。
+
+根入口提供 `TaskGraph`、`Dispatcher`、评审/研究/优化账本，依赖 Node.js 与 Zod；默认导出为按挂载加载的 Harness 插件，供 bundle 使用包根名称注册并发现浏览器模块。直接 Cordis 服务入口仍为 `dsh-super-agent/dsh`，单独导入领域 API 不加载 Harness 运行时。`dsh-super-agent/super-code` 只能装配在 Agent scope，不能全局覆盖其他 preset。
 
 ```ts
 import { TaskGraph, Dispatcher } from 'dsh-super-agent'

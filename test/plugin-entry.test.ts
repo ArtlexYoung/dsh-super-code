@@ -1,17 +1,19 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { Context } from '@deepseek-ai/cordis'
-import harnessPlugin, { TaskGraph } from '../src/index.js'
+import { SessionStore, SessionId } from '@deepseek-ai/dsh-session'
+import { SessionProjectionRegistry } from '@deepseek-ai/dsh-session-projection'
+import harnessPlugin from '../src/index.js'
 
-test('package-root plugin mounts the host service while retaining named domain exports', async () => {
-  assert.equal(new TaskGraph([]).all().length, 0)
+test('package-root mounts durable projections without an alternative executor', async () => {
   const ctx = new Context()
   try {
-    await ctx.plugin(harnessPlugin, { maxTasks: 3 })
-    assert.deepEqual(ctx.superAgent.listWorkspaces(), [])
-    assert.ok(ctx.superAgent.workspace('root-entry'))
-    assert.deepEqual(ctx.superAgent.listWorkspaces(), ['root-entry'])
-  } finally {
-    await ctx.fiber.dispose()
-  }
+    new SessionStore(ctx)
+    new SessionProjectionRegistry(ctx)
+    await ctx.plugin(harnessPlugin)
+    const session = ctx.sessions.create(SessionId('plugin-entry'))
+    assert.deepEqual(ctx.sessionProjections.stateOf(session, 'superCodeTasks')?.tasks, {})
+    assert.deepEqual(ctx.sessionProjections.stateOf(session, 'superAgentUsage')?.totals, {})
+    assert.equal(Reflect.has(ctx, 'superAgent'), false)
+  } finally { await ctx.fiber.dispose() }
 })

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { isDeepStrictEqual } from 'node:util'
 import { TEAM_NAMES } from './teams.js'
 import type { TeamName, WorkDepth } from './teams.js'
 
@@ -32,7 +33,7 @@ const evidenceSchema = z.object({
   kind: z.enum(['observed', 'assumption', 'test', 'decision']),
 }).strict()
 
-/** Task memory complements TaskGraph execution records; it never grants authority. */
+/** Task memory records requirements and recovery context; it never grants authority. */
 const taskObject = z.object({
   id, title: z.string().trim().min(1).max(200),
   createdAtSeq: z.number().int().nonnegative(),
@@ -99,9 +100,17 @@ export function reviseTaskMemory(task: TaskMemory, patch: TaskMemoryPatch, expec
     requirements.set(requirement.id, requirement)
   }
   const { removeRequirements: _removed, ...fields } = normalized
-  const changed = normalized.goal !== undefined || normalized.workspace !== undefined
+  const requiresSource = normalized.goal !== undefined || normalized.workspace !== undefined
     || normalized.acceptance !== undefined || normalized.requirements !== undefined || removals.size > 0
-  if (changed && normalized.source === undefined) throw new Error('A requirement change needs the source of the user correction')
+  if (requiresSource && normalized.source === undefined) throw new Error('A requirement change needs the source of the user correction')
+  // All validation precedes equality: a stale request or a new source is not a retry.
+  const candidate = taskMemorySchema.parse({ ...task, ...fields, requirements: [...requirements.values()] })
+  if (isDeepStrictEqual(candidate, task)) return task
+  // Redundant requirement fields may accompany real progress. Only changed content
+  // or a new correction source invalidates work; source-only updates keep their contract.
+  const changed = requiresSource && (!isDeepStrictEqual(candidate.source, task.source)
+    || candidate.goal !== task.goal || candidate.workspace !== task.workspace
+    || !isDeepStrictEqual(candidate.acceptance, task.acceptance) || !isDeepStrictEqual(candidate.requirements, task.requirements))
   const invalidatesDecisions = changed || (normalized.sourceVersion !== undefined && normalized.sourceVersion !== task.sourceVersion)
   // A paused member must never become current merely because its parent resumes.
   const invalidatesDelegation = invalidatesDecisions || (normalized.status !== undefined && normalized.status !== task.status)
@@ -124,30 +133,47 @@ export function foldTaskMemory(state: TaskMemoryState, input: TaskMemoryEvent): 
   return { ...state, tasks, focus: state.focus.kind === 'task' && state.focus.id === event.task.id ? { kind: 'none' } : state.focus }
 }
 
-/** Compact current state; full sources and evidence remain available via read. */
+/** One recovery shape for runtime context and explicit reads. */
+function taskResumeView(task: TaskMemory) {
+  const validEvidence = task.evidence.filter(item => item.requirementsRevision === task.requirementsRevision && item.sourceVersion === task.sourceVersion)
+  // Bound the routine view, not the durable record. Keep the newest entries
+  // in their original order, with an explicit count for everything omitted.
+  const evidence = validEvidence.slice(-3).map(({ kind, summary, ref }) => ({ kind, summary, ref }))
+  return {
+    id: task.id, status: task.status, team: task.team, depth: task.depth,
+    revision: task.revision, requirementsRevision: task.requirementsRevision, delegationRevision: task.delegationRevision,
+    workspace: task.workspace, sourceVersion: task.sourceVersion, sourceSeq: task.source.seq,
+    goal: task.goal, requirements: task.requirements.map(({ id, text, source }) => ({ id, text, sourceSeq: source.seq })),
+    acceptance: task.acceptance, decisions: task.decisions, next: task.next,
+    evidence, omittedEvidence: validEvidence.length - evidence.length,
+    staleEvidence: task.evidence.length - validEvidence.length,
+    ...(evidence.length ? { evidenceBasis: 'recorded-versions; current workspace not checked' as const } : {}),
+    details: { tool: 'super_code_task', action: 'read', taskId: task.id, view: 'full' },
+  }
+}
+
+function serializeMemoryView(view: { current?: ReturnType<typeof taskResumeView> }, maxBytes: number): string {
+  if (!Number.isSafeInteger(maxBytes) || maxBytes < 1) throw new Error('maxBytes must be a positive safe integer')
+  for (;;) {
+    const output = JSON.stringify(view).replace(/\{\{/g, '\\u007b\\u007b')
+    if (Buffer.byteLength(output, 'utf8') <= maxBytes) return output
+    if (view.current === undefined || view.current.evidence.length === 0) throw new Error('Task context exceeds its budget; split the task or explicitly reduce notes. Hard requirements were not truncated.')
+    view.current.evidence.shift()
+    view.current.omittedEvidence++
+  }
+}
+
+/** Read a bounded recovery view without changing focus or the durable record. */
+export function taskMemoryRead(task: TaskMemory, maxBytes: number): string {
+  return serializeMemoryView({ current: taskResumeView(task) }, maxBytes)
+}
+
+/** Compact current state; full sources and evidence remain available via read(view=full). */
 export function taskMemoryContext(state: TaskMemoryState, maxBytes: number): string {
   if (!Number.isSafeInteger(maxBytes) || maxBytes < 1) throw new Error('maxBytes must be a positive safe integer')
   const roster = Object.values(state.tasks).map(task => ({ id: task.id, title: task.title, status: task.status }))
   if (roster.length === 0 && state.recentSources.length === 0) return ''
-  const focus = state.focus.kind === 'task' ? requireTaskMemory(state, state.focus.id) : undefined
-  const validEvidence = focus?.evidence.filter(item => item.requirementsRevision === focus.requirementsRevision && item.sourceVersion === focus.sourceVersion) ?? []
-  // Bound the routine view, not the durable record. Keep the newest entries
-  // in their original order, with an explicit count for everything omitted.
-  const evidence = validEvidence.slice(-3).map(({ kind, summary, ref }) => ({ kind, summary, ref }))
-  const view = { tasks: roster, recentUserEventSeqs: state.recentSources, ...(focus === undefined ? {} : { current: {
-    id: focus.id, status: focus.status, team: focus.team, depth: focus.depth,
-    revision: focus.revision, requirementsRevision: focus.requirementsRevision, delegationRevision: focus.delegationRevision,
-    workspace: focus.workspace, sourceVersion: focus.sourceVersion, sourceSeq: focus.source.seq,
-    goal: focus.goal, requirements: focus.requirements.map(({ id, text, source }) => ({ id, text, sourceSeq: source.seq })),
-    acceptance: focus.acceptance, decisions: focus.decisions, next: focus.next,
-    evidence, omittedEvidence: validEvidence.length - evidence.length,
-    details: { tool: 'super_code_task', action: 'read', taskId: focus.id },
-  } }) }
-  for (;;) {
-    const output = JSON.stringify(view).replace(/\{\{/g, '\\u007b\\u007b')
-    if (Buffer.byteLength(output, 'utf8') <= maxBytes) return output
-    if (view.current === undefined || evidence.length === 0) throw new Error('Task context exceeds its budget; split the task or explicitly reduce notes. Hard requirements were not truncated.')
-    evidence.shift()
-    view.current.omittedEvidence++
-  }
+  const view = { tasks: roster, recentUserEventSeqs: state.recentSources,
+    ...(state.focus.kind === 'task' ? { current: taskResumeView(requireTaskMemory(state, state.focus.id)) } : {}) }
+  return serializeMemoryView(view, maxBytes)
 }

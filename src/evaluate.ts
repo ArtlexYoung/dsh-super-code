@@ -2,8 +2,8 @@
 import { readFile } from 'node:fs/promises'
 import { createReadStream } from 'node:fs'
 import { createInterface } from 'node:readline'
-import { evaluateSuperCodeBatch } from './core/evaluation-v2.js'
-import type { SuperCodeManifest, SuperCodeMeasurement } from './core/evaluation-v2.js'
+import { evaluateSuperCodeBatch } from './core/evaluation.js'
+import type { SuperCodeManifest, SuperCodeMeasurement } from './core/evaluation.js'
 
 /** Offline acceptance only: this command never starts a model or rewrites evidence. */
 async function main(): Promise<void> {

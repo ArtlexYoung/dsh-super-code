@@ -1,70 +1,123 @@
-/** Frozen v1 evaluation labels; these are not currently installed presets. */
-declare const V1_SCENARIO_NAMES: readonly ["solo", "team", "research", "optimization"];
-type V1ScenarioName = typeof V1_SCENARIO_NAMES[number];
-export interface EvaluationSnapshot {
-    readonly successRate: number;
-    readonly totalTokens: number;
-    readonly latencyMs: number;
+import { z } from 'zod';
+export interface EvaluationUsage {
+    uncachedInput: number;
+    cacheRead: number;
+    cacheWrite: number;
+    output: number;
 }
-export interface EvaluationThresholds {
-    readonly minAccuracyUplift?: number;
-    readonly minTokenReduction?: number;
-    readonly minLatencyReduction?: number;
+export interface EvaluationIdentity {
+    preset: string;
+    version: string;
+    artifact: string;
 }
-export interface EvaluationGateResult {
-    readonly delta: {
-        readonly successRate: number;
-        readonly totalTokens: number;
-        readonly latencyMs: number;
+export interface EvaluationConditions {
+    task: string;
+    evaluator: string;
+    model: string;
+    reasoning: string;
+    tools: string;
+    resources: string;
+    environment: string;
+    harness: string;
+}
+export interface EvaluationRate extends EvaluationUsage {
+    id: string;
+    provider: string;
+    model: string;
+    currency: string;
+    source: string;
+    effectiveAt: string;
+    perRequest: number;
+}
+export interface EvaluationRequest {
+    id: string;
+    sessionId: string;
+    attemptId: string;
+    kind: 'root' | 'member' | 'retry' | 'compaction';
+    provider: string;
+    model: string;
+    rateId?: string;
+    usage?: EvaluationUsage;
+    toolCharge?: number;
+}
+export interface SuperCodeManifest {
+    protocol: 'super-code/v3';
+    baseline: EvaluationIdentity;
+    candidate: EvaluationIdentity;
+    cases: {
+        taskId: string;
+        category: string;
+        conditions: EvaluationConditions;
+    }[];
+    gates: {
+        minAccuracyUplift: number;
+        maxLostSuccesses: number;
+        minCostReduction?: number;
+        minLatencyReduction?: number;
     };
-    readonly reduction: {
-        readonly totalTokens: number | null;
-        readonly latency: number | null;
+    rates: EvaluationRate[];
+}
+export interface SuperCodeMeasurement {
+    protocol: 'super-code/v3';
+    side: 'baseline' | 'candidate';
+    identity: EvaluationIdentity;
+    taskId: string;
+    category: string;
+    conditions: EvaluationConditions;
+    mode: 'real' | 'mock' | 'replay';
+    outcome: 'passed' | 'failed' | 'agent_failed' | 'audit_failed' | 'infrastructure_error' | 'evaluation_error' | 'unknown';
+    latencyMs: number;
+    expectedRequests: string[];
+    requestManifestComplete: boolean;
+    requests: EvaluationRequest[];
+}
+export declare const evaluationManifestSchema: z.ZodType<SuperCodeManifest>;
+export declare const evaluationMeasurementSchema: z.ZodType<SuperCodeMeasurement>;
+export interface EvaluationSide {
+    recorded: number;
+    scored: number;
+    passed: number;
+    attempts: number;
+    requests: number;
+    expectedRequests: number;
+    latencyMs: number;
+    tokens: EvaluationUsage;
+    outcomes: Record<string, number>;
+    accounting: {
+        status: 'measured';
+        currency: string;
+        amount: number;
+    } | {
+        status: 'unmeasured';
+        reasons: string[];
     };
-    readonly thresholds: Required<EvaluationThresholds>;
-    readonly checks: {
-        readonly accuracyUplift: boolean;
-        readonly tokenReduction: boolean;
-        readonly latencyReduction: boolean;
+}
+export interface EvaluationPairs {
+    paired: number;
+    gained: string[];
+    lost: string[];
+    unchanged: string[];
+    unscored: string[];
+}
+export interface SuperCodeBatchResult {
+    status: 'incomplete' | 'unmatched' | 'unmeasured' | 'measured';
+    accepted: boolean;
+    reasons: string[];
+    planned: number;
+    baseline: EvaluationSide;
+    candidate: EvaluationSide;
+    pairs: EvaluationPairs;
+    categories: Record<string, {
+        paired: number;
+        gained: number;
+        lost: number;
+    }>;
+    checks: {
+        quality: boolean;
+        cost: boolean;
+        latency: boolean;
     };
-    readonly accepted: boolean;
 }
-export interface EvaluationRun {
-    readonly baseline: EvaluationSnapshot;
-    readonly candidate: EvaluationSnapshot;
-}
-/** One matched baseline/candidate run in the frozen v1 evaluation protocol. */
-export interface ScenarioEvaluationRun extends EvaluationRun {
-    readonly scenario: V1ScenarioName;
-}
-export interface EvaluationAggregate {
-    readonly runs: number;
-    readonly baseline: EvaluationSnapshot;
-    readonly candidate: EvaluationSnapshot;
-    readonly deltas: {
-        readonly successRate: number;
-        readonly totalTokens: number;
-        readonly latencyMs: number;
-    };
-    readonly tokenReduction: number | null;
-    readonly latencyReduction: number | null;
-}
-/** Per-scenario release result for a complete four-scenario batch. */
-export interface ScenarioBatchGateResult {
-    readonly accepted: boolean;
-    readonly byScenario: Readonly<Record<V1ScenarioName, EvaluationGateResult>>;
-}
-/** Apply the release criteria without coupling them to a dataset or runner. */
-export declare function evaluateReleaseGate(baseline: EvaluationSnapshot, candidate: EvaluationSnapshot, thresholds?: EvaluationThresholds): EvaluationGateResult;
-/** Aggregate independent matched runs before applying a release gate. */
-export declare function aggregateEvaluationRuns(runs: readonly EvaluationRun[]): EvaluationAggregate;
-/**
- * Aggregate one matched batch and reject partial batches. Keeping this check
- * in the domain module prevents an evaluator from silently optimizing only
- * one preset while reporting a package-level result.
- */
-export declare function aggregateScenarioEvaluationRuns(runs: readonly ScenarioEvaluationRun[]): Readonly<Record<V1ScenarioName, EvaluationAggregate>>;
-/** Apply the release gate independently to all four scenarios. */
-export declare function evaluateScenarioBatchRelease(runs: readonly ScenarioEvaluationRun[], thresholds?: EvaluationThresholds): ScenarioBatchGateResult;
-export default evaluateReleaseGate;
+/** Fixed sides, fixed gates, full coverage. Partial reports never imply a release pass. */
+export declare function evaluateSuperCodeBatch(input: SuperCodeManifest, measurements: readonly SuperCodeMeasurement[]): SuperCodeBatchResult;
 //# sourceMappingURL=evaluation.d.ts.map

@@ -17,10 +17,18 @@ test('only same-scope current results are eligible for lead review', () => {
   assert.equal(validateMemberResult(task, 'session-b', assignment, result).reviewable, false)
   assert.equal(validateMemberResult(task, 'session-a', { ...assignment, attemptId: 'attempt-2' }, result).reviewable, false)
 })
-test('failed, cancelled, unknown, overspent and partially accounted results are not reviewable', () => {
+test('execution status and unverified accounting are independent', () => {
   for (const outcome of ['failed', 'cancelled', 'stop_unknown'] as const) assert.equal(validateMemberResult(task, 'session-a', assignment, { ...result, outcome }).reviewable, false)
-  assert.equal(validateMemberResult(task, 'session-a', assignment, { ...result, cost: { ...result.cost, inputTokens: 101 } }).reviewable, false)
-  assert.equal(validateMemberResult(task, 'session-a', assignment, { ...result, cost: { ...result.cost, complete: false } }).reviewable, false)
+  for (const [cost, reportedBudget] of [[{ ...result.cost, inputTokens: 101 }, 'exceeded'], [{ ...result.cost, complete: false }, 'incomplete'], [{ ...result.cost, cachedTokens: 99 }, 'invalid'], [result.cost, 'within']] as const) {
+    const review = validateMemberResult(task, 'session-a', assignment, { ...result, cost })
+    assert.equal(review.reviewable, true)
+    assert.deepEqual(review.accounting, { kind: 'model-reported', budget: 'unknown', reportedBudget })
+  }
+  const { cost: _cost, ...withoutCost } = result
+  const review = validateMemberResult(task, 'session-a', assignment, withoutCost)
+  assert.equal(review.reviewable, true)
+  assert.deepEqual(review.accounting, { kind: 'unavailable', budget: 'unknown' })
+  assert.throws(() => validateMemberResult(task, 'session-a', assignment, { ...result, cost: { ...result.cost, inputTokens: -1 } }))
 })
 
 test('pause/resume invalidates old members while ordinary progress does not', () => {

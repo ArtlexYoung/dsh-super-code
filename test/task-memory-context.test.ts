@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { emptyTaskMemory, foldTaskMemory, requireTaskMemory, reviseTaskMemory, taskMemoryContext, taskMemorySchema } from '../src/core/task-memory.js'
+import { emptyTaskMemory, foldTaskMemory, requireTaskMemory, reviseTaskMemory, taskMemoryContext, taskMemoryRead, taskMemorySchema } from '../src/core/task-memory.js'
+import { createMemberBrief, validateMemberResult } from '../src/core/delegation.js'
 
 const source = { seq: 2, quote: 'Original user wording. '.repeat(100) }
 const task = () => taskMemorySchema.parse({
@@ -28,7 +29,7 @@ test('compact view retains constraints, provenance pointers and current decision
   assert.deepEqual(current.evidence.map((item: { summary: string }) => item.summary), ['Evidence 5', 'Evidence 6', 'Evidence 7'])
   assert.equal(current.evidence[2].kind, 'assumption')
   assert.equal(current.omittedEvidence, 5)
-  assert.deepEqual(current.details, { tool: 'super_code_task', action: 'read', taskId: 'a' })
+  assert.deepEqual(current.details, { tool: 'super_code_task', action: 'read', taskId: 'a', view: 'full' })
   assert.deepEqual(requireTaskMemory(state, 'a'), original)
   assert.equal(taskMemoryContext(state, 32768), serialized)
   const before = Buffer.byteLength(JSON.stringify({ tasks: [{ id: original.id, title: original.title, status: original.status }], recentUserEventSeqs: [], current: original }))
@@ -94,4 +95,79 @@ test('empty and nonfocused views remain bounded and invalid budgets are rejected
   assert.equal(JSON.parse(taskMemoryContext(state, 200)).current, undefined)
   assert.throws(() => taskMemoryContext(state, 10), /not truncated/)
   for (const budget of [0, -1, 1.5, NaN, Infinity]) assert.throws(() => taskMemoryContext(state, budget), /positive safe integer/)
+})
+
+test('recovery reads share the current view, preserve hard fields and never mutate stored evidence', () => {
+  const original = task()
+  original.evidence.push({ ...original.evidence[0]!, sourceVersion: 'old-code', summary: 'Old success' })
+  const before = JSON.stringify(original)
+  const state = foldTaskMemory(emptyTaskMemory(), { kind: 'save', task: original })
+  const read = taskMemoryRead(original, 32768)
+  const { current } = JSON.parse(read)
+  assert.deepEqual(current, JSON.parse(taskMemoryContext(state, 32768)).current)
+  assert.equal(current.staleEvidence, 1)
+  assert.equal(current.omittedEvidence, 5)
+  assert.equal(read.includes('Old success'), false)
+  assert.equal(read.includes(source.quote), false)
+  const withoutEvidence = { current: { ...current, evidence: [], omittedEvidence: 8 } }
+  const minBytes = Buffer.byteLength(JSON.stringify(withoutEvidence))
+  assert.deepEqual(JSON.parse(taskMemoryRead(original, minBytes)), withoutEvidence)
+  assert.throws(() => taskMemoryRead(original, minBytes - 1), /Hard requirements were not truncated/)
+  for (const invalid of [0, -1, 1.5, NaN, Infinity]) assert.throws(() => taskMemoryRead(original, invalid), /positive safe integer/)
+  assert.equal(JSON.stringify(original), before)
+})
+
+test('matching recorded versions do not certify unchanged working files or current acceptance', () => {
+  const original = task()
+  original.sourceVersion = 'HEAD-unchanged'
+  original.evidence = [{ kind: 'test', summary: 'Passed before local edits', ref: 'old-check.log', sourceVersion: 'HEAD-unchanged', requirementsRevision: 1 }]
+  const current = JSON.parse(taskMemoryRead(original, 32768)).current
+  assert.equal(current.evidence.length, 1, 'recorded evidence remains available for investigation')
+  assert.equal(current.evidenceBasis, 'recorded-versions; current workspace not checked')
+  const changed = reviseTaskMemory(original, { sourceVersion: 'HEAD-unchanged:worktree-2' }, 1)
+  const recovered = JSON.parse(taskMemoryRead(changed, 32768)).current
+  assert.deepEqual(recovered.evidence, [])
+  assert.equal(recovered.staleEvidence, 1)
+  assert.equal(recovered.evidenceBasis, undefined)
+  assert.equal(changed.evidence[0]!.summary, 'Passed before local edits')
+})
+
+test('redundant requirement fields in a real progress update preserve evidence, decisions and member validity', () => {
+  const original = task()
+  const assignment = { owner: 'worker', attemptId: '1', objective: 'Check interface', ownedPaths: ['a.ts'], acceptance: ['Pass'], maxTokens: 100 }
+  const brief = createMemberBrief(original, 'session', assignment)
+  const result = { binding: brief.binding, owner: 'worker', attemptId: '1', outcome: 'completed' as const, summary: 'Checked', artifacts: [], checks: ['interface'], unknowns: [], cost: { inputTokens: 1, outputTokens: 1, cachedTokens: 0, toolCalls: 1, complete: true } }
+  for (const fields of [{ goal: original.goal }, { workspace: original.workspace }, { acceptance: original.acceptance },
+    { requirements: original.requirements }, { requirements: [] }, { removeRequirements: [] },
+    { goal: ` ${original.goal} `, acceptance: original.acceptance, requirements: original.requirements }]) {
+    const revised = reviseTaskMemory(original, { ...fields, source, next: 'Check the causal boundary' }, 1)
+    assert.equal(revised.revision, 2)
+    assert.equal(revised.requirementsRevision, 1, JSON.stringify(fields))
+    assert.equal(revised.delegationRevision, 1)
+    assert.deepEqual(revised.decisions, original.decisions)
+    assert.deepEqual(revised.evidence, original.evidence)
+    assert.equal(validateMemberResult(revised, 'session', assignment, result).reviewable, true)
+  }
+  const correction = { seq: 20, quote: 'Keep the goal and check another boundary' }
+  for (const fields of [{ goal: original.goal, source: correction }, { acceptance: ['New check'], source },
+    { requirements: [{ ...original.requirements[0]!, source: correction }], source },
+    { removeRequirements: ['publish'], source }]) {
+    const revised = reviseTaskMemory(original, { ...fields, next: 'Changed' }, 1)
+    assert.equal(revised.requirementsRevision, 2)
+    assert.deepEqual(revised.decisions, [])
+    assert.equal(validateMemberResult(revised, 'session', assignment, result).reviewable, false)
+  }
+  for (const fields of [{ status: 'paused' as const }, { sourceVersion: 'code-2' }]) {
+    const revised = reviseTaskMemory(original, { ...fields, goal: original.goal, source }, 1)
+    assert.equal(revised.requirementsRevision, 1)
+    assert.equal(revised.delegationRevision, 2)
+    assert.equal(validateMemberResult(revised, 'session', assignment, result).reviewable, false)
+  }
+  const sourceOnly = reviseTaskMemory(original, { source: correction }, 1)
+  assert.equal(sourceOnly.revision, 2)
+  assert.equal(sourceOnly.requirementsRevision, 1)
+  assert.throws(() => reviseTaskMemory(original, { goal: original.goal, next: 'Changed' }, 1), /source/)
+  assert.throws(() => reviseTaskMemory(original, { next: 'Changed' }, 0), /Stale/)
+  assert.throws(() => reviseTaskMemory(original, { requirements: [original.requirements[0]!, original.requirements[0]!], source }, 1), /Conflicting/)
+  assert.throws(() => reviseTaskMemory(original, { removeRequirements: ['unknown'], source }, 1), /unknown/)
 })

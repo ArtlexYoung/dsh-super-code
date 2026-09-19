@@ -1,5 +1,5 @@
 /**
- * Host-side durable token accounting for super-agent conversations.
+ * Host-side durable token accounting for super-code conversations.
  *
  * Harness's generic `tokenUsage` projection intentionally exposes only an
  * aggregate. This projection keeps the same disjoint buckets while retaining

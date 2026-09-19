@@ -1,4 +1,4 @@
-/* Browser entry for dsh-super-agent. It deliberately uses the Harness public
+/* Browser entry for dsh-super-code. It deliberately uses the Harness public
  * slot and Remote faces; no DOM selectors or private React internals are used.
  *
  * The Harness client module table serves classic scripts and expects every
@@ -6,20 +6,20 @@
  * self-contained here also makes the published package usable outside the
  * Harness monorepo's tsdown workspace.
  */
-;(globalThis.window || globalThis).__ModuleLoader__.load({ id: 'dsh-super-agent', factory: (require) => {
+;(globalThis.window || globalThis).__ModuleLoader__.load({ id: 'dsh-super-code', factory: (require) => {
 const React = require('react')
 const { useEffect, useLayoutEffect, useRef, useMemo, useState, useSyncExternalStore } = React
 const { IconRefreshOutline16 } = require('@deepseek-ai/dsh-client-ui-primitives')
 const { SessionEventStream } = require('@deepseek-ai/dsh-api-session-controller')
 
 function TaskMemoryPanel({ state }) {
-  const tasks = Object.values(state?.tasks || {})
+  const tasks = state?.tasks || []
   if (!tasks.length) return null
-  const current = state.focus?.kind === 'task' ? state.tasks[state.focus.id] : undefined
+  const current = state.current?.kind === 'task' ? state.current : undefined
   const labels = { active: '进行中', paused: '已暂停', completed: '已完成', cancelled: '已取消' }
-  return React.createElement('section', { className: 'dsh-super-agent-task-memory', 'aria-label': '任务档案' },
+  return React.createElement('section', { className: 'dsh-super-code-task-memory', 'aria-label': '任务档案' },
     current && React.createElement(React.Fragment, null,
-      React.createElement('div', { className: 'dsh-super-agent-task-heading' },
+      React.createElement('div', { className: 'dsh-super-code-task-heading' },
         React.createElement('strong', null, current.title),
         React.createElement('span', null, labels[current.status] || current.status)),
       current.goal && React.createElement('p', null, current.goal),
@@ -28,136 +28,6 @@ function TaskMemoryPanel({ state }) {
       React.createElement('summary', null, current ? '其他任务' : '任务记录'),
       React.createElement('ul', null, tasks.filter(task => task.id !== current?.id).map(task => React.createElement('li', { key: task.id }, `${task.title} · ${labels[task.status] || task.status}`)))),
   )
-}
-
-function catalogValue(result) {
-  if (!result || result.ok === false) return undefined
-  return result.ok === true ? result.value : result
-}
-
-function modelRouteKey(provider, model) {
-  return provider ? `${provider}/${model}` : model
-}
-
-function optionRouteKey(option) {
-  return modelRouteKey(option.provider, option.id)
-}
-
-function catalogModels(catalog) {
-  return (catalog?.groups || []).flatMap(group => (group.models || []).map(model => ({
-    provider: group.id,
-    providerName: group.name || group.id,
-    id: model.id,
-    name: model.name || model.id,
-    reasoning: model.reasoning,
-  })))
-}
-
-function strengthsForCatalogModel(model) {
-  return (model.reasoning?.efforts || []).map(effort => effort.id).filter(Boolean)
-}
-
-function ModelPoolEditor({ name, title, draft, setDraft, catalog, catalogStatus }) {
-  const entries = draft[name] || []
-  const models = catalogModels(catalog)
-  const byKey = new Map(models.map(model => [modelRouteKey(model.provider, model.id), model]))
-  const update = next => setDraft({ ...draft, [name]: next })
-  const entryFor = model => entries.find(entry => optionRouteKey(entry) === modelRouteKey(model.provider, model.id)
-    || (entry.provider === undefined && entry.id === model.id))
-  const toggleModel = model => {
-    const existing = entryFor(model)
-    if (existing) {
-      update(entries.filter(entry => entry !== existing))
-      return
-    }
-    update([...entries, {
-      provider: model.provider,
-      id: model.id,
-      strengths: strengthsForCatalogModel(model),
-      available: true,
-    }])
-  }
-  const toggleStrength = (model, strength) => {
-    const existing = entryFor(model)
-    if (!existing) return
-    const strengths = new Set(existing.strengths || [])
-    if (strengths.has(strength)) strengths.delete(strength)
-    else strengths.add(strength)
-    update(entries.map(entry => entry === existing ? { ...entry, strengths: [...strengths], available: true } : entry))
-  }
-  const unavailable = entries.filter(entry => entry.provider === undefined
-    ? !models.some(model => model.id === entry.id)
-    : !byKey.has(optionRouteKey(entry)))
-  return React.createElement('fieldset', { key: name },
-    React.createElement('legend', null, title),
-    catalogStatus === 'loading' && React.createElement('p', { role: 'status' }, '正在读取当前可用模型…'),
-    catalogStatus === 'error' && React.createElement('p', { role: 'status' }, '模型目录读取失败；仍保留已保存的模型池。'),
-    models.length > 0 && React.createElement('div', { className: 'dsh-super-agent-model-list' }, models.map(model => {
-      const selected = entryFor(model)
-      const strengths = strengthsForCatalogModel(model)
-      return React.createElement('div', { key: modelRouteKey(model.provider, model.id), className: 'dsh-super-agent-model-row' },
-        React.createElement('label', null,
-          React.createElement('input', {
-            type: 'checkbox', checked: selected !== undefined,
-            onChange: () => toggleModel(model),
-          }),
-          ` ${model.providerName}/${model.name}`,
-        ),
-        strengths.length > 0 && selected !== undefined && React.createElement('div', { className: 'dsh-super-agent-strength-list' },
-          strengths.map(strength => React.createElement('label', { key: strength },
-            React.createElement('input', {
-              type: 'checkbox',
-              checked: (selected.strengths || []).includes(strength),
-              onChange: () => toggleStrength(model, strength),
-            }), ` ${strength}`,
-          )),
-        ),
-      )
-    })),
-    unavailable.length > 0 && React.createElement('div', { className: 'dsh-super-agent-unavailable-models' },
-      React.createElement('p', null, '已保存但当前不可用的模型（不会被选择）：'),
-      unavailable.map(entry => React.createElement('label', { key: optionRouteKey(entry) },
-        React.createElement('input', { type: 'checkbox', checked: true, onChange: () => update(entries.filter(candidate => candidate !== entry)) }),
-        ` ${optionRouteKey(entry)}`,
-      )),
-    ),
-    models.length === 0 && unavailable.length === 0 && catalogStatus === 'ready'
-      && React.createElement('p', null, '当前没有可用模型；保存空模型池后会按高等级策略继续尝试。'),
-  )
-}
-
-function SettingsPanel({ settingsScope, modelCatalog }) {
-  const subscribe = useMemo(() => listener => settingsScope.subscribe(listener), [settingsScope])
-  const read = useMemo(() => () => settingsScope.getSnapshot(), [settingsScope])
-  const snapshot = useSyncExternalStore(subscribe, read, read)
-  const value = snapshot.value ?? { modelPools: { high: [], normal: [], low: [] }, tokenStats: true }
-  const [draft, setDraft] = useState(value.modelPools)
-  const [busy, setBusy] = useState(false)
-  const [catalog, setCatalog] = useState(undefined)
-  const [catalogStatus, setCatalogStatus] = useState('loading')
-  useEffect(() => { setDraft(value.modelPools) }, [snapshot.revision])
-  useEffect(() => {
-    let active = true
-    setCatalogStatus('loading')
-    modelCatalog().then(result => {
-      if (!active) return
-      const next = catalogValue(result)
-      setCatalog(next)
-      setCatalogStatus(next ? 'ready' : 'error')
-    }).catch(() => { if (active) setCatalogStatus('error') })
-    return () => { active = false }
-  }, [])
-  const update = async () => {
-    setBusy(true)
-    try { await settingsScope.mutate([{ op: 'set', path: ['modelPools'], value: draft }], snapshot.revision) } finally { setBusy(false) }
-  }
-  return React.createElement('section', { className: 'dsh-super-agent-settings', 'data-super-agent-settings': true },
-    React.createElement('p', null, '模型目录实时反映当前可路由模型；未勾选的模型不会被选择，强度按任务难度自动取值。低等级池只会向更高等级回退，不会降级。'),
-    React.createElement(ModelPoolEditor, { name: 'high', title: '高智能模型池（计划、决策）', draft, setDraft, catalog, catalogStatus }),
-    React.createElement(ModelPoolEditor, { name: 'normal', title: '常规模型池（探索、实验、分析）', draft, setDraft, catalog, catalogStatus }),
-    React.createElement(ModelPoolEditor, { name: 'low', title: '低智能模型池（代码阅读、结果总结）', draft, setDraft, catalog, catalogStatus }),
-    snapshot.status !== 'ready' && React.createElement('p', { role: 'status' }, 'super-agent 设置暂不可用'),
-    React.createElement('button', { type: 'button', disabled: busy || snapshot.status !== 'ready' || !snapshot.writable, onClick: update }, busy ? '保存中…' : '保存 super-agent 配置'))
 }
 
 /** Join host catalogs without leaking agents from unrelated conversations. */
@@ -290,6 +160,12 @@ function agentTreeLayout(view, limit) {
     height: Math.max(140, ...rows.map(row => row.level * 128)) }
 }
 
+function agentExecutionStatus(node, isRoot) {
+  if (!node || node.unavailable || typeof node.running !== 'boolean') return { tone: 'unavailable', label: '记录不可用' }
+  if (node.running) return { tone: 'active', label: '运行中' }
+  return isRoot || node.mode === 'continuable' ? { tone: 'idle', label: '待命' } : { tone: 'stopped', label: '已停止' }
+}
+
 function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog }) {
   const [pan, setPan] = useState(saved.pan || { x: 0, y: 0 })
   const [zoom, setZoom] = useState(saved.zoom || 1)
@@ -374,24 +250,24 @@ function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog }
   const focusId = rows.some(row => row.id === focused) ? focused : view.root
   const running = [...view.nodes.values()].filter(node => node.running).length
   const catalogError = watched.some(id => catalogs[id]?.state === 'error')
-  return React.createElement('section', { className: 'dsh-super-agent-tree', 'data-super-agent-tree': true },
+  return React.createElement('section', { className: 'dsh-super-code-tree', 'data-super-agent-tree': true },
     watched.map(id => React.createElement(AgentCatalogWatch, { key: id, id, watchCatalog })),
-    React.createElement('header', { className: 'dsh-super-agent-tree-header' },
+    React.createElement('header', { className: 'dsh-super-code-tree-header' },
       React.createElement('div', null,
         React.createElement('strong', null, '协作执行'),
-        React.createElement('span', { className: 'dsh-super-agent-tree-count' }, `已加载 ${view.nodes.size} · 运行中 ${running}`)),
-      React.createElement('button', { type: 'button', className: 'dsh-super-agent-icon-button', disabled: busy || !view.root, onClick: reload, title: '刷新执行记录', 'aria-label': '刷新执行记录' }, React.createElement(IconRefreshOutline16))),
-    (error || catalogError) && React.createElement('p', { role: 'alert', className: 'dsh-super-agent-tree-error' }, error || '部分执行记录读取失败，请刷新重试'),
-    React.createElement('div', { className: 'dsh-super-agent-graph-legend', 'aria-label': '状态颜色' },
+        React.createElement('span', { className: 'dsh-super-code-tree-count' }, `已加载 ${view.nodes.size} · 运行中 ${running}`)),
+      React.createElement('button', { type: 'button', className: 'dsh-super-code-icon-button', disabled: busy || !view.root, onClick: reload, title: '刷新执行记录', 'aria-label': '刷新执行记录' }, React.createElement(IconRefreshOutline16))),
+    (error || catalogError) && React.createElement('p', { role: 'alert', className: 'dsh-super-code-tree-error' }, error || '部分执行记录读取失败，请刷新重试'),
+    React.createElement('div', { className: 'dsh-super-code-graph-legend', 'aria-label': '状态颜色' },
       ['运行中', '待命', '已停止', '记录不可用'].map((label, index) => React.createElement('span', { key: label },
-        React.createElement('i', { className: 'dsh-super-agent-circle ' + ['active', 'idle', 'stopped', 'unavailable'][index], 'aria-hidden': true }), label))),
-    !view.root && React.createElement('p', { className: 'dsh-super-agent-tree-empty' }, '暂无会话'),
-    React.createElement('div', { className: 'dsh-super-agent-graph-controls', 'aria-label': '画布操作' },
+        React.createElement('i', { className: 'dsh-super-code-circle ' + ['active', 'idle', 'stopped', 'unavailable'][index], 'aria-hidden': true }), label))),
+    !view.root && React.createElement('p', { className: 'dsh-super-code-tree-empty' }, '暂无会话'),
+    React.createElement('div', { className: 'dsh-super-code-graph-controls', 'aria-label': '画布操作' },
       React.createElement('button', { type: 'button', 'aria-label': '缩小节点图', disabled: zoom <= .4, onClick: () => zoomButton(1 / 1.2) }, '−'),
       React.createElement('span', { 'aria-live': 'polite' }, `${Math.round(zoom * 100)}%`),
       React.createElement('button', { type: 'button', 'aria-label': '放大节点图', disabled: zoom >= 2, onClick: () => zoomButton(1.2) }, '+'),
       React.createElement('button', { type: 'button', onClick: fit }, '适应窗口')),
-    React.createElement('div', { ref: viewport, className: 'dsh-super-agent-graph-scroll',
+    React.createElement('div', { ref: viewport, className: 'dsh-super-code-graph-scroll',
       onPointerDown: event => {
         if (!event.isPrimary || event.button !== 0) return
         gesture.current = { id: event.pointerId, x: event.clientX, y: event.clientY, origin: pan, moved: false }
@@ -411,37 +287,36 @@ function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog }
       onDoubleClick: event => { if (!event.target.closest('[role="treeitem"]')) fit() },
       title: '拖动平移，滚轮缩放，双击空白适应窗口',
     },
-    React.createElement('div', { ref: graph, role: 'tree', 'aria-label': 'Agent 执行树', className: 'dsh-super-agent-graph', style: { width, height, transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` } },
-      React.createElement('svg', { width, height, className: 'dsh-super-agent-graph-edges', 'aria-hidden': true }, edges.map(edge => {
+    React.createElement('div', { ref: graph, role: 'tree', 'aria-label': 'Agent 执行树', className: 'dsh-super-code-graph', style: { width, height, transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` } },
+      React.createElement('svg', { width, height, className: 'dsh-super-code-graph-edges', 'aria-hidden': true }, edges.map(edge => {
         const parent = positions.get(edge.parent), child = positions.get(edge.child)
         return React.createElement('path', { key: edge.child, d: `M ${parent.x} ${parent.y + 105} V ${child.y - 12} H ${child.x} V ${child.y}`, fill: 'none' })
       })),
       rows.map(row => {
       const node = view.nodes.get(row.id)
       const title = node.title || node.displayTitle || '主 Agent'
-      const status = node.unavailable ? '记录不可用' : node.running ? '运行中' : row.id === view.root ? '待命' : '已停止'
+      const { label: status, tone } = agentExecutionStatus(node, row.id === view.root)
       const usage = totals.get(row.id)
       const partial = usage.partial || usage.known < usage.agents
       const number = value => value.toLocaleString('zh-CN', { notation: 'compact', maximumFractionDigits: 1 })
-      const tone = node.unavailable ? 'unavailable' : node.running ? 'active' : row.id === view.root ? 'idle' : 'stopped'
       return React.createElement('button', {
           key: row.id, type: 'button',
           role: 'treeitem', tabIndex: row.id === focusId ? 0 : -1, 'data-agent-id': row.id,
           'aria-level': row.level, 'aria-selected': row.id === state.current,
           'aria-disabled': node.unavailable || undefined, 'aria-label': `${title}，${status}`,
-          className: `dsh-super-agent-graph-node${row.id === state.current ? ' selected' : ''}${node.running ? ' running' : ''}`,
+          className: `dsh-super-code-graph-node${row.id === state.current ? ' selected' : ''}${node.running ? ' running' : ''}`,
           style: { left: row.x - 64, top: row.y }, title: `${title} · ${status} · 点击查看详情`,
           onFocus: () => setFocused(row.id), onClick: () => { if (!node.unavailable) open(node) },
           onKeyDown: event => { if (event.target === event.currentTarget) keyDown(event, row) },
         },
-        React.createElement('span', { className: 'dsh-super-agent-circle ' + tone, 'aria-hidden': true }, row.id === view.root ? '主' : String(rows.findIndex(item => item.id === row.id))),
-        React.createElement('span', { className: 'dsh-super-agent-tree-content' },
-          React.createElement('span', { className: 'dsh-super-agent-tree-title' }, title),
-          React.createElement('span', { className: 'dsh-super-agent-tree-usage', title: `本节点及所有已知下级合计，包含本节点。${partial ? '部分记录或用量尚不可用；仅显示已知值。' : ''}Token ${usage.tokens.toLocaleString('zh-CN')}；缓存读取 ${usage.cache.toLocaleString('zh-CN')}；${usage.agents} 个 Agent` },
+        React.createElement('span', { className: 'dsh-super-code-circle ' + tone, 'aria-hidden': true }, row.id === view.root ? '主' : String(rows.findIndex(item => item.id === row.id))),
+        React.createElement('span', { className: 'dsh-super-code-tree-content' },
+          React.createElement('span', { className: 'dsh-super-code-tree-title' }, title),
+          React.createElement('span', { className: 'dsh-super-code-tree-usage', title: `本节点及所有已知下级合计，包含本节点。${partial ? '部分记录或用量尚不可用；仅显示已知值。' : ''}Token ${usage.tokens.toLocaleString('zh-CN')}；缓存读取 ${usage.cache.toLocaleString('zh-CN')}；${usage.agents} 个 Agent` },
             React.createElement('span', null, usage.known ? `${number(usage.tokens)} token` : '用量 —'),
             React.createElement('span', null, usage.known ? `缓存 ${usage.input ? Math.round(usage.cache / usage.input * 100) : 0}%${partial ? ' · 部分' : ''}` : '缓存 —'))))
     }))),
-    more && React.createElement('button', { type: 'button', className: 'dsh-super-agent-tree-more', onClick: () => setLimit(limit + 200) }, '显示更多'))
+    more && React.createElement('button', { type: 'button', className: 'dsh-super-code-tree-more', onClick: () => setLimit(limit + 200) }, '显示更多'))
 }
 
 function agentDetailAddress(node) {
@@ -499,16 +374,19 @@ function detailRecord(entry) {
 // keeps a bounded display window and never stages or sends to another session.
 function createAgentInspector(createStream, address, readPage, initial) {
   let snapshot = initial || { status: 'loading', items: [], hasMore: false, earlier: false, truncated: false, projections: {}, error: '', firstSeq: 0, cursor: -1 }
+  let cursor = snapshot.cursor
   let disposed = false, stream
   const listeners = new Set()
   const publish = patch => {
     if (disposed) return
-    snapshot = { ...snapshot, ...patch }
+    if (patch.cursor !== undefined) cursor = patch.cursor
+    snapshot = { ...snapshot, cursor, ...patch }
     listeners.forEach(listener => listener())
   }
   const itemsOf = entries => entries.map(detailRecord).filter(item => item.kind !== 'skip' && item.text)
   stream = createStream(agentDetailTarget(address), {
     publish: change => {
+      if (disposed) return
       if (change.type === 'replace') {
         if (snapshot.earlier) {
           publish({ status: 'ready', projections: change.page.projections?.values || {}, error: '' })
@@ -526,12 +404,12 @@ function createAgentInspector(createStream, address, readPage, initial) {
           projections: change.page.projections?.values || {}, error: '' })
       } else if (change.type === 'append' && !snapshot.earlier) {
         const item = detailRecord(change.entry)
-        const cursor = change.entry.event.seq
+        cursor = change.entry.event.seq
         if (item.kind !== 'skip' && item.text) {
           const items = [...snapshot.items, item]
           publish({ items: items.slice(-200), cursor, truncated: snapshot.truncated || items.length > 200,
             firstSeq: items.length > 200 ? items.at(-200).seq : snapshot.firstSeq, hasMore: snapshot.hasMore || items.length > 200 })
-        } else publish({ cursor })
+        }
       }
     },
     carrierFailed: () => publish({ error: '连接中断，正在重连' }),
@@ -544,11 +422,12 @@ function createAgentInspector(createStream, address, readPage, initial) {
     older: async () => {
       if (snapshot.status === 'paging' || !snapshot.hasMore) return
       publish({ status: 'paging', error: '' })
+      const throughSeq = cursor
       try {
-        const result = await readPage({ address: agentDetailTarget(address), throughSeq: snapshot.cursor, beforeSeq: snapshot.firstSeq, maxMessages: 40 }, stream.signal)
+        const result = await readPage({ address: agentDetailTarget(address), throughSeq, beforeSeq: snapshot.firstSeq, maxMessages: 40 }, stream.signal)
         if (!result.ok) throw new Error('History unavailable')
         const items = itemsOf(result.value.records), visible = items.slice(-200)
-        publish({ status: 'ready', items: visible, earlier: true, truncated: items.length > 200,
+        publish({ status: 'ready', items: visible, earlier: true, cursor: throughSeq, truncated: items.length > 200,
           firstSeq: items.length > 200 ? visible[0].seq : result.value.records[0]?.event.seq ?? 0,
           hasMore: result.value.hasMore || items.length > 200 })
       }
@@ -613,29 +492,29 @@ function AgentDetail({ useTabInfo, useSessions, createInspector, detailStates })
   const input = totals ? (totals.uncachedInputTokens || 0) + (totals.cacheReadTokens || 0) + (totals.cacheWriteTokens || 0) : 0
   const format = value => value === undefined ? '未提供' : value.toLocaleString('zh-CN')
   const tasks = projections.superCodeTasks
-  const task = tasks?.focus?.kind === 'task' ? tasks.tasks[tasks.focus.id] : undefined
+  const task = tasks?.current?.kind === 'task' ? tasks.current : undefined
   const title = node?.title || node?.displayTitle || 'Agent 详情'
   const metrics = [
     ['输入', totals ? input : undefined], ['输出', totals?.outputTokens],
     ['缓存读取', totals?.cacheReadTokens], ['缓存写入', totals?.cacheWriteTokens],
   ]
-  return React.createElement('section', { className: 'dsh-super-agent-detail', 'data-agent-detail': id },
-    React.createElement('header', { className: 'dsh-super-agent-detail-header' },
+  return React.createElement('section', { className: 'dsh-super-code-detail', 'data-agent-detail': id },
+    React.createElement('header', { className: 'dsh-super-code-detail-header' },
       React.createElement('nav', { 'aria-label': 'Agent 路径' }, path.map((part, index) => React.createElement('span', { key: part.id }, index > 0 ? ' / ' : '', part.title))),
-      React.createElement('div', { className: 'dsh-super-agent-detail-heading' },
+      React.createElement('div', { className: 'dsh-super-code-detail-heading' },
         React.createElement('div', null,
           React.createElement('h2', null, title),
-          React.createElement('span', { className: 'dsh-super-agent-detail-status' }, node?.running ? '运行中' : '已停止')),
-        React.createElement('button', { type: 'button', className: 'dsh-super-agent-icon-button', title: '刷新对话详情', 'aria-label': '刷新对话详情', onClick: latest }, React.createElement(IconRefreshOutline16))),
-      id !== view.root && task?.goal && task.goal !== title && React.createElement('p', { className: 'dsh-super-agent-detail-task' }, task.goal),
+          React.createElement('span', { className: 'dsh-super-code-detail-status' }, agentExecutionStatus(node, id === view.root).label)),
+        React.createElement('button', { type: 'button', className: 'dsh-super-code-icon-button', title: '刷新对话详情', 'aria-label': '刷新对话详情', onClick: latest }, React.createElement(IconRefreshOutline16))),
+      id !== view.root && task?.goal && task.goal !== title && React.createElement('p', { className: 'dsh-super-code-detail-task' }, task.goal),
       id === view.root && React.createElement(TaskMemoryPanel, { state: tasks }),
-      React.createElement('dl', { className: 'dsh-super-agent-detail-metrics' },
+      React.createElement('dl', { className: 'dsh-super-code-detail-metrics' },
         React.createElement('div', null, React.createElement('dt', null, 'Token 总量'), React.createElement('dd', null, format(totals ? input + (totals.outputTokens || 0) : undefined))),
         React.createElement('div', null, React.createElement('dt', null, '缓存命中率'), React.createElement('dd', null, totals ? (input ? Math.round((totals.cacheReadTokens || 0) / input * 100) : 0) + '%' : '未提供'))),
-      React.createElement('details', { className: 'dsh-super-agent-usage-details', open: saved.open.has('usage'), onToggle: event => { if (event.currentTarget.open) saved.open.add('usage'); else saved.open.delete('usage') } },
+      React.createElement('details', { className: 'dsh-super-code-usage-details', open: saved.open.has('usage'), onToggle: event => { if (event.currentTarget.open) saved.open.add('usage'); else saved.open.delete('usage') } },
         React.createElement('summary', null, '用量详情'),
-        React.createElement('dl', { className: 'dsh-super-agent-detail-metrics' }, metrics.map(([label, value]) => React.createElement('div', { key: label }, React.createElement('dt', null, label), React.createElement('dd', null, format(value))))))),
-    React.createElement('div', { ref: log, className: 'dsh-super-agent-detail-log', 'aria-label': 'Agent 执行内容', onScroll: event => {
+        React.createElement('dl', { className: 'dsh-super-code-detail-metrics' }, metrics.map(([label, value]) => React.createElement('div', { key: label }, React.createElement('dt', null, label), React.createElement('dd', null, format(value))))))),
+    React.createElement('div', { ref: log, className: 'dsh-super-code-detail-log', 'aria-label': 'Agent 执行内容', onScroll: event => {
       const element = event.currentTarget
       saved.top = element.scrollTop
       saved.following = !snapshot.earlier && element.scrollHeight - element.clientHeight - element.scrollTop < 32
@@ -646,154 +525,139 @@ function AgentDetail({ useTabInfo, useSessions, createInspector, detailStates })
       snapshot.hasMore && React.createElement('button', { type: 'button', disabled: snapshot.status === 'paging', onClick: inspector.older }, snapshot.status === 'paging' ? '读取中…' : '加载更早记录'),
       (snapshot.earlier || snapshot.truncated) && React.createElement('button', { type: 'button', onClick: latest }, '回到最新'),
       snapshot.status === 'ready' && !snapshot.items.length && React.createElement('p', null, '暂无执行内容'),
-      snapshot.items.map(item => React.createElement('article', { key: item.seq, className: 'dsh-super-agent-detail-entry ' + item.kind },
+      snapshot.items.map(item => React.createElement('article', { key: item.seq, className: 'dsh-super-code-detail-entry ' + item.kind },
         item.collapsed ? React.createElement('details', { open: saved.open.has(item.seq), onToggle: event => { if (event.currentTarget.open) saved.open.add(item.seq); else saved.open.delete(item.seq) } },
           React.createElement('summary', null, item.label),
           React.createElement(DetailText, { text: item.text }))
           : React.createElement(React.Fragment, null,
-            React.createElement('div', { className: 'dsh-super-agent-detail-entry-label' }, item.label,
+            React.createElement('div', { className: 'dsh-super-code-detail-entry-label' }, item.label,
               React.createElement('time', null, new Date(item.time).toLocaleTimeString('zh-CN', { hour12: false }))),
             React.createElement(DetailText, { text: item.text })))) ),
-    unread && React.createElement('button', { type: 'button', className: 'dsh-super-agent-new-content', onClick: () => {
+    unread && React.createElement('button', { type: 'button', className: 'dsh-super-code-new-content', onClick: () => {
       saved.following = true; log.current.scrollTop = log.current.scrollHeight; markUnread(false)
     } }, '有新内容 · 查看最新'))
 }
 
 const inject = [
-  'slots', 'remote', 'remote.settings', 'remote.session', 'sessions', 'locale',
-  'settingsScope', 'sidebarRightTabs', 'sidebarRight',
+  'slots', 'remote', 'remote.session', 'sessions', 'locale',
+  'sidebarRightTabs', 'sidebarRight',
 ]
 
 function apply(ctx) {
   ctx.effect(() => {
     const style = document.createElement('style')
-    style.dataset.dshSuperAgent = 'true'
+    style.dataset.dshSuperCode = 'true'
     style.textContent = `
-.dsh-super-agent-settings{display:grid;gap:12px}
-.dsh-super-agent-settings fieldset{border:1px solid var(--dsw-color-border,#ddd);border-radius:6px;padding:8px}
-.dsh-super-agent-settings p{margin:0;color:var(--dsw-color-text-secondary,#777)}
-.dsh-super-agent-model-list{display:grid;gap:8px}.dsh-super-agent-model-row{display:grid;gap:4px}
-.dsh-super-agent-strength-list{display:flex;flex-wrap:wrap;gap:8px;padding-left:22px;font-size:12px}
-.dsh-super-agent-unavailable-models{display:grid;gap:4px;color:var(--dsw-color-text-secondary,#777)}
-.dsh-super-agent-unavailable-models p{font-size:12px}
-.dsh-super-agent-tree{--agent-muted:var(--dsw-alias-label-secondary,#70757d);--agent-line:var(--dsw-alias-border-l1,#dedfe3);height:100%;min-width:0;overflow:auto;font-size:13px;letter-spacing:0;color:inherit}
-.dsh-super-agent-tree-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 18px 16px}
-.dsh-super-agent-tree-header strong{display:block;font-size:14px;font-weight:600}
-.dsh-super-agent-tree-count{display:block;margin-top:5px;color:var(--agent-muted);font-size:12px}
-.dsh-super-agent-graph-controls{display:flex;align-items:center;gap:6px;padding:2px 18px 12px;color:var(--agent-muted);font-size:11px}
-.dsh-super-agent-graph-controls button{border:1px solid var(--agent-line);border-radius:5px;background:transparent;color:inherit;padding:3px 8px;min-height:28px;cursor:pointer;font:inherit}
-.dsh-super-agent-graph-controls button:disabled{opacity:.4;cursor:default}
-.dsh-super-agent-graph-controls span{min-width:38px;text-align:center;font-variant-numeric:tabular-nums}
-.dsh-super-agent-graph-scroll{overflow:hidden;padding:0 12px;min-height:260px;height:calc(100% - 150px);touch-action:none;cursor:grab;user-select:none}
-.dsh-super-agent-graph-scroll.dragging,.dsh-super-agent-graph-scroll.dragging *{cursor:grabbing!important}
-.dsh-super-agent-graph-legend{display:flex;flex-wrap:wrap;gap:6px 12px;padding:0 18px 8px;color:var(--agent-muted);font-size:10px}
-.dsh-super-agent-graph-legend>span{display:flex;align-items:center;gap:5px}
-.dsh-super-agent-graph-legend .dsh-super-agent-circle{width:7px;height:7px;box-shadow:none}
-.dsh-super-agent-graph{position:relative;transform-origin:0 0}
-.dsh-super-agent-graph-edges{position:absolute;inset:0;pointer-events:none;stroke:var(--agent-line);stroke-width:1.5}
-.dsh-super-agent-graph-node{position:absolute;width:128px;min-height:100px;display:flex;flex-direction:column;align-items:center;gap:6px;border:0;padding:0 4px;background:transparent;color:inherit;font:inherit;cursor:pointer;border-radius:8px}
-.dsh-super-agent-circle{position:relative;display:flex;align-items:center;justify-content:center;flex:none;width:40px;height:40px;border-radius:50%!important;corner-shape:round!important;font-size:13px;font-weight:600;background:var(--state-color);color:#fff}
-.dsh-super-agent-circle.active{--state-color:#008b78}.dsh-super-agent-circle.idle{--state-color:#3971de}.dsh-super-agent-circle.stopped{--state-color:#777d87}.dsh-super-agent-circle.unavailable{--state-color:#b87716}
-.dsh-super-agent-graph-node .dsh-super-agent-circle{background:linear-gradient(145deg,color-mix(in srgb,var(--state-color) 83%,white),var(--state-color));box-shadow:inset 0 1px 1px #ffffff40,0 2px 6px #00000012}
-.dsh-super-agent-graph-node .dsh-super-agent-circle:after{content:"";position:absolute;inset:-5px;border:1px solid color-mix(in srgb,var(--state-color) 22%,transparent);border-radius:50%;corner-shape:round;pointer-events:none}
-.dsh-super-agent-graph-node .dsh-super-agent-circle.idle:after{animation:super-agent-breathe 3s ease-in-out infinite}
-.dsh-super-agent-graph-node .dsh-super-agent-circle.active:after{border-width:2px;border-top-color:var(--state-color);border-right-color:var(--state-color);animation:super-agent-process 1.6s linear infinite}
-.dsh-super-agent-graph-node .dsh-super-agent-circle.stopped{background:linear-gradient(145deg,#9297a0,#747a84);box-shadow:inset 0 1px 1px #ffffff30}
-.dsh-super-agent-graph-node .dsh-super-agent-circle.stopped:after{border-color:color-mix(in srgb,var(--state-color) 14%,transparent)}
-.dsh-super-agent-graph-node .dsh-super-agent-circle.unavailable:after{border-style:dashed;border-color:var(--state-color)}
-.dsh-super-agent-graph-node:hover .dsh-super-agent-circle{box-shadow:inset 0 1px 1px #ffffff40,0 3px 10px color-mix(in srgb,var(--state-color) 25%,transparent)}
+.dsh-super-code-tree{--agent-muted:var(--dsw-alias-label-secondary,#70757d);--agent-line:var(--dsw-alias-border-l1,#dedfe3);height:100%;min-width:0;overflow:auto;font-size:13px;letter-spacing:0;color:inherit}
+.dsh-super-code-tree-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 18px 16px}
+.dsh-super-code-tree-header strong{display:block;font-size:14px;font-weight:600}
+.dsh-super-code-tree-count{display:block;margin-top:5px;color:var(--agent-muted);font-size:12px}
+.dsh-super-code-graph-controls{display:flex;align-items:center;gap:6px;padding:2px 18px 12px;color:var(--agent-muted);font-size:11px}
+.dsh-super-code-graph-controls button{border:1px solid var(--agent-line);border-radius:5px;background:transparent;color:inherit;padding:3px 8px;min-height:28px;cursor:pointer;font:inherit}
+.dsh-super-code-graph-controls button:disabled{opacity:.4;cursor:default}
+.dsh-super-code-graph-controls span{min-width:38px;text-align:center;font-variant-numeric:tabular-nums}
+.dsh-super-code-graph-scroll{overflow:hidden;padding:0 12px;min-height:260px;height:calc(100% - 150px);touch-action:none;cursor:grab;user-select:none}
+.dsh-super-code-graph-scroll.dragging,.dsh-super-code-graph-scroll.dragging *{cursor:grabbing!important}
+.dsh-super-code-graph-legend{display:flex;flex-wrap:wrap;gap:6px 12px;padding:0 18px 8px;color:var(--agent-muted);font-size:10px}
+.dsh-super-code-graph-legend>span{display:flex;align-items:center;gap:5px}
+.dsh-super-code-graph-legend .dsh-super-code-circle{width:7px;height:7px;box-shadow:none}
+.dsh-super-code-graph{position:relative;transform-origin:0 0}
+.dsh-super-code-graph-edges{position:absolute;inset:0;pointer-events:none;stroke:var(--agent-line);stroke-width:1.5}
+.dsh-super-code-graph-node{position:absolute;width:128px;min-height:100px;display:flex;flex-direction:column;align-items:center;gap:6px;border:0;padding:0 4px;background:transparent;color:inherit;font:inherit;cursor:pointer;border-radius:8px}
+.dsh-super-code-circle{position:relative;display:flex;align-items:center;justify-content:center;flex:none;width:40px;height:40px;border-radius:50%!important;corner-shape:round!important;font-size:13px;font-weight:600;background:var(--state-color);color:#fff}
+.dsh-super-code-circle.active{--state-color:#008b78}.dsh-super-code-circle.idle{--state-color:#3971de}.dsh-super-code-circle.stopped{--state-color:#777d87}.dsh-super-code-circle.unavailable{--state-color:#b87716}
+.dsh-super-code-graph-node .dsh-super-code-circle{background:linear-gradient(145deg,color-mix(in srgb,var(--state-color) 83%,white),var(--state-color));box-shadow:inset 0 1px 1px #ffffff40,0 2px 6px #00000012}
+.dsh-super-code-graph-node .dsh-super-code-circle:after{content:"";position:absolute;inset:-5px;border:1px solid color-mix(in srgb,var(--state-color) 22%,transparent);border-radius:50%;corner-shape:round;pointer-events:none}
+.dsh-super-code-graph-node .dsh-super-code-circle.idle:after{animation:super-agent-breathe 3s ease-in-out infinite}
+.dsh-super-code-graph-node .dsh-super-code-circle.active:after{border-width:2px;border-top-color:var(--state-color);border-right-color:var(--state-color);animation:super-agent-process 1.6s linear infinite}
+.dsh-super-code-graph-node .dsh-super-code-circle.stopped{background:linear-gradient(145deg,#9297a0,#747a84);box-shadow:inset 0 1px 1px #ffffff30}
+.dsh-super-code-graph-node .dsh-super-code-circle.stopped:after{border-color:color-mix(in srgb,var(--state-color) 14%,transparent)}
+.dsh-super-code-graph-node .dsh-super-code-circle.unavailable:after{border-style:dashed;border-color:var(--state-color)}
+.dsh-super-code-graph-node:hover .dsh-super-code-circle{box-shadow:inset 0 1px 1px #ffffff40,0 3px 10px color-mix(in srgb,var(--state-color) 25%,transparent)}
 @keyframes super-agent-breathe{0%,100%{transform:scale(1);opacity:.35}50%{transform:scale(1.12);opacity:.85}}
 @keyframes super-agent-process{to{transform:rotate(360deg)}}
-.dsh-super-agent-graph-node:focus-visible{outline:2px solid var(--dsw-color-primary,#3276dc);outline-offset:4px}
-.dsh-super-agent-graph-node[aria-disabled]{cursor:default;opacity:.65}
-.dsh-super-agent-graph-node .dsh-super-agent-tree-content{width:100%;text-align:center}
-.dsh-super-agent-graph-node .dsh-super-agent-tree-title{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:18px;height:18px;font-size:12px}
-.dsh-super-agent-graph-node .dsh-super-agent-tree-usage{justify-content:center;gap:1px 7px;font-size:10px}
-.dsh-super-agent-icon-button,.dsh-super-agent-tree-toggle{display:inline-flex;align-items:center;justify-content:center;flex:none;width:28px;height:28px;padding:0;border:0;border-radius:4px;background:transparent;color:var(--agent-muted);cursor:pointer}
-.dsh-super-agent-icon-button:hover,.dsh-super-agent-tree-toggle:hover{background:color-mix(in srgb,currentColor 9%,transparent)}
-.dsh-super-agent-icon-button:disabled{opacity:.45;cursor:default}
-.dsh-super-agent-view-button{flex:none;border:0;border-radius:4px;padding:6px 8px;background:transparent;color:var(--agent-muted);font:inherit;font-size:12px;cursor:pointer}
-.dsh-super-agent-view-button:hover{background:color-mix(in srgb,currentColor 7%,transparent);color:inherit}
-.dsh-super-agent-view-button:disabled{opacity:.45;cursor:default}
-.dsh-super-agent-tree-rows{padding:0 12px 20px}
-.dsh-super-agent-tree-row{position:relative;display:flex;align-items:center;gap:6px;min-width:0;min-height:64px;padding:10px 8px 10px calc(4px + var(--agent-depth)*14px);border-radius:6px;cursor:default;box-sizing:border-box}
-.dsh-super-agent-tree-row[aria-expanded]{cursor:pointer}
-.dsh-super-agent-tree-row[aria-level]:not([aria-level="1"]):before{content:"";position:absolute;left:15px;width:calc(var(--agent-depth)*14px);height:100%;top:0;background:repeating-linear-gradient(to right,var(--agent-line) 0,var(--agent-line) 1px,transparent 1px,transparent 14px);pointer-events:none}
-.dsh-super-agent-tree-row:hover{background:color-mix(in srgb,currentColor 5%,transparent)}
-.dsh-super-agent-tree-row.selected{background:color-mix(in srgb,var(--dsw-color-primary,#3276dc) 6%,transparent)}
-.dsh-super-agent-tree-row:focus-visible,.dsh-super-agent-tree button:focus-visible{outline:2px solid var(--dsw-color-primary,#3276dc);outline-offset:-2px}
-.dsh-super-agent-tree-row[aria-disabled]{cursor:default;opacity:.7}
-.dsh-super-agent-tree-toggle{width:22px;height:26px;z-index:1}
-.dsh-super-agent-tree-toggle svg{transition:transform .12s}.dsh-super-agent-tree-toggle.expanded svg{transform:rotate(90deg)}
-.dsh-super-agent-tree-connector{width:22px;flex:none}
-.dsh-super-agent-tree-content{display:grid;gap:4px;flex:1;min-width:0}
-.dsh-super-agent-tree-title{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere;line-height:1.4}
-.dsh-super-agent-tree-meta{color:var(--agent-muted);font-size:11px;line-height:1.4;overflow-wrap:anywhere}
-.dsh-super-agent-tree-usage{display:flex;flex-wrap:wrap;gap:3px 10px;font-size:10px;line-height:1.6;color:var(--agent-muted);font-variant-numeric:tabular-nums}
-.dsh-super-agent-tree-usage>span{white-space:nowrap}
-.dsh-super-agent-state{display:inline-flex;align-items:center;gap:5px;padding:2px 6px;border-radius:5px;color:var(--state-color);background:color-mix(in srgb,var(--state-color) 9%,transparent)}
-.dsh-super-agent-state:before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor}
-.dsh-super-agent-state.active{--state-color:#16877d}
-.dsh-super-agent-state.idle{--state-color:#5471bb}
-.dsh-super-agent-state.stopped{--state-color:#827299}
-.dsh-super-agent-state.unavailable{--state-color:#b77b29}
-@media(prefers-color-scheme:dark){.dsh-super-agent-state.active{--state-color:#6bc7b6}.dsh-super-agent-state.idle{--state-color:#91b0f4}.dsh-super-agent-state.stopped{--state-color:#b9a9cf}.dsh-super-agent-state.unavailable{--state-color:#e8b971}}
-.dsh-super-agent-tree-status{width:6px;height:6px;border-radius:50%;background:var(--agent-line);flex:none}
-.dsh-super-agent-tree-row.running .dsh-super-agent-tree-status{background:#168c78}
-.dsh-super-agent-tree-status.unavailable{background:#c17e1d}
-.dsh-super-agent-tree-note,.dsh-super-agent-tree-empty{margin:10px 18px;color:var(--agent-muted);font-size:12px}
-.dsh-super-agent-tree-error{margin:12px 14px;color:var(--dsw-color-text-error,#bd423b);font-size:12px;overflow-wrap:anywhere}
-.dsh-super-agent-tree-more{display:block;margin:4px auto 14px;padding:6px 12px;border:1px solid var(--agent-line);border-radius:4px;background:transparent;color:inherit;cursor:pointer}
-.dsh-super-agent-detail{height:100%;min-width:0;display:flex;flex-direction:column;font-size:13px;letter-spacing:0;--agent-muted:var(--dsw-alias-label-secondary,#70757d);--agent-line:var(--dsw-alias-border-l1,#dedfe3)}
-.dsh-super-agent-detail-header{padding:20px 20px 18px;border-bottom:1px solid var(--agent-line);flex:none;max-height:45%;overflow:auto}
-.dsh-super-agent-detail-header nav{font-size:11px;line-height:1.5;color:var(--agent-muted);overflow-wrap:anywhere}
-.dsh-super-agent-detail-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-top:14px}
-.dsh-super-agent-detail-heading>div{min-width:0}
-.dsh-super-agent-detail h2{font-size:16px;line-height:1.5;font-weight:600;margin:0;overflow-wrap:anywhere}
-.dsh-super-agent-detail-task{font-size:13px;line-height:1.7;margin:12px 0 0;overflow-wrap:anywhere}
-.dsh-super-agent-task-memory{margin-top:16px;padding-top:14px;border-top:1px solid var(--agent-line);font-size:12px;line-height:1.7;overflow-wrap:anywhere}
-.dsh-super-agent-task-heading{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
-.dsh-super-agent-task-heading strong{font-weight:500;color:inherit}
-.dsh-super-agent-task-heading span{color:var(--agent-muted);font-size:11px}
-.dsh-super-agent-task-memory p{margin:6px 0 0}
-.dsh-super-agent-task-memory details{margin-top:8px;color:var(--agent-muted)}
-.dsh-super-agent-task-memory summary{cursor:pointer}
-.dsh-super-agent-detail-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 16px;margin:16px 0 0}
-.dsh-super-agent-usage-details{margin-top:14px;font-size:12px;color:var(--agent-muted)}
-.dsh-super-agent-usage-details summary{cursor:pointer}
-.dsh-super-agent-new-content{align-self:center;flex:none;margin:8px 16px 12px;padding:7px 12px;border:1px solid var(--agent-line);border-radius:6px;background:transparent;color:inherit;font:inherit;font-size:12px;cursor:pointer}
-.dsh-super-agent-detail-metrics dt{font-size:11px;color:var(--agent-muted)}
-.dsh-super-agent-detail-metrics dd{margin:5px 0 0;font-variant-numeric:tabular-nums;font-size:14px;line-height:1.4;overflow-wrap:anywhere}
-.dsh-super-agent-detail-metrics>div:first-child dd{font-weight:600}
-.dsh-super-agent-detail-status{display:block;margin-top:5px;font-size:11px;color:var(--agent-muted)}
-.dsh-super-agent-detail-log{flex:1;min-height:0;overflow:auto;padding:4px 20px 24px}
-.dsh-super-agent-detail-log>button,.dsh-super-agent-detail-entry button{border:1px solid var(--agent-line);border-radius:4px;background:transparent;color:inherit;padding:5px 8px;margin:10px 8px 4px 0;font-size:12px;cursor:pointer}
-.dsh-super-agent-detail-entry{padding:20px 0;min-width:0}
-.dsh-super-agent-detail-entry:has(>details){padding:10px 0;color:var(--agent-muted)}
-.dsh-super-agent-detail-entry details[open]{color:inherit;padding-bottom:8px}
-.dsh-super-agent-detail-entry-label{display:flex;justify-content:space-between;gap:10px;font-size:12px;font-weight:600}
-.dsh-super-agent-detail-entry time{color:var(--agent-muted);font-size:11px;font-weight:400;flex:none}
-.dsh-super-agent-detail-entry pre{font:inherit;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0 0}
-.dsh-super-agent-detail-entry summary{cursor:pointer;font-size:12px;overflow-wrap:anywhere}
-.dsh-super-agent-detail-entry.context{color:var(--agent-muted)}
-.dsh-super-agent-detail-entry.error,.dsh-super-agent-detail [role=alert]{color:var(--dsw-color-text-error,#bd423b)}
-.dsh-super-agent-detail button:focus-visible,.dsh-super-agent-detail summary:focus-visible{outline:2px solid var(--dsw-color-primary,#3276dc);outline-offset:3px}
-.dsh-super-agent-detail-entry summary:hover{color:var(--dsw-alias-label-primary,inherit)}
-@media(prefers-reduced-motion:reduce){.dsh-super-agent-tree-toggle svg{transition:none}.dsh-super-agent-graph-node .dsh-super-agent-circle:after{animation:none!important}}
+.dsh-super-code-graph-node:focus-visible{outline:2px solid var(--dsw-color-primary,#3276dc);outline-offset:4px}
+.dsh-super-code-graph-node[aria-disabled]{cursor:default;opacity:.65}
+.dsh-super-code-graph-node .dsh-super-code-tree-content{width:100%;text-align:center}
+.dsh-super-code-graph-node .dsh-super-code-tree-title{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:18px;height:18px;font-size:12px}
+.dsh-super-code-graph-node .dsh-super-code-tree-usage{justify-content:center;gap:1px 7px;font-size:10px}
+.dsh-super-code-icon-button,.dsh-super-code-tree-toggle{display:inline-flex;align-items:center;justify-content:center;flex:none;width:28px;height:28px;padding:0;border:0;border-radius:4px;background:transparent;color:var(--agent-muted);cursor:pointer}
+.dsh-super-code-icon-button:hover,.dsh-super-code-tree-toggle:hover{background:color-mix(in srgb,currentColor 9%,transparent)}
+.dsh-super-code-icon-button:disabled{opacity:.45;cursor:default}
+.dsh-super-code-view-button{flex:none;border:0;border-radius:4px;padding:6px 8px;background:transparent;color:var(--agent-muted);font:inherit;font-size:12px;cursor:pointer}
+.dsh-super-code-view-button:hover{background:color-mix(in srgb,currentColor 7%,transparent);color:inherit}
+.dsh-super-code-view-button:disabled{opacity:.45;cursor:default}
+.dsh-super-code-tree-rows{padding:0 12px 20px}
+.dsh-super-code-tree-row{position:relative;display:flex;align-items:center;gap:6px;min-width:0;min-height:64px;padding:10px 8px 10px calc(4px + var(--agent-depth)*14px);border-radius:6px;cursor:default;box-sizing:border-box}
+.dsh-super-code-tree-row[aria-expanded]{cursor:pointer}
+.dsh-super-code-tree-row[aria-level]:not([aria-level="1"]):before{content:"";position:absolute;left:15px;width:calc(var(--agent-depth)*14px);height:100%;top:0;background:repeating-linear-gradient(to right,var(--agent-line) 0,var(--agent-line) 1px,transparent 1px,transparent 14px);pointer-events:none}
+.dsh-super-code-tree-row:hover{background:color-mix(in srgb,currentColor 5%,transparent)}
+.dsh-super-code-tree-row.selected{background:color-mix(in srgb,var(--dsw-color-primary,#3276dc) 6%,transparent)}
+.dsh-super-code-tree-row:focus-visible,.dsh-super-code-tree button:focus-visible{outline:2px solid var(--dsw-color-primary,#3276dc);outline-offset:-2px}
+.dsh-super-code-tree-row[aria-disabled]{cursor:default;opacity:.7}
+.dsh-super-code-tree-toggle{width:22px;height:26px;z-index:1}
+.dsh-super-code-tree-toggle svg{transition:transform .12s}.dsh-super-code-tree-toggle.expanded svg{transform:rotate(90deg)}
+.dsh-super-code-tree-connector{width:22px;flex:none}
+.dsh-super-code-tree-content{display:grid;gap:4px;flex:1;min-width:0}
+.dsh-super-code-tree-title{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere;line-height:1.4}
+.dsh-super-code-tree-meta{color:var(--agent-muted);font-size:11px;line-height:1.4;overflow-wrap:anywhere}
+.dsh-super-code-tree-usage{display:flex;flex-wrap:wrap;gap:3px 10px;font-size:10px;line-height:1.6;color:var(--agent-muted);font-variant-numeric:tabular-nums}
+.dsh-super-code-tree-usage>span{white-space:nowrap}
+.dsh-super-code-state{display:inline-flex;align-items:center;gap:5px;padding:2px 6px;border-radius:5px;color:var(--state-color);background:color-mix(in srgb,var(--state-color) 9%,transparent)}
+.dsh-super-code-state:before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor}
+.dsh-super-code-state.active{--state-color:#16877d}
+.dsh-super-code-state.idle{--state-color:#5471bb}
+.dsh-super-code-state.stopped{--state-color:#827299}
+.dsh-super-code-state.unavailable{--state-color:#b77b29}
+@media(prefers-color-scheme:dark){.dsh-super-code-state.active{--state-color:#6bc7b6}.dsh-super-code-state.idle{--state-color:#91b0f4}.dsh-super-code-state.stopped{--state-color:#b9a9cf}.dsh-super-code-state.unavailable{--state-color:#e8b971}}
+.dsh-super-code-tree-status{width:6px;height:6px;border-radius:50%;background:var(--agent-line);flex:none}
+.dsh-super-code-tree-row.running .dsh-super-code-tree-status{background:#168c78}
+.dsh-super-code-tree-status.unavailable{background:#c17e1d}
+.dsh-super-code-tree-note,.dsh-super-code-tree-empty{margin:10px 18px;color:var(--agent-muted);font-size:12px}
+.dsh-super-code-tree-error{margin:12px 14px;color:var(--dsw-color-text-error,#bd423b);font-size:12px;overflow-wrap:anywhere}
+.dsh-super-code-tree-more{display:block;margin:4px auto 14px;padding:6px 12px;border:1px solid var(--agent-line);border-radius:4px;background:transparent;color:inherit;cursor:pointer}
+.dsh-super-code-detail{height:100%;min-width:0;display:flex;flex-direction:column;font-size:13px;letter-spacing:0;--agent-muted:var(--dsw-alias-label-secondary,#70757d);--agent-line:var(--dsw-alias-border-l1,#dedfe3)}
+.dsh-super-code-detail-header{padding:20px 20px 18px;border-bottom:1px solid var(--agent-line);flex:none;max-height:45%;overflow:auto}
+.dsh-super-code-detail-header nav{font-size:11px;line-height:1.5;color:var(--agent-muted);overflow-wrap:anywhere}
+.dsh-super-code-detail-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-top:14px}
+.dsh-super-code-detail-heading>div{min-width:0}
+.dsh-super-code-detail h2{font-size:16px;line-height:1.5;font-weight:600;margin:0;overflow-wrap:anywhere}
+.dsh-super-code-detail-task{font-size:13px;line-height:1.7;margin:12px 0 0;overflow-wrap:anywhere}
+.dsh-super-code-task-memory{margin-top:16px;padding-top:14px;border-top:1px solid var(--agent-line);font-size:12px;line-height:1.7;overflow-wrap:anywhere}
+.dsh-super-code-task-heading{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
+.dsh-super-code-task-heading strong{font-weight:500;color:inherit}
+.dsh-super-code-task-heading span{color:var(--agent-muted);font-size:11px}
+.dsh-super-code-task-memory p{margin:6px 0 0}
+.dsh-super-code-task-memory details{margin-top:8px;color:var(--agent-muted)}
+.dsh-super-code-task-memory summary{cursor:pointer}
+.dsh-super-code-detail-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 16px;margin:16px 0 0}
+.dsh-super-code-usage-details{margin-top:14px;font-size:12px;color:var(--agent-muted)}
+.dsh-super-code-usage-details summary{cursor:pointer}
+.dsh-super-code-new-content{align-self:center;flex:none;margin:8px 16px 12px;padding:7px 12px;border:1px solid var(--agent-line);border-radius:6px;background:transparent;color:inherit;font:inherit;font-size:12px;cursor:pointer}
+.dsh-super-code-detail-metrics dt{font-size:11px;color:var(--agent-muted)}
+.dsh-super-code-detail-metrics dd{margin:5px 0 0;font-variant-numeric:tabular-nums;font-size:14px;line-height:1.4;overflow-wrap:anywhere}
+.dsh-super-code-detail-metrics>div:first-child dd{font-weight:600}
+.dsh-super-code-detail-status{display:block;margin-top:5px;font-size:11px;color:var(--agent-muted)}
+.dsh-super-code-detail-log{flex:1;min-height:0;overflow:auto;padding:4px 20px 24px}
+.dsh-super-code-detail-log>button,.dsh-super-code-detail-entry button{border:1px solid var(--agent-line);border-radius:4px;background:transparent;color:inherit;padding:5px 8px;margin:10px 8px 4px 0;font-size:12px;cursor:pointer}
+.dsh-super-code-detail-entry{padding:20px 0;min-width:0}
+.dsh-super-code-detail-entry:has(>details){padding:10px 0;color:var(--agent-muted)}
+.dsh-super-code-detail-entry details[open]{color:inherit;padding-bottom:8px}
+.dsh-super-code-detail-entry-label{display:flex;justify-content:space-between;gap:10px;font-size:12px;font-weight:600}
+.dsh-super-code-detail-entry time{color:var(--agent-muted);font-size:11px;font-weight:400;flex:none}
+.dsh-super-code-detail-entry pre{font:inherit;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0 0}
+.dsh-super-code-detail-entry summary{cursor:pointer;font-size:12px;overflow-wrap:anywhere}
+.dsh-super-code-detail-entry.context{color:var(--agent-muted)}
+.dsh-super-code-detail-entry.error,.dsh-super-code-detail [role=alert]{color:var(--dsw-color-text-error,#bd423b)}
+.dsh-super-code-detail button:focus-visible,.dsh-super-code-detail summary:focus-visible{outline:2px solid var(--dsw-color-primary,#3276dc);outline-offset:3px}
+.dsh-super-code-detail-entry summary:hover{color:var(--dsw-alias-label-primary,inherit)}
+@media(prefers-reduced-motion:reduce){.dsh-super-code-tree-toggle svg{transition:none}.dsh-super-code-graph-node .dsh-super-code-circle:after{animation:none!important}}
 `
     document.head.appendChild(style)
     return () => { style.remove() }
-  }, 'super-agent: browser styles')
-  ctx.slots.inject('settings.plugin.item', () => ctx.slots.register({
-    name: 'settings.plugin.item', key: 'super-agent',
-    inject: () => ({
-      settingsScope: ctx.settingsScope.bind({ namespace: 'super-agent' }),
-      modelCatalog: () => ctx.remote.session.modelCatalog(),
-    }),
-  }, SettingsPanel))
-
+  }, 'super-code: browser styles')
   // Both the tree and read-only details stay in the current conversation's tabs.
-  const treeId = 'dsh-super-agent'
+  const treeId = 'dsh-super-code'
   const treeKind = 'super-agent-agents'
   const disposeTreeType = ctx.sidebarRightTabs.register({
     id: treeId, kind: treeKind,
@@ -808,7 +672,7 @@ function apply(ctx) {
     openDetail: child => ctx.sidebarRight.openResource(agentDetailAddress(child), { kind: 'super-agent-detail' }),
   }
   const disposeDetailType = ctx.sidebarRightTabs.register({
-    id: 'dsh-super-agent-detail', kind: 'super-agent-detail', patterns: ['dsh-resource://super-agent/**'],
+    id: 'dsh-super-code-detail', kind: 'super-agent-detail', patterns: ['dsh-resource://super-agent/**'],
     title: address => {
       const target = agentDetailTarget(address), state = ctx.sessions.list.getSnapshot()
       const node = buildAgentView(state).nodes.get(target.childSessionId || target.sessionId)
@@ -819,7 +683,7 @@ function apply(ctx) {
     (target, options) => new SessionEventStream(ctx.remote, target, options), address,
     (request, signal) => ctx.remote.session.page(request, signal), initial) }
   ctx.slots.inject('sidebar.right.pane.tab', () => ctx.slots.register({
-    name: 'sidebar.right.pane.tab', key: 'dsh-super-agent-detail', inject: () => detailActions,
+    name: 'sidebar.right.pane.tab', key: 'dsh-super-code-detail', inject: () => detailActions,
   }, AgentDetail))
   ctx.slots.inject('sidebar.right.pane.tab', () => ctx.slots.register({
     // Keyed tab bodies dispatch by the definition id, while `kind` is the
@@ -827,9 +691,9 @@ function apply(ctx) {
     name: 'sidebar.right.pane.tab', key: treeId,
     inject: () => treeActions,
   }, AgentTree))
-  ctx.effect(() => disposeTreeType, 'super-agent: Agent tree tab')
-  ctx.effect(() => disposeDetailType, 'super-agent: Agent detail tab')
+  ctx.effect(() => disposeTreeType, 'super-code: Agent tree tab')
+  ctx.effect(() => disposeDetailType, 'super-code: Agent detail tab')
 }
 
-return { inject, apply, buildAgentView, visibleAgentRows, agentTreeTotals, agentTreeLayout, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector }
+return { inject, apply, buildAgentView, visibleAgentRows, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector }
 } })

@@ -29,7 +29,8 @@ export interface MemberResult {
     artifacts: string[];
     checks: string[];
     unknowns: string[];
-    cost: {
+    /** Optional self-report, never authenticated usage or budget enforcement. */
+    cost?: {
         inputTokens: number;
         outputTokens: number;
         cachedTokens: number;
@@ -37,12 +38,22 @@ export interface MemberResult {
         complete: boolean;
     };
 }
+export type MemberAccounting = {
+    kind: 'unavailable';
+    budget: 'unknown';
+} | {
+    kind: 'model-reported';
+    budget: 'unknown';
+    reportedBudget: 'within' | 'exceeded' | 'incomplete' | 'invalid';
+};
+export interface MemberReview {
+    reviewable: boolean;
+    reasons: string[];
+    accounting: MemberAccounting;
+    result: MemberResult;
+}
 /** Compact, version-bound inputs for the existing host subagent provider. */
 export declare function createMemberBrief(task: TaskMemory, sessionId: string, input: MemberAssignment): MemberBrief;
 /** Version matching is necessary for review, not proof that the work is correct. */
-export declare function validateMemberResult(task: TaskMemory, sessionId: string, assignment: MemberAssignment, input: MemberResult): {
-    reviewable: boolean;
-    reasons: string[];
-    result: MemberResult;
-};
+export declare function validateMemberResult(task: TaskMemory, sessionId: string, assignment: MemberAssignment, input: MemberResult): MemberReview;
 //# sourceMappingURL=delegation.d.ts.map

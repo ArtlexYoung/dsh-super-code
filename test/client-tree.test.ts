@@ -13,6 +13,7 @@ interface Client {
   visibleAgentRows(view: View, expanded: (id: string) => boolean, limit: number): { rows: Row[]; more: boolean }
   agentTreeTotals(view: View, catalogs?: object): Map<string, { agents: number; tokens: number; cache: number; known: number; partial: boolean }>
   agentTreeLayout(view: View, limit: number): { rows: { id: string; x: number; y: number }[]; edges: object[]; more: boolean; width: number }
+  agentExecutionStatus(node: Node | undefined, isRoot: boolean): { tone: string; label: string }
   apply(ctx: object): void
   agentDetailAddress(node: Node): string
   agentDetailTarget(address: string): object
@@ -24,7 +25,8 @@ function client(): Client {
   let loaded: Client | undefined
   runInNewContext(readFileSync(new URL('../client/index.js', import.meta.url), 'utf8'), {
     URL,
-    __ModuleLoader__: { load: ({ factory }: { factory: (require: (id: string) => object) => Client }) => {
+    __ModuleLoader__: { load: ({ id, factory }: { id: string; factory: (require: (id: string) => object) => Client }) => {
+      assert.equal(id, 'dsh-super-code')
       loaded = factory(() => ({}))
     } },
   })
@@ -33,6 +35,66 @@ function client(): Client {
 }
 const plugin = client()
 const child = (id: string, extra = {}) => ({ id, kind: 'child', mode: 'one-shot', activity: 'inactive', ...extra })
+
+test('tree and detail share activity states without treating missing records as stopped', () => {
+  const status = (node: Node | undefined, root = false) => plugin.agentExecutionStatus(node, root).label
+  assert.equal(status({ id: 'root', running: false }, true), '待命')
+  assert.equal(status({ id: 'child', mode: 'continuable', running: false }), '待命')
+  assert.equal(status({ id: 'child', mode: 'one-shot', running: false }), '已停止')
+  assert.equal(status({ id: 'child', running: true }), '运行中')
+  assert.equal(status({ id: 'child', unavailable: true, running: false }), '记录不可用')
+  assert.equal(status({ id: 'child' }), '记录不可用')
+  assert.equal(status(undefined), '记录不可用')
+})
+
+test('hidden events advance pagination without notifying visible subscribers', async () => {
+  let callbacks: any
+  let notifications = 0
+  const inspector = plugin.createAgentInspector((_address, next) => {
+    callbacks = next
+    return { open: async () => {}, signal: new AbortController().signal, dispose: async () => {} }
+  }, plugin.agentDetailAddress({ id: 'root' }), async request => {
+    assert.equal(request.throughSeq, 10000)
+    assert.equal(request.beforeSeq, 0)
+    return { ok: true, value: { records: [], hasMore: false } }
+  })
+  callbacks.publish({ type: 'replace', entries: [], hasMore: true, page: {} })
+  const initial = inspector.getSnapshot()
+  inspector.subscribe(() => notifications++)
+  for (let seq = 1; seq <= 10000; seq++) callbacks.publish({ type: 'append', entry: { event: { seq, type: 'assistant/chunk', data: {} } } })
+  assert.equal(notifications, 0)
+  assert.equal(inspector.getSnapshot(), initial)
+  await inspector.older()
+  assert.equal(inspector.getSnapshot().cursor, 10000)
+  assert.equal(inspector.getSnapshot().earlier, true)
+  inspector.dispose()
+})
+
+test('history keeps its requested boundary when live events arrive during pagination', async () => {
+  let callbacks: any
+  let finish: (value: object) => void = () => assert.fail('not paging')
+  const boundaries: number[] = []
+  const inspector = plugin.createAgentInspector((_address, next) => {
+    callbacks = next
+    return { open: async () => {}, signal: new AbortController().signal, dispose: async () => {} }
+  }, plugin.agentDetailAddress({ id: 'root' }), request => {
+    boundaries.push(request.throughSeq)
+    return new Promise(resolve => { finish = resolve })
+  })
+  const hidden = (seq: number) => ({ event: { seq, type: 'tool/call', data: {} } })
+  callbacks.publish({ type: 'replace', entries: [hidden(10)], hasMore: true, page: {} })
+  const pending = inspector.older()
+  callbacks.publish({ type: 'append', entry: hidden(11) })
+  finish({ ok: true, value: { records: [], hasMore: true } })
+  await pending
+  assert.equal(inspector.getSnapshot().cursor, 10)
+  callbacks.publish({ type: 'append', entry: hidden(12) })
+  const next = inspector.older()
+  finish({ ok: true, value: { records: [], hasMore: false } })
+  await next
+  assert.deepEqual(boundaries, [10, 10])
+  inspector.dispose()
+})
 
 test('browser loader resolves a plugin that retains its dependency declarations', () => {
   const resolved = plugin.default ?? plugin
@@ -131,7 +193,9 @@ test('plugin opens read-only resource tabs without navigating the main conversat
   assert.equal(slots.some(slot => slot.config.id === 'super-agent-token-stats'), false)
   assert.equal(slots.some(slot => slot.config.name === 'conversation.composer.dock'), false)
   assert.equal(plugin.inject.includes('remote.agentPresets'), false)
-  const tree = slots.find(slot => slot.config.key === 'dsh-super-agent')!
+  assert.equal(slots.some(slot => slot.config.name === 'settings.plugin.item'), false)
+  assert.equal(plugin.inject.includes('settingsScope'), false)
+  const tree = slots.find(slot => slot.config.key === 'dsh-super-code')!
   const props = (tree.config.inject as () => { openDetail: (node: Node) => void })()
   props.openDetail({ id: 'child', parentId: 'parent', mode: 'continuable' })
   props.openDetail({ id: 'parent' })
@@ -139,7 +203,7 @@ test('plugin opens read-only resource tabs without navigating the main conversat
     { address: 'dsh-resource://super-agent/child?parent=parent&mode=continuable', options: { kind: 'super-agent-detail' } },
     { address: 'dsh-resource://super-agent/parent', options: { kind: 'super-agent-detail' } },
   ]))
-  assert.ok(slots.some(slot => slot.config.key === 'dsh-super-agent-detail'))
+  assert.ok(slots.some(slot => slot.config.key === 'dsh-super-code-detail'))
 })
 
 test('detail addresses preserve child authority and escape identifiers', () => {

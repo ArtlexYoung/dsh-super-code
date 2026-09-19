@@ -1,7 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { performance } from 'node:perf_hooks'
-import { TokenCounter, summarizeTokens } from '../src/ui.js'
 import { emptyTaskMemory, taskMemoryContext, taskMemorySchema } from '../src/core/task-memory.js'
 import { taskMemoryProjection, TASK_MEMORY_SOURCE } from '../src/task-memory-projection.js'
 
@@ -20,19 +19,4 @@ test('ten thousand archived tasks keep a bounded projection and current context'
   assert.match(taskMemoryContext(state, 2048), /Do not publish/)
   assert.ok(Buffer.byteLength(JSON.stringify(state)) < 2048)
   t.diagnostic(`20,001 task events: ${(performance.now() - started).toFixed(1)} ms; current state ${Buffer.byteLength(JSON.stringify(state))} bytes (local synthetic workload)`)
-})
-
-test('usage accounting matches the batch oracle after 100,000 samples', t => {
-  const counter = new TokenCounter()
-  const sample = { model: 'm', cacheHit: 8, cacheRead: 6, uncachedInput: 2, output: 5 }
-  const started = performance.now()
-  for (let i = 0; i < 100000; i++) counter.add(sample)
-  const summary = counter.summary()
-  const single = summarizeTokens([sample])
-  assert.equal(summary.total, single.total * 100000)
-  assert.equal(summary.averageCacheHitRate, single.averageCacheHitRate)
-  assert.equal(summary.details.cacheRead, single.details.cacheRead * 100000)
-  assert.throws(() => counter.add({ ...sample, output: NaN }), /finite/)
-  assert.deepEqual(counter.summary(), summary)
-  t.diagnostic(`100,000 usage records: ${(performance.now() - started).toFixed(1)} ms; constant-size counters (local synthetic workload)`)
 })

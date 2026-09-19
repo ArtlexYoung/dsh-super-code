@@ -1,6 +1,6 @@
 {
-  "name": "dsh-super-agent",
-  "version": "0.0.7",
+  "name": "dsh-super-code",
+  "version": "0.0.9",
   "description": "One super-code preset with specialist teams and durable task memory for DeepSeek Harness.",
   "license": "Apache-2.0",
   "type": "module",
@@ -14,10 +14,6 @@
       "types": "./lib/index.d.ts",
       "default": "./lib/index.js"
     },
-    "./core/*": {
-      "types": "./lib/core/*.d.ts",
-      "default": "./lib/core/*.js"
-    },
     "./dsh": {
       "types": "./lib/dsh/index.d.ts",
       "default": "./lib/dsh/index.js"
@@ -28,7 +24,15 @@
     },
     "./presets/*": "./presets/*",
     "./package.json": "./package.json",
-    "./client": "./client/index.js"
+    "./client": "./client/index.js",
+    "./evaluation": {
+      "types": "./lib/core/evaluation.d.ts",
+      "default": "./lib/core/evaluation.js"
+    },
+    "./experiments": {
+      "types": "./lib/experiments.d.ts",
+      "default": "./lib/experiments.js"
+    }
   },
   "files": [
     "lib",
@@ -65,7 +69,6 @@
     }
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-settings": "0.1.5-rc.2",
     "@types/node": "^22.0.0",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0"
@@ -76,7 +79,6 @@
     "test": "tsx --test test/**/*.test.ts",
     "pack:check": "npm pack --dry-run",
     "eval:super-code": "node lib/evaluate.js",
-    "eval:prepare-super-code": "node eval/runners/prepare-super-code-v2.mjs",
     "provider:health": "node eval/runners/provider-health.mjs"
   },
   "engines": {
@@ -95,11 +97,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ArtlexYoung/dsh-super-agent.git"
+    "url": "git+https://github.com/ArtlexYoung/dsh-super-code.git"
   },
-  "homepage": "https://github.com/ArtlexYoung/dsh-super-agent#readme",
+  "homepage": "https://github.com/ArtlexYoung/dsh-super-code#readme",
   "bugs": {
-    "url": "https://github.com/ArtlexYoung/dsh-super-agent/issues"
+    "url": "https://github.com/ArtlexYoung/dsh-super-code/issues"
   },
   "dsh": {
     "bundle": {
@@ -113,8 +115,6 @@
         "@deepseek-ai/dsh-client-ui-renderer",
         "@deepseek-ai/dsh-client-ui-session",
         "@deepseek-ai/dsh-client-locale",
-        "@deepseek-ai/dsh-client-ui-settings",
-        "@deepseek-ai/dsh-client-ui-settings-plugins",
         "@deepseek-ai/dsh-client-ui-sidebar-right",
         "@deepseek-ai/dsh-api-session-controller"
       ]

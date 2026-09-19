@@ -10,32 +10,12 @@
   config:
     default: super-code
     roots:
-      - path: !!js "process.getBuiltinModule('node:url').fileURLToPath(new URL('node_modules/dsh-super-agent/presets/', baseUrl))"
+      - path: !!js "process.getBuiltinModule('node:url').fileURLToPath(new URL('node_modules/dsh-super-code/presets/', baseUrl))"
         trust: system
     includeShippedRoot: true
     includeUserRoot: true
 
-# Expose the optional host-plane task protocol. It owns no model, tool, or
-# agent provider; those remain Harness services selected by the profile. This
-# is an insert (rather than an id-targeted override) because a profile may use
-# this bundle without a pre-existing host row for the service.
+# Register host projections and discover the browser contribution.
 - insert:
-    - id: super-agent
-      name: dsh-super-agent
-      config:
-        maxTasks: 256
-        maxDepth: 32
-        maxConcurrent: 8
-        timeoutMs: 0
-        stopGraceMs: 100
-        maxRepairAttempts: 2
-        maxFeedbackChars: 2000
-        planning: auto
-        executionMode: auto
-        workScenario: delivery
-        optimizationTarget: both
-        tokenStats: true
-        modelPools:
-          high: []
-          normal: []
-          low: []
+    - id: super-code
+      name: dsh-super-code

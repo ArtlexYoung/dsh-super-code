@@ -74,6 +74,8 @@ export declare function requireTaskMemory(state: TaskMemoryState, taskId: string
 export declare function reviseTaskMemory(task: TaskMemory, patch: TaskMemoryPatch, expectedRevision: number): TaskMemory;
 /** Deterministic replay; old evidence stays recorded but is never current after revision. */
 export declare function foldTaskMemory(state: TaskMemoryState, input: TaskMemoryEvent): TaskMemoryState;
-/** Compact current state; full sources and evidence remain available via read. */
+/** Read a bounded recovery view without changing focus or the durable record. */
+export declare function taskMemoryRead(task: TaskMemory, maxBytes: number): string;
+/** Compact current state; full sources and evidence remain available via read(view=full). */
 export declare function taskMemoryContext(state: TaskMemoryState, maxBytes: number): string;
 //# sourceMappingURL=task-memory.d.ts.map

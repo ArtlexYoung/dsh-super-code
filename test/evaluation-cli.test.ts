@@ -10,7 +10,9 @@ test('evaluation CLI distinguishes accepted, incomplete and malformed evidence',
   const dir = await mkdtemp(join(tmpdir(), 'super-code-eval-'))
   t.after(() => rm(dir, { recursive: true, force: true }))
   const conditions = { task: 'task', evaluator: 'test', model: 'model', reasoning: 'high', tools: 'tools', resources: 'cpu', environment: 'image', harness: 'rc.1' }
-  const manifest = { protocol: 'super-code/v2', baselineVersion: 'base', candidateVersion: 'next', cases: [{ taskId: 'fix', category: 'bugfix', conditions }] }
+  const manifest = { protocol: 'super-code/v3', baseline: { preset: 'super-code', version: '0.0.8', artifact: 'base' }, candidate: { preset: 'super-code', version: '0.0.9', artifact: 'next' },
+    cases: [{ taskId: 'fix', category: 'bugfix', conditions }], gates: { minAccuracyUplift: 0, maxLostSuccesses: 0 },
+    rates: [{ id: 'fixture', provider: 'p', model: 'model', currency: 'USD', source: 'test', effectiveAt: '2026-09-19', uncachedInput: 1, cacheRead: 0.1, cacheWrite: 2, output: 5, perRequest: 0 }] }
   const manifestPath = join(dir, 'manifest.json'), rowsPath = join(dir, 'rows.jsonl')
   await writeFile(manifestPath, JSON.stringify(manifest))
   const invoke = () => spawnSync(process.execPath, ['--import', 'tsx', fileURLToPath(new URL('../src/evaluate.ts', import.meta.url)), manifestPath, rowsPath], { encoding: 'utf8' })
@@ -18,7 +20,9 @@ test('evaluation CLI distinguishes accepted, incomplete and malformed evidence',
   const incomplete = invoke()
   assert.equal(incomplete.status, 1, incomplete.stderr)
   assert.equal(JSON.parse(incomplete.stdout).status, 'incomplete')
-  const rows = ['minimal', 'super-code'].map(preset => ({ protocol: manifest.protocol, taskId: 'fix', category: 'bugfix', conditions, preset, mode: 'real', version: preset === 'minimal' ? 'base' : 'next', outcome: preset === 'minimal' ? 'failed' : 'passed', cost: { uncachedInput: preset === 'minimal' ? 100 : 50, cachedInput: 0, output: 10, toolCalls: 1, latencyMs: 10, complete: true } }))
+  const rows = (['baseline', 'candidate'] as const).map(side => ({ protocol: manifest.protocol, taskId: 'fix', category: 'bugfix', conditions, side, identity: manifest[side], mode: 'real', outcome: 'passed', latencyMs: 10,
+    requestManifestComplete: true, expectedRequests: ['r'], requests: [{ id: 'r', sessionId: side, attemptId: 'a', kind: 'root', provider: 'p', model: 'model', rateId: 'fixture', toolCharge: 0,
+      usage: { uncachedInput: 100, cacheRead: 0, cacheWrite: 0, output: 10 } }] }))
   await writeFile(rowsPath, rows.map(row => JSON.stringify(row)).join('\n'))
   const accepted = invoke()
   assert.equal(accepted.status, 0, accepted.stderr)
@@ -27,4 +31,6 @@ test('evaluation CLI distinguishes accepted, incomplete and malformed evidence',
   const invalid = invoke()
   assert.equal(invalid.status, 2)
   assert.equal(JSON.parse(invalid.stderr).status, 'invalid')
+  await writeFile(manifestPath, JSON.stringify({ ...manifest, protocol: 'super-code/v2' }))
+  assert.equal(invoke().status, 2)
 })

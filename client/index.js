@@ -34,11 +34,13 @@ function TaskMemoryPanel({ state }) {
 function buildAgentView(state) {
   const nodes = new Map(Object.values(state.byId || {}).map(node => [node.id, { ...node }]))
   for (const [parentId, catalog] of Object.entries(state.subagentsByParent || {})) {
+    // Navigation rows omit timestamps; the parent's public projection retains them.
+    const created = new Map((nodes.get(parentId)?.projectionValues?.subagentCatalog || []).map(entry => [entry.id, entry.createdAt]))
     for (const entry of catalog?.entries || []) {
       const summary = nodes.get(entry.id)
       nodes.set(entry.id, { ...summary, id: entry.id, parentId,
         title: entry.label || summary?.title || summary?.displayTitle || entry.id,
-        mode: entry.mode, hasChildren: entry.hasChildren,
+        mode: entry.mode, hasChildren: entry.hasChildren, createdAt: created.get(entry.id),
         running: summary?.running ?? entry.activity === 'running',
         unavailable: entry.kind === 'diagnostic',
       })
@@ -147,6 +149,132 @@ function agentTreeTotals(view, catalogs = {}) {
   return totals
 }
 
+const historyRowHeight = 56
+const historyCollator = new Intl.Collator('zh-CN', { numeric: true, sensitivity: 'base' })
+const historyDateFormat = new Intl.DateTimeFormat('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+
+function agentHistoryRange(range, from = '', to = '', now = Date.now()) {
+  const today = new Date(now)
+  today.setHours(0, 0, 0, 0)
+  const parse = value => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return NaN
+    const [year, month, day] = value.split('-').map(Number), date = new Date(year, month - 1, day)
+    return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day ? date.getTime() : NaN
+  }
+  let start = -Infinity, end = Infinity
+  if (range === 'custom') {
+    start = from ? parse(from) : -Infinity
+    if (to) { const date = new Date(parse(to)); date.setDate(date.getDate() + 1); end = date.getTime() }
+  } else if (range !== 'all') {
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    today.setDate(today.getDate() - ({ today: 0, week: 6, month: 29 }[range] ?? 0))
+    start = today.getTime(); end = tomorrow.getTime()
+  }
+  return { start, end, valid: !Number.isNaN(start) && !Number.isNaN(end) && start < end }
+}
+
+function agentHistoryRows(view, hidden, totals, options = {}) {
+  const query = (options.query || '').trim().toLocaleLowerCase()
+  const range = agentHistoryRange(options.range || 'all', options.from, options.to, options.now)
+  if (!range.valid) return []
+  const rows = []
+  for (const id of hidden) {
+    const node = view.nodes.get(id), title = node.title || node.displayTitle || id
+    const parent = view.nodes.get(node.parentId)?.title || '主 Agent', usage = totals.get(id)
+    const time = Number.isFinite(node.createdAt) && node.createdAt >= 0 && node.createdAt <= 8640000000000000 ? node.createdAt : -1
+    if (query && !`${title} ${parent}`.toLocaleLowerCase().includes(query)) continue
+    if (options.range && options.range !== 'all' && (time < 0 || time < range.start || time >= range.end)) continue
+    rows.push({ id, node, title, parent, time, tokens: usage?.known ? usage.tokens : -1, partial: !!usage && (usage.partial || usage.known < usage.agents) })
+  }
+  const [field, direction] = (options.sort || 'time-desc').split('-'), sign = direction === 'asc' ? 1 : -1
+  return rows.sort((a, b) => {
+    let comparison
+    if (field === 'title') comparison = historyCollator.compare(a.title, b.title)
+    else {
+      const left = field === 'tokens' ? a.tokens : a.time, right = field === 'tokens' ? b.tokens : b.time
+      // Missing metadata stays last in either direction, never masquerades as zero.
+      if ((left < 0) !== (right < 0)) return left < 0 ? 1 : -1
+      comparison = left - right
+    }
+    return comparison * sign || historyCollator.compare(a.title, b.title) || a.id.localeCompare(b.id)
+  })
+}
+
+function agentHistoryWindow(count, scrollTop, height) {
+  const top = Math.max(0, Math.min(scrollTop, Math.max(0, count * historyRowHeight - height)))
+  return { top, start: Math.max(0, Math.floor(top / historyRowHeight) - 3),
+    end: Math.min(count, Math.ceil((top + height) / historyRowHeight) + 3), height: count * historyRowHeight }
+}
+
+/** Local scroll state keeps the graph out of the scrolling render path. */
+function AgentHistory({ view, hidden, totals, open }) {
+  const [filters, setFilters] = useState({ query: '', range: 'all', from: '', to: '', sort: 'time-desc' })
+  const [scroll, setScroll] = useState({ top: 0, height: 168 })
+  const viewport = useRef(null), focusTarget = useRef('')
+  const records = useMemo(() => agentHistoryRows(view, hidden, totals, filters), [view, hidden, totals, filters])
+  const window = agentHistoryWindow(records.length, scroll.top, scroll.height)
+  const range = agentHistoryRange(filters.range, filters.from, filters.to)
+  const change = (key, value) => setFilters(previous => ({ ...previous, [key]: value }))
+  useLayoutEffect(() => {
+    viewport.current.scrollTop = 0
+    setScroll(previous => ({ ...previous, top: 0 }))
+  }, [filters])
+  useLayoutEffect(() => {
+    const element = viewport.current
+    const measure = () => setScroll(previous => previous.top === element.scrollTop && previous.height === element.clientHeight
+      ? previous : { top: element.scrollTop, height: element.clientHeight })
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [])
+  useLayoutEffect(() => {
+    viewport.current.scrollTop = window.top
+    if (focusTarget.current) {
+      const target = Array.from(viewport.current.querySelectorAll('button')).find(button => button.dataset.historyId === focusTarget.current)
+      if (target) { target.focus({ preventScroll: true }); focusTarget.current = '' }
+    }
+  }, [window.top, window.start, window.end, records, scroll])
+  const keyDown = (event, index) => {
+    const next = { ArrowDown: index + 1, ArrowUp: index - 1, Home: 0, End: records.length - 1 }[event.key]
+    if (next === undefined) return
+    event.preventDefault()
+    const target = Math.max(0, Math.min(records.length - 1, next)), element = viewport.current
+    focusTarget.current = records[target].id
+    if (target * historyRowHeight < element.scrollTop) element.scrollTop = target * historyRowHeight
+    else if ((target + 1) * historyRowHeight > element.scrollTop + element.clientHeight) element.scrollTop = (target + 1) * historyRowHeight - element.clientHeight
+    setScroll({ top: element.scrollTop, height: element.clientHeight })
+  }
+  const select = (key, label, choices) => React.createElement('label', null, label,
+    React.createElement('select', { value: filters[key], 'aria-label': label, onChange: event => change(key, event.target.value) },
+      choices.map(([value, text]) => React.createElement('option', { key: value, value }, text))))
+  return React.createElement('section', { className: 'dsh-super-code-history', 'aria-label': '已收起的 Agent' },
+    React.createElement('input', { type: 'search', value: filters.query, 'aria-label': '查找收起的 Agent', placeholder: '搜索 Agent 或上级任务', onChange: event => change('query', event.target.value) }),
+    React.createElement('div', { className: 'dsh-super-code-history-filters' },
+      select('range', '创建时间', [['all', '全部时间'], ['today', '今天'], ['week', '近 7 天'], ['month', '近 30 天'], ['custom', '自定义']]),
+      select('sort', '排序', [['time-desc', '最新创建'], ['time-asc', '最早创建'], ['tokens-desc', 'Token 从多到少'], ['tokens-asc', 'Token 从少到多'], ['title-asc', '标题正序'], ['title-desc', '标题倒序']])),
+    filters.range === 'custom' && React.createElement('div', { className: 'dsh-super-code-history-filters' },
+      ['from', 'to'].map((key, index) => React.createElement('label', { key }, index ? '结束日期' : '开始日期',
+        React.createElement('input', { type: 'date', value: filters[key], 'aria-label': index ? '结束日期' : '开始日期', onChange: event => change(key, event.target.value) })))),
+    React.createElement('p', { className: 'dsh-super-code-history-summary', role: 'status' }, range.valid ? `${records.length} / ${hidden.length} 个已收起节点 · Token 含下级` : '请选择有效的起止日期'),
+    React.createElement('div', { ref: viewport, className: 'dsh-super-code-history-list', role: 'list', 'aria-label': '收起节点列表',
+      onScroll: event => { const top = event.currentTarget.scrollTop; setScroll(previous => previous.top === top ? previous : { ...previous, top }) } },
+      React.createElement('div', { style: { height: window.height, position: 'relative' } }, records.slice(window.start, window.end).map((record, offset) => {
+        const index = window.start + offset, status = agentExecutionStatus(record.node, false)
+        const date = record.time < 0 ? '时间未知' : historyDateFormat.format(record.time)
+        return React.createElement('div', { key: record.id, role: 'listitem', 'aria-posinset': index + 1, 'aria-setsize': records.length,
+          style: { position: 'absolute', top: index * historyRowHeight, height: historyRowHeight, width: '100%' } },
+          React.createElement('button', { type: 'button', 'data-history-id': record.id, onClick: () => open(record.node), onKeyDown: event => keyDown(event, index),
+            title: `${record.title} · ${record.parent} · ${record.time < 0 ? date : new Date(record.time).toLocaleString('zh-CN')} · ${record.tokens < 0 ? '用量未知' : record.tokens + ' Token' + (record.partial ? '（部分）' : '')}`,
+            'aria-label': `查看 ${record.title} 的详情` },
+            React.createElement('i', { className: 'dsh-super-code-circle ' + status.tone, 'aria-hidden': true }),
+            React.createElement('span', null, React.createElement('strong', null, record.title), React.createElement('small', null, `${status.label} · ${date} · ${record.parent}`)),
+            React.createElement('small', null, record.tokens < 0 ? '—' : `${record.partial ? '≈' : ''}${record.tokens.toLocaleString('zh-CN', { notation: 'compact', maximumFractionDigits: 1 })} tok`)))
+      })),
+      !records.length && React.createElement('p', { className: 'dsh-super-code-history-empty' }, '没有匹配的节点')))
+}
+
 function AgentTree({ useSessions, useTabInfo, treeStates, openDetail, refresh, watchCatalog }) {
   const state = useSessions(s => s)
   const { tab } = useTabInfo()
@@ -234,8 +362,6 @@ function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog }
   const [expanded, setExpanded] = useState(saved.expanded || new Set())
   const [collapsed, setCollapsed] = useState(saved.collapsed || new Set())
   const [historyOpen, setHistoryOpen] = useState(false)
-  const [historyQuery, setHistoryQuery] = useState('')
-  const [historyPage, setHistoryPage] = useState(0)
   const [compact, setCompact] = useState(false)
   useEffect(() => { Object.assign(saved, { limit, focused, expanded, collapsed }) }, [saved, limit, focused, expanded, collapsed])
   const catalogs = state.subagentsByParent || {}
@@ -274,11 +400,6 @@ function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog }
   // Retain already-loaded branch subscriptions so a hidden worker can become visible.
   const watched = [...new Set([...rows.filter(({ id }) => id === view.root || view.nodes.get(id)?.hasChildren).map(row => row.id),
     ...Object.keys(catalogs).filter(id => view.nodes.has(id))])]
-  const history = useMemo(() => {
-    const query = historyQuery.trim().toLocaleLowerCase()
-    return display.hidden.slice().reverse().filter(id => !query || `${view.nodes.get(id)?.title || id} ${view.nodes.get(view.nodes.get(id)?.parentId)?.title || ''}`.toLocaleLowerCase().includes(query))
-  }, [display, view, historyQuery])
-  const page = Math.min(historyPage, Math.max(0, Math.ceil(history.length / 20) - 1))
   const open = node => {
     setError('')
     Promise.resolve().then(() => openDetail(node)).catch(() => setError('无法打开详情，请重试'))
@@ -333,22 +454,7 @@ function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog }
     (display.hidden.length > 0 || expanded.size > 0 || collapsed.size > 0) && React.createElement('div', { className: 'dsh-super-code-history-controls' },
       React.createElement('button', { type: 'button', 'aria-expanded': historyOpen, onClick: () => setHistoryOpen(!historyOpen) }, `已收起 ${display.hidden.length}`),
       (expanded.size > 0 || collapsed.size > 0) && React.createElement('button', { type: 'button', onClick: () => { autoFit.current = true; setExpanded(new Set()); setCollapsed(new Set()); setFocused(state.current) } }, '自动整理')),
-    historyOpen && React.createElement('section', { className: 'dsh-super-code-history', 'aria-label': '已收起的 Agent' },
-      React.createElement('p', null, '记录仍保留，恢复运行时会自动显示。'),
-      React.createElement('input', { type: 'search', value: historyQuery, 'aria-label': '查找收起的 Agent', placeholder: '搜索 Agent 或上级任务', onChange: event => { setHistoryQuery(event.target.value); setHistoryPage(0) } }),
-      React.createElement('div', { className: 'dsh-super-code-history-list' }, history.slice(page * 20, page * 20 + 20).map(id => {
-        const node = view.nodes.get(id), status = agentExecutionStatus(node, false), usage = totals.get(id)
-        return React.createElement('button', { key: id, type: 'button', onClick: () => open(node), 'aria-label': `查看 ${node.title || id} 的详情` },
-          React.createElement('i', { className: 'dsh-super-code-circle ' + status.tone, 'aria-hidden': true }),
-          React.createElement('span', null, React.createElement('strong', null, node.title || id),
-            React.createElement('small', null, `${status.label} · ${view.nodes.get(node.parentId)?.title || '主 Agent'}`)),
-          React.createElement('small', null, usage.known ? `${usage.tokens.toLocaleString('zh-CN', { notation: 'compact', maximumFractionDigits: 1 })} tok` : '—'))
-      })),
-      !history.length && React.createElement('p', null, '没有匹配的节点'),
-      history.length > 20 && React.createElement('div', { className: 'dsh-super-code-history-paging' },
-        React.createElement('button', { type: 'button', disabled: page === 0, onClick: () => setHistoryPage(page - 1) }, '上一页'),
-        React.createElement('span', null, `${page + 1} / ${Math.ceil(history.length / 20)}`),
-        React.createElement('button', { type: 'button', disabled: (page + 1) * 20 >= history.length, onClick: () => setHistoryPage(page + 1) }, '下一页'))),
+    historyOpen && React.createElement(AgentHistory, { view, hidden: display.hidden, totals, open }),
     React.createElement('div', { ref: viewport, className: 'dsh-super-code-graph-scroll',
       onPointerDown: event => {
         if (!event.isPrimary || event.button !== 0) return
@@ -649,21 +755,26 @@ function apply(ctx) {
 .dsh-super-code-graph-controls button:disabled{opacity:.4;cursor:default}
 .dsh-super-code-graph-controls span{min-width:38px;text-align:center;font-variant-numeric:tabular-nums}
 .dsh-super-code-history-controls{display:flex;gap:8px;padding:0 18px 10px}
-.dsh-super-code-history-controls button,.dsh-super-code-history-paging button{border:1px solid var(--agent-line);border-radius:14px;background:transparent;color:var(--agent-muted);padding:5px 10px;font:inherit;font-size:11px;cursor:pointer}
+.dsh-super-code-history-controls button{border:1px solid var(--agent-line);border-radius:14px;background:transparent;color:var(--agent-muted);padding:5px 10px;font:inherit;font-size:11px;cursor:pointer}
 .dsh-super-code-history-controls button[aria-expanded=true]{color:var(--dsw-color-primary,#3276dc);background:color-mix(in srgb,currentColor 5%,transparent)}
-.dsh-super-code-history{display:flex;flex-direction:column;flex-shrink:0;max-height:38%;min-height:90px;margin:0 12px 12px;padding:12px;border:1px solid var(--agent-line);border-radius:12px;background:color-mix(in srgb,var(--agent-muted) 3%,transparent)}
-.dsh-super-code-history>p,.dsh-super-code-history>input,.dsh-super-code-history-paging{flex-shrink:0}
+.dsh-super-code-history{display:flex;flex-direction:column;flex-shrink:0;box-sizing:border-box;height:46%;min-height:220px;max-height:400px;margin:0 12px 12px;padding:12px;border:1px solid var(--agent-line);border-radius:12px;background:color-mix(in srgb,var(--agent-muted) 3%,transparent)}
+.dsh-super-code-history>p,.dsh-super-code-history>input,.dsh-super-code-history-filters{flex-shrink:0}
 .dsh-super-code-history p{font-size:11px;color:var(--agent-muted);margin:0 0 10px;line-height:1.6}
-.dsh-super-code-history input{box-sizing:border-box;width:100%;border:1px solid var(--agent-line);border-radius:7px;background:transparent;color:inherit;font:inherit;font-size:12px;padding:7px 9px;margin-bottom:8px}
-.dsh-super-code-history-list{max-height:230px;overflow:auto;overscroll-behavior:contain}
-.dsh-super-code-history-list button{display:flex;align-items:center;gap:9px;width:100%;text-align:left;border:0;border-radius:7px;padding:9px 5px;background:transparent;color:inherit;cursor:pointer;font:inherit}
+.dsh-super-code-history input,.dsh-super-code-history select{box-sizing:border-box;min-width:0;width:100%;border:1px solid var(--agent-line);border-radius:7px;background:var(--dsw-alias-bg-base,#fff);color:var(--dsw-alias-text-primary,inherit);font:inherit;font-size:12px;padding:7px 8px}
+.dsh-super-code-history>input{margin-bottom:8px}
+.dsh-super-code-history-filters{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:8px}
+.dsh-super-code-history-filters label{display:flex;flex-direction:column;gap:4px;min-width:0;font-size:10px;color:var(--agent-muted)}
+.dsh-super-code-history-filters select{cursor:pointer}
+.dsh-super-code-history input:focus-visible,.dsh-super-code-history select:focus-visible,.dsh-super-code-history-list button:focus-visible{outline:2px solid var(--dsw-color-primary,#3276dc);outline-offset:-2px}
+.dsh-super-code-history p.dsh-super-code-history-summary{font-size:10px;margin-bottom:6px}
+.dsh-super-code-history-list{flex:1;min-height:56px;overflow:auto;overflow-anchor:none;overscroll-behavior:contain;scrollbar-gutter:stable}
+.dsh-super-code-history-list button{display:flex;align-items:center;box-sizing:border-box;gap:9px;width:100%;height:56px;text-align:left;border:0;border-radius:7px;padding:9px 5px;background:transparent;color:inherit;cursor:pointer;font:inherit}
 .dsh-super-code-history-list button:hover{background:color-mix(in srgb,currentColor 5%,transparent)}
 .dsh-super-code-history-list button>span{flex:1;min-width:0}.dsh-super-code-history-list strong{display:block;font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dsh-super-code-history-list small{font-size:10px;color:var(--agent-muted);line-height:1.6}.dsh-super-code-history-list button>small{white-space:nowrap;font-variant-numeric:tabular-nums}
 .dsh-super-code-history-list button>span>small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dsh-super-code-history-list .dsh-super-code-circle{width:7px;height:7px;box-shadow:none}
-.dsh-super-code-history-paging{display:flex;align-items:center;justify-content:space-between;margin-top:10px;font-size:11px;color:var(--agent-muted)}
-.dsh-super-code-history-paging button:disabled{opacity:.4;cursor:default}
+.dsh-super-code-history-empty{padding:14px 5px}
 .dsh-super-code-branch-toggle{position:absolute;display:grid;place-items:center;width:22px;height:22px;padding:0;border:1px solid var(--agent-line);border-radius:50%;background:var(--dsw-alias-bg-base,#fff);color:var(--agent-muted);cursor:pointer;box-shadow:0 1px 3px #0000000a}
 .dsh-super-code-branch-toggle:hover{color:var(--dsw-color-primary,#3276dc);border-color:currentColor}
 .dsh-super-code-graph-scroll{overflow:hidden;padding:0 12px;min-height:180px;flex:1;touch-action:none;cursor:grab;user-select:none}
@@ -805,5 +916,5 @@ function apply(ctx) {
   ctx.effect(() => disposeDetailType, 'super-code: Agent detail tab')
 }
 
-return { inject, apply, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector }
+return { inject, apply, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector, agentHistoryRange, agentHistoryRows, agentHistoryWindow }
 } })

@@ -7,6 +7,9 @@ interface Row { id: string; level: number }
 interface Node { id: string; parentId?: string; mode?: string; title?: string; running?: boolean; unavailable?: boolean }
 interface View { root: string; nodes: Map<string, Node>; children: Map<string, string[]>; ancestors: Set<string> }
 interface Client {
+  agentHistoryRange(range: string, from?: string, to?: string, now?: number): { start: number; end: number; valid: boolean }
+  agentHistoryRows(view: View, hidden: string[], totals: Map<string, object>, options?: object): { id: string; time: number; tokens: number; partial: boolean }[]
+  agentHistoryWindow(count: number, scrollTop: number, height: number): { top: number; start: number; end: number; height: number }
   default?: { inject?: string[]; apply?: unknown } | ((ctx: object) => void)
   inject: string[]
   buildAgentView(state: object): View
@@ -36,6 +39,60 @@ function client(): Client {
 }
 const plugin = client()
 const child = (id: string, extra = {}) => ({ id, kind: 'child', mode: 'one-shot', activity: 'inactive', ...extra })
+
+test('history uses catalog creation times and filters local inclusive calendar dates', () => {
+  const at = (day: number, hour = 0) => new Date(2026, 8, day, hour).getTime()
+  const view = plugin.buildAgentView({ current: 'root', byId: { root: { id: 'root', projectionValues: { subagentCatalog: [
+    { id: 'a', createdAt: at(20) }, { id: 'b', createdAt: at(19, 23) }, { id: 'c', createdAt: at(21) }, { id: 'invalid', createdAt: NaN },
+  ] } } }, subagentsByParent: {
+    root: { entries: [child('a'), child('b'), child('c'), child('unknown'), child('invalid')] },
+  } })
+  const hidden = ['a', 'b', 'c', 'unknown', 'invalid'], totals = new Map(), now = at(20, 12)
+  const ids = (options: object) => plugin.agentHistoryRows(view, hidden, totals, { now, ...options }).map(row => row.id).join(',')
+  assert.equal(ids({ range: 'today' }), 'a')
+  assert.equal(ids({ range: 'custom', from: '2026-09-19', to: '2026-09-20' }), 'a,b')
+  assert.equal(ids({ range: 'custom', from: '2026-09-21', to: '2026-09-19' }), '')
+  assert.equal(ids({ range: 'custom', from: '2026-02-30' }), '')
+  assert.equal(plugin.agentHistoryRows(view, hidden, totals).length, 5)
+  assert.equal(plugin.agentHistoryRange('week', '', '', now).start, at(14))
+  assert.equal(plugin.agentHistoryRange('month', '', '', now).start, at(-9))
+  assert.equal(ids({ range: 'custom', to: '2026-09-19' }), 'b')
+})
+
+test('history sorts known values in both directions, keeps missing values last and searches parents', () => {
+  const view = plugin.buildAgentView({ current: 'root', byId: { root: { id: 'root', title: '父任务' },
+    a: { id: 'a', parentId: 'root', title: 'Task 2', createdAt: 20 },
+    b: { id: 'b', parentId: 'root', title: 'Task 10', createdAt: 10 },
+    c: { id: 'c', parentId: 'root', title: 'Task 1' } } })
+  const hidden = ['c', 'b', 'a'], totals = new Map([['a', { tokens: 0, known: 1, agents: 1 }], ['b', { tokens: 12, known: 1, agents: 2 }]])
+  const ids = (sort: string, query = '') => plugin.agentHistoryRows(view, hidden, totals, { sort, query }).map(row => row.id).join(',')
+  assert.equal(ids('time-desc'), 'a,b,c')
+  assert.equal(ids('time-asc'), 'b,a,c')
+  assert.equal(ids('tokens-desc'), 'b,a,c')
+  assert.equal(ids('tokens-asc'), 'a,b,c')
+  assert.equal(ids('title-asc'), 'c,a,b')
+  assert.equal(ids('title-desc'), 'b,a,c')
+  assert.equal(ids('time-desc', '父任务'), 'a,b,c')
+  assert.equal(ids('time-desc', ' TASK 2 '), 'a')
+  assert.equal(ids('time-desc', 'absent'), '')
+  assert.equal(plugin.agentHistoryRows(view, hidden, totals, { sort: 'tokens-desc' })[0].partial, true)
+  assert.equal(hidden.join(','), 'c,b,a')
+})
+
+test('history virtualization bounds DOM work for 10000 rows and clamps shrinking results', () => {
+  for (const top of [0, 5600, 280000, 560000, 9999999]) {
+    const result = plugin.agentHistoryWindow(10000, top, 280)
+    assert.ok(result.end - result.start <= 11)
+    assert.ok(result.start <= Math.floor(result.top / 56))
+    assert.ok(result.end >= Math.ceil((result.top + 280) / 56))
+    assert.equal(result.height, 560000)
+  }
+  const shrunk = plugin.agentHistoryWindow(2, 560000, 280)
+  assert.equal(shrunk.top, 0)
+  assert.equal(shrunk.start, 0)
+  assert.equal(shrunk.end, 2)
+  assert.equal(plugin.agentHistoryWindow(0, 560000, 280).end, 0)
+})
 
 test('tree and detail share activity states without treating missing records as stopped', () => {
   const status = (node: Node | undefined, root = false) => plugin.agentExecutionStatus(node, root).label

@@ -63,6 +63,11 @@ function buildAgentView(state) {
     if (!children.has(node.parentId)) children.set(node.parentId, [])
     children.get(node.parentId).push(node.id)
   }
+  // The public catalog is ordered by creation time; summary insertion order is not.
+  for (const [parent, catalog] of Object.entries(state.subagentsByParent || {})) {
+    const rank = new Map((catalog.entries || []).map((entry, index) => [entry.id, index]))
+    children.get(parent)?.sort((a, b) => (rank.get(a) ?? -1) - (rank.get(b) ?? -1))
+  }
   const reachable = new Map(), pending = [root]
   while (pending.length) {
     const id = pending.pop()
@@ -87,6 +92,29 @@ function visibleAgentRows(view, expanded, limit) {
     }
   }
   return { rows, more: stack.length > 0 }
+}
+
+/** Presentation only: never archive sessions or discard usage/history. */
+function agentTreeDisplay(view, catalogs = {}, options = {}) {
+  const expanded = options.expanded || new Set(), collapsed = options.collapsed || new Set()
+  const recent = options.compact ? 2 : 4
+  const all = visibleAgentRows(view, () => true, view.nodes.size).rows
+  const levels = new Map(all.map(row => [row.id, row.level])), required = new Set(view.ancestors)
+  if (options.focused) required.add(options.focused)
+  const children = new Map()
+  for (let index = all.length - 1; index >= 0; index--) {
+    const { id, level } = all[index], node = view.nodes.get(id)
+    const original = (view.children.get(id) || []).filter(child => levels.get(child) === level + 1)
+    const unknownChildren = node.hasChildren && catalogs[id]?.state !== 'ready'
+    if (node.running !== false || node.unavailable || unknownChildren || original.some(child => required.has(child))) required.add(id)
+    const deep = level >= 2 && !expanded.has(id)
+    const keep = collapsed.has(id) || deep ? new Set() : new Set(original.slice(-recent))
+    const visible = original.filter(child => required.has(child) || (!collapsed.has(id) && (expanded.has(id) || keep.has(child))))
+    children.set(id, visible)
+  }
+  const display = { ...view, children }
+  const shown = new Set(visibleAgentRows(display, () => true, view.nodes.size).rows.map(row => row.id))
+  return { view: display, hidden: all.filter(row => !shown.has(row.id)).map(row => row.id) }
 }
 
 function agentTreeTotals(view, catalogs = {}) {
@@ -126,7 +154,7 @@ function AgentTree({ useSessions, useTabInfo, treeStates, openDetail, refresh, w
   const saved = useMemo(() => {
     let value = treeStates.get(tab.signal)
     if (!value || value.root !== view.root) {
-      value = { root: view.root, limit: 200, focused: state.current }
+      value = { root: view.root, limit: 200, focused: state.current, expanded: new Set(), collapsed: new Set() }
       treeStates.set(tab.signal, value)
     }
     return value
@@ -170,6 +198,7 @@ function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog }
   const [pan, setPan] = useState(saved.pan || { x: 0, y: 0 })
   const [zoom, setZoom] = useState(saved.zoom || 1)
   const viewport = useRef(null), graph = useRef(null)
+  const autoFit = useRef(!saved.pan)
   const camera = useRef({ pan, zoom })
   camera.current = { pan, zoom }
   const changeCamera = (nextPan, nextZoom) => {
@@ -178,6 +207,7 @@ function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog }
     setPan(nextPan); setZoom(nextZoom)
   }
   const zoomAt = (factor, x, y) => {
+    autoFit.current = false
     const current = camera.current, rect = graph.current.getBoundingClientRect()
     const next = Math.max(.4, Math.min(2, current.zoom * factor))
     const dx = (x - rect.left) / current.zoom, dy = (y - rect.top) / current.zoom
@@ -201,21 +231,54 @@ function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog }
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [focused, setFocused] = useState(saved.focused)
-  useEffect(() => { Object.assign(saved, { limit, focused }) }, [saved, limit, focused])
-  const { rows, more, edges, positions, width, height } = useMemo(() => agentTreeLayout(view, limit), [view, limit])
+  const [expanded, setExpanded] = useState(saved.expanded || new Set())
+  const [collapsed, setCollapsed] = useState(saved.collapsed || new Set())
+  const [historyOpen, setHistoryOpen] = useState(false)
+  const [historyQuery, setHistoryQuery] = useState('')
+  const [historyPage, setHistoryPage] = useState(0)
+  const [compact, setCompact] = useState(false)
+  useEffect(() => { Object.assign(saved, { limit, focused, expanded, collapsed }) }, [saved, limit, focused, expanded, collapsed])
+  const catalogs = state.subagentsByParent || {}
+  const display = useMemo(() => agentTreeDisplay(view, catalogs, { expanded, collapsed, focused, compact }), [view, catalogs, expanded, collapsed, focused, compact])
+  const { rows, more, edges, positions, width, height } = useMemo(() => agentTreeLayout(display.view, limit), [display, limit])
+  const toggleBranch = id => {
+    autoFit.current = true
+    const show = collapsed.has(id) || !(display.view.children.get(id) || []).length
+    const nextExpanded = new Set(expanded), nextCollapsed = new Set(collapsed)
+    nextExpanded.delete(id); nextCollapsed.delete(id)
+    if (show) nextExpanded.add(id); else nextCollapsed.add(id)
+    setExpanded(nextExpanded); setCollapsed(nextCollapsed)
+  }
   const fit = () => {
+    autoFit.current = true
     const element = viewport.current
     const next = Math.max(.4, Math.min(1.25, (element.clientWidth - 24) / width, (element.clientHeight - 24) / height))
     changeCamera({ x: (element.clientWidth - 24 - width * next) / 2, y: 8 }, next)
     element.scrollLeft = 0; element.scrollTop = 0
   }
+  useLayoutEffect(() => {
+    const resize = () => {
+      setCompact(viewport.current.clientWidth < 400)
+      if (autoFit.current) fit()
+    }
+    resize()
+    const observer = new ResizeObserver(resize)
+    observer.observe(viewport.current)
+    return () => observer.disconnect()
+  }, [width, height])
   const zoomButton = factor => {
     const rect = viewport.current.getBoundingClientRect()
     zoomAt(factor, rect.left + rect.width / 2, rect.top + rect.height / 2)
   }
-  const catalogs = state.subagentsByParent || {}
   const totals = useMemo(() => agentTreeTotals(view, catalogs), [view, catalogs])
-  const watched = rows.filter(({ id }) => id === view.root || view.nodes.get(id)?.hasChildren).map(row => row.id)
+  // Retain already-loaded branch subscriptions so a hidden worker can become visible.
+  const watched = [...new Set([...rows.filter(({ id }) => id === view.root || view.nodes.get(id)?.hasChildren).map(row => row.id),
+    ...Object.keys(catalogs).filter(id => view.nodes.has(id))])]
+  const history = useMemo(() => {
+    const query = historyQuery.trim().toLocaleLowerCase()
+    return display.hidden.slice().reverse().filter(id => !query || `${view.nodes.get(id)?.title || id} ${view.nodes.get(view.nodes.get(id)?.parentId)?.title || ''}`.toLocaleLowerCase().includes(query))
+  }, [display, view, historyQuery])
+  const page = Math.min(historyPage, Math.max(0, Math.ceil(history.length / 20) - 1))
   const open = node => {
     setError('')
     Promise.resolve().then(() => openDetail(node)).catch(() => setError('无法打开详情，请重试'))
@@ -255,7 +318,7 @@ function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog }
     React.createElement('header', { className: 'dsh-super-code-tree-header' },
       React.createElement('div', null,
         React.createElement('strong', null, '协作执行'),
-        React.createElement('span', { className: 'dsh-super-code-tree-count' }, `已加载 ${view.nodes.size} · 运行中 ${running}`)),
+        React.createElement('span', { className: 'dsh-super-code-tree-count' }, `显示 ${rows.length} / ${view.nodes.size} · 运行中 ${running}`)),
       React.createElement('button', { type: 'button', className: 'dsh-super-code-icon-button', disabled: busy || !view.root, onClick: reload, title: '刷新执行记录', 'aria-label': '刷新执行记录' }, React.createElement(IconRefreshOutline16))),
     (error || catalogError) && React.createElement('p', { role: 'alert', className: 'dsh-super-code-tree-error' }, error || '部分执行记录读取失败，请刷新重试'),
     React.createElement('div', { className: 'dsh-super-code-graph-legend', 'aria-label': '状态颜色' },
@@ -267,6 +330,25 @@ function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog }
       React.createElement('span', { 'aria-live': 'polite' }, `${Math.round(zoom * 100)}%`),
       React.createElement('button', { type: 'button', 'aria-label': '放大节点图', disabled: zoom >= 2, onClick: () => zoomButton(1.2) }, '+'),
       React.createElement('button', { type: 'button', onClick: fit }, '适应窗口')),
+    (display.hidden.length > 0 || expanded.size > 0 || collapsed.size > 0) && React.createElement('div', { className: 'dsh-super-code-history-controls' },
+      React.createElement('button', { type: 'button', 'aria-expanded': historyOpen, onClick: () => setHistoryOpen(!historyOpen) }, `已收起 ${display.hidden.length}`),
+      (expanded.size > 0 || collapsed.size > 0) && React.createElement('button', { type: 'button', onClick: () => { autoFit.current = true; setExpanded(new Set()); setCollapsed(new Set()); setFocused(state.current) } }, '自动整理')),
+    historyOpen && React.createElement('section', { className: 'dsh-super-code-history', 'aria-label': '已收起的 Agent' },
+      React.createElement('p', null, '记录仍保留，恢复运行时会自动显示。'),
+      React.createElement('input', { type: 'search', value: historyQuery, 'aria-label': '查找收起的 Agent', placeholder: '搜索 Agent 或上级任务', onChange: event => { setHistoryQuery(event.target.value); setHistoryPage(0) } }),
+      React.createElement('div', { className: 'dsh-super-code-history-list' }, history.slice(page * 20, page * 20 + 20).map(id => {
+        const node = view.nodes.get(id), status = agentExecutionStatus(node, false), usage = totals.get(id)
+        return React.createElement('button', { key: id, type: 'button', onClick: () => open(node), 'aria-label': `查看 ${node.title || id} 的详情` },
+          React.createElement('i', { className: 'dsh-super-code-circle ' + status.tone, 'aria-hidden': true }),
+          React.createElement('span', null, React.createElement('strong', null, node.title || id),
+            React.createElement('small', null, `${status.label} · ${view.nodes.get(node.parentId)?.title || '主 Agent'}`)),
+          React.createElement('small', null, usage.known ? `${usage.tokens.toLocaleString('zh-CN', { notation: 'compact', maximumFractionDigits: 1 })} tok` : '—'))
+      })),
+      !history.length && React.createElement('p', null, '没有匹配的节点'),
+      history.length > 20 && React.createElement('div', { className: 'dsh-super-code-history-paging' },
+        React.createElement('button', { type: 'button', disabled: page === 0, onClick: () => setHistoryPage(page - 1) }, '上一页'),
+        React.createElement('span', null, `${page + 1} / ${Math.ceil(history.length / 20)}`),
+        React.createElement('button', { type: 'button', disabled: (page + 1) * 20 >= history.length, onClick: () => setHistoryPage(page + 1) }, '下一页'))),
     React.createElement('div', { ref: viewport, className: 'dsh-super-code-graph-scroll',
       onPointerDown: event => {
         if (!event.isPrimary || event.button !== 0) return
@@ -277,6 +359,7 @@ function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog }
         if (drag.id !== event.pointerId) return
         const dx = event.clientX - drag.x, dy = event.clientY - drag.y
         if (!drag.moved && Math.hypot(dx, dy) < 6) return
+        autoFit.current = false
         if (!drag.moved) { drag.moved = true; event.currentTarget.setPointerCapture(event.pointerId) }
         event.currentTarget.classList.add('dragging')
         const next = { x: drag.origin.x + dx, y: drag.origin.y + dy }
@@ -299,10 +382,13 @@ function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog }
       const usage = totals.get(row.id)
       const partial = usage.partial || usage.known < usage.agents
       const number = value => value.toLocaleString('zh-CN', { notation: 'compact', maximumFractionDigits: 1 })
-      return React.createElement('button', {
-          key: row.id, type: 'button',
+      const hasChildren = (view.children.get(row.id) || []).length > 0
+      const isExpanded = (display.view.children.get(row.id) || []).length > 0
+      return React.createElement(React.Fragment, { key: row.id }, React.createElement('button', {
+          type: 'button',
           role: 'treeitem', tabIndex: row.id === focusId ? 0 : -1, 'data-agent-id': row.id,
           'aria-level': row.level, 'aria-selected': row.id === state.current,
+          'aria-expanded': hasChildren ? isExpanded : undefined,
           'aria-disabled': node.unavailable || undefined, 'aria-label': `${title}，${status}`,
           className: `dsh-super-code-graph-node${row.id === state.current ? ' selected' : ''}${node.running ? ' running' : ''}`,
           style: { left: row.x - 64, top: row.y }, title: `${title} · ${status} · 点击查看详情`,
@@ -314,7 +400,12 @@ function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog }
           React.createElement('span', { className: 'dsh-super-code-tree-title' }, title),
           React.createElement('span', { className: 'dsh-super-code-tree-usage', title: `本节点及所有已知下级合计，包含本节点。${partial ? '部分记录或用量尚不可用；仅显示已知值。' : ''}Token ${usage.tokens.toLocaleString('zh-CN')}；缓存读取 ${usage.cache.toLocaleString('zh-CN')}；${usage.agents} 个 Agent` },
             React.createElement('span', null, usage.known ? `${number(usage.tokens)} token` : '用量 —'),
-            React.createElement('span', null, usage.known ? `缓存 ${usage.input ? Math.round(usage.cache / usage.input * 100) : 0}%${partial ? ' · 部分' : ''}` : '缓存 —'))))
+            React.createElement('span', null, usage.known ? `缓存 ${usage.input ? Math.round(usage.cache / usage.input * 100) : 0}%${partial ? ' · 部分' : ''}` : '缓存 —')))),
+        hasChildren && React.createElement('button', { type: 'button', className: 'dsh-super-code-branch-toggle',
+          style: { left: row.x + 21, top: row.y + 25 }, 'aria-label': `${collapsed.has(row.id) || !isExpanded ? '展开' : '收起'} ${title} 的下级`,
+          title: '整理下级节点；运行中的分支始终保留', onClick: () => toggleBranch(row.id) },
+          React.createElement('svg', { width: 12, height: 12, viewBox: '0 0 12 12', 'aria-hidden': true, style: { transform: collapsed.has(row.id) || !isExpanded ? 'rotate(-90deg)' : undefined } },
+            React.createElement('path', { d: 'M3 4.5 6 7.5 9 4.5', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5 }))))
     }))),
     more && React.createElement('button', { type: 'button', className: 'dsh-super-code-tree-more', onClick: () => setLimit(limit + 200) }, '显示更多'))
 }
@@ -548,7 +639,8 @@ function apply(ctx) {
     const style = document.createElement('style')
     style.dataset.dshSuperCode = 'true'
     style.textContent = `
-.dsh-super-code-tree{--agent-muted:var(--dsw-alias-label-secondary,#70757d);--agent-line:var(--dsw-alias-border-l1,#dedfe3);height:100%;min-width:0;overflow:auto;font-size:13px;letter-spacing:0;color:inherit}
+.dsh-super-code-tree{--agent-muted:var(--dsw-alias-label-secondary,#70757d);--agent-line:var(--dsw-alias-border-l1,#dedfe3);height:100%;min-width:0;min-height:0;display:flex;flex-direction:column;overflow:auto;font-size:13px;letter-spacing:0;color:inherit}
+.dsh-super-code-tree>header,.dsh-super-code-tree>.dsh-super-code-graph-controls,.dsh-super-code-tree>.dsh-super-code-graph-legend,.dsh-super-code-tree>.dsh-super-code-history-controls{flex-shrink:0}
 .dsh-super-code-tree-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 18px 16px}
 .dsh-super-code-tree-header strong{display:block;font-size:14px;font-weight:600}
 .dsh-super-code-tree-count{display:block;margin-top:5px;color:var(--agent-muted);font-size:12px}
@@ -556,7 +648,25 @@ function apply(ctx) {
 .dsh-super-code-graph-controls button{border:1px solid var(--agent-line);border-radius:5px;background:transparent;color:inherit;padding:3px 8px;min-height:28px;cursor:pointer;font:inherit}
 .dsh-super-code-graph-controls button:disabled{opacity:.4;cursor:default}
 .dsh-super-code-graph-controls span{min-width:38px;text-align:center;font-variant-numeric:tabular-nums}
-.dsh-super-code-graph-scroll{overflow:hidden;padding:0 12px;min-height:260px;height:calc(100% - 150px);touch-action:none;cursor:grab;user-select:none}
+.dsh-super-code-history-controls{display:flex;gap:8px;padding:0 18px 10px}
+.dsh-super-code-history-controls button,.dsh-super-code-history-paging button{border:1px solid var(--agent-line);border-radius:14px;background:transparent;color:var(--agent-muted);padding:5px 10px;font:inherit;font-size:11px;cursor:pointer}
+.dsh-super-code-history-controls button[aria-expanded=true]{color:var(--dsw-color-primary,#3276dc);background:color-mix(in srgb,currentColor 5%,transparent)}
+.dsh-super-code-history{display:flex;flex-direction:column;flex-shrink:0;max-height:38%;min-height:90px;margin:0 12px 12px;padding:12px;border:1px solid var(--agent-line);border-radius:12px;background:color-mix(in srgb,var(--agent-muted) 3%,transparent)}
+.dsh-super-code-history>p,.dsh-super-code-history>input,.dsh-super-code-history-paging{flex-shrink:0}
+.dsh-super-code-history p{font-size:11px;color:var(--agent-muted);margin:0 0 10px;line-height:1.6}
+.dsh-super-code-history input{box-sizing:border-box;width:100%;border:1px solid var(--agent-line);border-radius:7px;background:transparent;color:inherit;font:inherit;font-size:12px;padding:7px 9px;margin-bottom:8px}
+.dsh-super-code-history-list{max-height:230px;overflow:auto;overscroll-behavior:contain}
+.dsh-super-code-history-list button{display:flex;align-items:center;gap:9px;width:100%;text-align:left;border:0;border-radius:7px;padding:9px 5px;background:transparent;color:inherit;cursor:pointer;font:inherit}
+.dsh-super-code-history-list button:hover{background:color-mix(in srgb,currentColor 5%,transparent)}
+.dsh-super-code-history-list button>span{flex:1;min-width:0}.dsh-super-code-history-list strong{display:block;font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dsh-super-code-history-list small{font-size:10px;color:var(--agent-muted);line-height:1.6}.dsh-super-code-history-list button>small{white-space:nowrap;font-variant-numeric:tabular-nums}
+.dsh-super-code-history-list button>span>small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dsh-super-code-history-list .dsh-super-code-circle{width:7px;height:7px;box-shadow:none}
+.dsh-super-code-history-paging{display:flex;align-items:center;justify-content:space-between;margin-top:10px;font-size:11px;color:var(--agent-muted)}
+.dsh-super-code-history-paging button:disabled{opacity:.4;cursor:default}
+.dsh-super-code-branch-toggle{position:absolute;display:grid;place-items:center;width:22px;height:22px;padding:0;border:1px solid var(--agent-line);border-radius:50%;background:var(--dsw-alias-bg-base,#fff);color:var(--agent-muted);cursor:pointer;box-shadow:0 1px 3px #0000000a}
+.dsh-super-code-branch-toggle:hover{color:var(--dsw-color-primary,#3276dc);border-color:currentColor}
+.dsh-super-code-graph-scroll{overflow:hidden;padding:0 12px;min-height:180px;flex:1;touch-action:none;cursor:grab;user-select:none}
 .dsh-super-code-graph-scroll.dragging,.dsh-super-code-graph-scroll.dragging *{cursor:grabbing!important}
 .dsh-super-code-graph-legend{display:flex;flex-wrap:wrap;gap:6px 12px;padding:0 18px 8px;color:var(--agent-muted);font-size:10px}
 .dsh-super-code-graph-legend>span{display:flex;align-items:center;gap:5px}
@@ -695,5 +805,5 @@ function apply(ctx) {
   ctx.effect(() => disposeDetailType, 'super-code: Agent detail tab')
 }
 
-return { inject, apply, buildAgentView, visibleAgentRows, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector }
+return { inject, apply, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector }
 } })

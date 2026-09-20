@@ -10,6 +10,7 @@ interface Client {
   default?: { inject?: string[]; apply?: unknown } | ((ctx: object) => void)
   inject: string[]
   buildAgentView(state: object): View
+  agentTreeDisplay(view: View, catalogs?: object, options?: { expanded?: Set<string>; collapsed?: Set<string>; focused?: string; compact?: boolean }): { view: View; hidden: string[] }
   visibleAgentRows(view: View, expanded: (id: string) => boolean, limit: number): { rows: Row[]; more: boolean }
   agentTreeTotals(view: View, catalogs?: object): Map<string, { agents: number; tokens: number; cache: number; known: number; partial: boolean }>
   agentTreeLayout(view: View, limit: number): { rows: { id: string; x: number; y: number }[]; edges: object[]; more: boolean; width: number }
@@ -177,6 +178,57 @@ test('node graph places parents above distinct children and bounds automatic exp
   assert.ok(byId.get('a')!.x < byId.get('b')!.x)
   assert.equal(plugin.agentTreeLayout(view, 2).rows.length, 2)
   assert.equal(plugin.agentTreeLayout(view, 2).more, true)
+})
+
+test('long trees collect older idle nodes without changing records, statuses or total usage', () => {
+  const byId = Object.fromEntries(['root', ...Array.from({ length: 40 }, (_, i) => `c${i}`)].map((id, i) => [id, {
+    id, ...(i ? { parentId: 'root' } : {}), running: false, mode: 'continuable', projectionValues: { tokenUsage: { outputTokens: 10 } },
+  }]))
+  const view = plugin.buildAgentView({ current: 'root', byId })
+  const before = plugin.agentTreeTotals(view).get('root')!.tokens
+  const display = plugin.agentTreeDisplay(view)
+  assert.equal(display.hidden.length, 36)
+  assert.equal(plugin.agentTreeDisplay(view, {}, { compact: true }).hidden.length, 38)
+  assert.equal(plugin.visibleAgentRows(display.view, () => true, 200).rows.map(row => row.id).join(','), 'root,c36,c37,c38,c39')
+  assert.equal(view.nodes.size, 41)
+  assert.equal(plugin.agentTreeTotals(view).get('root')!.tokens, before)
+  assert.equal(plugin.agentExecutionStatus(view.nodes.get('c0'), false).tone, 'idle')
+  assert.equal(plugin.agentTreeDisplay(view, {}, { expanded: new Set(['root']) }).hidden.length, 0)
+  assert.equal(plugin.agentTreeDisplay(view, {}, { collapsed: new Set(['root']) }).hidden.length, 40)
+})
+
+test('folding retains active, unknown, diagnostic, focused and current paths, including resumed descendants', () => {
+  const byId: Record<string, any> = { root: { id: 'root', running: false }, old: { id: 'old', parentId: 'root', running: false, hasChildren: true },
+    leaf: { id: 'leaf', parentId: 'old', running: false }, bad: { id: 'bad', parentId: 'root', unavailable: true, running: false },
+    unknown: { id: 'unknown', parentId: 'root' } }
+  for (let i = 0; i < 8; i++) byId[`new${i}`] = { id: `new${i}`, parentId: 'root', running: false }
+  const catalogs = { old: { state: 'ready' } }
+  let view = plugin.buildAgentView({ current: 'root', byId })
+  assert.ok(plugin.agentTreeDisplay(view, catalogs).hidden.includes('leaf'))
+  assert.ok(!plugin.agentTreeDisplay(view, {}).hidden.includes('old')) // Unknown descendants must be discoverable.
+  byId.leaf.running = true
+  view = plugin.buildAgentView({ current: 'root', byId })
+  const folded = plugin.agentTreeDisplay(view, catalogs, { collapsed: new Set(['root', 'old']) })
+  for (const id of ['old', 'leaf', 'bad', 'unknown']) assert.ok(!folded.hidden.includes(id), id)
+  byId.leaf.running = false
+  view = plugin.buildAgentView({ current: 'leaf', byId })
+  assert.ok(!plugin.agentTreeDisplay(view, catalogs, { collapsed: new Set(['root', 'old']) }).hidden.includes('leaf'))
+  view = plugin.buildAgentView({ current: 'root', byId })
+  assert.ok(!plugin.agentTreeDisplay(view, catalogs, { focused: 'leaf' }).hidden.includes('leaf'))
+})
+
+test('automatic depth folding, catalog chronology, cycles and ten thousand nodes stay bounded', () => {
+  const byId = Object.fromEntries(Array.from({ length: 10000 }, (_, i) => [String(i), { id: String(i), running: false, ...(i ? { parentId: String(i - 1) } : {}) }]))
+  const view = plugin.buildAgentView({ current: '0', byId })
+  const display = plugin.agentTreeDisplay(view)
+  assert.equal(plugin.visibleAgentRows(display.view, () => true, 200).rows.length, 2)
+  assert.equal(display.hidden.length, 9998)
+  assert.equal(plugin.visibleAgentRows(plugin.agentTreeDisplay(view, {}, { expanded: new Set(['1']) }).view, () => true, 200).rows.length, 3)
+  const reverse = Object.fromEntries(['root', 'e', 'd', 'c', 'b', 'a'].map(id => [id, { id, parentId: id === 'root' ? undefined : 'root', running: false }]))
+  const ordered = plugin.buildAgentView({ current: 'root', byId: reverse, subagentsByParent: { root: { entries: ['a', 'b', 'c', 'd', 'e'].map(id => child(id)) } } })
+  assert.equal(plugin.agentTreeDisplay(ordered).hidden.join(','), 'a')
+  const cycle = plugin.buildAgentView({ current: 'a', byId: { a: { id: 'a', parentId: 'b', running: false }, b: { id: 'b', parentId: 'a', running: false } } })
+  assert.equal(plugin.visibleAgentRows(plugin.agentTreeDisplay(cycle).view, () => true, 200).rows.length, 2)
 })
 
 test('plugin opens read-only resource tabs without navigating the main conversation', () => {

@@ -1,0 +1,3158 @@
+{
+  "schema": 1,
+  "run_id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-065-attempt-1",
+  "started_at": "2026-09-20T05:11:14.318Z",
+  "completed_at": "2026-09-20T05:11:14.319Z",
+  "preset": "super-code",
+  "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
+  "isolation": {
+    "schema": 1,
+    "policy": "swebench-pro-isolation-v3",
+    "policy_revision": 3,
+    "passed": true,
+    "repository_isolation": {
+      "base_only_git": true,
+      "commit_count": 1,
+      "remotes": [],
+      "target_commit_unavailable": true,
+      "test_container_network": "none",
+      "prepared_cache_hit": false
+    },
+    "audited_sessions": 1,
+    "blocked_calls_count": 10,
+    "observations_count": 3,
+    "violations_count": 0
+  },
+  "candidate": {
+    "schema": 1,
+    "identity": "local-0.0.9-candidate",
+    "package": {
+      "name": "dsh-super-code",
+      "version": "0.0.9",
+      "tarball": "dsh-super-code-0.0.9.tgz"
+    },
+    "source": {
+      "git_head": "259f081658d20230d392da418955f190067ddc0f",
+      "tracked_diff_sha256": "1965bf0bf045f6d8f471613c8b50851ab052f98a6338413853536c89f61dcba7",
+      "untracked_package_paths": [
+        "lib/core/experiment-recipes.d.ts",
+        "lib/core/experiment-recipes.d.ts.map",
+        "lib/core/experiment-recipes.js",
+        "lib/core/experiment-recipes.js.map",
+        "lib/experiments.d.ts",
+        "lib/experiments.d.ts.map",
+        "lib/experiments.js",
+        "lib/experiments.js.map",
+        "lib/task-memory-store.d.ts",
+        "lib/task-memory-store.d.ts.map",
+        "lib/task-memory-store.js",
+        "lib/task-memory-store.js.map"
+      ]
+    },
+    "harness": {
+      "git_head": "c291e7961a515f6d7af9304e7fd1d257929aef26",
+      "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+    },
+    "artifacts": {
+      "tarball_sha256": "2e2104209812ae13c701480e5e0ba38bf6d09ee7b6546ebd909bab60b80d83e6",
+      "cordis_patch_sha256": "d8f8e14602aeb4dfafeb6aff3916cccb934c2c88d1d84b222a7c6d3040ca7434",
+      "preset_sha256": "43edc7f7b6dc9fcea423290e48f7b1d245220f10b15a06d8defa5f34685032e9",
+      "packed_files": 71,
+      "packed_bytes": 83113,
+      "unpacked_bytes": 306269
+    },
+    "created_at": "2026-09-19T13:30:54.126Z"
+  },
+  "task_index": 65,
+  "instance_id": "instance_qutebrowser__qutebrowser-473a15f7908f2bb6d670b0e908ab34a28d8cf7e2-v363c8a7e5ccdf6968fc7ab84a2053ac78036691d",
+  "repo": "qutebrowser/qutebrowser",
+  "base_commit": "8e08f046aeffb38445cc659050f7a083b4a9649c",
+  "official_evaluator": {
+    "repository": "scaleapi/SWE-bench_Pro-os",
+    "commit": "ca10a60a5fcae51e6948ffe1485d4153d421e6c5",
+    "evaluator_sha256": "bb5d4c5486be296e464e695df3747064aaa3bb197394bc6d39980634afec2034",
+    "dataset_sha256": "b5b2462bfbf5aeb2cb7ba7d215778a1768b85f9d7ad7f748546c7f80a0ad1510",
+    "image_policy": "local-cache-only",
+    "rescore_attempt": 1
+  },
+  "image": {
+    "reference": "jefzda/sweap-images:qutebrowser.qutebrowser-qutebrowser__qutebrowser-473a15f7908f2bb6d670b0e908ab34a28d8cf7e2-v363c8a7e5ccdf6968fc7ab84a2053ac780366",
+    "acquisition_reference": "jefzda/sweap-images:qutebrowser.qutebrowser-qutebrowser__qutebrowser-473a15f7908f2bb6d670b0e908ab34a28d8cf7e2-v363c8a7e5ccdf6968fc7ab84a2053ac780366",
+    "platform": "linux/amd64",
+    "id": "sha256:b3c24ff0fd9dc09eac2409ac01980c33d93254d4adfd441502765c22cc79cadb",
+    "repo_digests": [
+      "docker.1ms.run/jefzda/sweap-images@sha256:b3c24ff0fd9dc09eac2409ac01980c33d93254d4adfd441502765c22cc79cadb",
+      "jefzda/sweap-images@sha256:b3c24ff0fd9dc09eac2409ac01980c33d93254d4adfd441502765c22cc79cadb"
+    ]
+  },
+  "page_runtime": {
+    "schema": 2,
+    "runtime": "deepseek-harness-web-rpc",
+    "mode": "agent-run",
+    "session_id": "session-6ba56a67-49ff-448f-b380-6de5f256df52",
+    "web_rpc": {
+      "authenticated": true,
+      "calls": [
+        "session/create",
+        "session/list",
+        "session/selectModel",
+        "session/prompt",
+        "session/list"
+      ],
+      "prompt_submitted": true
+    },
+    "preset": "super-code",
+    "isolation": {
+      "policy": "swebench-pro-isolation-v3",
+      "permission_preset": "workspace-write",
+      "tool_guard": "workspace-files-and-assigned-offline-container"
+    },
+    "candidate": {
+      "schema": 1,
+      "identity": "local-0.0.9-candidate",
+      "package": {
+        "name": "dsh-super-code",
+        "version": "0.0.9",
+        "tarball": "dsh-super-code-0.0.9.tgz"
+      },
+      "source": {
+        "git_head": "259f081658d20230d392da418955f190067ddc0f",
+        "tracked_diff_sha256": "1965bf0bf045f6d8f471613c8b50851ab052f98a6338413853536c89f61dcba7",
+        "untracked_package_paths": [
+          "lib/core/experiment-recipes.d.ts",
+          "lib/core/experiment-recipes.d.ts.map",
+          "lib/core/experiment-recipes.js",
+          "lib/core/experiment-recipes.js.map",
+          "lib/experiments.d.ts",
+          "lib/experiments.d.ts.map",
+          "lib/experiments.js",
+          "lib/experiments.js.map",
+          "lib/task-memory-store.d.ts",
+          "lib/task-memory-store.d.ts.map",
+          "lib/task-memory-store.js",
+          "lib/task-memory-store.js.map"
+        ]
+      },
+      "harness": {
+        "git_head": "c291e7961a515f6d7af9304e7fd1d257929aef26",
+        "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+      },
+      "artifacts": {
+        "tarball_sha256": "2e2104209812ae13c701480e5e0ba38bf6d09ee7b6546ebd909bab60b80d83e6",
+        "cordis_patch_sha256": "d8f8e14602aeb4dfafeb6aff3916cccb934c2c88d1d84b222a7c6d3040ca7434",
+        "preset_sha256": "43edc7f7b6dc9fcea423290e48f7b1d245220f10b15a06d8defa5f34685032e9",
+        "packed_files": 71,
+        "packed_bytes": 83113,
+        "unpacked_bytes": 306269
+      },
+      "created_at": "2026-09-19T13:30:54.126Z"
+    },
+    "model": {
+      "display_name": "deepseek-v4.1-flash",
+      "reasoning_effort": "high",
+      "max_tokens": 384000
+    },
+    "elapsed_ms": 1014477,
+    "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+  },
+  "metrics": {
+    "schema": 2,
+    "accounting": {
+      "observed_requests": 101,
+      "requests_with_usage": 101,
+      "unknown_usage_requests": 0,
+      "cost_complete": false,
+      "actual_cost": null,
+      "reason": "Observed log usage only; request inventory and billing reconciliation required",
+      "ledger": [
+        {
+          "id": "1/1/0",
+          "usage": {
+            "inputTokens": 1754,
+            "outputTokens": 248,
+            "totalTokens": 7378,
+            "cacheReadTokens": 5376
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 14,
+          "time": 1789867451632
+        },
+        {
+          "id": "1/2/0",
+          "usage": {
+            "inputTokens": 376,
+            "outputTokens": 407,
+            "totalTokens": 8079,
+            "cacheReadTokens": 7296
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 22,
+          "time": 1789867454125
+        },
+        {
+          "id": "1/3/0",
+          "usage": {
+            "inputTokens": 807,
+            "outputTokens": 122,
+            "totalTokens": 8993,
+            "cacheReadTokens": 8064
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 29,
+          "time": 1789867456347
+        },
+        {
+          "id": "1/4/0",
+          "usage": {
+            "inputTokens": 2718,
+            "outputTokens": 358,
+            "totalTokens": 12036,
+            "cacheReadTokens": 8960
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 34,
+          "time": 1789867458770
+        },
+        {
+          "id": "1/5/0",
+          "usage": {
+            "inputTokens": 653,
+            "outputTokens": 1393,
+            "totalTokens": 14078,
+            "cacheReadTokens": 12032
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 41,
+          "time": 1789867465397
+        },
+        {
+          "id": "1/6/0",
+          "usage": {
+            "inputTokens": 2100,
+            "outputTokens": 1233,
+            "totalTokens": 17285,
+            "cacheReadTokens": 13952
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 48,
+          "time": 1789867471622
+        },
+        {
+          "id": "1/7/0",
+          "usage": {
+            "inputTokens": 473,
+            "outputTokens": 346,
+            "totalTokens": 18099,
+            "cacheReadTokens": 17280
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 55,
+          "time": 1789867474594
+        },
+        {
+          "id": "1/8/0",
+          "usage": {
+            "inputTokens": 678,
+            "outputTokens": 1569,
+            "totalTokens": 20295,
+            "cacheReadTokens": 18048
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 60,
+          "time": 1789867482112
+        },
+        {
+          "id": "1/9/0",
+          "usage": {
+            "inputTokens": 236,
+            "outputTokens": 301,
+            "totalTokens": 20761,
+            "cacheReadTokens": 20224
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 67,
+          "time": 1789867484432
+        },
+        {
+          "id": "1/10/0",
+          "usage": {
+            "inputTokens": 184,
+            "outputTokens": 279,
+            "totalTokens": 21071,
+            "cacheReadTokens": 20608
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 72,
+          "time": 1789867486850
+        },
+        {
+          "id": "1/11/0",
+          "usage": {
+            "inputTokens": 238,
+            "outputTokens": 163,
+            "totalTokens": 21265,
+            "cacheReadTokens": 20864
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 77,
+          "time": 1789867488604
+        },
+        {
+          "id": "1/12/0",
+          "usage": {
+            "inputTokens": 220,
+            "outputTokens": 728,
+            "totalTokens": 22068,
+            "cacheReadTokens": 21120
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 82,
+          "time": 1789867492763
+        },
+        {
+          "id": "1/13/0",
+          "usage": {
+            "inputTokens": 213,
+            "outputTokens": 234,
+            "totalTokens": 22335,
+            "cacheReadTokens": 21888
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 89,
+          "time": 1789867495614
+        },
+        {
+          "id": "1/14/0",
+          "usage": {
+            "inputTokens": 216,
+            "outputTokens": 2972,
+            "totalTokens": 25332,
+            "cacheReadTokens": 22144
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 94,
+          "time": 1789867508467
+        },
+        {
+          "id": "1/15/0",
+          "usage": {
+            "inputTokens": 389,
+            "outputTokens": 2065,
+            "totalTokens": 27670,
+            "cacheReadTokens": 25216
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 101,
+          "time": 1789867518399
+        },
+        {
+          "id": "1/16/0",
+          "usage": {
+            "inputTokens": 1130,
+            "outputTokens": 2585,
+            "totalTokens": 31363,
+            "cacheReadTokens": 27648
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 108,
+          "time": 1789867531459
+        },
+        {
+          "id": "1/17/0",
+          "usage": {
+            "inputTokens": 1487,
+            "outputTokens": 2903,
+            "totalTokens": 35750,
+            "cacheReadTokens": 31360
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 115,
+          "time": 1789867544671
+        },
+        {
+          "id": "1/18/0",
+          "usage": {
+            "inputTokens": 228,
+            "outputTokens": 3348,
+            "totalTokens": 39160,
+            "cacheReadTokens": 35584
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 122,
+          "time": 1789867560735
+        },
+        {
+          "id": "1/19/0",
+          "usage": {
+            "inputTokens": 282,
+            "outputTokens": 2525,
+            "totalTokens": 41847,
+            "cacheReadTokens": 39040
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 129,
+          "time": 1789867606690
+        },
+        {
+          "id": "1/20/0",
+          "usage": {
+            "inputTokens": 284,
+            "outputTokens": 753,
+            "totalTokens": 42765,
+            "cacheReadTokens": 41728
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 136,
+          "time": 1789867611264
+        },
+        {
+          "id": "1/21/0",
+          "usage": {
+            "inputTokens": 761,
+            "outputTokens": 2768,
+            "totalTokens": 46281,
+            "cacheReadTokens": 42752
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 143,
+          "time": 1789867625105
+        },
+        {
+          "id": "1/22/0",
+          "usage": {
+            "inputTokens": 1115,
+            "outputTokens": 12429,
+            "totalTokens": 59752,
+            "cacheReadTokens": 46208
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 150,
+          "time": 1789867682528
+        },
+        {
+          "id": "1/23/0",
+          "usage": {
+            "inputTokens": 260,
+            "outputTokens": 965,
+            "totalTokens": 60745,
+            "cacheReadTokens": 59520
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 155,
+          "time": 1789867687420
+        },
+        {
+          "id": "1/24/0",
+          "usage": {
+            "inputTokens": 940,
+            "outputTokens": 178,
+            "totalTokens": 61790,
+            "cacheReadTokens": 60672
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 162,
+          "time": 1789867694631
+        },
+        {
+          "id": "1/25/0",
+          "usage": {
+            "inputTokens": 1166,
+            "outputTokens": 572,
+            "totalTokens": 63434,
+            "cacheReadTokens": 61696
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 167,
+          "time": 1789867699799
+        },
+        {
+          "id": "1/26/0",
+          "usage": {
+            "inputTokens": 267,
+            "outputTokens": 201,
+            "totalTokens": 63828,
+            "cacheReadTokens": 63360
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 174,
+          "time": 1789867705400
+        },
+        {
+          "id": "1/27/0",
+          "usage": {
+            "inputTokens": 311,
+            "outputTokens": 2188,
+            "totalTokens": 66243,
+            "cacheReadTokens": 63744
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 179,
+          "time": 1789867719112
+        },
+        {
+          "id": "1/28/0",
+          "usage": {
+            "inputTokens": 3397,
+            "outputTokens": 9515,
+            "totalTokens": 79088,
+            "cacheReadTokens": 66176
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 186,
+          "time": 1789867764176
+        },
+        {
+          "id": "1/29/0",
+          "usage": {
+            "inputTokens": 610,
+            "outputTokens": 2729,
+            "totalTokens": 82315,
+            "cacheReadTokens": 78976
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 191,
+          "time": 1789867777200
+        },
+        {
+          "id": "1/30/0",
+          "usage": {
+            "inputTokens": 623,
+            "outputTokens": 7149,
+            "totalTokens": 90076,
+            "cacheReadTokens": 82304
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 198,
+          "time": 1789867807084
+        },
+        {
+          "id": "1/31/0",
+          "usage": {
+            "inputTokens": 224,
+            "outputTokens": 8064,
+            "totalTokens": 98272,
+            "cacheReadTokens": 89984
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 205,
+          "time": 1789867842951
+        },
+        {
+          "id": "1/32/0",
+          "usage": {
+            "inputTokens": 191,
+            "outputTokens": 244,
+            "totalTokens": 98611,
+            "cacheReadTokens": 98176
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 210,
+          "time": 1789867845613
+        },
+        {
+          "id": "1/33/0",
+          "usage": {
+            "inputTokens": 158,
+            "outputTokens": 135,
+            "totalTokens": 98853,
+            "cacheReadTokens": 98560
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 215,
+          "time": 1789867847472
+        },
+        {
+          "id": "1/34/0",
+          "usage": {
+            "inputTokens": 498,
+            "outputTokens": 403,
+            "totalTokens": 99717,
+            "cacheReadTokens": 98816
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 220,
+          "time": 1789867851171
+        },
+        {
+          "id": "1/35/0",
+          "usage": {
+            "inputTokens": 213,
+            "outputTokens": 578,
+            "totalTokens": 100375,
+            "cacheReadTokens": 99584
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 225,
+          "time": 1789867854632
+        },
+        {
+          "id": "1/36/0",
+          "usage": {
+            "inputTokens": 179,
+            "outputTokens": 250,
+            "totalTokens": 100653,
+            "cacheReadTokens": 100224
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 230,
+          "time": 1789867857540
+        },
+        {
+          "id": "1/37/0",
+          "usage": {
+            "inputTokens": 615,
+            "outputTokens": 167,
+            "totalTokens": 101390,
+            "cacheReadTokens": 100608
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 235,
+          "time": 1789867859760
+        },
+        {
+          "id": "1/38/0",
+          "usage": {
+            "inputTokens": 238,
+            "outputTokens": 1903,
+            "totalTokens": 103389,
+            "cacheReadTokens": 101248
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 240,
+          "time": 1789867866716
+        },
+        {
+          "id": "1/39/0",
+          "usage": {
+            "inputTokens": 189,
+            "outputTokens": 122,
+            "totalTokens": 103607,
+            "cacheReadTokens": 103296
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 245,
+          "time": 1789867868499
+        },
+        {
+          "id": "1/40/0",
+          "usage": {
+            "inputTokens": 151,
+            "outputTokens": 110,
+            "totalTokens": 103813,
+            "cacheReadTokens": 103552
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 250,
+          "time": 1789867870390
+        },
+        {
+          "id": "1/41/0",
+          "usage": {
+            "inputTokens": 449,
+            "outputTokens": 286,
+            "totalTokens": 104543,
+            "cacheReadTokens": 103808
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 255,
+          "time": 1789867873384
+        },
+        {
+          "id": "1/42/0",
+          "usage": {
+            "inputTokens": 191,
+            "outputTokens": 401,
+            "totalTokens": 105040,
+            "cacheReadTokens": 104448
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 260,
+          "time": 1789867876520
+        },
+        {
+          "id": "1/43/0",
+          "usage": {
+            "inputTokens": 250,
+            "outputTokens": 238,
+            "totalTokens": 105320,
+            "cacheReadTokens": 104832
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 267,
+          "time": 1789867879771
+        },
+        {
+          "id": "1/44/0",
+          "usage": {
+            "inputTokens": 184,
+            "outputTokens": 2447,
+            "totalTokens": 107847,
+            "cacheReadTokens": 105216
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 272,
+          "time": 1789867889597
+        },
+        {
+          "id": "1/45/0",
+          "usage": {
+            "inputTokens": 186,
+            "outputTokens": 146,
+            "totalTokens": 108108,
+            "cacheReadTokens": 107776
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 277,
+          "time": 1789867891753
+        },
+        {
+          "id": "1/46/0",
+          "usage": {
+            "inputTokens": 1417,
+            "outputTokens": 253,
+            "totalTokens": 109702,
+            "cacheReadTokens": 108032
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 282,
+          "time": 1789867896412
+        },
+        {
+          "id": "1/47/0",
+          "usage": {
+            "inputTokens": 235,
+            "outputTokens": 147,
+            "totalTokens": 109950,
+            "cacheReadTokens": 109568
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 287,
+          "time": 1789867898772
+        },
+        {
+          "id": "1/48/0",
+          "usage": {
+            "inputTokens": 1443,
+            "outputTokens": 187,
+            "totalTokens": 111454,
+            "cacheReadTokens": 109824
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 292,
+          "time": 1789867904015
+        },
+        {
+          "id": "1/49/0",
+          "usage": {
+            "inputTokens": 195,
+            "outputTokens": 146,
+            "totalTokens": 111701,
+            "cacheReadTokens": 111360
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 297,
+          "time": 1789867906292
+        },
+        {
+          "id": "1/50/0",
+          "usage": {
+            "inputTokens": 719,
+            "outputTokens": 1937,
+            "totalTokens": 114272,
+            "cacheReadTokens": 111616
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 302,
+          "time": 1789867918708
+        },
+        {
+          "id": "1/51/0",
+          "usage": {
+            "inputTokens": 756,
+            "outputTokens": 498,
+            "totalTokens": 115430,
+            "cacheReadTokens": 114176
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 307,
+          "time": 1789867921965
+        },
+        {
+          "id": "1/52/0",
+          "usage": {
+            "inputTokens": 198,
+            "outputTokens": 146,
+            "totalTokens": 115672,
+            "cacheReadTokens": 115328
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 312,
+          "time": 1789867924391
+        },
+        {
+          "id": "1/53/0",
+          "usage": {
+            "inputTokens": 382,
+            "outputTokens": 443,
+            "totalTokens": 116409,
+            "cacheReadTokens": 115584
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 317,
+          "time": 1789867930023
+        },
+        {
+          "id": "1/54/0",
+          "usage": {
+            "inputTokens": 294,
+            "outputTokens": 323,
+            "totalTokens": 116969,
+            "cacheReadTokens": 116352
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 324,
+          "time": 1789867976251
+        },
+        {
+          "id": "1/55/0",
+          "usage": {
+            "inputTokens": 165,
+            "outputTokens": 299,
+            "totalTokens": 117328,
+            "cacheReadTokens": 116864
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 329,
+          "time": 1789867988948
+        },
+        {
+          "id": "1/56/0",
+          "usage": {
+            "inputTokens": 552,
+            "outputTokens": 890,
+            "totalTokens": 118690,
+            "cacheReadTokens": 117248
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 334,
+          "time": 1789867996735
+        },
+        {
+          "id": "1/57/0",
+          "usage": {
+            "inputTokens": 963,
+            "outputTokens": 792,
+            "totalTokens": 120411,
+            "cacheReadTokens": 118656
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 341,
+          "time": 1789868001747
+        },
+        {
+          "id": "1/58/0",
+          "usage": {
+            "inputTokens": 757,
+            "outputTokens": 462,
+            "totalTokens": 121539,
+            "cacheReadTokens": 120320
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 346,
+          "time": 1789868005490
+        },
+        {
+          "id": "1/59/0",
+          "usage": {
+            "inputTokens": 1120,
+            "outputTokens": 677,
+            "totalTokens": 123269,
+            "cacheReadTokens": 121472
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 351,
+          "time": 1789868010293
+        },
+        {
+          "id": "1/60/0",
+          "usage": {
+            "inputTokens": 574,
+            "outputTokens": 243,
+            "totalTokens": 124081,
+            "cacheReadTokens": 123264
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 356,
+          "time": 1789868013966
+        },
+        {
+          "id": "1/61/0",
+          "usage": {
+            "inputTokens": 1283,
+            "outputTokens": 157,
+            "totalTokens": 125472,
+            "cacheReadTokens": 124032
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 361,
+          "time": 1789868016183
+        },
+        {
+          "id": "1/62/0",
+          "usage": {
+            "inputTokens": 256,
+            "outputTokens": 314,
+            "totalTokens": 125882,
+            "cacheReadTokens": 125312
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 366,
+          "time": 1789868018809
+        },
+        {
+          "id": "1/63/0",
+          "usage": {
+            "inputTokens": 154,
+            "outputTokens": 1875,
+            "totalTokens": 127853,
+            "cacheReadTokens": 125824
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 371,
+          "time": 1789868028113
+        },
+        {
+          "id": "1/64/0",
+          "usage": {
+            "inputTokens": 1546,
+            "outputTokens": 9177,
+            "totalTokens": 138467,
+            "cacheReadTokens": 127744
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 376,
+          "time": 1789868068879
+        },
+        {
+          "id": "1/65/0",
+          "usage": {
+            "inputTokens": 970,
+            "outputTokens": 1178,
+            "totalTokens": 140516,
+            "cacheReadTokens": 138368
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 381,
+          "time": 1789868073628
+        },
+        {
+          "id": "1/66/0",
+          "usage": {
+            "inputTokens": 196,
+            "outputTokens": 77,
+            "totalTokens": 140689,
+            "cacheReadTokens": 140416
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 386,
+          "time": 1789868075786
+        },
+        {
+          "id": "1/67/0",
+          "usage": {
+            "inputTokens": 638,
+            "outputTokens": 160,
+            "totalTokens": 141470,
+            "cacheReadTokens": 140672
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 391,
+          "time": 1789868077829
+        },
+        {
+          "id": "1/68/0",
+          "usage": {
+            "inputTokens": 254,
+            "outputTokens": 176,
+            "totalTokens": 141742,
+            "cacheReadTokens": 141312
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 396,
+          "time": 1789868080115
+        },
+        {
+          "id": "1/69/0",
+          "usage": {
+            "inputTokens": 233,
+            "outputTokens": 763,
+            "totalTokens": 142564,
+            "cacheReadTokens": 141568
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 401,
+          "time": 1789868087047
+        },
+        {
+          "id": "1/70/0",
+          "usage": {
+            "inputTokens": 201,
+            "outputTokens": 149,
+            "totalTokens": 142814,
+            "cacheReadTokens": 142464
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 406,
+          "time": 1789868089808
+        },
+        {
+          "id": "1/71/0",
+          "usage": {
+            "inputTokens": 163,
+            "outputTokens": 253,
+            "totalTokens": 143136,
+            "cacheReadTokens": 142720
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 411,
+          "time": 1789868094977
+        },
+        {
+          "id": "1/72/0",
+          "usage": {
+            "inputTokens": 256,
+            "outputTokens": 257,
+            "totalTokens": 143489,
+            "cacheReadTokens": 142976
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 416,
+          "time": 1789868103402
+        },
+        {
+          "id": "1/73/0",
+          "usage": {
+            "inputTokens": 225,
+            "outputTokens": 488,
+            "totalTokens": 144073,
+            "cacheReadTokens": 143360
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 421,
+          "time": 1789868111322
+        },
+        {
+          "id": "1/74/0",
+          "usage": {
+            "inputTokens": 167,
+            "outputTokens": 497,
+            "totalTokens": 144664,
+            "cacheReadTokens": 144000
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 426,
+          "time": 1789868119875
+        },
+        {
+          "id": "1/75/0",
+          "usage": {
+            "inputTokens": 250,
+            "outputTokens": 328,
+            "totalTokens": 145218,
+            "cacheReadTokens": 144640
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 433,
+          "time": 1789868127361
+        },
+        {
+          "id": "1/76/0",
+          "usage": {
+            "inputTokens": 294,
+            "outputTokens": 155,
+            "totalTokens": 145601,
+            "cacheReadTokens": 145152
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 438,
+          "time": 1789868133494
+        },
+        {
+          "id": "1/77/0",
+          "usage": {
+            "inputTokens": 311,
+            "outputTokens": 551,
+            "totalTokens": 146398,
+            "cacheReadTokens": 145536
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 443,
+          "time": 1789868137637
+        },
+        {
+          "id": "1/78/0",
+          "usage": {
+            "inputTokens": 260,
+            "outputTokens": 278,
+            "totalTokens": 146842,
+            "cacheReadTokens": 146304
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 448,
+          "time": 1789868144172
+        },
+        {
+          "id": "1/79/0",
+          "usage": {
+            "inputTokens": 156,
+            "outputTokens": 664,
+            "totalTokens": 147636,
+            "cacheReadTokens": 146816
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 453,
+          "time": 1789868148731
+        },
+        {
+          "id": "1/80/0",
+          "usage": {
+            "inputTokens": 357,
+            "outputTokens": 272,
+            "totalTokens": 148213,
+            "cacheReadTokens": 147584
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 458,
+          "time": 1789868151598
+        },
+        {
+          "id": "1/81/0",
+          "usage": {
+            "inputTokens": 188,
+            "outputTokens": 153,
+            "totalTokens": 148437,
+            "cacheReadTokens": 148096
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 463,
+          "time": 1789868154197
+        },
+        {
+          "id": "1/82/0",
+          "usage": {
+            "inputTokens": 196,
+            "outputTokens": 107,
+            "totalTokens": 148655,
+            "cacheReadTokens": 148352
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 468,
+          "time": 1789868156099
+        },
+        {
+          "id": "1/83/0",
+          "usage": {
+            "inputTokens": 380,
+            "outputTokens": 153,
+            "totalTokens": 149141,
+            "cacheReadTokens": 148608
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 473,
+          "time": 1789868158083
+        },
+        {
+          "id": "1/84/0",
+          "usage": {
+            "inputTokens": 245,
+            "outputTokens": 818,
+            "totalTokens": 150055,
+            "cacheReadTokens": 148992
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 478,
+          "time": 1789868163144
+        },
+        {
+          "id": "1/85/0",
+          "usage": {
+            "inputTokens": 2634,
+            "outputTokens": 1745,
+            "totalTokens": 154395,
+            "cacheReadTokens": 150016
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 483,
+          "time": 1789868172451
+        },
+        {
+          "id": "1/86/0",
+          "usage": {
+            "inputTokens": 150,
+            "outputTokens": 1010,
+            "totalTokens": 155528,
+            "cacheReadTokens": 154368
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 488,
+          "time": 1789868182843
+        },
+        {
+          "id": "1/87/0",
+          "usage": {
+            "inputTokens": 217,
+            "outputTokens": 633,
+            "totalTokens": 156370,
+            "cacheReadTokens": 155520
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 495,
+          "time": 1789868188620
+        },
+        {
+          "id": "1/88/0",
+          "usage": {
+            "inputTokens": 217,
+            "outputTokens": 238,
+            "totalTokens": 156743,
+            "cacheReadTokens": 156288
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 502,
+          "time": 1789868193133
+        },
+        {
+          "id": "1/89/0",
+          "usage": {
+            "inputTokens": 231,
+            "outputTokens": 120,
+            "totalTokens": 156895,
+            "cacheReadTokens": 156544
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 507,
+          "time": 1789868195691
+        },
+        {
+          "id": "1/90/0",
+          "usage": {
+            "inputTokens": 313,
+            "outputTokens": 570,
+            "totalTokens": 157683,
+            "cacheReadTokens": 156800
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 512,
+          "time": 1789868199998
+        },
+        {
+          "id": "1/91/0",
+          "usage": {
+            "inputTokens": 953,
+            "outputTokens": 1821,
+            "totalTokens": 160342,
+            "cacheReadTokens": 157568
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 517,
+          "time": 1789868210249
+        },
+        {
+          "id": "1/92/0",
+          "usage": {
+            "inputTokens": 138,
+            "outputTokens": 306,
+            "totalTokens": 160700,
+            "cacheReadTokens": 160256
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 522,
+          "time": 1789868251684
+        },
+        {
+          "id": "1/93/0",
+          "usage": {
+            "inputTokens": 243,
+            "outputTokens": 302,
+            "totalTokens": 161057,
+            "cacheReadTokens": 160512
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 527,
+          "time": 1789868292511
+        },
+        {
+          "id": "1/94/0",
+          "usage": {
+            "inputTokens": 184,
+            "outputTokens": 293,
+            "totalTokens": 161373,
+            "cacheReadTokens": 160896
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 532,
+          "time": 1789868338818
+        },
+        {
+          "id": "1/95/0",
+          "usage": {
+            "inputTokens": 231,
+            "outputTokens": 420,
+            "totalTokens": 161931,
+            "cacheReadTokens": 161280
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 537,
+          "time": 1789868342949
+        },
+        {
+          "id": "1/96/0",
+          "usage": {
+            "inputTokens": 204,
+            "outputTokens": 721,
+            "totalTokens": 162717,
+            "cacheReadTokens": 161792
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 542,
+          "time": 1789868385301
+        },
+        {
+          "id": "1/97/0",
+          "usage": {
+            "inputTokens": 273,
+            "outputTokens": 422,
+            "totalTokens": 163383,
+            "cacheReadTokens": 162688
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 549,
+          "time": 1789868428475
+        },
+        {
+          "id": "1/98/0",
+          "usage": {
+            "inputTokens": 238,
+            "outputTokens": 519,
+            "totalTokens": 163957,
+            "cacheReadTokens": 163200
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 554,
+          "time": 1789868437685
+        },
+        {
+          "id": "1/99/0",
+          "usage": {
+            "inputTokens": 210,
+            "outputTokens": 379,
+            "totalTokens": 164429,
+            "cacheReadTokens": 163840
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 561,
+          "time": 1789868444617
+        },
+        {
+          "id": "1/100/0",
+          "usage": {
+            "inputTokens": 284,
+            "outputTokens": 474,
+            "totalTokens": 165110,
+            "cacheReadTokens": 164352
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 566,
+          "time": 1789868451439
+        },
+        {
+          "id": "1/101/0",
+          "usage": {
+            "inputTokens": 171,
+            "outputTokens": 967,
+            "totalTokens": 166130,
+            "cacheReadTokens": 164992
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 571,
+          "time": 1789868457551
+        }
+      ]
+    },
+    "usage": {
+      "model_calls": 101,
+      "requests": 101,
+      "input_tokens": {
+        "count": 101,
+        "total": 10449264,
+        "average": 103458.0594059406,
+        "minimum": 7130,
+        "maximum": 165163
+      },
+      "uncached_input_tokens": {
+        "count": 101,
+        "total": 53872,
+        "average": 533.3861386138614,
+        "minimum": 138,
+        "maximum": 3397
+      },
+      "cached_input_tokens": {
+        "count": 101,
+        "total": 10395392,
+        "average": 102924.67326732674,
+        "minimum": 5376,
+        "maximum": 164992
+      },
+      "output_tokens": {
+        "count": 101,
+        "total": 116103,
+        "average": 1149.5346534653465,
+        "minimum": 77,
+        "maximum": 12429
+      },
+      "total_tokens": 10565367,
+      "cache_hit_rate": 0.9948444215784001
+    },
+    "timing_ms": {
+      "first_token": {
+        "count": 101,
+        "total": 157298,
+        "average": 1557.4059405940593,
+        "minimum": 757,
+        "maximum": 2463
+      },
+      "input_wait": {
+        "count": 101,
+        "total": 157298,
+        "average": 1557.4059405940593,
+        "minimum": 757,
+        "maximum": 2463
+      },
+      "output": {
+        "count": 101,
+        "total": 480715,
+        "average": 4759.554455445545,
+        "minimum": 270,
+        "maximum": 55468
+      },
+      "llm": {
+        "count": 101,
+        "total": 638013,
+        "average": 6316.960396039604,
+        "minimum": 1741,
+        "maximum": 56790
+      },
+      "tools": {
+        "count": 128,
+        "total": 368492,
+        "average": 2878.84375,
+        "minimum": 0,
+        "maximum": 42698
+      },
+      "output_tokens_per_second": 241.52148362335274
+    },
+    "session": {
+      "steps": 101,
+      "turns": 1,
+      "model_calls": 101,
+      "tool_calls": 128
+    }
+  },
+  "patch": {
+    "sha256": "931403d906654d137b75eeef4a93e7130240985ab963130b390854253e8feb4b",
+    "bytes": 13834,
+    "changed_paths": [
+      "doc/changelog.asciidoc",
+      "doc/help/settings.asciidoc",
+      "qutebrowser/config/configdata.yml",
+      "qutebrowser/config/qtargs.py"
+    ],
+    "excluded_generated_paths": [],
+    "recovered_from_persisted_session": false
+  },
+  "official_result": {
+    "passed": false,
+    "failure_kind": "official_test_failure",
+    "evaluator_exit_code": 0,
+    "parsed": {
+      "tests": [
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[POSIX.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[aa_DJ.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[aa_ER.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[aa_ER@saaho.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[aa_ET.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[af_ZA.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[agr_PE.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ak_GH.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[am_ET.UTF-8-am]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[an_ES.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[anp_IN.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_AE.UTF-8-ar]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_BH.UTF-8-ar]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_DZ.UTF-8-ar]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_EG.UTF-8-ar]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_IN.UTF-8-ar]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_IQ.UTF-8-ar]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_JO.UTF-8-ar]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_KW.UTF-8-ar]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_LB.UTF-8-ar]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_LY.UTF-8-ar]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_MA.UTF-8-ar]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_OM.UTF-8-ar]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_QA.UTF-8-ar]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_SA.UTF-8-ar]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_SD.UTF-8-ar]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_SS.UTF-8-ar]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_SY.UTF-8-ar]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_TN.UTF-8-ar]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_YE.UTF-8-ar]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[as_IN.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ast_ES.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ayc_PE.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[az_AZ.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[az_IR.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[be_BY.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[be_BY@latin.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[bem_ZM.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ber_DZ.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ber_MA.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[bg_BG.UTF-8-bg]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[bhb_IN.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[bho_IN.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[bho_NP.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[bi_VU.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[bn_BD.UTF-8-bn]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[bn_IN.UTF-8-bn]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[bo_CN.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[bo_IN.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[br_FR.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[br_FR@euro.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[brx_IN.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[bs_BA.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[byn_ER.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ca_AD.UTF-8-ca]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ca_ES.UTF-8-ca]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ca_ES@euro.UTF-8-ca]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ca_ES@valencia.UTF-8-ca]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ca_FR.UTF-8-ca]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ca_IT.UTF-8-ca]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ce_RU.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[chr_US.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ckb_IQ.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[cmn_TW.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[cns11643_stroke.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[crh_UA.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[cs_CZ.UTF-8-cs]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[csb_PL.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[cv_RU.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[cy_GB.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[da_DK.UTF-8-da]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[de_AT.UTF-8-de]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[de_AT@euro.UTF-8-de]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[de_BE.UTF-8-de]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[de_BE@euro.UTF-8-de]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[de_CH.UTF-8-de]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[de_DE.UTF-8-de]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[de_DE@euro.UTF-8-de]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[de_IT.UTF-8-de]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[de_LI.UTF-8-de]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[de_LU.UTF-8-de]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[de_LU@euro.UTF-8-de]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[doi_IN.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[dsb_DE.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[dv_MV.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[dz_BT.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[el_CY.UTF-8-el]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[el_GR.UTF-8-el]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[el_GR@euro.UTF-8-el]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_AG.UTF-8-en-GB]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_AU.UTF-8-en-GB]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_BW.UTF-8-en-GB]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_CA.UTF-8-en-GB]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_DK.UTF-8-en-GB]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_GB.UTF-8-en-GB]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_HK.UTF-8-en-GB]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_IE.UTF-8-en-GB]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_IE@euro.UTF-8-en-GB]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_IL.UTF-8-en-GB]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_IN.UTF-8-en-GB]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_LR.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_NG.UTF-8-en-GB]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_NZ.UTF-8-en-GB]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_PH.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_SC.UTF-8-en-GB]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_SG.UTF-8-en-GB]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_US.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_ZA.UTF-8-en-GB]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_ZM.UTF-8-en-GB]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_ZW.UTF-8-en-GB]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[eo.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_AR.UTF-8-es-419]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_BO.UTF-8-es-419]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_CL.UTF-8-es-419]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_CO.UTF-8-es-419]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_CR.UTF-8-es-419]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_CU.UTF-8-es-419]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_DO.UTF-8-es-419]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_EC.UTF-8-es-419]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_ES.UTF-8-es]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_ES@euro.UTF-8-es]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_GT.UTF-8-es-419]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_HN.UTF-8-es-419]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_MX.UTF-8-es-419]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_NI.UTF-8-es-419]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_PA.UTF-8-es-419]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_PE.UTF-8-es-419]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_PR.UTF-8-es-419]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_PY.UTF-8-es-419]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_SV.UTF-8-es-419]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_US.UTF-8-es-419]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_UY.UTF-8-es-419]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_VE.UTF-8-es-419]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[et_EE.UTF-8-et]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[eu_ES.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[eu_ES@euro.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fa_IR.UTF-8-fa]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ff_SN.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fi_FI.UTF-8-fi]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fi_FI@euro.UTF-8-fi]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fil_PH.UTF-8-fil]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fo_FO.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fr_BE.UTF-8-fr]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fr_BE@euro.UTF-8-fr]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fr_CA.UTF-8-fr]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fr_CH.UTF-8-fr]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fr_FR.UTF-8-fr]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fr_FR@euro.UTF-8-fr]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fr_LU.UTF-8-fr]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fr_LU@euro.UTF-8-fr]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fur_IT.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fy_DE.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fy_NL.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ga_IE.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ga_IE@euro.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[gd_GB.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[gez_ER.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[gez_ER@abegede.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[gez_ET.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[gez_ET@abegede.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[gl_ES.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[gl_ES@euro.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[gu_IN.UTF-8-gu]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[gv_GB.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ha_NG.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[hak_TW.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[he_IL.UTF-8-he]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[hi_IN.UTF-8-hi]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[hif_FJ.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[hne_IN.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[hr_HR.UTF-8-hr]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[hsb_DE.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ht_HT.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[hu_HU.UTF-8-hu]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[hy_AM.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[i18n.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[i18n_ctype.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ia_FR.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[id_ID.UTF-8-id]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ig_NG.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ik_CA.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[is_IS.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[iso14651_t1.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[iso14651_t1_common.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[iso14651_t1_pinyin.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[it_CH.UTF-8-it]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[it_IT.UTF-8-it]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[it_IT@euro.UTF-8-it]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[iu_CA.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ja_JP.UTF-8-ja]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ka_GE.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[kab_DZ.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[kk_KZ.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[kl_GL.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[km_KH.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[kn_IN.UTF-8-kn]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ko_KR.UTF-8-ko]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[kok_IN.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ks_IN.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ks_IN@devanagari.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ku_TR.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[kw_GB.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ky_KG.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[lb_LU.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[lg_UG.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[li_BE.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[li_NL.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[lij_IT.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ln_CD.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[lo_LA.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[lt_LT.UTF-8-lt]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[lv_LV.UTF-8-lv]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[lzh_TW.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[mag_IN.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[mai_IN.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[mai_NP.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[mfe_MU.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[mg_MG.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[mhr_RU.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[mi_NZ.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[miq_NI.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[mjw_IN.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[mk_MK.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ml_IN.UTF-8-ml]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[mn_MN.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[mni_IN.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[mnw_MM.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[mr_IN.UTF-8-mr]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ms_MY.UTF-8-ms]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[mt_MT.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[my_MM.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[nan_TW.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[nan_TW@latin.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[nb_NO.UTF-8-nb]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[nds_DE.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[nds_NL.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ne_NP.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[nhn_MX.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[niu_NU.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[niu_NZ.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[nl_AW.UTF-8-nl]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[nl_BE.UTF-8-nl]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[nl_BE@euro.UTF-8-nl]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[nl_NL.UTF-8-nl]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[nl_NL@euro.UTF-8-nl]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[nn_NO.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[nr_ZA.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[nso_ZA.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[oc_FR.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[om_ET.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[om_KE.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[or_IN.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[os_RU.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[pa_IN.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[pa_PK.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[pap_AW.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[pap_CW.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[pl_PL.UTF-8-pl]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ps_AF.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[pt_BR.UTF-8-pt-BR]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[pt_PT.UTF-8-pt-PT]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[pt_PT@euro.UTF-8-pt-PT]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[pt_XX.UTF-8-pt-PT]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[quz_PE.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[raj_IN.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ro_RO.UTF-8-ro]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ru_RU.UTF-8-ru]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ru_UA.UTF-8-ru]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[rw_RW.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sa_IN.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sah_RU.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sat_IN.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sc_IT.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sd_IN.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sd_IN@devanagari.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[se_NO.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sgs_LT.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[shn_MM.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[shs_CA.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[si_LK.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sid_ET.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sk_SK.UTF-8-sk]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sl_SI.UTF-8-sl]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sm_WS.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[so_DJ.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[so_ET.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[so_KE.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[so_SO.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sq_AL.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sq_MK.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sr_ME.UTF-8-sr]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sr_RS.UTF-8-sr]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sr_RS@latin.UTF-8-sr]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ss_ZA.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[st_ZA.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sv_FI.UTF-8-sv]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sv_FI@euro.UTF-8-sv]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sv_SE.UTF-8-sv]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sw_KE.UTF-8-sw]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sw_TZ.UTF-8-sw]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[szl_PL.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ta_IN.UTF-8-ta]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ta_LK.UTF-8-ta]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[tcy_IN.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[te_IN.UTF-8-te]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[tg_TJ.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[th_TH.UTF-8-th]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[the_NP.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ti_ER.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ti_ET.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[tig_ER.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[tk_TM.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[tl_PH.UTF-8-fil]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[tn_ZA.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[to_TO.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[tpi_PG.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[tr_CY.UTF-8-tr]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[tr_TR.UTF-8-tr]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[translit_circle.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[translit_cjk_compat.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[translit_cjk_variants.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[translit_combining.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[translit_compat.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[translit_font.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[translit_fraction.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[translit_hangul.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[translit_narrow.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[translit_neutral.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[translit_small.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[translit_wide.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ts_ZA.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[tt_RU.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[tt_RU@iqtelif.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ug_CN.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[uk_UA.UTF-8-uk]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[unm_US.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ur_IN.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ur_PK.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[uz_UZ.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[uz_UZ@cyrillic.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ve_ZA.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[vi_VN.UTF-8-vi]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[wa_BE.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[wa_BE@euro.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[wae_CH.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[wal_ET.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[wo_SN.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[xh_ZA.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[yi_US.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[yo_NG.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[yue_HK.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[yuw_PG.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[zh_CN.UTF-8-zh-CN]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[zh_HK.UTF-8-zh-TW]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[zh_SG.UTF-8-zh-CN]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[zh_TW.UTF-8-zh-TW]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[zh_MO.UTF-8-zh-TW]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[zh_XX.UTF-8-zh-CN]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[zu_ZA.UTF-8-en-US]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_different_qt_version[version0]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_different_qt_version[version1]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_different_qt_version[version2]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_different_qt_version[version3]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_non_linux",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_disabled",
+          "status": "FAILED"
+        }
+      ]
+    }
+  },
+  "cleanup": {
+    "task_container_removed": true,
+    "task_workspace_removed": true,
+    "shared_image_retained": true
+  },
+  "public_export": {
+    "model_name_kind": "display_name",
+    "omitted": [
+      "development provider and route",
+      "local environment and paths",
+      "raw tool diagnostics"
+    ],
+    "note": "Redacted report, not runtime configuration. Scores and numeric usage are preserved; original evidence is retained locally."
+  }
+}

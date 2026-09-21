@@ -1,0 +1,1598 @@
+{
+  "schema": 2,
+  "accounting": {
+    "scope": "all batch attempts and persisted root/member sessions, regardless of score",
+    "sessions": 0,
+    "observed_requests": 0,
+    "requests_with_usage": 0,
+    "unknown_usage_requests": 0,
+    "uncached_input_tokens": 0,
+    "cached_input_tokens": 0,
+    "cache_write_tokens": 0,
+    "output_tokens": 0,
+    "actual_cost": null,
+    "cost_complete": false,
+    "errors": [],
+    "runs": []
+  },
+  "scored_metrics_scope": "by_preset and paired metrics describe scored samples only, not total batch cost",
+  "generated_at": "2026-09-21T00:34:23.766Z",
+  "complete": true,
+  "batch_id": "report-snapshot",
+  "dataset": "SWE-bench Pro",
+  "requested_tasks_per_preset": 95,
+  "execution_surface": "deepseek-harness-web-rpc",
+  "model_display_name": "deepseek-v4.1-flash",
+  "reasoning_effort": "high",
+  "candidate": {
+    "schema": 1,
+    "identity": "local-0.0.9-candidate",
+    "package": {
+      "name": "dsh-super-code",
+      "version": "0.0.9",
+      "tarball": "dsh-super-code-0.0.9.tgz"
+    },
+    "source": {
+      "git_head": "259f081658d20230d392da418955f190067ddc0f",
+      "tracked_diff_sha256": "1965bf0bf045f6d8f471613c8b50851ab052f98a6338413853536c89f61dcba7",
+      "untracked_package_paths": [
+        "lib/core/experiment-recipes.d.ts",
+        "lib/core/experiment-recipes.d.ts.map",
+        "lib/core/experiment-recipes.js",
+        "lib/core/experiment-recipes.js.map",
+        "lib/experiments.d.ts",
+        "lib/experiments.d.ts.map",
+        "lib/experiments.js",
+        "lib/experiments.js.map",
+        "lib/task-memory-store.d.ts",
+        "lib/task-memory-store.d.ts.map",
+        "lib/task-memory-store.js",
+        "lib/task-memory-store.js.map"
+      ]
+    },
+    "harness": {
+      "git_head": "c291e7961a515f6d7af9304e7fd1d257929aef26",
+      "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+    },
+    "artifacts": {
+      "tarball_sha256": "2e2104209812ae13c701480e5e0ba38bf6d09ee7b6546ebd909bab60b80d83e6",
+      "cordis_patch_sha256": "d8f8e14602aeb4dfafeb6aff3916cccb934c2c88d1d84b222a7c6d3040ca7434",
+      "preset_sha256": "43edc7f7b6dc9fcea423290e48f7b1d245220f10b15a06d8defa5f34685032e9",
+      "packed_files": 71,
+      "packed_bytes": 83113,
+      "unpacked_bytes": 306269
+    },
+    "created_at": "2026-09-19T13:30:54.126Z"
+  },
+  "selection": {
+    "id": "swebench-pro-hard-100-ddd22492f1c38839",
+    "policy": {
+      "id": "official-dual-failure-multidimensional-v2",
+      "count": 100,
+      "repository_cap": 15,
+      "required_failures": [
+        "claude_sonnet_4",
+        "gpt4o"
+      ],
+      "weights": {
+        "empirical_failure": 0.4,
+        "reasoning_proxy": 0.25,
+        "change_topology": 0.2,
+        "validation_breadth": 0.15
+      },
+      "category_weights": {
+        "wrong_solution": 1,
+        "misunderstood_problem_statement": 1,
+        "identified_incorrect_file": 1,
+        "context_overflow_from_listing": 0.75,
+        "endless_file_reading": 0.75,
+        "infinite_loop": 0.75,
+        "syntax_error": 0.4,
+        "tool_error": 0.2,
+        "other": 0.1
+      },
+      "subscore_weights": {
+        "reasoning_proxy": {
+          "constraint_markers": 0.5,
+          "reasoning_tag_count": 0.4,
+          "problem_statement_chars": 0.1
+        },
+        "change_topology": {
+          "source_files": 0.35,
+          "source_parent_directories": 0.25,
+          "source_languages": 0.1,
+          "source_hunks": 0.2,
+          "source_changed_lines": 0.1
+        },
+        "validation_breadth": {
+          "fail_to_pass_count": 0.6,
+          "selected_test_files_count": 0.4
+        }
+      },
+      "normalization": "midrank percentile in dual-failure pool; constant columns contribute zero",
+      "source_exclusions": "tests, fixtures, snapshots, vendored/build/generated files, lock files, sourcemaps, minified assets",
+      "gold_patch_usage": "offline aggregate structural counts only; no patch text or file identities enter Agent input",
+      "prohibited_selection_inputs": [
+        "current minimal or super-code outcomes",
+        "gold implementation semantics",
+        "test patch contents"
+      ],
+      "limitations": [
+        "heuristic ranking, not an absolute hardest-100 claim",
+        "keyword tags and constraint markers are proxies, not human labels",
+        "directory counts are not dependency graphs",
+        "test counts are not independent behavior counts",
+        "official failure rows reflect particular historical runs"
+      ]
+    }
+  },
+  "isolation_policy": "swebench-pro-isolation-v3",
+  "evaluator_sha256": "bb5d4c5486be296e464e695df3747064aaa3bb197394bc6d39980634afec2034",
+  "dataset_sha256": "b5b2462bfbf5aeb2cb7ba7d215778a1768b85f9d7ad7f748546c7f80a0ad1510",
+  "by_preset": {
+    "minimal": {
+      "requested": 95,
+      "recorded": 95,
+      "scored": 95,
+      "passed": 38,
+      "accuracy": 0.4,
+      "statuses": {
+        "validated-history": 95
+      },
+      "provenance": {
+        "validated-history": 95
+      },
+      "by_repo": {
+        "NodeBB/NodeBB": {
+          "scored": 4,
+          "passed": 1,
+          "accuracy": 0.25
+        },
+        "ansible/ansible": {
+          "scored": 15,
+          "passed": 8,
+          "accuracy": 0.5333333333333333
+        },
+        "element-hq/element-web": {
+          "scored": 12,
+          "passed": 3,
+          "accuracy": 0.25
+        },
+        "flipt-io/flipt": {
+          "scored": 14,
+          "passed": 3,
+          "accuracy": 0.21428571428571427
+        },
+        "future-architect/vuls": {
+          "scored": 13,
+          "passed": 5,
+          "accuracy": 0.38461538461538464
+        },
+        "gravitational/teleport": {
+          "scored": 8,
+          "passed": 4,
+          "accuracy": 0.5
+        },
+        "internetarchive/openlibrary": {
+          "scored": 8,
+          "passed": 3,
+          "accuracy": 0.375
+        },
+        "navidrome/navidrome": {
+          "scored": 3,
+          "passed": 1,
+          "accuracy": 0.3333333333333333
+        },
+        "protonmail/webclients": {
+          "scored": 4,
+          "passed": 2,
+          "accuracy": 0.5
+        },
+        "qutebrowser/qutebrowser": {
+          "scored": 6,
+          "passed": 4,
+          "accuracy": 0.6666666666666666
+        },
+        "tutao/tutanota": {
+          "scored": 8,
+          "passed": 4,
+          "accuracy": 0.5
+        }
+      },
+      "failure_kinds": {
+        "agent_failure": 1,
+        "official_test_failure": 56
+      },
+      "task_metrics": {
+        "model_calls": {
+          "count": 95,
+          "total": 11739,
+          "average": 123.56842105263158,
+          "minimum": 44,
+          "maximum": 287
+        },
+        "requests": {
+          "count": 95,
+          "total": 11739,
+          "average": 123.56842105263158,
+          "minimum": 44,
+          "maximum": 287
+        },
+        "tool_calls": {
+          "count": 95,
+          "total": 11995,
+          "average": 126.26315789473684,
+          "minimum": 48,
+          "maximum": 286
+        },
+        "input_tokens": {
+          "count": 95,
+          "total": 1073203995,
+          "average": 11296884.157894736,
+          "minimum": 1785564,
+          "maximum": 40596527
+        },
+        "cached_input_tokens": {
+          "count": 95,
+          "total": 1066311680,
+          "average": 11224333.47368421,
+          "minimum": 1758720,
+          "maximum": 40461952
+        },
+        "output_tokens": {
+          "count": 95,
+          "total": 9500518,
+          "average": 100005.45263157894,
+          "minimum": 26506,
+          "maximum": 187646
+        },
+        "total_tokens": {
+          "count": 95,
+          "total": 1082704513,
+          "average": 11396889.610526316,
+          "minimum": 1836780,
+          "maximum": 40751116
+        },
+        "elapsed_ms": {
+          "count": 95,
+          "total": 146485690,
+          "average": 1541954.6315789474,
+          "minimum": 297883,
+          "maximum": 2711952
+        },
+        "tool_time_ms": {
+          "count": 95,
+          "total": 87194495,
+          "average": 917836.7894736842,
+          "minimum": 32561,
+          "maximum": 2196681
+        }
+      },
+      "model_call_metrics": {
+        "input_tokens": {
+          "count": 11733,
+          "total": 1073203995,
+          "average": 91468.84812068524,
+          "minimum": 0,
+          "maximum": 300439
+        },
+        "uncached_input_tokens": {
+          "count": 11733,
+          "total": 6892315,
+          "average": 587.4298985766641,
+          "minimum": 0,
+          "maximum": 14317
+        },
+        "cached_input_tokens": {
+          "count": 11733,
+          "total": 1066311680,
+          "average": 90881.41822210858,
+          "minimum": 0,
+          "maximum": 299904
+        },
+        "output_tokens": {
+          "count": 11733,
+          "total": 9500518,
+          "average": 809.7262422227905,
+          "minimum": 0,
+          "maximum": 24716
+        },
+        "cache_hit_rate": 0.9935778146260069,
+        "first_token_ms": {
+          "count": 11721,
+          "total": 16298139,
+          "average": 1390.5075505502944,
+          "minimum": 304,
+          "maximum": 86362
+        },
+        "input_wait_ms": {
+          "count": 11721,
+          "total": 16298139,
+          "average": 1390.5075505502944,
+          "minimum": 304,
+          "maximum": 86362
+        },
+        "output_ms": {
+          "count": 11721,
+          "total": 38468792,
+          "average": 3282.040098967665,
+          "minimum": 18,
+          "maximum": 115201
+        },
+        "llm_ms": {
+          "count": 11739,
+          "total": 57923221,
+          "average": 4934.255132464435,
+          "minimum": 225,
+          "maximum": 1204148
+        },
+        "tool_ms": {
+          "count": 11989,
+          "total": 87194495,
+          "average": 7272.874718491951,
+          "minimum": 0,
+          "maximum": 1206125
+        }
+      },
+      "request_metrics": {
+        "input_tokens": {
+          "count": 11733,
+          "total": 1073203995,
+          "average": 91468.84812068524,
+          "minimum": 0,
+          "maximum": 300439
+        },
+        "uncached_input_tokens": {
+          "count": 11733,
+          "total": 6892315,
+          "average": 587.4298985766641,
+          "minimum": 0,
+          "maximum": 14317
+        },
+        "cached_input_tokens": {
+          "count": 11733,
+          "total": 1066311680,
+          "average": 90881.41822210858,
+          "minimum": 0,
+          "maximum": 299904
+        },
+        "output_tokens": {
+          "count": 11733,
+          "total": 9500518,
+          "average": 809.7262422227905,
+          "minimum": 0,
+          "maximum": 24716
+        },
+        "cache_hit_rate": 0.9935778146260069,
+        "first_token_ms": {
+          "count": 11721,
+          "total": 16298139,
+          "average": 1390.5075505502944,
+          "minimum": 304,
+          "maximum": 86362
+        },
+        "input_wait_ms": {
+          "count": 11721,
+          "total": 16298139,
+          "average": 1390.5075505502944,
+          "minimum": 304,
+          "maximum": 86362
+        },
+        "output_ms": {
+          "count": 11721,
+          "total": 38468792,
+          "average": 3282.040098967665,
+          "minimum": 18,
+          "maximum": 115201
+        },
+        "llm_ms": {
+          "count": 11739,
+          "total": 57923221,
+          "average": 4934.255132464435,
+          "minimum": 225,
+          "maximum": 1204148
+        },
+        "tool_ms": {
+          "count": 11989,
+          "total": 87194495,
+          "average": 7272.874718491951,
+          "minimum": 0,
+          "maximum": 1206125
+        }
+      },
+      "cleanup": {
+        "workspace_removed": 94,
+        "container_removed": 95,
+        "shared_image_retained": 95
+      }
+    },
+    "super-code": {
+      "requested": 95,
+      "recorded": 95,
+      "scored": 95,
+      "passed": 43,
+      "accuracy": 0.45263157894736844,
+      "statuses": {
+        "validated-history": 95
+      },
+      "provenance": {
+        "validated-history": 95
+      },
+      "by_repo": {
+        "NodeBB/NodeBB": {
+          "scored": 4,
+          "passed": 3,
+          "accuracy": 0.75
+        },
+        "ansible/ansible": {
+          "scored": 15,
+          "passed": 8,
+          "accuracy": 0.5333333333333333
+        },
+        "element-hq/element-web": {
+          "scored": 12,
+          "passed": 4,
+          "accuracy": 0.3333333333333333
+        },
+        "flipt-io/flipt": {
+          "scored": 14,
+          "passed": 3,
+          "accuracy": 0.21428571428571427
+        },
+        "future-architect/vuls": {
+          "scored": 13,
+          "passed": 6,
+          "accuracy": 0.46153846153846156
+        },
+        "gravitational/teleport": {
+          "scored": 8,
+          "passed": 3,
+          "accuracy": 0.375
+        },
+        "internetarchive/openlibrary": {
+          "scored": 8,
+          "passed": 4,
+          "accuracy": 0.5
+        },
+        "navidrome/navidrome": {
+          "scored": 3,
+          "passed": 1,
+          "accuracy": 0.3333333333333333
+        },
+        "protonmail/webclients": {
+          "scored": 4,
+          "passed": 1,
+          "accuracy": 0.25
+        },
+        "qutebrowser/qutebrowser": {
+          "scored": 6,
+          "passed": 4,
+          "accuracy": 0.6666666666666666
+        },
+        "tutao/tutanota": {
+          "scored": 8,
+          "passed": 6,
+          "accuracy": 0.75
+        }
+      },
+      "failure_kinds": {
+        "official_test_failure": 52
+      },
+      "task_metrics": {
+        "model_calls": {
+          "count": 95,
+          "total": 8708,
+          "average": 91.66315789473684,
+          "minimum": 35,
+          "maximum": 216
+        },
+        "requests": {
+          "count": 95,
+          "total": 8708,
+          "average": 91.66315789473684,
+          "minimum": 35,
+          "maximum": 216
+        },
+        "tool_calls": {
+          "count": 95,
+          "total": 10961,
+          "average": 115.37894736842105,
+          "minimum": 38,
+          "maximum": 262
+        },
+        "input_tokens": {
+          "count": 95,
+          "total": 896230466,
+          "average": 9434004.905263158,
+          "minimum": 1097472,
+          "maximum": 35147004
+        },
+        "cached_input_tokens": {
+          "count": 95,
+          "total": 890246656,
+          "average": 9371017.431578947,
+          "minimum": 1075840,
+          "maximum": 34990848
+        },
+        "output_tokens": {
+          "count": 95,
+          "total": 9328130,
+          "average": 98190.84210526316,
+          "minimum": 18634,
+          "maximum": 216357
+        },
+        "total_tokens": {
+          "count": 95,
+          "total": 905558596,
+          "average": 9532195.747368421,
+          "minimum": 1116106,
+          "maximum": 35310480
+        },
+        "elapsed_ms": {
+          "count": 95,
+          "total": 93976035,
+          "average": 989221.4210526316,
+          "minimum": 165817,
+          "maximum": 2541722
+        },
+        "tool_time_ms": {
+          "count": 95,
+          "total": 37866760,
+          "average": 398597.4736842105,
+          "minimum": 25450,
+          "maximum": 1621915
+        }
+      },
+      "model_call_metrics": {
+        "input_tokens": {
+          "count": 8700,
+          "total": 896230466,
+          "average": 103014.99609195402,
+          "minimum": 0,
+          "maximum": 317867
+        },
+        "uncached_input_tokens": {
+          "count": 8700,
+          "total": 5983810,
+          "average": 687.7942528735632,
+          "minimum": 0,
+          "maximum": 38205
+        },
+        "cached_input_tokens": {
+          "count": 8700,
+          "total": 890246656,
+          "average": 102327.20183908046,
+          "minimum": 0,
+          "maximum": 317696
+        },
+        "output_tokens": {
+          "count": 8700,
+          "total": 9328130,
+          "average": 1072.1988505747127,
+          "minimum": 0,
+          "maximum": 66061
+        },
+        "cache_hit_rate": 0.9933233579676145,
+        "first_token_ms": {
+          "count": 8696,
+          "total": 12560291,
+          "average": 1444.375689972401,
+          "minimum": 427,
+          "maximum": 85589
+        },
+        "input_wait_ms": {
+          "count": 8696,
+          "total": 12560291,
+          "average": 1444.375689972401,
+          "minimum": 427,
+          "maximum": 85589
+        },
+        "output_ms": {
+          "count": 8696,
+          "total": 39879793,
+          "average": 4585.992755289788,
+          "minimum": 48,
+          "maximum": 943559
+        },
+        "llm_ms": {
+          "count": 8708,
+          "total": 55343678,
+          "average": 6355.498162609095,
+          "minimum": 473,
+          "maximum": 1073602
+        },
+        "tool_ms": {
+          "count": 10961,
+          "total": 37866760,
+          "average": 3454.681142231548,
+          "minimum": 0,
+          "maximum": 1153836
+        }
+      },
+      "request_metrics": {
+        "input_tokens": {
+          "count": 8700,
+          "total": 896230466,
+          "average": 103014.99609195402,
+          "minimum": 0,
+          "maximum": 317867
+        },
+        "uncached_input_tokens": {
+          "count": 8700,
+          "total": 5983810,
+          "average": 687.7942528735632,
+          "minimum": 0,
+          "maximum": 38205
+        },
+        "cached_input_tokens": {
+          "count": 8700,
+          "total": 890246656,
+          "average": 102327.20183908046,
+          "minimum": 0,
+          "maximum": 317696
+        },
+        "output_tokens": {
+          "count": 8700,
+          "total": 9328130,
+          "average": 1072.1988505747127,
+          "minimum": 0,
+          "maximum": 66061
+        },
+        "cache_hit_rate": 0.9933233579676145,
+        "first_token_ms": {
+          "count": 8696,
+          "total": 12560291,
+          "average": 1444.375689972401,
+          "minimum": 427,
+          "maximum": 85589
+        },
+        "input_wait_ms": {
+          "count": 8696,
+          "total": 12560291,
+          "average": 1444.375689972401,
+          "minimum": 427,
+          "maximum": 85589
+        },
+        "output_ms": {
+          "count": 8696,
+          "total": 39879793,
+          "average": 4585.992755289788,
+          "minimum": 48,
+          "maximum": 943559
+        },
+        "llm_ms": {
+          "count": 8708,
+          "total": 55343678,
+          "average": 6355.498162609095,
+          "minimum": 473,
+          "maximum": 1073602
+        },
+        "tool_ms": {
+          "count": 10961,
+          "total": 37866760,
+          "average": 3454.681142231548,
+          "minimum": 0,
+          "maximum": 1153836
+        }
+      },
+      "cleanup": {
+        "workspace_removed": 95,
+        "container_removed": 95,
+        "shared_image_retained": 95
+      }
+    }
+  },
+  "paired": {
+    "intersection_tasks": 95,
+    "outcomes": {
+      "minimal-win": 3,
+      "super-code-win": 8,
+      "tie": 84
+    },
+    "minimal_accuracy": 0.4,
+    "super_code_accuracy": 0.45263157894736844,
+    "accuracy_uplift": 0.05263157894736842,
+    "by_repo": {
+      "NodeBB/NodeBB": {
+        "tasks": 4,
+        "minimal_passed": 1,
+        "minimal_accuracy": 0.25,
+        "super_code_passed": 3,
+        "super_code_accuracy": 0.75,
+        "accuracy_uplift": 0.5,
+        "outcomes": {
+          "super-code-win": 2,
+          "tie": 2
+        }
+      },
+      "ansible/ansible": {
+        "tasks": 15,
+        "minimal_passed": 8,
+        "minimal_accuracy": 0.5333333333333333,
+        "super_code_passed": 8,
+        "super_code_accuracy": 0.5333333333333333,
+        "accuracy_uplift": 0,
+        "outcomes": {
+          "tie": 15
+        }
+      },
+      "element-hq/element-web": {
+        "tasks": 12,
+        "minimal_passed": 3,
+        "minimal_accuracy": 0.25,
+        "super_code_passed": 4,
+        "super_code_accuracy": 0.3333333333333333,
+        "accuracy_uplift": 0.08333333333333333,
+        "outcomes": {
+          "minimal-win": 1,
+          "super-code-win": 2,
+          "tie": 9
+        }
+      },
+      "flipt-io/flipt": {
+        "tasks": 14,
+        "minimal_passed": 3,
+        "minimal_accuracy": 0.21428571428571427,
+        "super_code_passed": 3,
+        "super_code_accuracy": 0.21428571428571427,
+        "accuracy_uplift": 0,
+        "outcomes": {
+          "tie": 14
+        }
+      },
+      "future-architect/vuls": {
+        "tasks": 13,
+        "minimal_passed": 5,
+        "minimal_accuracy": 0.38461538461538464,
+        "super_code_passed": 6,
+        "super_code_accuracy": 0.46153846153846156,
+        "accuracy_uplift": 0.07692307692307693,
+        "outcomes": {
+          "super-code-win": 1,
+          "tie": 12
+        }
+      },
+      "gravitational/teleport": {
+        "tasks": 8,
+        "minimal_passed": 4,
+        "minimal_accuracy": 0.5,
+        "super_code_passed": 3,
+        "super_code_accuracy": 0.375,
+        "accuracy_uplift": -0.125,
+        "outcomes": {
+          "minimal-win": 1,
+          "tie": 7
+        }
+      },
+      "internetarchive/openlibrary": {
+        "tasks": 8,
+        "minimal_passed": 3,
+        "minimal_accuracy": 0.375,
+        "super_code_passed": 4,
+        "super_code_accuracy": 0.5,
+        "accuracy_uplift": 0.125,
+        "outcomes": {
+          "super-code-win": 1,
+          "tie": 7
+        }
+      },
+      "navidrome/navidrome": {
+        "tasks": 3,
+        "minimal_passed": 1,
+        "minimal_accuracy": 0.3333333333333333,
+        "super_code_passed": 1,
+        "super_code_accuracy": 0.3333333333333333,
+        "accuracy_uplift": 0,
+        "outcomes": {
+          "tie": 3
+        }
+      },
+      "protonmail/webclients": {
+        "tasks": 4,
+        "minimal_passed": 2,
+        "minimal_accuracy": 0.5,
+        "super_code_passed": 1,
+        "super_code_accuracy": 0.25,
+        "accuracy_uplift": -0.25,
+        "outcomes": {
+          "minimal-win": 1,
+          "tie": 3
+        }
+      },
+      "qutebrowser/qutebrowser": {
+        "tasks": 6,
+        "minimal_passed": 4,
+        "minimal_accuracy": 0.6666666666666666,
+        "super_code_passed": 4,
+        "super_code_accuracy": 0.6666666666666666,
+        "accuracy_uplift": 0,
+        "outcomes": {
+          "tie": 6
+        }
+      },
+      "tutao/tutanota": {
+        "tasks": 8,
+        "minimal_passed": 4,
+        "minimal_accuracy": 0.5,
+        "super_code_passed": 6,
+        "super_code_accuracy": 0.75,
+        "accuracy_uplift": 0.25,
+        "outcomes": {
+          "super-code-win": 2,
+          "tie": 6
+        }
+      }
+    },
+    "rows": [
+      {
+        "task_index": 99,
+        "instance_id": "instance_future-architect__vuls-6eff6a9329a65cc412e79b8f82444dfa3d0f0b5a",
+        "repo": "future-architect/vuls",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 687,
+        "instance_id": "instance_element-hq__element-web-aec454dd6feeb93000380523cbb0b3681c0275fd-vnan",
+        "repo": "element-hq/element-web",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 8,
+        "instance_id": "instance_gravitational__teleport-3fa6904377c006497169945428e8197158667910-v626ec2a48416b10a88641359a169d99e935ff037",
+        "repo": "gravitational/teleport",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 450,
+        "instance_id": "instance_NodeBB__NodeBB-00c70ce7b0541cfc94afe567921d7668cdc8f4ac-vnan",
+        "repo": "NodeBB/NodeBB",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 49,
+        "instance_id": "instance_flipt-io__flipt-f808b4dd6e36b9dc8b011eb26b196f4e2cc64c41",
+        "repo": "flipt-io/flipt",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 186,
+        "instance_id": "instance_navidrome__navidrome-d8e794317f788198227e10fb667e10496b3eb99a",
+        "repo": "navidrome/navidrome",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 301,
+        "instance_id": "instance_element-hq__element-web-66d0b318bc6fee0d17b54c1781d6ab5d5d323135-vnan",
+        "repo": "element-hq/element-web",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 715,
+        "instance_id": "instance_internetarchive__openlibrary-09865f5fb549694d969f0a8e49b9d204ef1853ca-ve8c8d62a2b60610a3c4631f5f23ed866bada9818",
+        "repo": "internetarchive/openlibrary",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 437,
+        "instance_id": "instance_future-architect__vuls-7eb77f5b5127c847481bcf600b4dca2b7a85cf3e",
+        "repo": "future-architect/vuls",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 175,
+        "instance_id": "instance_tutao__tutanota-f373ac3808deefce8183dad8d16729839cc330c1-v2939aa9f4356f0dc9f523ee5ce19d09e08ab979b",
+        "repo": "tutao/tutanota",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 66,
+        "instance_id": "instance_element-hq__element-web-a692fe21811f88d92e8f7047fc615e4f1f986b0f-vnan",
+        "repo": "element-hq/element-web",
+        "minimal_passed": true,
+        "super_code_passed": false,
+        "outcome": "minimal-win"
+      },
+      {
+        "task_index": 623,
+        "instance_id": "instance_element-hq__element-web-fe14847bb9bb07cab1b9c6c54335ff22ca5e516a-vnan",
+        "repo": "element-hq/element-web",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 611,
+        "instance_id": "instance_flipt-io__flipt-f1bc91a1b999656dbdb2495ccb57bf2105b84920",
+        "repo": "flipt-io/flipt",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 686,
+        "instance_id": "instance_internetarchive__openlibrary-630221ab686c64e75a2ce253c893c033e4814b2e-v93c53c13d5f9b383ebb411ee7750b49dcd1a34c6",
+        "repo": "internetarchive/openlibrary",
+        "minimal_passed": false,
+        "super_code_passed": true,
+        "outcome": "super-code-win"
+      },
+      {
+        "task_index": 50,
+        "instance_id": "instance_future-architect__vuls-5af1a227339e46c7abf3f2815e4c636a0c01098e",
+        "repo": "future-architect/vuls",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 360,
+        "instance_id": "instance_flipt-io__flipt-c6a7b1fd933e763b1675281b30077e161fa115a1",
+        "repo": "flipt-io/flipt",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 509,
+        "instance_id": "instance_flipt-io__flipt-ea9a2663b176da329b3f574da2ce2a664fc5b4a1",
+        "repo": "flipt-io/flipt",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 231,
+        "instance_id": "instance_protonmail__webclients-6e165e106d258a442ae849cdf08260329cb92d39",
+        "repo": "protonmail/webclients",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 683,
+        "instance_id": "instance_ansible__ansible-c616e54a6e23fa5616a1d56d243f69576164ef9b-v1055803c3a812189a1133297f7f5468579283f86",
+        "repo": "ansible/ansible",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 107,
+        "instance_id": "instance_ansible__ansible-935528e22e5283ee3f63a8772830d3d01f55ed8c-vba6da65a0f3baefda7a058ebbd0a8dcafb8512f5",
+        "repo": "ansible/ansible",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 117,
+        "instance_id": "instance_gravitational__teleport-769b4b5eec7286b7b14e179f2cc52e6b15d2d9f3-v626ec2a48416b10a88641359a169d99e935ff037",
+        "repo": "gravitational/teleport",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 514,
+        "instance_id": "instance_navidrome__navidrome-ee21f3957e0de91624427e93c62b8ee390de72e3",
+        "repo": "navidrome/navidrome",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 83,
+        "instance_id": "instance_tutao__tutanota-da4edb7375c10f47f4ed3860a591c5e6557f7b5c-vbc0d9ba8f0071fbe982809910959a6ff8884dbbf",
+        "repo": "tutao/tutanota",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 214,
+        "instance_id": "instance_future-architect__vuls-ca3f6b1dbf2cd24d1537bfda43e788443ce03a0c",
+        "repo": "future-architect/vuls",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 543,
+        "instance_id": "instance_navidrome__navidrome-0488fb92cb02a82924fb1181bf1642f2e87096db",
+        "repo": "navidrome/navidrome",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 273,
+        "instance_id": "instance_flipt-io__flipt-56a620b8fc9ef7a0819b47709aa541cdfdbba00b",
+        "repo": "flipt-io/flipt",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 489,
+        "instance_id": "instance_gravitational__teleport-ba6c4a135412c4296dd5551bd94042f0dc024504-v626ec2a48416b10a88641359a169d99e935ff037",
+        "repo": "gravitational/teleport",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 24,
+        "instance_id": "instance_element-hq__element-web-5dfde12c1c1c0b6e48f17e3405468593e39d9492-vnan",
+        "repo": "element-hq/element-web",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 164,
+        "instance_id": "instance_ansible__ansible-1c06c46cc14324df35ac4f39a45fb3ccd602195d-v0f01c69f1e2528b935359cfe578530722bca2c59",
+        "repo": "ansible/ansible",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 728,
+        "instance_id": "instance_flipt-io__flipt-c188284ff0c094a4ee281afebebd849555ebee59",
+        "repo": "flipt-io/flipt",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 56,
+        "instance_id": "instance_flipt-io__flipt-756f00f79ba8abf9fe53f3c6c818123b42eb7355",
+        "repo": "flipt-io/flipt",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 552,
+        "instance_id": "instance_ansible__ansible-d33bedc48fdd933b5abd65a77c081876298e2f07-v0f01c69f1e2528b935359cfe578530722bca2c59",
+        "repo": "ansible/ansible",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 29,
+        "instance_id": "instance_NodeBB__NodeBB-a5afad27e52fd336163063ba40dcadc80233ae10-vd59a5728dfc977f44533186ace531248c2917516",
+        "repo": "NodeBB/NodeBB",
+        "minimal_passed": false,
+        "super_code_passed": true,
+        "outcome": "super-code-win"
+      },
+      {
+        "task_index": 37,
+        "instance_id": "instance_gravitational__teleport-0ac7334939981cf85b9591ac295c3816954e287e",
+        "repo": "gravitational/teleport",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 378,
+        "instance_id": "instance_element-hq__element-web-d405160080bbe804f7e9294067d004a7d4dad9d6-vnan",
+        "repo": "element-hq/element-web",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 680,
+        "instance_id": "instance_gravitational__teleport-78b0d8c72637df1129fb6ff84fc49ef4b5ab1288",
+        "repo": "gravitational/teleport",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 192,
+        "instance_id": "instance_ansible__ansible-d58e69c82d7edd0583dd8e78d76b075c33c3151e-v173091e2e36d38c978002990795f66cfc0af30ad",
+        "repo": "ansible/ansible",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 27,
+        "instance_id": "instance_flipt-io__flipt-e42da21a07a5ae35835ec54f74004ebd58713874",
+        "repo": "flipt-io/flipt",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 136,
+        "instance_id": "instance_qutebrowser__qutebrowser-3d01c201b8aa54dd71d4f801b1dd12feb4c0a08a-v5fc38aaf22415ab0b70567368332beee7955b367",
+        "repo": "qutebrowser/qutebrowser",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 358,
+        "instance_id": "instance_ansible__ansible-379058e10f3dbc0fdcaf80394bd09b18927e7d33-v1055803c3a812189a1133297f7f5468579283f86",
+        "repo": "ansible/ansible",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 697,
+        "instance_id": "instance_element-hq__element-web-aeabf3b18896ac1eb7ae9757e66ce886120f8309-vnan",
+        "repo": "element-hq/element-web",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 668,
+        "instance_id": "instance_gravitational__teleport-e6681abe6a7113cfd2da507f05581b7bdf398540-v626ec2a48416b10a88641359a169d99e935ff037",
+        "repo": "gravitational/teleport",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 521,
+        "instance_id": "instance_future-architect__vuls-139f3a81b66c47e6d8f70ce6c4afe7a9196a6ea8",
+        "repo": "future-architect/vuls",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 485,
+        "instance_id": "instance_internetarchive__openlibrary-b112069e31e0553b2d374abb5f9c5e05e8f3dbbe-ve8c8d62a2b60610a3c4631f5f23ed866bada9818",
+        "repo": "internetarchive/openlibrary",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 42,
+        "instance_id": "instance_ansible__ansible-e40889e7112ae00a21a2c74312b330e67a766cc0-v1055803c3a812189a1133297f7f5468579283f86",
+        "repo": "ansible/ansible",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 86,
+        "instance_id": "instance_tutao__tutanota-09c2776c0fce3db5c6e18da92b5a45dce9f013aa-vbc0d9ba8f0071fbe982809910959a6ff8884dbbf",
+        "repo": "tutao/tutanota",
+        "minimal_passed": false,
+        "super_code_passed": true,
+        "outcome": "super-code-win"
+      },
+      {
+        "task_index": 456,
+        "instance_id": "instance_tutao__tutanota-40e94dee2bcec2b63f362da283123e9df1874cc1-vc4e41fd0029957297843cb9dec4a25c7c756f029",
+        "repo": "tutao/tutanota",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 146,
+        "instance_id": "instance_future-architect__vuls-999529a05b202b0fd29c6fca5039a4c47a3766bb",
+        "repo": "future-architect/vuls",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 250,
+        "instance_id": "instance_element-hq__element-web-4fec436883b601a3cac2d4a58067e597f737b817-vnan",
+        "repo": "element-hq/element-web",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 209,
+        "instance_id": "instance_flipt-io__flipt-65581fef4aa807540cb933753d085feb0d7e736f",
+        "repo": "flipt-io/flipt",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 429,
+        "instance_id": "instance_future-architect__vuls-4a72295de7b91faa59d90a5bee91535bbe76755d",
+        "repo": "future-architect/vuls",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 247,
+        "instance_id": "instance_future-architect__vuls-1832b4ee3a20177ad313d806983127cb6e53f5cf",
+        "repo": "future-architect/vuls",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 114,
+        "instance_id": "instance_tutao__tutanota-f3ffe17af6e8ab007e8d461355057ad237846d9d-vbc0d9ba8f0071fbe982809910959a6ff8884dbbf",
+        "repo": "tutao/tutanota",
+        "minimal_passed": false,
+        "super_code_passed": true,
+        "outcome": "super-code-win"
+      },
+      {
+        "task_index": 85,
+        "instance_id": "instance_element-hq__element-web-71fe08ea0f159ccb707904d87f0a4aef205a167c-vnan",
+        "repo": "element-hq/element-web",
+        "minimal_passed": false,
+        "super_code_passed": true,
+        "outcome": "super-code-win"
+      },
+      {
+        "task_index": 276,
+        "instance_id": "instance_qutebrowser__qutebrowser-ef5ba1a0360b39f9eff027fbdc57f363597c3c3b-v363c8a7e5ccdf6968fc7ab84a2053ac78036691d",
+        "repo": "qutebrowser/qutebrowser",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 339,
+        "instance_id": "instance_ansible__ansible-b6290e1d156af608bd79118d209a64a051c55001-v390e508d27db7a51eece36bb6d9698b63a5b638a",
+        "repo": "ansible/ansible",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 460,
+        "instance_id": "instance_ansible__ansible-8127abbc298cabf04aaa89a478fc5e5e3432a6fc-v30a923fb5c164d6cd18280c02422f75e611e8fb2",
+        "repo": "ansible/ansible",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 626,
+        "instance_id": "instance_NodeBB__NodeBB-f083cd559d69c16481376868c8da65172729c0ca-vnan",
+        "repo": "NodeBB/NodeBB",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 65,
+        "instance_id": "instance_qutebrowser__qutebrowser-473a15f7908f2bb6d670b0e908ab34a28d8cf7e2-v363c8a7e5ccdf6968fc7ab84a2053ac78036691d",
+        "repo": "qutebrowser/qutebrowser",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 266,
+        "instance_id": "instance_internetarchive__openlibrary-7edd1ef09d91fe0b435707633c5cc9af41dedddf-v76304ecdb3a5954fcf13feb710e8c40fcf24b73c",
+        "repo": "internetarchive/openlibrary",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 182,
+        "instance_id": "instance_ansible__ansible-a02e22e902a69aeb465f16bf03f7f5a91b2cb828-vba6da65a0f3baefda7a058ebbd0a8dcafb8512f5",
+        "repo": "ansible/ansible",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 400,
+        "instance_id": "instance_flipt-io__flipt-e2bd19dafa7166c96b082fb2a59eb54b4be0d778",
+        "repo": "flipt-io/flipt",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 313,
+        "instance_id": "instance_ansible__ansible-e9e6001263f51103e96e58ad382660df0f3d0e39-v30a923fb5c164d6cd18280c02422f75e611e8fb2",
+        "repo": "ansible/ansible",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 671,
+        "instance_id": "instance_element-hq__element-web-582a1b093fc0b77538052f45cbb9c7295f991b51-vnan",
+        "repo": "element-hq/element-web",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 532,
+        "instance_id": "instance_flipt-io__flipt-b433bd05ce405837804693bebd5f4b88d87133c8",
+        "repo": "flipt-io/flipt",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 615,
+        "instance_id": "instance_internetarchive__openlibrary-4b7ea2977be2747496ba792a678940baa985f7ea-v0f5aece3601a5b4419f7ccec1dbda2071be28ee4",
+        "repo": "internetarchive/openlibrary",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 127,
+        "instance_id": "instance_ansible__ansible-6cc97447aac5816745278f3735af128afb255c81-v0f01c69f1e2528b935359cfe578530722bca2c59",
+        "repo": "ansible/ansible",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 233,
+        "instance_id": "instance_ansible__ansible-d62496fe416623e88b90139dc7917080cb04ce70-v0f01c69f1e2528b935359cfe578530722bca2c59",
+        "repo": "ansible/ansible",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 63,
+        "instance_id": "instance_element-hq__element-web-404c412bcb694f04ba0c4d5479541203d701bca0-vnan",
+        "repo": "element-hq/element-web",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 300,
+        "instance_id": "instance_internetarchive__openlibrary-910b08570210509f3bcfebf35c093a48243fe754-v0f5aece3601a5b4419f7ccec1dbda2071be28ee4",
+        "repo": "internetarchive/openlibrary",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 101,
+        "instance_id": "instance_element-hq__element-web-4c6b0d35add7ae8d58f71ea1711587e31081444b-vnan",
+        "repo": "element-hq/element-web",
+        "minimal_passed": false,
+        "super_code_passed": true,
+        "outcome": "super-code-win"
+      },
+      {
+        "task_index": 368,
+        "instance_id": "instance_protonmail__webclients-428cd033fede5fd6ae9dbc7ab634e010b10e4209",
+        "repo": "protonmail/webclients",
+        "minimal_passed": true,
+        "super_code_passed": false,
+        "outcome": "minimal-win"
+      },
+      {
+        "task_index": 568,
+        "instance_id": "instance_ansible__ansible-bec27fb4c0a40c5f8bbcf26a475704227d65ee73-v30a923fb5c164d6cd18280c02422f75e611e8fb2",
+        "repo": "ansible/ansible",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 144,
+        "instance_id": "instance_flipt-io__flipt-05d7234fa582df632f70a7cd10194d61bd7043b9",
+        "repo": "flipt-io/flipt",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 55,
+        "instance_id": "instance_internetarchive__openlibrary-00bec1e7c8f3272c469a58e1377df03f955ed478-v13642507b4fc1f8d234172bf8129942da2c2ca26",
+        "repo": "internetarchive/openlibrary",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 40,
+        "instance_id": "instance_qutebrowser__qutebrowser-70248f256f93ed9b1984494d0a1a919ddd774892-v2ef375ac784985212b1805e1d0431dc8f1b3c171",
+        "repo": "qutebrowser/qutebrowser",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 622,
+        "instance_id": "instance_future-architect__vuls-436341a4a522dc83eb8bddd1164b764c8dd6bc45",
+        "repo": "future-architect/vuls",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 657,
+        "instance_id": "instance_future-architect__vuls-3c1489e588dacea455ccf4c352a3b1006902e2d4",
+        "repo": "future-architect/vuls",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 110,
+        "instance_id": "instance_future-architect__vuls-ad2edbb8448e2c41a097f1c0b52696c0f6c5924d",
+        "repo": "future-architect/vuls",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 528,
+        "instance_id": "instance_flipt-io__flipt-406f9396ad65696d58865b3a6283109cd4eaf40e",
+        "repo": "flipt-io/flipt",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 244,
+        "instance_id": "instance_protonmail__webclients-863d524b5717b9d33ce08a0f0535e3fd8e8d1ed8",
+        "repo": "protonmail/webclients",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 257,
+        "instance_id": "instance_tutao__tutanota-fb32e5f9d9fc152a00144d56dd0af01760a2d4dc-vc4e41fd0029957297843cb9dec4a25c7c756f029",
+        "repo": "tutao/tutanota",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 272,
+        "instance_id": "instance_flipt-io__flipt-292fdaca9be39e6a921aaa8874c011d0fdd3e874",
+        "repo": "flipt-io/flipt",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 430,
+        "instance_id": "instance_future-architect__vuls-83bcca6e669ba2e4102f26c4a2b52f78c7861f1a",
+        "repo": "future-architect/vuls",
+        "minimal_passed": false,
+        "super_code_passed": true,
+        "outcome": "super-code-win"
+      },
+      {
+        "task_index": 348,
+        "instance_id": "instance_internetarchive__openlibrary-e1e502986a3b003899a8347ac8a7ff7b08cbfc39-v08d8e8889ec945ab821fb156c04c7d2e2810debb",
+        "repo": "internetarchive/openlibrary",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 327,
+        "instance_id": "instance_future-architect__vuls-f6cc8c263dc00329786fa516049c60d4779c4a07",
+        "repo": "future-architect/vuls",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 73,
+        "instance_id": "instance_qutebrowser__qutebrowser-f7753550f2c1dcb2348e4779fd5287166754827e-v059c6fdc75567943479b23ebca7c07b5e9a7f34c",
+        "repo": "qutebrowser/qutebrowser",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 382,
+        "instance_id": "instance_tutao__tutanota-fe240cbf7f0fdd6744ef7bef8cb61676bcdbb621-vc4e41fd0029957297843cb9dec4a25c7c756f029",
+        "repo": "tutao/tutanota",
+        "minimal_passed": false,
+        "super_code_passed": false,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 396,
+        "instance_id": "instance_qutebrowser__qutebrowser-35168ade46184d7e5b91dfa04ca42fe2abd82717-v363c8a7e5ccdf6968fc7ab84a2053ac78036691d",
+        "repo": "qutebrowser/qutebrowser",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 41,
+        "instance_id": "instance_protonmail__webclients-6dcf0d0b0f7965ad94be3f84971afeb437f25b02",
+        "repo": "protonmail/webclients",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 0,
+        "instance_id": "instance_NodeBB__NodeBB-04998908ba6721d64eba79ae3b65a351dcfbc5b5-vnan",
+        "repo": "NodeBB/NodeBB",
+        "minimal_passed": false,
+        "super_code_passed": true,
+        "outcome": "super-code-win"
+      },
+      {
+        "task_index": 505,
+        "instance_id": "instance_tutao__tutanota-8513a9e8114a8b42e64f4348335e0f23efa054c4-vee878bb72091875e912c52fc32bc60ec3760227b",
+        "repo": "tutao/tutanota",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 610,
+        "instance_id": "instance_gravitational__teleport-c1b1c6a1541c478d7777a48fca993cc8206c73b9",
+        "repo": "gravitational/teleport",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 616,
+        "instance_id": "instance_ansible__ansible-622a493ae03bd5e5cf517d336fc426e9d12208c7-v906c969b551b346ef54a2c0b41e04f632b7b73c2",
+        "repo": "ansible/ansible",
+        "minimal_passed": true,
+        "super_code_passed": true,
+        "outcome": "tie"
+      },
+      {
+        "task_index": 503,
+        "instance_id": "instance_gravitational__teleport-fb0ab2b9b771377a689fd0d0374777c251e58bbf",
+        "repo": "gravitational/teleport",
+        "minimal_passed": true,
+        "super_code_passed": false,
+        "outcome": "minimal-win"
+      }
+    ]
+  },
+  "public_export": {
+    "model_name_kind": "display_name",
+    "omitted": [
+      "development provider and route",
+      "local environment and paths",
+      "raw tool diagnostics"
+    ],
+    "note": "Redacted report, not runtime configuration. Scores and numeric usage are preserved; original evidence is retained locally."
+  }
+}

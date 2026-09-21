@@ -1,0 +1,888 @@
+{
+  "schema": 1,
+  "run_id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-687-attempt-1",
+  "started_at": "2026-09-18T08:46:26.950Z",
+  "completed_at": "2026-09-18T09:26:39.328Z",
+  "preset": "minimal",
+  "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
+  "isolation": {
+    "schema": 1,
+    "policy": "swebench-pro-isolation-v3",
+    "passed": true,
+    "audited_sessions": 1,
+    "blocked_calls_count": 5,
+    "violations_count": 0
+  },
+  "candidate": null,
+  "task_index": 687,
+  "instance_id": "instance_element-hq__element-web-aec454dd6feeb93000380523cbb0b3681c0275fd-vnan",
+  "repo": "element-hq/element-web",
+  "base_commit": "1c039fcd3880ef4fefa58812d375104d2d70fe6c",
+  "official_evaluator": {
+    "repository": "scaleapi/SWE-bench_Pro-os",
+    "commit": "ca10a60a5fcae51e6948ffe1485d4153d421e6c5",
+    "evaluator_sha256": "bb5d4c5486be296e464e695df3747064aaa3bb197394bc6d39980634afec2034",
+    "dataset_sha256": "b5b2462bfbf5aeb2cb7ba7d215778a1768b85f9d7ad7f748546c7f80a0ad1510",
+    "image_policy": "local-cache-only"
+  },
+  "image": {
+    "reference": "jefzda/sweap-images:element-hq.element-element-hq__element-web-aec454dd6feeb93000380523cbb0b3681c0275fd",
+    "acquisition_reference": "docker.1ms.run/jefzda/sweap-images:element-hq.element-element-hq__element-web-aec454dd6feeb93000380523cbb0b3681c0275fd",
+    "platform": "linux/amd64",
+    "id": "sha256:e48da2149317131fa5206af017e4949ac72089a5f6147f90cb74dcf25f4e28d2",
+    "repo_digests": [
+      "docker.1panel.live/jefzda/sweap-images@sha256:e48da2149317131fa5206af017e4949ac72089a5f6147f90cb74dcf25f4e28d2",
+      "jefzda/sweap-images@sha256:e48da2149317131fa5206af017e4949ac72089a5f6147f90cb74dcf25f4e28d2"
+    ]
+  },
+  "page_runtime": {
+    "schema": 2,
+    "runtime": "deepseek-harness-web-rpc",
+    "mode": "agent-run",
+    "session_id": "session-f4dc5a56-e1ab-4ff2-b2ea-356c4124a015",
+    "web_rpc": {
+      "authenticated": true,
+      "calls": [
+        "session/create",
+        "session/list",
+        "session/selectModel",
+        "session/prompt",
+        "session/list"
+      ],
+      "prompt_submitted": true
+    },
+    "preset": "minimal",
+    "isolation": {
+      "policy": "swebench-pro-isolation-v3",
+      "permission_preset": "workspace-write",
+      "tool_guard": "workspace-files-and-assigned-offline-container"
+    },
+    "candidate": null,
+    "model": {
+      "display_name": "deepseek-v4.1-flash",
+      "reasoning_effort": "high",
+      "max_tokens": 384000
+    },
+    "elapsed_ms": 2313866,
+    "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+  },
+  "metrics": {
+    "schema": 1,
+    "usage": {
+      "model_calls": 146,
+      "requests": 146,
+      "input_tokens": {
+        "count": 146,
+        "total": 13453426,
+        "average": 92146.75342465754,
+        "minimum": 2194,
+        "maximum": 172266
+      },
+      "uncached_input_tokens": {
+        "count": 146,
+        "total": 80242,
+        "average": 549.6027397260274,
+        "minimum": 139,
+        "maximum": 3299
+      },
+      "cached_input_tokens": {
+        "count": 146,
+        "total": 13373184,
+        "average": 91597.1506849315,
+        "minimum": 256,
+        "maximum": 172032
+      },
+      "output_tokens": {
+        "count": 146,
+        "total": 109894,
+        "average": 752.6986301369863,
+        "minimum": 93,
+        "maximum": 6036
+      },
+      "total_tokens": 13563320,
+      "cache_hit_rate": 0.9940355713109805
+    },
+    "timing_ms": {
+      "first_token": {
+        "count": 146,
+        "total": 235428,
+        "average": 1612.5205479452054,
+        "minimum": 643,
+        "maximum": 3373
+      },
+      "input_wait": {
+        "count": 146,
+        "total": 235428,
+        "average": 1612.5205479452054,
+        "minimum": 643,
+        "maximum": 3373
+      },
+      "output": {
+        "count": 146,
+        "total": 453946,
+        "average": 3109.219178082192,
+        "minimum": 275,
+        "maximum": 22699
+      },
+      "llm": {
+        "count": 146,
+        "total": 689374,
+        "average": 4721.739726027397,
+        "minimum": 1292,
+        "maximum": 25104
+      },
+      "tools": {
+        "count": 145,
+        "total": 1613292,
+        "average": 11126.151724137932,
+        "minimum": 1,
+        "maximum": 303280
+      },
+      "output_tokens_per_second": 242.08606310001628
+    },
+    "session": {
+      "steps": 146,
+      "turns": 1,
+      "model_calls": 146,
+      "tool_calls": 145
+    }
+  },
+  "patch": {
+    "sha256": "ada8c9321081c4f51ed1a14a1feb88ba77e19371256ef616c6db3b99ba758444",
+    "bytes": 9778,
+    "changed_paths": [
+      "src/Lifecycle.ts",
+      "src/contexts/SDKContext.ts",
+      "src/stores/UserProfilesStore.ts",
+      "src/utils/LruCache.ts"
+    ],
+    "excluded_generated_paths": []
+  },
+  "official_result": {
+    "passed": false,
+    "failure_kind": "official_test_failure",
+    "evaluator_exit_code": 0,
+    "parsed": {
+      "tests": [
+        {
+          "name": "test/components/views/elements/AccessibleButton-test.tsx | <AccessibleButton /> | renders div with role button by default",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/AccessibleButton-test.tsx | <AccessibleButton /> | renders a button element",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/AccessibleButton-test.tsx | <AccessibleButton /> | renders with correct classes when button has kind",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/AccessibleButton-test.tsx | <AccessibleButton /> | disables button correctly",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/AccessibleButton-test.tsx | <AccessibleButton /> | calls onClick handler on button click",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/AccessibleButton-test.tsx | <AccessibleButton /> | calls onClick handler on button mousedown when triggerOnMousedown is passed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/AccessibleButton-test.tsx | handling keyboard events | calls onClick handler on enter keydown",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/AccessibleButton-test.tsx | handling keyboard events | calls onClick handler on space keyup",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/AccessibleButton-test.tsx | handling keyboard events | calls onKeydown/onKeyUp handlers for keys other than space and enter",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/AccessibleButton-test.tsx | handling keyboard events | does nothing on non space/enter key presses when no onKeydown/onKeyUp handlers provided",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | createVoiceBroadcastRecorder | should return a VoiceBroadcastRecorder instance with targetChunkLength from config",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | instance | start should forward the call to VoiceRecording.start",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | instance | contentType should return the value from VoiceRecording",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | stop | should forward the call to VoiceRecording.stop",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | stop | should not emit a ChunkRecorded event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | when calling destroy | should call VoiceRecording.destroy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | when calling destroy | should remove all listeners",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | when the first header from recorder has been received | should not emit a ChunkRecorded event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | when the second header from recorder has been received | should not emit a ChunkRecorded event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | when a third page from recorder has been received | should not emit a ChunkRecorded event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | and calling stop | should return the remaining chunk",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | and calling start again and receiving some data | should emit the ChunkRecorded event for the first chunk",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | and calling stop() with recording.stop error) | should return the remaining chunk",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | when some chunks have been received | should emit ChunkRecorded events",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | UserProfilesStore | getProfile should return undefined if the profile was not fetched",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | UserProfilesStore | getOnlyKnownProfile should return undefined if the profile was not fetched",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | fetchProfile | should return the profile from the API and cache it",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | fetchOnlyKnownProfile | should return undefined if no room shared with the user",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | fetchOnlyKnownProfile | for a known user should return the profile from the API and cache it",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | and membership events with the same values appear | should not invalidate the cache",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/structures/AutocompleteInput-test.tsx | AutocompleteInput | should render suggestions when a query is set",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/structures/AutocompleteInput-test.tsx | AutocompleteInput | should render selected items passed in via props",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/structures/AutocompleteInput-test.tsx | AutocompleteInput | should call onSelectionChange",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/structures/AutocompleteInput-test.tsx | AutocompleteInput | should render custom selection element when renderSelection",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/structures/AutocompleteInput-test.tsx | AutocompleteInput | should render custom suggestion element when renderSuggestion",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/structures/AutocompleteInput-test.tsx | AutocompleteInput | should mark selected suggestions as selected",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/structures/AutocompleteInput-test.tsx | AutocompleteInput | should remove the last added selection when backspace is pressed in empty input",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/structures/AutocompleteInput-test.tsx | AutocompleteInput | should toggle a selected item when a suggestion is clicked",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/Pill-test.tsx | <Pill> | should not render a non-permalink",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/Pill-test.tsx | <Pill> | should render the expected pill for a space",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/Pill-test.tsx | <Pill> | should render the expected pill for a room alias",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/Pill-test.tsx | <Pill> | should render the expected pill for @room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/Pill-test.tsx | <Pill> | should render the expected pill for a known user not in the room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/Pill-test.tsx | <Pill> | should render the expected pill for an uknown user not in the room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/Pill-test.tsx | <Pill> | should not render anything if the type cannot be detected",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/Pill-test.tsx | <Pill> | should not render an avatar or link when called with inMessage = false and shouldShowPillAvatar = false",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/Pill-test.tsx | <Pill> | should render the expected pill for a message in the same room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/Pill-test.tsx | <Pill> | should render the expected pill for a message in another room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/Pill-test.tsx | <Pill> | should not render a pill with an unknown type",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/Pill-test.tsx | when rendering a pill for a room | should render the expected pill",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/Pill-test.tsx | when hovering the pill | should show a tooltip with the room Id",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/Pill-test.tsx | when not hovering the pill any more | should dimiss a tooltip with the room Id",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/Pill-test.tsx | when rendering a pill for a user in the room | should render as expected",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/Pill-test.tsx | when clicking the pill | should dipsatch a view user action and prevent event bubbling",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | when translations exist in language | translates a string to german",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | when translations exist in language | translates a basic string",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | when translations exist in language | handles plurals when count is 0",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | when translations exist in language | handles plurals when count is 1",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | when translations exist in language | handles plurals when count is not 1",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | when translations exist in language | handles simple variable substitution",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | when translations exist in language | handles simple tag substitution",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | when translations exist in language | handles text in tags",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | when translations exist in language | handles variable substitution with React function component",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | when translations exist in language | handles variable substitution with react node",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | when translations exist in language | handles tag substitution with React function component",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | when translations exist in language | replacements in the wrong order",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | when translations exist in language | multiple replacements of the same variable",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | when translations exist in language | multiple replacements of the same tag",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | _t | translated correctly when plural string exists for count",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | _t | falls back when plural string exists but not for for count",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | _t | falls back when plural string does not exists at all",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | _tDom() | translated correctly when plural string exists for count",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | _tDom() | falls back when plural string exists but not for for count and translates with fallback locale, attributes fallback locale",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | _tDom() | falls back when plural string does not exists at all and translates with fallback locale, attributes fallback locale",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | _t | translates a basic string and translates with fallback locale",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | _t | handles plurals when count is 0 and translates with fallback locale",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | _t | handles plurals when count is 1 and translates with fallback locale",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | _t | handles plurals when count is not 1 and translates with fallback locale",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | _t | handles simple variable substitution and translates with fallback locale",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | _t | handles simple tag substitution and translates with fallback locale",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | _t | handles text in tags and translates with fallback locale",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | _t | handles variable substitution with React function component and translates with fallback locale",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | _t | handles variable substitution with react node and translates with fallback locale",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | _t | handles tag substitution with React function component and translates with fallback locale",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | _tDom() | translates a basic string and translates with fallback locale, attributes fallback locale",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | _tDom() | handles plurals when count is 0 and translates with fallback locale, attributes fallback locale",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | _tDom() | handles plurals when count is 1 and translates with fallback locale, attributes fallback locale",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | _tDom() | handles plurals when count is not 1 and translates with fallback locale, attributes fallback locale",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | _tDom() | handles simple variable substitution and translates with fallback locale, attributes fallback locale",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | _tDom() | handles simple tag substitution and translates with fallback locale, attributes fallback locale",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | _tDom() | handles text in tags and translates with fallback locale, attributes fallback locale",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | _tDom() | handles variable substitution with React function component and translates with fallback locale, attributes fallback locale",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | _tDom() | handles variable substitution with react node and translates with fallback locale, attributes fallback locale",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | _tDom() | handles tag substitution with React function component and translates with fallback locale, attributes fallback locale",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | when languages dont load | _t",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/i18n-test/languageHandler-test.tsx | when languages dont load | _tDom",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/contexts/SdkContext-test.ts | SdkContextClass | instance should always return the same instance",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/contexts/SdkContext-test.ts | SdkContextClass | voiceBroadcastPreRecordingStore should always return the same VoiceBroadcastPreRecordingStore",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/contexts/SdkContext-test.ts | SdkContextClass | userProfilesStore should raise an error without a client",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/contexts/SdkContext-test.ts | when SDKContext has a client | userProfilesStore should return a UserProfilesStore",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/contexts/SdkContext-test.ts | when SDKContext has a client | onLoggedOut should clear the UserProfilesStore",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/messages/MImageBody-test.tsx | <MImageBody/> | should show error when encrypted media cannot be downloaded",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/messages/MImageBody-test.tsx | <MImageBody/> | should show error when encrypted media cannot be decrypted",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/DialogSidebar-test.tsx | <DialogSidebar /> | renders sidebar correctly without beacons",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/DialogSidebar-test.tsx | <DialogSidebar /> | renders sidebar correctly with beacons",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/DialogSidebar-test.tsx | <DialogSidebar /> | calls on beacon click",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/DialogSidebar-test.tsx | <DialogSidebar /> | closes on close button click",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/InviteDialog-test.tsx | InviteDialog | should label with space name",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/InviteDialog-test.tsx | InviteDialog | should label with room name",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/InviteDialog-test.tsx | InviteDialog | should suggest valid MXIDs even if unknown",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/InviteDialog-test.tsx | InviteDialog | should not suggest invalid MXIDs",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/InviteDialog-test.tsx | InviteDialog | should lookup inputs which look like email addresses",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/InviteDialog-test.tsx | InviteDialog | should lookup inputs which look like email addresses",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/InviteDialog-test.tsx | InviteDialog | should suggest e-mail even if lookup fails",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/InviteDialog-test.tsx | InviteDialog | should add pasted values",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/InviteDialog-test.tsx | InviteDialog | should allow to invite multiple emails to a room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/InviteDialog-test.tsx | InviteDialog | should not allow to invite more than one email to a DM",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/InviteDialog-test.tsx | InviteDialog | should not allow to invite a MXID and an email to a DM",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/InviteDialog-test.tsx | when encryption by default is disabled | should allow to invite more than one email to a DM",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | <ExportDialog /> | renders export dialog",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | <ExportDialog /> | calls onFinished when cancel button is clicked",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | <ExportDialog /> | exports room on submit",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | <ExportDialog /> | exports room using values set from ForceRoomExportParameters",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | <ExportDialog /> | renders success screen when export is finished",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | export format | renders export format with html selected by default",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | export format | sets export format on radio button click",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | export format | hides export format input when format is valid in ForceRoomExportParameters",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | export format | does not render export format when set in ForceRoomExportParameters",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | export type | renders export type with timeline selected by default",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | export type | sets export type on change",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | export type | does not render export type when set in ForceRoomExportParameters",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | export type | does not render message count input",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | export type | renders message count input with default value 100 when export type is lastNMessages",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | export type | sets message count on change",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | export type | does not export when export type is lastNMessages and message count is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | export type | does not export when export type is lastNMessages and message count is more than max",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | export type | exports when export type is NOT lastNMessages and message count is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | size limit | renders size limit input with default value",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | size limit | updates size limit on change",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | size limit | does not export when size limit is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | size limit | does not export when size limit is larger than max",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | size limit | exports when size limit is max",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | size limit | does not render size limit input when set in ForceRoomExportParameters",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | size limit | exports when size limit set in ForceRoomExportParameters is larger than 2000",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | include attachments | renders input with default value of false",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | include attachments | updates include attachments on change",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | include attachments | does not render input when set in ForceRoomExportParameters",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | WysiwygComposer | Should have contentEditable at false when disabled",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Standard behavior | Should have contentEditable at true",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Standard behavior | Should have focus",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Standard behavior | Should call onChange handler",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Standard behavior | Should call onSend when Enter is pressed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Standard behavior | Should not call onSend when Shift+Enter is pressed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Standard behavior | Should not call onSend when ctrl+Enter is pressed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Standard behavior | Should not call onSend when alt+Enter is pressed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Standard behavior | Should not call onSend when meta+Enter is pressed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Mentions | shows the autocomplete when text has @ prefix and autoselects the first item",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Mentions | pressing up and down arrows allows us to change the autocomplete selection",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Mentions | pressing enter selects the mention and inserts it into the composer as a link",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Mentions | clicking on a mention in the composer dispatches the correct action",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Mentions | selecting a mention without a href closes the autocomplete but does not insert a mention",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Mentions | selecting a room mention with a completionId uses client.getRoom",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Mentions | selecting a room mention without a completionId uses client.getRooms",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | When settings require Ctrl+Enter to send | Should not call onSend when Enter is pressed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | When settings require Ctrl+Enter to send | Should send a message when Ctrl+Enter is pressed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | In message creation | Should not moving when the composer is filled",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | In message creation | Should moving when the composer is empty",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Moving up | Should not moving when caret is not at beginning of the text",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Moving up | Should not moving when the content has changed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Moving up | Should moving up",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Moving up | Should moving up in list",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Moving down | Should not moving when caret is not at the end of the text",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Moving down | Should not moving when the content has changed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Moving down | Should moving down",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Moving down | Should moving down in list",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Moving down | Should close editing",
+          "status": "PASSED"
+        }
+      ]
+    }
+  },
+  "cleanup": {
+    "task_container_removed": true,
+    "task_workspace_removed": true,
+    "shared_image_retained": true
+  },
+  "public_export": {
+    "model_name_kind": "display_name",
+    "omitted": [
+      "development provider and route",
+      "local environment and paths",
+      "raw tool diagnostics"
+    ],
+    "note": "Redacted report, not runtime configuration. Scores and numeric usage are preserved; original evidence is retained locally."
+  }
+}

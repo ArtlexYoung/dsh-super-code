@@ -1,0 +1,433 @@
+{
+  "schema": 1,
+  "run_id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-250-attempt-1",
+  "started_at": "2026-09-19T05:36:39.535Z",
+  "completed_at": "2026-09-19T05:36:39.536Z",
+  "preset": "minimal",
+  "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
+  "isolation": {
+    "schema": 1,
+    "policy": "swebench-pro-isolation-v3",
+    "passed": true,
+    "audited_sessions": 1,
+    "blocked_calls_count": 4,
+    "violations_count": 0
+  },
+  "candidate": null,
+  "task_index": 250,
+  "instance_id": "instance_element-hq__element-web-4fec436883b601a3cac2d4a58067e597f737b817-vnan",
+  "repo": "element-hq/element-web",
+  "base_commit": "b8bb8f163a89cb6f2af0ac1cfc97e89deb938368",
+  "official_evaluator": {
+    "repository": "scaleapi/SWE-bench_Pro-os",
+    "commit": "ca10a60a5fcae51e6948ffe1485d4153d421e6c5",
+    "evaluator_sha256": "bb5d4c5486be296e464e695df3747064aaa3bb197394bc6d39980634afec2034",
+    "dataset_sha256": "b5b2462bfbf5aeb2cb7ba7d215778a1768b85f9d7ad7f748546c7f80a0ad1510",
+    "image_policy": "local-cache-only",
+    "rescore_attempt": 1
+  },
+  "image": {
+    "reference": "jefzda/sweap-images:element-hq.element-element-hq__element-web-4fec436883b601a3cac2d4a58067e597f737b817",
+    "acquisition_reference": "jefzda/sweap-images:element-hq.element-element-hq__element-web-4fec436883b601a3cac2d4a58067e597f737b817",
+    "platform": "linux/amd64",
+    "id": "sha256:0cc1aa6046220d76f10b5b7d895fff7d329e9a65b2df5811f680d1c9f31218bf",
+    "repo_digests": [
+      "docker.1ms.run/jefzda/sweap-images@sha256:0cc1aa6046220d76f10b5b7d895fff7d329e9a65b2df5811f680d1c9f31218bf",
+      "jefzda/sweap-images@sha256:0cc1aa6046220d76f10b5b7d895fff7d329e9a65b2df5811f680d1c9f31218bf"
+    ]
+  },
+  "page_runtime": {
+    "schema": 2,
+    "runtime": "deepseek-harness-web-rpc",
+    "mode": "agent-run",
+    "session_id": "session-66ed91d1-d3c7-469a-ae6d-d597abee20e4",
+    "web_rpc": {
+      "authenticated": true,
+      "calls": [
+        "session/create",
+        "session/list",
+        "session/selectModel",
+        "session/prompt",
+        "session/list"
+      ],
+      "prompt_submitted": true
+    },
+    "preset": "minimal",
+    "isolation": {
+      "policy": "swebench-pro-isolation-v3",
+      "permission_preset": "workspace-write",
+      "tool_guard": "workspace-files-and-assigned-offline-container"
+    },
+    "candidate": null,
+    "model": {
+      "display_name": "deepseek-v4.1-flash",
+      "reasoning_effort": "high",
+      "max_tokens": 384000
+    },
+    "elapsed_ms": 2143706,
+    "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+  },
+  "metrics": {
+    "schema": 1,
+    "usage": {
+      "model_calls": 159,
+      "requests": 159,
+      "input_tokens": {
+        "count": 159,
+        "total": 15237702,
+        "average": 95834.60377358491,
+        "minimum": 1756,
+        "maximum": 179852
+      },
+      "uncached_input_tokens": {
+        "count": 159,
+        "total": 91078,
+        "average": 572.8176100628931,
+        "minimum": 136,
+        "maximum": 7038
+      },
+      "cached_input_tokens": {
+        "count": 159,
+        "total": 15146624,
+        "average": 95261.78616352202,
+        "minimum": 256,
+        "maximum": 179584
+      },
+      "output_tokens": {
+        "count": 159,
+        "total": 106235,
+        "average": 668.1446540880503,
+        "minimum": 87,
+        "maximum": 8307
+      },
+      "total_tokens": 15343937,
+      "cache_hit_rate": 0.9940228520022245
+    },
+    "timing_ms": {
+      "first_token": {
+        "count": 159,
+        "total": 229502,
+        "average": 1443.4088050314465,
+        "minimum": 359,
+        "maximum": 2970
+      },
+      "input_wait": {
+        "count": 159,
+        "total": 229502,
+        "average": 1443.4088050314465,
+        "minimum": 359,
+        "maximum": 2970
+      },
+      "output": {
+        "count": 159,
+        "total": 436249,
+        "average": 2743.7044025157234,
+        "minimum": 274,
+        "maximum": 34738
+      },
+      "llm": {
+        "count": 159,
+        "total": 665751,
+        "average": 4187.11320754717,
+        "minimum": 807,
+        "maximum": 36424
+      },
+      "tools": {
+        "count": 164,
+        "total": 1467806,
+        "average": 8950.036585365853,
+        "minimum": 0,
+        "maximum": 303305
+      },
+      "output_tokens_per_second": 243.51918285199505
+    },
+    "session": {
+      "steps": 159,
+      "turns": 1,
+      "model_calls": 159,
+      "tool_calls": 164
+    }
+  },
+  "patch": {
+    "sha256": "f7b55803af2269330d3803e4215d49c3d041869be751abff3b8d391d5d980148",
+    "bytes": 15249,
+    "changed_paths": [
+      "src/components/views/settings/devices/CurrentDeviceSection.tsx",
+      "src/components/views/settings/devices/DeviceDetailHeading.tsx",
+      "src/components/views/settings/devices/DeviceDetails.tsx",
+      "src/components/views/settings/devices/FilteredDeviceList.tsx",
+      "src/components/views/settings/devices/useOwnDevices.ts",
+      "src/components/views/settings/tabs/user/SessionManagerTab.tsx",
+      "src/i18n/strings/en_EN.json"
+    ],
+    "excluded_generated_paths": [],
+    "recovered_from_persisted_session": false
+  },
+  "official_result": {
+    "passed": false,
+    "failure_kind": "official_test_failure",
+    "evaluator_exit_code": 0,
+    "parsed": {
+      "tests": [
+        {
+          "name": "test/settings/controllers/ThemeController-test.ts | ThemeController | returns null when calculatedValue is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/settings/controllers/ThemeController-test.ts | ThemeController | returns light when login flag is set",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/settings/controllers/ThemeController-test.ts | ThemeController | returns default theme when value is not a valid theme",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/settings/controllers/ThemeController-test.ts | ThemeController | returns null when value is a valid theme",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/settings/controllers/ThemeController-test.ts | ✕ renders a verified device (22 ms) | disables sign out button while sign out is pending",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/settings/controllers/ThemeController-test.ts | <CurrentDeviceSection /> | renders spinner while device is loading",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/settings/controllers/ThemeController-test.ts | <CurrentDeviceSection /> | handles when device is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/settings/controllers/ThemeController-test.ts | <CurrentDeviceSection /> | renders device and correct security card when device is verified",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/settings/controllers/ThemeController-test.ts | <CurrentDeviceSection /> | renders device and correct security card when device is unverified",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/ExternalLink-test.tsx | <ExternalLink /> | renders link correctly",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/ExternalLink-test.tsx | <ExternalLink /> | defaults target and rel",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/ExternalLink-test.tsx | <ExternalLink /> | renders plain text link correctly",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/ExternalLink-test.tsx | ✕ renders device name (41 ms) | renders device id as fallback when device has no display name",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | <FilteredDeviceList /> | renders devices in correct order",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | <FilteredDeviceList /> | updates list order when devices change",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | <FilteredDeviceList /> | displays no results message when there are no devices",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | does not display filter description when filter is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | updates filter when prop changes",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | calls onFilterChange handler",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | calls onFilterChange handler correctly when setting filter to All",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | filters correctly for Verified",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | filters correctly for Unverified",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | filters correctly for Inactive",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | renders no results correctly for Verified",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | renders no results correctly for Unverified",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | renders no results correctly for Inactive",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | clears filter from no results message",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | device details | renders expanded devices with device details",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | device details | clicking toggle calls onDeviceExpandToggle",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/widgets/StopGapWidgetDriver-test.ts | sendToDevice | sends unencrypted messages",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/widgets/StopGapWidgetDriver-test.ts | sendToDevice | sends encrypted messages",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/widgets/StopGapWidgetDriver-test.ts | getTurnServers | stops if VoIP isn't supported",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/widgets/StopGapWidgetDriver-test.ts | getTurnServers | stops if the homeserver provides no TURN servers",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/widgets/StopGapWidgetDriver-test.ts | getTurnServers | gets TURN servers",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/widgets/StopGapWidgetDriver-test.ts | readEventRelations | reads related events from the current room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/widgets/StopGapWidgetDriver-test.ts | readEventRelations | reads related events if the original event is missing",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/widgets/StopGapWidgetDriver-test.ts | readEventRelations | reads related events from a selected room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/widgets/StopGapWidgetDriver-test.ts | readEventRelations | reads related events with custom parameters",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | SearchResultTile | Sets up appropriate callEventGrouper for m.call. events",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | <SessionManagerTab /> | renders spinner while devices load",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | <SessionManagerTab /> | removes spinner when device fetch fails",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | <SessionManagerTab /> | removes spinner when device fetch fails",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | <SessionManagerTab /> | does not fail when checking device verification fails",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | <SessionManagerTab /> | sets device verification status correctly",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | <SessionManagerTab /> | renders current session section with an unverified session",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | <SessionManagerTab /> | opens encryption setup dialog when verifiying current session",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | <SessionManagerTab /> | renders current session section with a verified session",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | <SessionManagerTab /> | does not render other sessions section when user has only one device",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | <SessionManagerTab /> | renders other sessions section when user has more than one device",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | <SessionManagerTab /> | goes to filtered list from security recommendations",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | device detail expansion | renders no devices expanded by default",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | device detail expansion | toggles device expansion on click",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | Device verification | does not render device verification cta when current session is not verified",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | Device verification | renders device verification cta on other sessions when current session is verified",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | Device verification | refreshes devices after verifying other device",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | Sign out | Signs out of current device",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | other devices | deletes a device when interactive auth is not required",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | other devices | deletes a device when interactive auth is required",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | other devices | clears loading state when device deletion is cancelled during interactive auth",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/structures/RightPanel-test.tsx | RightPanel | navigates from room summary to member list",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/structures/RightPanel-test.tsx | RightPanel | renders info from only one room during room changes",
+          "status": "PASSED"
+        }
+      ]
+    }
+  },
+  "cleanup": {
+    "task_container_removed": true,
+    "task_workspace_removed": true,
+    "shared_image_retained": true
+  },
+  "public_export": {
+    "model_name_kind": "display_name",
+    "omitted": [
+      "development provider and route",
+      "local environment and paths",
+      "raw tool diagnostics"
+    ],
+    "note": "Redacted report, not runtime configuration. Scores and numeric usage are preserved; original evidence is retained locally."
+  }
+}

@@ -1,0 +1,271 @@
+{
+  "schema": 1,
+  "run_id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-164-attempt-1",
+  "started_at": "2026-09-18T19:54:43.701Z",
+  "completed_at": "2026-09-18T20:36:37.186Z",
+  "preset": "minimal",
+  "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
+  "isolation": {
+    "schema": 1,
+    "policy": "swebench-pro-isolation-v3",
+    "passed": true,
+    "audited_sessions": 1,
+    "blocked_calls_count": 8,
+    "violations_count": 0
+  },
+  "candidate": null,
+  "task_index": 164,
+  "instance_id": "instance_ansible__ansible-1c06c46cc14324df35ac4f39a45fb3ccd602195d-v0f01c69f1e2528b935359cfe578530722bca2c59",
+  "repo": "ansible/ansible",
+  "base_commit": "6198c7377f545207218fe8eb2e3cfa9673ff8f5e",
+  "official_evaluator": {
+    "repository": "scaleapi/SWE-bench_Pro-os",
+    "commit": "ca10a60a5fcae51e6948ffe1485d4153d421e6c5",
+    "evaluator_sha256": "bb5d4c5486be296e464e695df3747064aaa3bb197394bc6d39980634afec2034",
+    "dataset_sha256": "b5b2462bfbf5aeb2cb7ba7d215778a1768b85f9d7ad7f748546c7f80a0ad1510",
+    "image_policy": "local-cache-only"
+  },
+  "image": {
+    "reference": "jefzda/sweap-images:ansible.ansible-ansible__ansible-1c06c46cc14324df35ac4f39a45fb3ccd602195d-v0f01c69f1e2528b935359cfe578530722bca2c59",
+    "acquisition_reference": "docker.1ms.run/jefzda/sweap-images:ansible.ansible-ansible__ansible-1c06c46cc14324df35ac4f39a45fb3ccd602195d-v0f01c69f1e2528b935359cfe578530722bca2c59",
+    "platform": "linux/amd64",
+    "id": "sha256:550e245208e434861e8bce53a93c4f9dc330be7c94b3d140c2dac7ed2c5ae9ce",
+    "repo_digests": [
+      "docker.1ms.run/jefzda/sweap-images@sha256:550e245208e434861e8bce53a93c4f9dc330be7c94b3d140c2dac7ed2c5ae9ce",
+      "jefzda/sweap-images@sha256:550e245208e434861e8bce53a93c4f9dc330be7c94b3d140c2dac7ed2c5ae9ce"
+    ]
+  },
+  "page_runtime": {
+    "schema": 2,
+    "runtime": "deepseek-harness-web-rpc",
+    "mode": "agent-run",
+    "session_id": "session-d9893f50-a9d3-4524-b244-c5320b27b70d",
+    "web_rpc": {
+      "authenticated": true,
+      "calls": [
+        "session/create",
+        "session/list",
+        "session/selectModel",
+        "session/prompt",
+        "session/list"
+      ],
+      "prompt_submitted": true
+    },
+    "preset": "minimal",
+    "isolation": {
+      "policy": "swebench-pro-isolation-v3",
+      "permission_preset": "workspace-write",
+      "tool_guard": "workspace-files-and-assigned-offline-container"
+    },
+    "candidate": null,
+    "model": {
+      "display_name": "deepseek-v4.1-flash",
+      "reasoning_effort": "high",
+      "max_tokens": 384000
+    },
+    "elapsed_ms": 2489288,
+    "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+  },
+  "metrics": {
+    "schema": 1,
+    "usage": {
+      "model_calls": 194,
+      "requests": 194,
+      "input_tokens": {
+        "count": 194,
+        "total": 24741474,
+        "average": 127533.37113402062,
+        "minimum": 1440,
+        "maximum": 224605
+      },
+      "uncached_input_tokens": {
+        "count": 194,
+        "total": 125666,
+        "average": 647.7628865979382,
+        "minimum": 138,
+        "maximum": 5033
+      },
+      "cached_input_tokens": {
+        "count": 194,
+        "total": 24615808,
+        "average": 126885.60824742269,
+        "minimum": 256,
+        "maximum": 224384
+      },
+      "output_tokens": {
+        "count": 194,
+        "total": 119195,
+        "average": 614.4072164948453,
+        "minimum": 96,
+        "maximum": 8139
+      },
+      "total_tokens": 24860669,
+      "cache_hit_rate": 0.9949208361636013
+    },
+    "timing_ms": {
+      "first_token": {
+        "count": 194,
+        "total": 283232,
+        "average": 1459.958762886598,
+        "minimum": 471,
+        "maximum": 8165
+      },
+      "input_wait": {
+        "count": 194,
+        "total": 283232,
+        "average": 1459.958762886598,
+        "minimum": 471,
+        "maximum": 8165
+      },
+      "output": {
+        "count": 194,
+        "total": 488904,
+        "average": 2520.1237113402062,
+        "minimum": 319,
+        "maximum": 33068
+      },
+      "llm": {
+        "count": 194,
+        "total": 772136,
+        "average": 3980.082474226804,
+        "minimum": 1079,
+        "maximum": 34265
+      },
+      "tools": {
+        "count": 193,
+        "total": 1706006,
+        "average": 8839.409326424871,
+        "minimum": 0,
+        "maximum": 303281
+      },
+      "output_tokens_per_second": 243.8004188961432
+    },
+    "session": {
+      "steps": 194,
+      "turns": 1,
+      "model_calls": 194,
+      "tool_calls": 193
+    }
+  },
+  "patch": {
+    "sha256": "c89fe3f6fc8f6d58637b07a896370ff1ed7623e2b6fad2c6ff188724fa901b0b",
+    "bytes": 6757,
+    "changed_paths": [
+      "lib/ansible/_internal/_yaml/_constructor.py",
+      "lib/ansible/_internal/_yaml/_dumper.py",
+      "lib/ansible/plugins/filter/core.py"
+    ],
+    "excluded_generated_paths": []
+  },
+  "official_result": {
+    "passed": false,
+    "failure_kind": "official_test_failure",
+    "evaluator_exit_code": 0,
+    "parsed": {
+      "tests": [
+        {
+          "name": "test/units/plugins/filter/test_core.py::test_to_uuid_default_namespace[example.com-ae780c3a-a3ab-53c2-bfb4-098da300b3fe]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/plugins/filter/test_core.py::test_to_uuid_default_namespace[test.example-8e437a35-c7c5-50ea-867c-5c254848dbc2]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/plugins/filter/test_core.py::test_to_uuid_default_namespace[caf\\xe9.example-8a99d6b1-fb8f-5f78-af86-879768589f56]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/plugins/filter/test_core.py::test_to_uuid[361E6D51-FAEC-444A-9079-341386DA8E2E-example.com-ae780c3a-a3ab-53c2-bfb4-098da300b3fe]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/plugins/filter/test_core.py::test_to_uuid[361E6D51-FAEC-444A-9079-341386DA8E2E-test.example-8e437a35-c7c5-50ea-867c-5c254848dbc2]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/plugins/filter/test_core.py::test_to_uuid[11111111-2222-3333-4444-555555555555-example.com-e776faa5-5299-55dc-9057-7a00e6be2364]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/plugins/filter/test_core.py::test_to_uuid_invalid_namespace",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/plugins/filter/test_core.py::test_to_bool_deprecation[None]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/plugins/filter/test_core.py::test_to_bool_deprecation[nope]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/plugins/filter/test_core.py::test_to_bool_deprecation[1.1]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/plugins/filter/test_core.py::test_from_yaml_trust[True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/plugins/filter/test_core.py::test_from_yaml_trust[False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/plugins/filter/test_core.py::test_from_yaml_origin",
+          "status": "FAILED"
+        },
+        {
+          "name": "test/units/_internal/_yaml/test_dumper.py::test_yaml_dump[to_yaml-True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/_internal/_yaml/test_dumper.py::test_yaml_dump[to_yaml-False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/_internal/_yaml/test_dumper.py::test_yaml_dump[to_yaml-None]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/_internal/_yaml/test_dumper.py::test_yaml_dump[to_nice_yaml-True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/_internal/_yaml/test_dumper.py::test_yaml_dump[to_nice_yaml-False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/_internal/_yaml/test_dumper.py::test_yaml_dump[to_nice_yaml-None]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/_internal/_yaml/test_dumper.py::test_yaml_dump_undefined",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/_internal/_yaml/test_dumper.py::test_yaml_dump_undecryptable_without_vault_tags",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/_internal/_yaml/test_dumper.py::test_yaml_dump_iterables[abc-abc\\n]",
+          "status": "PASSED"
+        }
+      ]
+    }
+  },
+  "cleanup": {
+    "task_container_removed": true,
+    "task_workspace_removed": true,
+    "shared_image_retained": true
+  },
+  "public_export": {
+    "model_name_kind": "display_name",
+    "omitted": [
+      "development provider and route",
+      "local environment and paths",
+      "raw tool diagnostics"
+    ],
+    "note": "Redacted report, not runtime configuration. Scores and numeric usage are preserved; original evidence is retained locally."
+  }
+}

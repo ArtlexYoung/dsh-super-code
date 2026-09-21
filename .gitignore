@@ -1,28 +1,35 @@
 # Local maintainer notes are intentionally excluded from published history.
 .development/
-
-# Local evaluation datasets, runners, and reports are reproducible artifacts,
-# kept out of source and npm packages.
-eval/
-
-# Local package/build state.
-node_modules/
-dist/
-.DS_Store
-results/
 .githooks/
 MEMORY.md
 AGENTS.md
 PLAN.md
 DESIGN.md
 VALIDATION.md
+/docs/development/
+/docs/architecture/
+/docs/README-full.md
+# This local configuration capture contains development-only provider details.
+/docs/images/model-settings.png
+
+# Local environment and credential configuration must never be published.
 .env
 .env.*
 *.env
 .envrc
 .envrc.*
 .credentials.*
-/docs/development/
-/docs/architecture/
-/docs/README-full.md
-/eval/
+
+# Local evaluation datasets, runners, and reports are reproducible artifacts,
+# kept out of source and npm packages.
+.eval/
+/eval/*
+!/eval/results/
+/eval/results/*
+!/eval/results/swebench-pro-final-100/
+
+# Local package/build state.
+node_modules/
+dist/
+.DS_Store
+/results/

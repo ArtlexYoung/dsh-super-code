@@ -1,6 +1,6 @@
 {
   "name": "dsh-super-code",
-  "version": "0.0.9",
+  "version": "0.1.0",
   "description": "One super-code preset with specialist teams and durable task memory for DeepSeek Harness.",
   "license": "Apache-2.0",
   "type": "module",
@@ -78,8 +78,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "tsx --test test/**/*.test.ts",
     "pack:check": "npm pack --dry-run",
-    "eval:super-code": "node lib/evaluate.js",
-    "provider:health": "node eval/runners/provider-health.mjs"
+    "eval:super-code": "node lib/evaluate.js"
   },
   "engines": {
     "node": ">=22"

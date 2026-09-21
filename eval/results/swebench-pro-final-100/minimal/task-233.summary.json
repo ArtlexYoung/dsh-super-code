@@ -1,0 +1,1611 @@
+{
+  "schema": 1,
+  "run_id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-233-attempt-1",
+  "started_at": "2026-09-19T12:10:35.020Z",
+  "completed_at": "2026-09-19T12:21:42.603Z",
+  "preset": "minimal",
+  "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
+  "isolation": {
+    "schema": 1,
+    "policy": "swebench-pro-isolation-v3",
+    "passed": true,
+    "audited_sessions": 1,
+    "blocked_calls_count": 6,
+    "violations_count": 0
+  },
+  "candidate": null,
+  "task_index": 233,
+  "instance_id": "instance_ansible__ansible-d62496fe416623e88b90139dc7917080cb04ce70-v0f01c69f1e2528b935359cfe578530722bca2c59",
+  "repo": "ansible/ansible",
+  "base_commit": "df29852f3a48160e1a60635692c202531dd8b14a",
+  "official_evaluator": {
+    "repository": "scaleapi/SWE-bench_Pro-os",
+    "commit": "ca10a60a5fcae51e6948ffe1485d4153d421e6c5",
+    "evaluator_sha256": "bb5d4c5486be296e464e695df3747064aaa3bb197394bc6d39980634afec2034",
+    "dataset_sha256": "b5b2462bfbf5aeb2cb7ba7d215778a1768b85f9d7ad7f748546c7f80a0ad1510",
+    "image_policy": "local-cache-only"
+  },
+  "image": {
+    "reference": "jefzda/sweap-images:ansible.ansible-ansible__ansible-d62496fe416623e88b90139dc7917080cb04ce70-v0f01c69f1e2528b935359cfe578530722bca2c59",
+    "acquisition_reference": "docker.1ms.run/jefzda/sweap-images:ansible.ansible-ansible__ansible-d62496fe416623e88b90139dc7917080cb04ce70-v0f01c69f1e2528b935359cfe578530722bca2c59",
+    "platform": "linux/amd64",
+    "id": "sha256:277c81e9a19726dc46c0a118f96fc15781bbe7531a075dd194778a533fc25407",
+    "repo_digests": [
+      "docker.1ms.run/jefzda/sweap-images@sha256:277c81e9a19726dc46c0a118f96fc15781bbe7531a075dd194778a533fc25407",
+      "jefzda/sweap-images@sha256:277c81e9a19726dc46c0a118f96fc15781bbe7531a075dd194778a533fc25407"
+    ]
+  },
+  "page_runtime": {
+    "schema": 2,
+    "runtime": "deepseek-harness-web-rpc",
+    "mode": "agent-run",
+    "session_id": "session-0930da80-8389-49e2-b42b-e624d985ab63",
+    "web_rpc": {
+      "authenticated": true,
+      "calls": [
+        "session/create",
+        "session/list",
+        "session/selectModel",
+        "session/prompt",
+        "session/list"
+      ],
+      "prompt_submitted": true
+    },
+    "preset": "minimal",
+    "isolation": {
+      "policy": "swebench-pro-isolation-v3",
+      "permission_preset": "workspace-write",
+      "tool_guard": "workspace-files-and-assigned-offline-container"
+    },
+    "candidate": null,
+    "model": {
+      "display_name": "deepseek-v4.1-flash",
+      "reasoning_effort": "high",
+      "max_tokens": 384000
+    },
+    "elapsed_ms": 643259,
+    "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+  },
+  "metrics": {
+    "schema": 2,
+    "accounting": {
+      "observed_requests": 74,
+      "requests_with_usage": 74,
+      "unknown_usage_requests": 0,
+      "cost_complete": false,
+      "actual_cost": null,
+      "reason": "Observed log usage only; request inventory and billing reconciliation required",
+      "ledger": [
+        {
+          "id": "1/1/0",
+          "usage": {
+            "inputTokens": 1058,
+            "outputTokens": 130,
+            "totalTokens": 1444,
+            "cacheReadTokens": 256
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 13,
+          "time": 1789819848803
+        },
+        {
+          "id": "1/2/0",
+          "usage": {
+            "inputTokens": 149,
+            "outputTokens": 132,
+            "totalTokens": 1689,
+            "cacheReadTokens": 1408
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 18,
+          "time": 1789819852502
+        },
+        {
+          "id": "1/3/0",
+          "usage": {
+            "inputTokens": 3059,
+            "outputTokens": 144,
+            "totalTokens": 4867,
+            "cacheReadTokens": 1664
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 23,
+          "time": 1789819854109
+        },
+        {
+          "id": "1/4/0",
+          "usage": {
+            "inputTokens": 1434,
+            "outputTokens": 144,
+            "totalTokens": 6442,
+            "cacheReadTokens": 4864
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 28,
+          "time": 1789819856502
+        },
+        {
+          "id": "1/5/0",
+          "usage": {
+            "inputTokens": 2554,
+            "outputTokens": 181,
+            "totalTokens": 9135,
+            "cacheReadTokens": 6400
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 33,
+          "time": 1789819858646
+        },
+        {
+          "id": "1/6/0",
+          "usage": {
+            "inputTokens": 234,
+            "outputTokens": 400,
+            "totalTokens": 9594,
+            "cacheReadTokens": 8960
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 38,
+          "time": 1789819861621
+        },
+        {
+          "id": "1/7/0",
+          "usage": {
+            "inputTokens": 153,
+            "outputTokens": 166,
+            "totalTokens": 9791,
+            "cacheReadTokens": 9472
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 43,
+          "time": 1789819863111
+        },
+        {
+          "id": "1/8/0",
+          "usage": {
+            "inputTokens": 255,
+            "outputTokens": 230,
+            "totalTokens": 10085,
+            "cacheReadTokens": 9600
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 48,
+          "time": 1789819865433
+        },
+        {
+          "id": "1/9/0",
+          "usage": {
+            "inputTokens": 154,
+            "outputTokens": 512,
+            "totalTokens": 10650,
+            "cacheReadTokens": 9984
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 53,
+          "time": 1789819868605
+        },
+        {
+          "id": "1/10/0",
+          "usage": {
+            "inputTokens": 185,
+            "outputTokens": 932,
+            "totalTokens": 11613,
+            "cacheReadTokens": 10496
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 58,
+          "time": 1789819873677
+        },
+        {
+          "id": "1/11/0",
+          "usage": {
+            "inputTokens": 261,
+            "outputTokens": 223,
+            "totalTokens": 12004,
+            "cacheReadTokens": 11520
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 63,
+          "time": 1789819876488
+        },
+        {
+          "id": "1/12/0",
+          "usage": {
+            "inputTokens": 172,
+            "outputTokens": 114,
+            "totalTokens": 12190,
+            "cacheReadTokens": 11904
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 68,
+          "time": 1789819878456
+        },
+        {
+          "id": "1/13/0",
+          "usage": {
+            "inputTokens": 170,
+            "outputTokens": 151,
+            "totalTokens": 12481,
+            "cacheReadTokens": 12160
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 73,
+          "time": 1789819880342
+        },
+        {
+          "id": "1/14/0",
+          "usage": {
+            "inputTokens": 2348,
+            "outputTokens": 283,
+            "totalTokens": 15047,
+            "cacheReadTokens": 12416
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 78,
+          "time": 1789819884315
+        },
+        {
+          "id": "1/15/0",
+          "usage": {
+            "inputTokens": 230,
+            "outputTokens": 134,
+            "totalTokens": 15212,
+            "cacheReadTokens": 14848
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 83,
+          "time": 1789819885845
+        },
+        {
+          "id": "1/16/0",
+          "usage": {
+            "inputTokens": 139,
+            "outputTokens": 155,
+            "totalTokens": 15398,
+            "cacheReadTokens": 15104
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 88,
+          "time": 1789819887504
+        },
+        {
+          "id": "1/17/0",
+          "usage": {
+            "inputTokens": 186,
+            "outputTokens": 3439,
+            "totalTokens": 18857,
+            "cacheReadTokens": 15232
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 93,
+          "time": 1789819903823
+        },
+        {
+          "id": "1/18/0",
+          "usage": {
+            "inputTokens": 730,
+            "outputTokens": 2356,
+            "totalTokens": 21902,
+            "cacheReadTokens": 18816
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 98,
+          "time": 1789819915134
+        },
+        {
+          "id": "1/19/0",
+          "usage": {
+            "inputTokens": 170,
+            "outputTokens": 951,
+            "totalTokens": 23009,
+            "cacheReadTokens": 21888
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 103,
+          "time": 1789819920609
+        },
+        {
+          "id": "1/20/0",
+          "usage": {
+            "inputTokens": 245,
+            "outputTokens": 2165,
+            "totalTokens": 25194,
+            "cacheReadTokens": 22784
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 108,
+          "time": 1789819930391
+        },
+        {
+          "id": "1/21/0",
+          "usage": {
+            "inputTokens": 660,
+            "outputTokens": 126,
+            "totalTokens": 25874,
+            "cacheReadTokens": 25088
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 113,
+          "time": 1789819932317
+        },
+        {
+          "id": "1/22/0",
+          "usage": {
+            "inputTokens": 179,
+            "outputTokens": 178,
+            "totalTokens": 26213,
+            "cacheReadTokens": 25856
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 118,
+          "time": 1789819935287
+        },
+        {
+          "id": "1/23/0",
+          "usage": {
+            "inputTokens": 206,
+            "outputTokens": 1334,
+            "totalTokens": 27652,
+            "cacheReadTokens": 26112
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 123,
+          "time": 1789819942019
+        },
+        {
+          "id": "1/24/0",
+          "usage": {
+            "inputTokens": 458,
+            "outputTokens": 274,
+            "totalTokens": 28380,
+            "cacheReadTokens": 27648
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 128,
+          "time": 1789819944562
+        },
+        {
+          "id": "1/25/0",
+          "usage": {
+            "inputTokens": 694,
+            "outputTokens": 125,
+            "totalTokens": 29107,
+            "cacheReadTokens": 28288
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 133,
+          "time": 1789819946829
+        },
+        {
+          "id": "1/26/0",
+          "usage": {
+            "inputTokens": 773,
+            "outputTokens": 672,
+            "totalTokens": 30501,
+            "cacheReadTokens": 29056
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 138,
+          "time": 1789819950990
+        },
+        {
+          "id": "1/27/0",
+          "usage": {
+            "inputTokens": 241,
+            "outputTokens": 225,
+            "totalTokens": 30802,
+            "cacheReadTokens": 30336
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 143,
+          "time": 1789819953507
+        },
+        {
+          "id": "1/28/0",
+          "usage": {
+            "inputTokens": 165,
+            "outputTokens": 307,
+            "totalTokens": 31192,
+            "cacheReadTokens": 30720
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 148,
+          "time": 1789819956991
+        },
+        {
+          "id": "1/29/0",
+          "usage": {
+            "inputTokens": 289,
+            "outputTokens": 7496,
+            "totalTokens": 38889,
+            "cacheReadTokens": 31104
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 153,
+          "time": 1789819988303
+        },
+        {
+          "id": "1/30/0",
+          "usage": {
+            "inputTokens": 253,
+            "outputTokens": 23728,
+            "totalTokens": 62637,
+            "cacheReadTokens": 38656
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 158,
+          "time": 1789820089309
+        },
+        {
+          "id": "1/31/0",
+          "usage": {
+            "inputTokens": 199,
+            "outputTokens": 449,
+            "totalTokens": 63112,
+            "cacheReadTokens": 62464
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 163,
+          "time": 1789820092906
+        },
+        {
+          "id": "1/32/0",
+          "usage": {
+            "inputTokens": 167,
+            "outputTokens": 2612,
+            "totalTokens": 65755,
+            "cacheReadTokens": 62976
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 168,
+          "time": 1789820105621
+        },
+        {
+          "id": "1/33/0",
+          "usage": {
+            "inputTokens": 259,
+            "outputTokens": 12812,
+            "totalTokens": 78607,
+            "cacheReadTokens": 65536
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 173,
+          "time": 1789820160280
+        },
+        {
+          "id": "1/34/0",
+          "usage": {
+            "inputTokens": 3652,
+            "outputTokens": 1292,
+            "totalTokens": 79952,
+            "cacheReadTokens": 75008
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 178,
+          "time": 1789820165967
+        },
+        {
+          "id": "1/35/0",
+          "usage": {
+            "inputTokens": 313,
+            "outputTokens": 259,
+            "totalTokens": 80444,
+            "cacheReadTokens": 79872
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 183,
+          "time": 1789820168979
+        },
+        {
+          "id": "1/36/0",
+          "usage": {
+            "inputTokens": 191,
+            "outputTokens": 477,
+            "totalTokens": 81052,
+            "cacheReadTokens": 80384
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 188,
+          "time": 1789820171973
+        },
+        {
+          "id": "1/37/0",
+          "usage": {
+            "inputTokens": 493,
+            "outputTokens": 96,
+            "totalTokens": 81613,
+            "cacheReadTokens": 81024
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 193,
+          "time": 1789820174178
+        },
+        {
+          "id": "1/38/0",
+          "usage": {
+            "inputTokens": 821,
+            "outputTokens": 1153,
+            "totalTokens": 83510,
+            "cacheReadTokens": 81536
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 198,
+          "time": 1789820180358
+        },
+        {
+          "id": "1/39/0",
+          "usage": {
+            "inputTokens": 216,
+            "outputTokens": 107,
+            "totalTokens": 83651,
+            "cacheReadTokens": 83328
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 203,
+          "time": 1789820182325
+        },
+        {
+          "id": "1/40/0",
+          "usage": {
+            "inputTokens": 1128,
+            "outputTokens": 149,
+            "totalTokens": 84861,
+            "cacheReadTokens": 83584
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 208,
+          "time": 1789820184539
+        },
+        {
+          "id": "1/41/0",
+          "usage": {
+            "inputTokens": 331,
+            "outputTokens": 630,
+            "totalTokens": 85697,
+            "cacheReadTokens": 84736
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 213,
+          "time": 1789820188658
+        },
+        {
+          "id": "1/42/0",
+          "usage": {
+            "inputTokens": 224,
+            "outputTokens": 1422,
+            "totalTokens": 87150,
+            "cacheReadTokens": 85504
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 218,
+          "time": 1789820195632
+        },
+        {
+          "id": "1/43/0",
+          "usage": {
+            "inputTokens": 524,
+            "outputTokens": 838,
+            "totalTokens": 88402,
+            "cacheReadTokens": 87040
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 223,
+          "time": 1789820200398
+        },
+        {
+          "id": "1/44/0",
+          "usage": {
+            "inputTokens": 668,
+            "outputTokens": 4093,
+            "totalTokens": 93081,
+            "cacheReadTokens": 88320
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 228,
+          "time": 1789820219626
+        },
+        {
+          "id": "1/45/0",
+          "usage": {
+            "inputTokens": 261,
+            "outputTokens": 2033,
+            "totalTokens": 95222,
+            "cacheReadTokens": 92928
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 233,
+          "time": 1789820228450
+        },
+        {
+          "id": "1/46/0",
+          "usage": {
+            "inputTokens": 406,
+            "outputTokens": 156,
+            "totalTokens": 95666,
+            "cacheReadTokens": 95104
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 238,
+          "time": 1789820230788
+        },
+        {
+          "id": "1/47/0",
+          "usage": {
+            "inputTokens": 218,
+            "outputTokens": 160,
+            "totalTokens": 95994,
+            "cacheReadTokens": 95616
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 243,
+          "time": 1789820233355
+        },
+        {
+          "id": "1/48/0",
+          "usage": {
+            "inputTokens": 1422,
+            "outputTokens": 3337,
+            "totalTokens": 100631,
+            "cacheReadTokens": 95872
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 248,
+          "time": 1789820249948
+        },
+        {
+          "id": "1/49/0",
+          "usage": {
+            "inputTokens": 254,
+            "outputTokens": 110,
+            "totalTokens": 100844,
+            "cacheReadTokens": 100480
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 253,
+          "time": 1789820252311
+        },
+        {
+          "id": "1/50/0",
+          "usage": {
+            "inputTokens": 387,
+            "outputTokens": 1639,
+            "totalTokens": 102762,
+            "cacheReadTokens": 100736
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 258,
+          "time": 1789820262428
+        },
+        {
+          "id": "1/51/0",
+          "usage": {
+            "inputTokens": 254,
+            "outputTokens": 184,
+            "totalTokens": 102966,
+            "cacheReadTokens": 102528
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 263,
+          "time": 1789820265091
+        },
+        {
+          "id": "1/52/0",
+          "usage": {
+            "inputTokens": 1305,
+            "outputTokens": 637,
+            "totalTokens": 104854,
+            "cacheReadTokens": 102912
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 268,
+          "time": 1789820269904
+        },
+        {
+          "id": "1/53/0",
+          "usage": {
+            "inputTokens": 781,
+            "outputTokens": 5720,
+            "totalTokens": 111333,
+            "cacheReadTokens": 104832
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 273,
+          "time": 1789820296334
+        },
+        {
+          "id": "1/54/0",
+          "usage": {
+            "inputTokens": 996,
+            "outputTokens": 271,
+            "totalTokens": 112499,
+            "cacheReadTokens": 111232
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 278,
+          "time": 1789820301186
+        },
+        {
+          "id": "1/55/0",
+          "usage": {
+            "inputTokens": 205,
+            "outputTokens": 373,
+            "totalTokens": 112962,
+            "cacheReadTokens": 112384
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 283,
+          "time": 1789820304611
+        },
+        {
+          "id": "1/56/0",
+          "usage": {
+            "inputTokens": 853,
+            "outputTokens": 481,
+            "totalTokens": 114230,
+            "cacheReadTokens": 112896
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 288,
+          "time": 1789820308142
+        },
+        {
+          "id": "1/57/0",
+          "usage": {
+            "inputTokens": 143,
+            "outputTokens": 368,
+            "totalTokens": 114687,
+            "cacheReadTokens": 114176
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 293,
+          "time": 1789820311086
+        },
+        {
+          "id": "1/58/0",
+          "usage": {
+            "inputTokens": 404,
+            "outputTokens": 174,
+            "totalTokens": 115138,
+            "cacheReadTokens": 114560
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 298,
+          "time": 1789820313907
+        },
+        {
+          "id": "1/59/0",
+          "usage": {
+            "inputTokens": 829,
+            "outputTokens": 1540,
+            "totalTokens": 117441,
+            "cacheReadTokens": 115072
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 303,
+          "time": 1789820322961
+        },
+        {
+          "id": "1/60/0",
+          "usage": {
+            "inputTokens": 229,
+            "outputTokens": 254,
+            "totalTokens": 117731,
+            "cacheReadTokens": 117248
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 308,
+          "time": 1789820326481
+        },
+        {
+          "id": "1/61/0",
+          "usage": {
+            "inputTokens": 135,
+            "outputTokens": 182,
+            "totalTokens": 117949,
+            "cacheReadTokens": 117632
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 313,
+          "time": 1789820329839
+        },
+        {
+          "id": "1/62/0",
+          "usage": {
+            "inputTokens": 1020,
+            "outputTokens": 4482,
+            "totalTokens": 123390,
+            "cacheReadTokens": 117888
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 318,
+          "time": 1789820350145
+        },
+        {
+          "id": "1/63/0",
+          "usage": {
+            "inputTokens": 1138,
+            "outputTokens": 10093,
+            "totalTokens": 134495,
+            "cacheReadTokens": 123264
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 323,
+          "time": 1789820394870
+        },
+        {
+          "id": "1/64/0",
+          "usage": {
+            "inputTokens": 167,
+            "outputTokens": 149,
+            "totalTokens": 134716,
+            "cacheReadTokens": 134400
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 328,
+          "time": 1789820397368
+        },
+        {
+          "id": "1/65/0",
+          "usage": {
+            "inputTokens": 294,
+            "outputTokens": 962,
+            "totalTokens": 135912,
+            "cacheReadTokens": 134656
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 333,
+          "time": 1789820404893
+        },
+        {
+          "id": "1/66/0",
+          "usage": {
+            "inputTokens": 140,
+            "outputTokens": 233,
+            "totalTokens": 136181,
+            "cacheReadTokens": 135808
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 338,
+          "time": 1789820408121
+        },
+        {
+          "id": "1/67/0",
+          "usage": {
+            "inputTokens": 153,
+            "outputTokens": 2763,
+            "totalTokens": 138980,
+            "cacheReadTokens": 136064
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 343,
+          "time": 1789820421954
+        },
+        {
+          "id": "1/68/0",
+          "usage": {
+            "inputTokens": 1409,
+            "outputTokens": 1720,
+            "totalTokens": 142009,
+            "cacheReadTokens": 138880
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 348,
+          "time": 1789820432373
+        },
+        {
+          "id": "1/69/0",
+          "usage": {
+            "inputTokens": 212,
+            "outputTokens": 137,
+            "totalTokens": 142173,
+            "cacheReadTokens": 141824
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 353,
+          "time": 1789820435412
+        },
+        {
+          "id": "1/70/0",
+          "usage": {
+            "inputTokens": 186,
+            "outputTokens": 961,
+            "totalTokens": 143227,
+            "cacheReadTokens": 142080
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 358,
+          "time": 1789820442173
+        },
+        {
+          "id": "1/71/0",
+          "usage": {
+            "inputTokens": 159,
+            "outputTokens": 2884,
+            "totalTokens": 146147,
+            "cacheReadTokens": 143104
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 363,
+          "time": 1789820456520
+        },
+        {
+          "id": "1/72/0",
+          "usage": {
+            "inputTokens": 333,
+            "outputTokens": 172,
+            "totalTokens": 146553,
+            "cacheReadTokens": 146048
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 368,
+          "time": 1789820460139
+        },
+        {
+          "id": "1/73/0",
+          "usage": {
+            "inputTokens": 157,
+            "outputTokens": 2645,
+            "totalTokens": 149234,
+            "cacheReadTokens": 146432
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 373,
+          "time": 1789820473622
+        },
+        {
+          "id": "1/74/0",
+          "usage": {
+            "inputTokens": 150,
+            "outputTokens": 1279,
+            "totalTokens": 150549,
+            "cacheReadTokens": 149120
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 378,
+          "time": 1789820481049
+        }
+      ]
+    },
+    "usage": {
+      "model_calls": 74,
+      "requests": 74,
+      "input_tokens": {
+        "count": 74,
+        "total": 5251318,
+        "average": 70963.75675675676,
+        "minimum": 1314,
+        "maximum": 149270
+      },
+      "uncached_input_tokens": {
+        "count": 74,
+        "total": 41590,
+        "average": 562.027027027027,
+        "minimum": 135,
+        "maximum": 3652
+      },
+      "cached_input_tokens": {
+        "count": 74,
+        "total": 5209728,
+        "average": 70401.72972972973,
+        "minimum": 256,
+        "maximum": 149120
+      },
+      "output_tokens": {
+        "count": 74,
+        "total": 119895,
+        "average": 1620.2027027027027,
+        "minimum": 96,
+        "maximum": 23728
+      },
+      "total_tokens": 5371213,
+      "cache_hit_rate": 0.992080083514272
+    },
+    "timing_ms": {
+      "first_token": {
+        "count": 74,
+        "total": 95908,
+        "average": 1296.054054054054,
+        "minimum": 614,
+        "maximum": 2501
+      },
+      "input_wait": {
+        "count": 74,
+        "total": 95908,
+        "average": 1296.054054054054,
+        "minimum": 614,
+        "maximum": 2501
+      },
+      "output": {
+        "count": 74,
+        "total": 498538,
+        "average": 6737,
+        "minimum": 441,
+        "maximum": 99042
+      },
+      "llm": {
+        "count": 74,
+        "total": 594446,
+        "average": 8033.054054054054,
+        "minimum": 1134,
+        "maximum": 100050
+      },
+      "tools": {
+        "count": 73,
+        "total": 38723,
+        "average": 530.4520547945206,
+        "minimum": 0,
+        "maximum": 2556
+      },
+      "output_tokens_per_second": 240.49320212300768
+    },
+    "session": {
+      "steps": 74,
+      "turns": 1,
+      "model_calls": 74,
+      "tool_calls": 73
+    }
+  },
+  "patch": {
+    "sha256": "203f198568c0325f1a10bba8c75d881977934084afb742b2dd7f288eafb33295",
+    "bytes": 4209,
+    "changed_paths": [
+      "lib/ansible/module_utils/common/text/formatters.py"
+    ],
+    "excluded_generated_paths": []
+  },
+  "official_result": {
+    "passed": true,
+    "failure_kind": null,
+    "evaluator_exit_code": 0,
+    "parsed": {
+      "tests": [
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number[0-0]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number[0B-0]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number[1024-1024]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number[1024B-1024]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number[1K-1024]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number[1KB-1024]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number[1M-1048576]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number[1MB-1048576]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number[1G-1073741824]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number[1GB-1073741824]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number[1T-1099511627776]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number[1TB-1099511627776]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number[1P-1125899906842624]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number[1PB-1125899906842624]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number[1E-1152921504606846976]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number[1EB-1152921504606846976]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number[1Z-1180591620717411303424]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number[1ZB-1180591620717411303424]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number[1Y-1208925819614629174706176]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number[1YB-1208925819614629174706176]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number_unit[1024-B]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number_unit[1-K]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number_unit[1-KB]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number_unit[1-M]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number_unit[1-MB]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number_unit[1-G]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number_unit[1-GB]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number_unit[1-T]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number_unit[1-TB]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number_unit[1-P]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number_unit[1-PB]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number_unit[1-E]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number_unit[1-EB]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number_unit[1-Z]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number_unit[1-ZB]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number_unit[1-Y]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_number_unit[1-YB]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_wrong_unit[1024s]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_wrong_unit[1024w]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_wrong_number[b1bbb]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_wrong_number[m2mmm]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_wrong_number[]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_wrong_number[-1]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits[0-0]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits[0B-0]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits[1024b-1024]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits[1024B-1024]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits[1K-1024]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits[1Kb-1024]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits[1M-1048576]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits[1Mb-1048576]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits[1G-1073741824]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits[1Gb-1073741824]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits[1T-1099511627776]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits[1Tb-1099511627776]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits[1P-1125899906842624]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits[1Pb-1125899906842624]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits[1E-1152921504606846976]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits[1Eb-1152921504606846976]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits[1Z-1180591620717411303424]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits[1Zb-1180591620717411303424]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits[1Y-1208925819614629174706176]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits[1Yb-1208925819614629174706176]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits_default_unit[1024-b]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits_default_unit[1024-B]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits_default_unit[1-K]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits_default_unit[1-Kb]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits_default_unit[1-M]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits_default_unit[1-Mb]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits_default_unit[1-G]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits_default_unit[1-Gb]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits_default_unit[1-T]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits_default_unit[1-Tb]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits_default_unit[1-P]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits_default_unit[1-Pb]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits_default_unit[1-E]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits_default_unit[1-Eb]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits_default_unit[1-Z]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits_default_unit[1-Zb]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits_default_unit[1-Y]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits_default_unit[1-Yb]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits_wrong_unit[1024Kb-False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits_wrong_unit[10Mb-False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits_wrong_unit[1Gb-False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits_wrong_unit[10MB-True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits_wrong_unit[2KB-True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits_wrong_unit[4GB-True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits_wrong_default_unit[1024-Kb-False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits_wrong_default_unit[10-Mb-False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits_wrong_default_unit[10-MB-True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits_wrong_default_unit[2-KB-True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_isbits_wrong_default_unit[4-GB-True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_nonsensical[13youcanhaveabyteofmysandwich]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_non_ascii_number[8\\U00016b59B]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_non_ascii_number[\\u1040k]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/module_utils/common/text/formatters/test_human_to_bytes.py::test_human_to_bytes_non_ascii_number[1.\\u1040k?]",
+          "status": "PASSED"
+        }
+      ]
+    }
+  },
+  "cleanup": {
+    "task_container_removed": true,
+    "task_workspace_removed": true,
+    "shared_image_retained": true
+  },
+  "public_export": {
+    "model_name_kind": "display_name",
+    "omitted": [
+      "development provider and route",
+      "local environment and paths",
+      "raw tool diagnostics"
+    ],
+    "note": "Redacted report, not runtime configuration. Scores and numeric usage are preserved; original evidence is retained locally."
+  }
+}

@@ -1,0 +1,245 @@
+{
+  "schema": 1,
+  "run_id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-514-attempt-1",
+  "started_at": "2026-09-18T18:22:18.397Z",
+  "completed_at": "2026-09-18T18:54:47.339Z",
+  "preset": "minimal",
+  "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
+  "isolation": {
+    "schema": 1,
+    "policy": "swebench-pro-isolation-v3",
+    "passed": true,
+    "audited_sessions": 1,
+    "blocked_calls_count": 10,
+    "violations_count": 0
+  },
+  "candidate": null,
+  "task_index": 514,
+  "instance_id": "instance_navidrome__navidrome-ee21f3957e0de91624427e93c62b8ee390de72e3",
+  "repo": "navidrome/navidrome",
+  "base_commit": "a1551074bbabbf0a71c2201e1938a31e678e82cf",
+  "official_evaluator": {
+    "repository": "scaleapi/SWE-bench_Pro-os",
+    "commit": "ca10a60a5fcae51e6948ffe1485d4153d421e6c5",
+    "evaluator_sha256": "bb5d4c5486be296e464e695df3747064aaa3bb197394bc6d39980634afec2034",
+    "dataset_sha256": "b5b2462bfbf5aeb2cb7ba7d215778a1768b85f9d7ad7f748546c7f80a0ad1510",
+    "image_policy": "local-cache-only"
+  },
+  "image": {
+    "reference": "jefzda/sweap-images:navidrome.navidrome-navidrome__navidrome-ee21f3957e0de91624427e93c62b8ee390de72e3",
+    "acquisition_reference": "docker.1ms.run/jefzda/sweap-images:navidrome.navidrome-navidrome__navidrome-ee21f3957e0de91624427e93c62b8ee390de72e3",
+    "platform": "linux/amd64",
+    "id": "sha256:d7e99347da63fb251906c8840fca85ff69c1e5087d65f5834dddc4aa323a1044",
+    "repo_digests": [
+      "docker.1ms.run/jefzda/sweap-images@sha256:d7e99347da63fb251906c8840fca85ff69c1e5087d65f5834dddc4aa323a1044",
+      "jefzda/sweap-images@sha256:d7e99347da63fb251906c8840fca85ff69c1e5087d65f5834dddc4aa323a1044"
+    ]
+  },
+  "page_runtime": {
+    "schema": 2,
+    "runtime": "deepseek-harness-web-rpc",
+    "mode": "agent-run",
+    "session_id": "session-0259c3e8-93b3-4667-8034-185f48dd940f",
+    "web_rpc": {
+      "authenticated": true,
+      "calls": [
+        "session/create",
+        "session/list",
+        "session/selectModel",
+        "session/prompt",
+        "session/list"
+      ],
+      "prompt_submitted": true
+    },
+    "preset": "minimal",
+    "isolation": {
+      "policy": "swebench-pro-isolation-v3",
+      "permission_preset": "workspace-write",
+      "tool_guard": "workspace-files-and-assigned-offline-container"
+    },
+    "candidate": null,
+    "model": {
+      "display_name": "deepseek-v4.1-flash",
+      "reasoning_effort": "high",
+      "max_tokens": 384000
+    },
+    "elapsed_ms": 1837523,
+    "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+  },
+  "metrics": {
+    "schema": 1,
+    "usage": {
+      "model_calls": 79,
+      "requests": 79,
+      "input_tokens": {
+        "count": 79,
+        "total": 4060610,
+        "average": 51400.126582278484,
+        "minimum": 1075,
+        "maximum": 103130
+      },
+      "uncached_input_tokens": {
+        "count": 79,
+        "total": 52546,
+        "average": 665.1392405063291,
+        "minimum": 140,
+        "maximum": 4959
+      },
+      "cached_input_tokens": {
+        "count": 79,
+        "total": 4008064,
+        "average": 50734.987341772154,
+        "minimum": 256,
+        "maximum": 102912
+      },
+      "output_tokens": {
+        "count": 79,
+        "total": 60417,
+        "average": 764.7721518987341,
+        "minimum": 89,
+        "maximum": 5797
+      },
+      "total_tokens": 4121027,
+      "cache_hit_rate": 0.9870595797183181
+    },
+    "timing_ms": {
+      "first_token": {
+        "count": 79,
+        "total": 84211,
+        "average": 1065.9620253164558,
+        "minimum": 448,
+        "maximum": 1814
+      },
+      "input_wait": {
+        "count": 79,
+        "total": 84211,
+        "average": 1065.9620253164558,
+        "minimum": 448,
+        "maximum": 1814
+      },
+      "output": {
+        "count": 79,
+        "total": 255201,
+        "average": 3230.3924050632913,
+        "minimum": 263,
+        "maximum": 25417
+      },
+      "llm": {
+        "count": 79,
+        "total": 339412,
+        "average": 4296.354430379747,
+        "minimum": 1172,
+        "maximum": 26741
+      },
+      "tools": {
+        "count": 78,
+        "total": 1488185,
+        "average": 19079.29487179487,
+        "minimum": 0,
+        "maximum": 303280
+      },
+      "output_tokens_per_second": 236.74280273196422
+    },
+    "session": {
+      "steps": 79,
+      "turns": 1,
+      "model_calls": 79,
+      "tool_calls": 78
+    }
+  },
+  "patch": {
+    "sha256": "009d7f78e2e542823deb017c3283d1c68a13cd1393e55b0265410e04a7847f3e",
+    "bytes": 7526,
+    "changed_paths": [
+      "core/agents/lastfm/agent.go",
+      "core/agents/lastfm/auth_router.go",
+      "core/agents/lastfm/session_keys.go",
+      "model/user_props.go",
+      "persistence/user_props_repository.go"
+    ],
+    "excluded_generated_paths": []
+  },
+  "official_result": {
+    "passed": true,
+    "failure_kind": null,
+    "evaluator_exit_code": 0,
+    "parsed": {
+      "tests": [
+        {
+          "name": "TestCore",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestAgents",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestLastFM",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestSpotify",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestTranscoder",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestDB",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestPersistence",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestScanner",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestServer",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestEvents",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestNativeApi",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestSubsonicApi",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestCache",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestGravatar",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestPool",
+          "status": "PASSED"
+        }
+      ]
+    }
+  },
+  "cleanup": {
+    "task_container_removed": true,
+    "task_workspace_removed": true,
+    "shared_image_retained": true
+  },
+  "public_export": {
+    "model_name_kind": "display_name",
+    "omitted": [
+      "development provider and route",
+      "local environment and paths",
+      "raw tool diagnostics"
+    ],
+    "note": "Redacted report, not runtime configuration. Scores and numeric usage are preserved; original evidence is retained locally."
+  }
+}

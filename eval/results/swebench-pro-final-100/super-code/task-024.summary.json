@@ -1,0 +1,2032 @@
+{
+  "schema": 1,
+  "run_id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-024-attempt-1",
+  "started_at": "2026-09-19T18:45:52.961Z",
+  "completed_at": "2026-09-19T18:59:40.773Z",
+  "preset": "super-code",
+  "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
+  "isolation": {
+    "schema": 1,
+    "policy": "swebench-pro-isolation-v3",
+    "passed": true,
+    "audited_sessions": 1,
+    "blocked_calls_count": 8,
+    "violations_count": 0
+  },
+  "candidate": {
+    "schema": 1,
+    "identity": "local-0.0.9-candidate",
+    "package": {
+      "name": "dsh-super-code",
+      "version": "0.0.9",
+      "tarball": "dsh-super-code-0.0.9.tgz"
+    },
+    "source": {
+      "git_head": "259f081658d20230d392da418955f190067ddc0f",
+      "tracked_diff_sha256": "1965bf0bf045f6d8f471613c8b50851ab052f98a6338413853536c89f61dcba7",
+      "untracked_package_paths": [
+        "lib/core/experiment-recipes.d.ts",
+        "lib/core/experiment-recipes.d.ts.map",
+        "lib/core/experiment-recipes.js",
+        "lib/core/experiment-recipes.js.map",
+        "lib/experiments.d.ts",
+        "lib/experiments.d.ts.map",
+        "lib/experiments.js",
+        "lib/experiments.js.map",
+        "lib/task-memory-store.d.ts",
+        "lib/task-memory-store.d.ts.map",
+        "lib/task-memory-store.js",
+        "lib/task-memory-store.js.map"
+      ]
+    },
+    "harness": {
+      "git_head": "c291e7961a515f6d7af9304e7fd1d257929aef26",
+      "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+    },
+    "artifacts": {
+      "tarball_sha256": "2e2104209812ae13c701480e5e0ba38bf6d09ee7b6546ebd909bab60b80d83e6",
+      "cordis_patch_sha256": "d8f8e14602aeb4dfafeb6aff3916cccb934c2c88d1d84b222a7c6d3040ca7434",
+      "preset_sha256": "43edc7f7b6dc9fcea423290e48f7b1d245220f10b15a06d8defa5f34685032e9",
+      "packed_files": 71,
+      "packed_bytes": 83113,
+      "unpacked_bytes": 306269
+    },
+    "created_at": "2026-09-19T13:30:54.126Z"
+  },
+  "task_index": 24,
+  "instance_id": "instance_element-hq__element-web-5dfde12c1c1c0b6e48f17e3405468593e39d9492-vnan",
+  "repo": "element-hq/element-web",
+  "base_commit": "f97cef80aed8ee6011543f08bee8b1745a33a7db",
+  "official_evaluator": {
+    "repository": "scaleapi/SWE-bench_Pro-os",
+    "commit": "ca10a60a5fcae51e6948ffe1485d4153d421e6c5",
+    "evaluator_sha256": "bb5d4c5486be296e464e695df3747064aaa3bb197394bc6d39980634afec2034",
+    "dataset_sha256": "b5b2462bfbf5aeb2cb7ba7d215778a1768b85f9d7ad7f748546c7f80a0ad1510",
+    "image_policy": "local-cache-only"
+  },
+  "image": {
+    "reference": "jefzda/sweap-images:element-hq.element-element-hq__element-web-5dfde12c1c1c0b6e48f17e3405468593e39d9492",
+    "acquisition_reference": "docker.1ms.run/jefzda/sweap-images:element-hq.element-element-hq__element-web-5dfde12c1c1c0b6e48f17e3405468593e39d9492",
+    "platform": "linux/amd64",
+    "id": "sha256:409ccc6a1fd965ebf2ea9c30f5b16ee345ae2af9697d8f703009e1e72d6b3387",
+    "repo_digests": [
+      "docker.1ms.run/jefzda/sweap-images@sha256:409ccc6a1fd965ebf2ea9c30f5b16ee345ae2af9697d8f703009e1e72d6b3387",
+      "jefzda/sweap-images@sha256:409ccc6a1fd965ebf2ea9c30f5b16ee345ae2af9697d8f703009e1e72d6b3387"
+    ]
+  },
+  "page_runtime": {
+    "schema": 2,
+    "runtime": "deepseek-harness-web-rpc",
+    "mode": "agent-run",
+    "session_id": "session-4f2a55e7-3038-4400-95ef-4d1a16db6454",
+    "web_rpc": {
+      "authenticated": true,
+      "calls": [
+        "session/create",
+        "session/list",
+        "session/selectModel",
+        "session/prompt",
+        "session/list"
+      ],
+      "prompt_submitted": true
+    },
+    "preset": "super-code",
+    "isolation": {
+      "policy": "swebench-pro-isolation-v3",
+      "permission_preset": "workspace-write",
+      "tool_guard": "workspace-files-and-assigned-offline-container"
+    },
+    "candidate": {
+      "schema": 1,
+      "identity": "local-0.0.9-candidate",
+      "package": {
+        "name": "dsh-super-code",
+        "version": "0.0.9",
+        "tarball": "dsh-super-code-0.0.9.tgz"
+      },
+      "source": {
+        "git_head": "259f081658d20230d392da418955f190067ddc0f",
+        "tracked_diff_sha256": "1965bf0bf045f6d8f471613c8b50851ab052f98a6338413853536c89f61dcba7",
+        "untracked_package_paths": [
+          "lib/core/experiment-recipes.d.ts",
+          "lib/core/experiment-recipes.d.ts.map",
+          "lib/core/experiment-recipes.js",
+          "lib/core/experiment-recipes.js.map",
+          "lib/experiments.d.ts",
+          "lib/experiments.d.ts.map",
+          "lib/experiments.js",
+          "lib/experiments.js.map",
+          "lib/task-memory-store.d.ts",
+          "lib/task-memory-store.d.ts.map",
+          "lib/task-memory-store.js",
+          "lib/task-memory-store.js.map"
+        ]
+      },
+      "harness": {
+        "git_head": "c291e7961a515f6d7af9304e7fd1d257929aef26",
+        "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+      },
+      "artifacts": {
+        "tarball_sha256": "2e2104209812ae13c701480e5e0ba38bf6d09ee7b6546ebd909bab60b80d83e6",
+        "cordis_patch_sha256": "d8f8e14602aeb4dfafeb6aff3916cccb934c2c88d1d84b222a7c6d3040ca7434",
+        "preset_sha256": "43edc7f7b6dc9fcea423290e48f7b1d245220f10b15a06d8defa5f34685032e9",
+        "packed_files": 71,
+        "packed_bytes": 83113,
+        "unpacked_bytes": 306269
+      },
+      "created_at": "2026-09-19T13:30:54.126Z"
+    },
+    "model": {
+      "display_name": "deepseek-v4.1-flash",
+      "reasoning_effort": "high",
+      "max_tokens": 384000
+    },
+    "elapsed_ms": 724655,
+    "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+  },
+  "metrics": {
+    "schema": 2,
+    "accounting": {
+      "observed_requests": 84,
+      "requests_with_usage": 84,
+      "unknown_usage_requests": 0,
+      "cost_complete": false,
+      "actual_cost": null,
+      "reason": "Observed log usage only; request inventory and billing reconciliation required",
+      "ledger": [
+        {
+          "id": "1/1/0",
+          "usage": {
+            "inputTokens": 1829,
+            "outputTokens": 295,
+            "totalTokens": 7500,
+            "cacheReadTokens": 5376
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 14,
+          "time": 1789843593409
+        },
+        {
+          "id": "1/2/0",
+          "usage": {
+            "inputTokens": 323,
+            "outputTokens": 242,
+            "totalTokens": 7989,
+            "cacheReadTokens": 7424
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 22,
+          "time": 1789843595832
+        },
+        {
+          "id": "1/3/0",
+          "usage": {
+            "inputTokens": 847,
+            "outputTokens": 624,
+            "totalTokens": 9407,
+            "cacheReadTokens": 7936
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 29,
+          "time": 1789843599359
+        },
+        {
+          "id": "1/4/0",
+          "usage": {
+            "inputTokens": 701,
+            "outputTokens": 475,
+            "totalTokens": 10520,
+            "cacheReadTokens": 9344
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 36,
+          "time": 1789843602208
+        },
+        {
+          "id": "1/5/0",
+          "usage": {
+            "inputTokens": 3161,
+            "outputTokens": 487,
+            "totalTokens": 14144,
+            "cacheReadTokens": 10496
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 43,
+          "time": 1789843605102
+        },
+        {
+          "id": "1/6/0",
+          "usage": {
+            "inputTokens": 2269,
+            "outputTokens": 479,
+            "totalTokens": 16828,
+            "cacheReadTokens": 14080
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 50,
+          "time": 1789843607874
+        },
+        {
+          "id": "1/7/0",
+          "usage": {
+            "inputTokens": 1702,
+            "outputTokens": 1315,
+            "totalTokens": 19785,
+            "cacheReadTokens": 16768
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 57,
+          "time": 1789843614274
+        },
+        {
+          "id": "1/8/0",
+          "usage": {
+            "inputTokens": 140,
+            "outputTokens": 541,
+            "totalTokens": 20393,
+            "cacheReadTokens": 19712
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 64,
+          "time": 1789843617527
+        },
+        {
+          "id": "1/9/0",
+          "usage": {
+            "inputTokens": 834,
+            "outputTokens": 1188,
+            "totalTokens": 22374,
+            "cacheReadTokens": 20352
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 71,
+          "time": 1789843622753
+        },
+        {
+          "id": "1/10/0",
+          "usage": {
+            "inputTokens": 1040,
+            "outputTokens": 437,
+            "totalTokens": 23749,
+            "cacheReadTokens": 22272
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 78,
+          "time": 1789843625558
+        },
+        {
+          "id": "1/11/0",
+          "usage": {
+            "inputTokens": 709,
+            "outputTokens": 405,
+            "totalTokens": 24794,
+            "cacheReadTokens": 23680
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 85,
+          "time": 1789843628243
+        },
+        {
+          "id": "1/12/0",
+          "usage": {
+            "inputTokens": 326,
+            "outputTokens": 274,
+            "totalTokens": 25304,
+            "cacheReadTokens": 24704
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 92,
+          "time": 1789843630554
+        },
+        {
+          "id": "1/13/0",
+          "usage": {
+            "inputTokens": 692,
+            "outputTokens": 519,
+            "totalTokens": 26427,
+            "cacheReadTokens": 25216
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 99,
+          "time": 1789843634105
+        },
+        {
+          "id": "1/14/0",
+          "usage": {
+            "inputTokens": 506,
+            "outputTokens": 1345,
+            "totalTokens": 28219,
+            "cacheReadTokens": 26368
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 106,
+          "time": 1789843639836
+        },
+        {
+          "id": "1/15/0",
+          "usage": {
+            "inputTokens": 641,
+            "outputTokens": 974,
+            "totalTokens": 29775,
+            "cacheReadTokens": 28160
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 113,
+          "time": 1789843644912
+        },
+        {
+          "id": "1/16/0",
+          "usage": {
+            "inputTokens": 1628,
+            "outputTokens": 283,
+            "totalTokens": 31607,
+            "cacheReadTokens": 29696
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 120,
+          "time": 1789843647513
+        },
+        {
+          "id": "1/17/0",
+          "usage": {
+            "inputTokens": 1152,
+            "outputTokens": 344,
+            "totalTokens": 32984,
+            "cacheReadTokens": 31488
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 127,
+          "time": 1789843649939
+        },
+        {
+          "id": "1/18/0",
+          "usage": {
+            "inputTokens": 2228,
+            "outputTokens": 2366,
+            "totalTokens": 37490,
+            "cacheReadTokens": 32896
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 134,
+          "time": 1789843659785
+        },
+        {
+          "id": "1/19/0",
+          "usage": {
+            "inputTokens": 312,
+            "outputTokens": 299,
+            "totalTokens": 37987,
+            "cacheReadTokens": 37376
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 141,
+          "time": 1789843662298
+        },
+        {
+          "id": "1/20/0",
+          "usage": {
+            "inputTokens": 1453,
+            "outputTokens": 171,
+            "totalTokens": 39512,
+            "cacheReadTokens": 37888
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 148,
+          "time": 1789843664408
+        },
+        {
+          "id": "1/21/0",
+          "usage": {
+            "inputTokens": 321,
+            "outputTokens": 1536,
+            "totalTokens": 41281,
+            "cacheReadTokens": 39424
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 153,
+          "time": 1789843671515
+        },
+        {
+          "id": "1/22/0",
+          "usage": {
+            "inputTokens": 371,
+            "outputTokens": 370,
+            "totalTokens": 41957,
+            "cacheReadTokens": 41216
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 160,
+          "time": 1789843675726
+        },
+        {
+          "id": "1/23/0",
+          "usage": {
+            "inputTokens": 719,
+            "outputTokens": 1292,
+            "totalTokens": 43867,
+            "cacheReadTokens": 41856
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 165,
+          "time": 1789843681897
+        },
+        {
+          "id": "1/24/0",
+          "usage": {
+            "inputTokens": 412,
+            "outputTokens": 148,
+            "totalTokens": 44336,
+            "cacheReadTokens": 43776
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 172,
+          "time": 1789843684175
+        },
+        {
+          "id": "1/25/0",
+          "usage": {
+            "inputTokens": 231,
+            "outputTokens": 1124,
+            "totalTokens": 45515,
+            "cacheReadTokens": 44160
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 177,
+          "time": 1789843689609
+        },
+        {
+          "id": "1/26/0",
+          "usage": {
+            "inputTokens": 254,
+            "outputTokens": 952,
+            "totalTokens": 46518,
+            "cacheReadTokens": 45312
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 184,
+          "time": 1789843709441
+        },
+        {
+          "id": "1/27/0",
+          "usage": {
+            "inputTokens": 1272,
+            "outputTokens": 1367,
+            "totalTokens": 49103,
+            "cacheReadTokens": 46464
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 189,
+          "time": 1789843715774
+        },
+        {
+          "id": "1/28/0",
+          "usage": {
+            "inputTokens": 207,
+            "outputTokens": 233,
+            "totalTokens": 49464,
+            "cacheReadTokens": 49024
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 196,
+          "time": 1789843717953
+        },
+        {
+          "id": "1/29/0",
+          "usage": {
+            "inputTokens": 834,
+            "outputTokens": 1598,
+            "totalTokens": 51840,
+            "cacheReadTokens": 49408
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 201,
+          "time": 1789843725159
+        },
+        {
+          "id": "1/30/0",
+          "usage": {
+            "inputTokens": 375,
+            "outputTokens": 382,
+            "totalTokens": 52597,
+            "cacheReadTokens": 51840
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 208,
+          "time": 1789843728126
+        },
+        {
+          "id": "1/31/0",
+          "usage": {
+            "inputTokens": 720,
+            "outputTokens": 1544,
+            "totalTokens": 54744,
+            "cacheReadTokens": 52480
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 215,
+          "time": 1789843735998
+        },
+        {
+          "id": "1/32/0",
+          "usage": {
+            "inputTokens": 670,
+            "outputTokens": 848,
+            "totalTokens": 56174,
+            "cacheReadTokens": 54656
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 222,
+          "time": 1789843740832
+        },
+        {
+          "id": "1/33/0",
+          "usage": {
+            "inputTokens": 168,
+            "outputTokens": 729,
+            "totalTokens": 56961,
+            "cacheReadTokens": 56064
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 229,
+          "time": 1789843744906
+        },
+        {
+          "id": "1/34/0",
+          "usage": {
+            "inputTokens": 706,
+            "outputTokens": 2223,
+            "totalTokens": 59889,
+            "cacheReadTokens": 56960
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 236,
+          "time": 1789843754912
+        },
+        {
+          "id": "1/35/0",
+          "usage": {
+            "inputTokens": 282,
+            "outputTokens": 3053,
+            "totalTokens": 63111,
+            "cacheReadTokens": 59776
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 243,
+          "time": 1789843778330
+        },
+        {
+          "id": "1/36/0",
+          "usage": {
+            "inputTokens": 207,
+            "outputTokens": 3204,
+            "totalTokens": 66387,
+            "cacheReadTokens": 62976
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 250,
+          "time": 1789843792839
+        },
+        {
+          "id": "1/37/0",
+          "usage": {
+            "inputTokens": 998,
+            "outputTokens": 3097,
+            "totalTokens": 70399,
+            "cacheReadTokens": 66304
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 257,
+          "time": 1789843806277
+        },
+        {
+          "id": "1/38/0",
+          "usage": {
+            "inputTokens": 536,
+            "outputTokens": 308,
+            "totalTokens": 71116,
+            "cacheReadTokens": 70272
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 264,
+          "time": 1789843808796
+        },
+        {
+          "id": "1/39/0",
+          "usage": {
+            "inputTokens": 1447,
+            "outputTokens": 134,
+            "totalTokens": 72621,
+            "cacheReadTokens": 71040
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 269,
+          "time": 1789843811460
+        },
+        {
+          "id": "1/40/0",
+          "usage": {
+            "inputTokens": 1098,
+            "outputTokens": 268,
+            "totalTokens": 73942,
+            "cacheReadTokens": 72576
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 274,
+          "time": 1789843813487
+        },
+        {
+          "id": "1/41/0",
+          "usage": {
+            "inputTokens": 297,
+            "outputTokens": 2387,
+            "totalTokens": 76540,
+            "cacheReadTokens": 73856
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 279,
+          "time": 1789843823739
+        },
+        {
+          "id": "1/42/0",
+          "usage": {
+            "inputTokens": 219,
+            "outputTokens": 327,
+            "totalTokens": 76962,
+            "cacheReadTokens": 76416
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 284,
+          "time": 1789843826104
+        },
+        {
+          "id": "1/43/0",
+          "usage": {
+            "inputTokens": 257,
+            "outputTokens": 475,
+            "totalTokens": 77532,
+            "cacheReadTokens": 76800
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 289,
+          "time": 1789843828670
+        },
+        {
+          "id": "1/44/0",
+          "usage": {
+            "inputTokens": 187,
+            "outputTokens": 143,
+            "totalTokens": 77770,
+            "cacheReadTokens": 77440
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 294,
+          "time": 1789843830460
+        },
+        {
+          "id": "1/45/0",
+          "usage": {
+            "inputTokens": 189,
+            "outputTokens": 83,
+            "totalTokens": 77968,
+            "cacheReadTokens": 77696
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 299,
+          "time": 1789843831794
+        },
+        {
+          "id": "1/46/0",
+          "usage": {
+            "inputTokens": 1607,
+            "outputTokens": 119,
+            "totalTokens": 79678,
+            "cacheReadTokens": 77952
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 304,
+          "time": 1789843833239
+        },
+        {
+          "id": "1/47/0",
+          "usage": {
+            "inputTokens": 164,
+            "outputTokens": 128,
+            "totalTokens": 79908,
+            "cacheReadTokens": 79616
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 309,
+          "time": 1789843834876
+        },
+        {
+          "id": "1/48/0",
+          "usage": {
+            "inputTokens": 138,
+            "outputTokens": 722,
+            "totalTokens": 80732,
+            "cacheReadTokens": 79872
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 314,
+          "time": 1789843838610
+        },
+        {
+          "id": "1/49/0",
+          "usage": {
+            "inputTokens": 194,
+            "outputTokens": 958,
+            "totalTokens": 81792,
+            "cacheReadTokens": 80640
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 319,
+          "time": 1789843843772
+        },
+        {
+          "id": "1/50/0",
+          "usage": {
+            "inputTokens": 698,
+            "outputTokens": 353,
+            "totalTokens": 82843,
+            "cacheReadTokens": 81792
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 324,
+          "time": 1789843846215
+        },
+        {
+          "id": "1/51/0",
+          "usage": {
+            "inputTokens": 259,
+            "outputTokens": 296,
+            "totalTokens": 83243,
+            "cacheReadTokens": 82688
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 329,
+          "time": 1789843848370
+        },
+        {
+          "id": "1/52/0",
+          "usage": {
+            "inputTokens": 147,
+            "outputTokens": 194,
+            "totalTokens": 83541,
+            "cacheReadTokens": 83200
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 334,
+          "time": 1789843850374
+        },
+        {
+          "id": "1/53/0",
+          "usage": {
+            "inputTokens": 382,
+            "outputTokens": 335,
+            "totalTokens": 84173,
+            "cacheReadTokens": 83456
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 339,
+          "time": 1789843853210
+        },
+        {
+          "id": "1/54/0",
+          "usage": {
+            "inputTokens": 1066,
+            "outputTokens": 551,
+            "totalTokens": 85713,
+            "cacheReadTokens": 84096
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 344,
+          "time": 1789843857380
+        },
+        {
+          "id": "1/55/0",
+          "usage": {
+            "inputTokens": 944,
+            "outputTokens": 393,
+            "totalTokens": 86969,
+            "cacheReadTokens": 85632
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 349,
+          "time": 1789843860439
+        },
+        {
+          "id": "1/56/0",
+          "usage": {
+            "inputTokens": 664,
+            "outputTokens": 161,
+            "totalTokens": 87737,
+            "cacheReadTokens": 86912
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 354,
+          "time": 1789843862290
+        },
+        {
+          "id": "1/57/0",
+          "usage": {
+            "inputTokens": 154,
+            "outputTokens": 599,
+            "totalTokens": 88433,
+            "cacheReadTokens": 87680
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 359,
+          "time": 1789843865995
+        },
+        {
+          "id": "1/58/0",
+          "usage": {
+            "inputTokens": 1719,
+            "outputTokens": 320,
+            "totalTokens": 90359,
+            "cacheReadTokens": 88320
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 366,
+          "time": 1789843868787
+        },
+        {
+          "id": "1/59/0",
+          "usage": {
+            "inputTokens": 336,
+            "outputTokens": 357,
+            "totalTokens": 90933,
+            "cacheReadTokens": 90240
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 371,
+          "time": 1789843924020
+        },
+        {
+          "id": "1/60/0",
+          "usage": {
+            "inputTokens": 1354,
+            "outputTokens": 1166,
+            "totalTokens": 93400,
+            "cacheReadTokens": 90880
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 376,
+          "time": 1789843929091
+        },
+        {
+          "id": "1/61/0",
+          "usage": {
+            "inputTokens": 200,
+            "outputTokens": 760,
+            "totalTokens": 94272,
+            "cacheReadTokens": 93312
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 381,
+          "time": 1789843932667
+        },
+        {
+          "id": "1/62/0",
+          "usage": {
+            "inputTokens": 176,
+            "outputTokens": 427,
+            "totalTokens": 94811,
+            "cacheReadTokens": 94208
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 386,
+          "time": 1789843935153
+        },
+        {
+          "id": "1/63/0",
+          "usage": {
+            "inputTokens": 207,
+            "outputTokens": 158,
+            "totalTokens": 95085,
+            "cacheReadTokens": 94720
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 391,
+          "time": 1789843937026
+        },
+        {
+          "id": "1/64/0",
+          "usage": {
+            "inputTokens": 527,
+            "outputTokens": 137,
+            "totalTokens": 95640,
+            "cacheReadTokens": 94976
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 396,
+          "time": 1789843958935
+        },
+        {
+          "id": "1/65/0",
+          "usage": {
+            "inputTokens": 254,
+            "outputTokens": 149,
+            "totalTokens": 95891,
+            "cacheReadTokens": 95488
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 401,
+          "time": 1789843960440
+        },
+        {
+          "id": "1/66/0",
+          "usage": {
+            "inputTokens": 249,
+            "outputTokens": 348,
+            "totalTokens": 96469,
+            "cacheReadTokens": 95872
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 406,
+          "time": 1789843972064
+        },
+        {
+          "id": "1/67/0",
+          "usage": {
+            "inputTokens": 201,
+            "outputTokens": 191,
+            "totalTokens": 96776,
+            "cacheReadTokens": 96384
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 413,
+          "time": 1789843974529
+        },
+        {
+          "id": "1/68/0",
+          "usage": {
+            "inputTokens": 1334,
+            "outputTokens": 487,
+            "totalTokens": 98589,
+            "cacheReadTokens": 96768
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 418,
+          "time": 1789843977605
+        },
+        {
+          "id": "1/69/0",
+          "usage": {
+            "inputTokens": 690,
+            "outputTokens": 165,
+            "totalTokens": 99415,
+            "cacheReadTokens": 98560
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 423,
+          "time": 1789844018821
+        },
+        {
+          "id": "1/70/0",
+          "usage": {
+            "inputTokens": 536,
+            "outputTokens": 355,
+            "totalTokens": 100219,
+            "cacheReadTokens": 99328
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 428,
+          "time": 1789844068864
+        },
+        {
+          "id": "1/71/0",
+          "usage": {
+            "inputTokens": 905,
+            "outputTokens": 1308,
+            "totalTokens": 102309,
+            "cacheReadTokens": 100096
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 433,
+          "time": 1789844075169
+        },
+        {
+          "id": "1/72/0",
+          "usage": {
+            "inputTokens": 604,
+            "outputTokens": 273,
+            "totalTokens": 103149,
+            "cacheReadTokens": 102272
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 438,
+          "time": 1789844077381
+        },
+        {
+          "id": "1/73/0",
+          "usage": {
+            "inputTokens": 164,
+            "outputTokens": 271,
+            "totalTokens": 103475,
+            "cacheReadTokens": 103040
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 443,
+          "time": 1789844082238
+        },
+        {
+          "id": "1/74/0",
+          "usage": {
+            "inputTokens": 187,
+            "outputTokens": 450,
+            "totalTokens": 104061,
+            "cacheReadTokens": 103424
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 448,
+          "time": 1789844086894
+        },
+        {
+          "id": "1/75/0",
+          "usage": {
+            "inputTokens": 1773,
+            "outputTokens": 1978,
+            "totalTokens": 107687,
+            "cacheReadTokens": 103936
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 455,
+          "time": 1789844112612
+        },
+        {
+          "id": "1/76/0",
+          "usage": {
+            "inputTokens": 742,
+            "outputTokens": 634,
+            "totalTokens": 109024,
+            "cacheReadTokens": 107648
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 462,
+          "time": 1789844116910
+        },
+        {
+          "id": "1/77/0",
+          "usage": {
+            "inputTokens": 2151,
+            "outputTokens": 4027,
+            "totalTokens": 115106,
+            "cacheReadTokens": 108928
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 467,
+          "time": 1789844134454
+        },
+        {
+          "id": "1/78/0",
+          "usage": {
+            "inputTokens": 188,
+            "outputTokens": 153,
+            "totalTokens": 115285,
+            "cacheReadTokens": 114944
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 472,
+          "time": 1789844136505
+        },
+        {
+          "id": "1/79/0",
+          "usage": {
+            "inputTokens": 261,
+            "outputTokens": 1147,
+            "totalTokens": 116480,
+            "cacheReadTokens": 115072
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 477,
+          "time": 1789844225153
+        },
+        {
+          "id": "1/80/0",
+          "usage": {
+            "inputTokens": 144,
+            "outputTokens": 2488,
+            "totalTokens": 118984,
+            "cacheReadTokens": 116352
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 482,
+          "time": 1789844236898
+        },
+        {
+          "id": "1/81/0",
+          "usage": {
+            "inputTokens": 248,
+            "outputTokens": 1120,
+            "totalTokens": 120280,
+            "cacheReadTokens": 118912
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 489,
+          "time": 1789844244676
+        },
+        {
+          "id": "1/82/0",
+          "usage": {
+            "inputTokens": 261,
+            "outputTokens": 469,
+            "totalTokens": 120922,
+            "cacheReadTokens": 120192
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 494,
+          "time": 1789844300663
+        },
+        {
+          "id": "1/83/0",
+          "usage": {
+            "inputTokens": 727,
+            "outputTokens": 735,
+            "totalTokens": 122294,
+            "cacheReadTokens": 120832
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 499,
+          "time": 1789844304851
+        },
+        {
+          "id": "1/84/0",
+          "usage": {
+            "inputTokens": 436,
+            "outputTokens": 1005,
+            "totalTokens": 123681,
+            "cacheReadTokens": 122240
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 504,
+          "time": 1789844309850
+        }
+      ]
+    },
+    "usage": {
+      "model_calls": 84,
+      "requests": 84,
+      "input_tokens": {
+        "count": 84,
+        "total": 5727965,
+        "average": 68190.05952380953,
+        "minimum": 7205,
+        "maximum": 122676
+      },
+      "uncached_input_tokens": {
+        "count": 84,
+        "total": 58461,
+        "average": 695.9642857142857,
+        "minimum": 138,
+        "maximum": 3161
+      },
+      "cached_input_tokens": {
+        "count": 84,
+        "total": 5669504,
+        "average": 67494.09523809524,
+        "minimum": 5376,
+        "maximum": 122240
+      },
+      "output_tokens": {
+        "count": 84,
+        "total": 66775,
+        "average": 794.9404761904761,
+        "minimum": 83,
+        "maximum": 4027
+      },
+      "total_tokens": 5794740,
+      "cache_hit_rate": 0.9897937574688392
+    },
+    "timing_ms": {
+      "first_token": {
+        "count": 84,
+        "total": 100639,
+        "average": 1198.0833333333333,
+        "minimum": 607,
+        "maximum": 2381
+      },
+      "input_wait": {
+        "count": 84,
+        "total": 100639,
+        "average": 1198.0833333333333,
+        "minimum": 607,
+        "maximum": 2381
+      },
+      "output": {
+        "count": 84,
+        "total": 250278,
+        "average": 2979.5,
+        "minimum": 225,
+        "maximum": 15902
+      },
+      "llm": {
+        "count": 84,
+        "total": 350917,
+        "average": 4177.583333333333,
+        "minimum": 1318,
+        "maximum": 17292
+      },
+      "tools": {
+        "count": 120,
+        "total": 366406,
+        "average": 3053.383333333333,
+        "minimum": 0,
+        "maximum": 82638
+      },
+      "output_tokens_per_second": 266.803314714038
+    },
+    "session": {
+      "steps": 84,
+      "turns": 1,
+      "model_calls": 84,
+      "tool_calls": 120
+    }
+  },
+  "patch": {
+    "sha256": "22efd69612ca16c2550cfd16c6ef7409719fa01c814dbd38ee8fad655bbc27e3",
+    "bytes": 8238,
+    "changed_paths": [
+      "src/components/views/settings/devices/useOwnDevices.ts",
+      "src/i18n/strings/en_EN.json",
+      "src/utils/device/clientInformation.ts",
+      "src/voice-broadcast/utils/checkVoiceBroadcastPreConditions.tsx"
+    ],
+    "excluded_generated_paths": []
+  },
+  "official_result": {
+    "passed": false,
+    "failure_kind": "official_test_failure",
+    "evaluator_exit_code": 0,
+    "parsed": {
+      "tests": [
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | <LoginWithQRFlow /> | renders spinner while loading",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | <LoginWithQRFlow /> | renders spinner whilst QR generating",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | <LoginWithQRFlow /> | renders QR code",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | <LoginWithQRFlow /> | renders spinner while connecting",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | <LoginWithQRFlow /> | renders code when connected",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | <LoginWithQRFlow /> | renders spinner while signing in",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | <LoginWithQRFlow /> | renders spinner while verifying",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | errors | renders user_declined",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | errors | renders other_device_not_signed_in",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | errors | renders other_device_already_signed_in",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | errors | renders unknown",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | errors | renders expired",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | errors | renders user_cancelled",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | errors | renders invalid_code",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | errors | renders unsupported_algorithm",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | errors | renders data_mismatch",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | errors | renders unsupported_transport",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | errors | renders homeserver_lacks_support",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/messages/MessageEvent-test.tsx | when a voice broadcast start event occurs | should render a VoiceBroadcast component",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | createVoiceBroadcastRecorder | should return a VoiceBroadcastRecorder instance with targetChunkLength from config",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | instance | start should forward the call to VoiceRecording.start",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | instance | contentType should return the value from VoiceRecording",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | stop | should forward the call to VoiceRecording.stop",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | stop | should not emit a ChunkRecorded event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | when calling destroy | should call VoiceRecording.destroy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | when calling destroy | should remove all listeners",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | when the first page from recorder has been received | should not emit a ChunkRecorded event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | when a second page from recorder has been received | should not emit a ChunkRecorded event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | when a third page from recorder has been received | should not emit a ChunkRecorded event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | and calling stop | should return the remaining chunk",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | and calling start again and receiving some data | should emit the ChunkRecorded event for the first chunk",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | when some chunks have been received | should emit ChunkRecorded events",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/DialogSidebar-test.tsx | <DialogSidebar /> | renders sidebar correctly without beacons",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/DialogSidebar-test.tsx | <DialogSidebar /> | renders sidebar correctly with beacons",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/DialogSidebar-test.tsx | <DialogSidebar /> | calls on beacon click",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/DialogSidebar-test.tsx | <DialogSidebar /> | closes on close button click",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | when trying to start a broadcast if there is no connection | should show an info dialog and not start a recording",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | when currently listening to a broadcast and there is no recording | should stop listen to the current broadcast and create a new recording",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | when there is already a current voice broadcast | should not start a voice broadcast",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | when there is already a current voice broadcast | should show an info dialog",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | when there already is a live broadcast of the current user in the room | should not start a voice broadcast",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | when there already is a live broadcast of the current user in the room | should show an info dialog",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | when there already is a live broadcast of another user | should not start a voice broadcast",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | when there already is a live broadcast of another user | should show an info dialog",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | when the current user is not allowed to send voice broadcast info state events | should not start a voice broadcast",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | when the current user is not allowed to send voice broadcast info state events | should show an info dialog",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | when created for a Voice Broadcast Info without relations | should be in Started state",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | ✕ should send a stopped info event (63 ms) | should be in state stopped stopped",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | ✕ should send a stopped info event (63 ms) | should emit a stopped state changed event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | and calling start | should start the recorder",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | and the info event is redacted | should be in state stopped stopped",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | and the info event is redacted | should destroy the recording",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | and receiving a call action | should be in state stopped paused",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | and a chunk time update occurs | should update time left",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | and a chunk time update occurs, that would increase time left | should not change time left",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | and a chunk has been recorded | should send a voice message",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | and another chunk has been recorded, that exceeds the max time | should be in state stopped stopped",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | and another chunk has been recorded, that exceeds the max time | should send a voice message",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | and calling stop | should send a voice message",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | and calling pause | should be in state stopped paused",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | ✕ should send a paused info event (3 ms) | should stop the recorder",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | ✕ should send a paused info event (3 ms) | should emit a paused state changed event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | and calling toggle | should be in state stopped paused",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | ✕ should send a paused info event (4 ms) | should stop the recorder",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | ✕ should send a paused info event (4 ms) | should emit a paused state changed event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | and calling destroy | should stop the recorder and remove all listeners",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | and calling resume | should be in state stopped resumed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | ✕ should send a resumed info event (8 ms) | should start the recorder",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | ✕ should send a resumed info event (8 ms) | should emit a resumed state changed event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | and calling toggle | should be in state stopped resumed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | ✕ should send a resumed info event (6 ms) | should start the recorder",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | ✕ should send a resumed info event (6 ms) | should emit a resumed state changed event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/startNewVoiceBroadcastRecording-test.ts | when created for a Voice Broadcast Info with a Stopped relation | should be in Stopped state",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/setUpVoiceBroadcastPreRecording-test.ts | when trying to start a broadcast if there is no connection | should show an info dialog and not set up a pre-recording",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/setUpVoiceBroadcastPreRecording-test.ts | and there is no user id | should return null",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/setUpVoiceBroadcastPreRecording-test.ts | and there is no user id | should not create a broadcast pre recording",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/setUpVoiceBroadcastPreRecording-test.ts | and there is no room member | should return null",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/setUpVoiceBroadcastPreRecording-test.ts | and there is no room member | should not create a broadcast pre recording",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/setUpVoiceBroadcastPreRecording-test.ts | and there is a room member and listening to another broadcast | should pause the current playback and create a voice broadcast pre-recording",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/utils/createMessageContent-test.ts | createMessageContent | Should create html message",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/utils/createMessageContent-test.ts | createMessageContent | Should add reply to message content",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/utils/createMessageContent-test.ts | createMessageContent | Should add relation to message",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/utils/createMessageContent-test.ts | createMessageContent | Should add fields related to edition",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/avatars/MemberAvatar-test.tsx | MemberAvatar | shows an avatar for useOnlyCurrentProfiles",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomListHeader-test.tsx | RoomListHeader | renders a main menu for the home space",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomListHeader-test.tsx | RoomListHeader | renders a main menu for spaces",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomListHeader-test.tsx | RoomListHeader | renders a plus menu for spaces",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomListHeader-test.tsx | RoomListHeader | closes menu if space changes from under it",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomListHeader-test.tsx | Main menu | does not render Add Space when user does not have permission to add spaces",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomListHeader-test.tsx | Main menu | does not render Add Room when user does not have permission to add rooms",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomListHeader-test.tsx | Plus menu | does not render Add Space when user does not have permission to add spaces",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomListHeader-test.tsx | Plus menu | disables Add Room when user does not have permission to add rooms",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomListHeader-test.tsx | adding children to space | if user cannot add children to space, MainMenu adding buttons are hidden",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomListHeader-test.tsx | adding children to space | if user cannot add children to space, PlusMenu add buttons are disabled",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/CryptographyPanel-test.tsx | CryptographyPanel | shows the session ID and key",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | <SessionManagerTab /> | renders spinner while devices load",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | <SessionManagerTab /> | removes spinner when device fetch fails",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | <SessionManagerTab /> | removes spinner when device fetch fails",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | <SessionManagerTab /> | does not fail when checking device verification fails",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | <SessionManagerTab /> | sets device verification status correctly",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | <SessionManagerTab /> | extends device with client information when available",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | <SessionManagerTab /> | renders devices without available client information without error",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | <SessionManagerTab /> | does not render other sessions section when user has only one device",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | <SessionManagerTab /> | renders other sessions section when user has more than one device",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | <SessionManagerTab /> | goes to filtered list from security recommendations",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | <SessionManagerTab /> | lets you change the pusher state",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | <SessionManagerTab /> | lets you change the local notification settings state",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | <SessionManagerTab /> | updates the UI when another session changes the local notifications",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | current session section | disables current session context menu while devices are loading",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | current session section | disables current session context menu when there is no current device",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | current session section | renders current session section with an unverified session",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | current session section | opens encryption setup dialog when verifiying current session",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | current session section | renders current session section with a verified session",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | current session section | expands current session details",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | device detail expansion | renders no devices expanded by default",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | device detail expansion | toggles device expansion on click",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Device verification | does not render device verification cta when current session is not verified",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Device verification | renders device verification cta on other sessions when current session is verified",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Device verification | does not allow device verification on session that do not support encryption",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Device verification | refreshes devices after verifying other device",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Sign out | Signs out of current device",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Sign out | Signs out of current device from kebab menu",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Sign out | does not render sign out other devices option when only one device",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Sign out | signs out of all other devices from current session context menu",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Sign out | removes account data events for devices after sign out",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | other devices | deletes a device when interactive auth is not required",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | other devices | deletes a device when interactive auth is not required",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | other devices | deletes a device when interactive auth is required",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | other devices | clears loading state when device deletion is cancelled during interactive auth",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | other devices | deletes multiple devices",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | other devices | signs out of all other devices from other sessions context menu",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Rename sessions | renames current session",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Rename sessions | renames other session",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Rename sessions | does not rename session or refresh devices is session name is unchanged",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Rename sessions | saves an empty session display name successfully",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Rename sessions | displays an error when session display name fails to save",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Multiple selection | toggles session selection",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Multiple selection | cancel button clears selection",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Multiple selection | changing the filter clears selection",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | toggling select all | selects all sessions when there is not existing selection",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | toggling select all | selects all sessions when some sessions are already selected",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | toggling select all | deselects all sessions when all sessions are selected",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | toggling select all | selects only sessions that are part of the active filter",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | QR code login | does not render qr code login section when disabled",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | QR code login | renders qr code login section when enabled",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | QR code login | enters qr code login section when show QR code button clicked",
+          "status": "PASSED"
+        }
+      ]
+    }
+  },
+  "cleanup": {
+    "task_container_removed": true,
+    "task_workspace_removed": true,
+    "shared_image_retained": true
+  },
+  "public_export": {
+    "model_name_kind": "display_name",
+    "omitted": [
+      "development provider and route",
+      "local environment and paths",
+      "raw tool diagnostics"
+    ],
+    "note": "Redacted report, not runtime configuration. Scores and numeric usage are preserved; original evidence is retained locally."
+  }
+}

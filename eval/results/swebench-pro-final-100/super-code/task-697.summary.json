@@ -1,0 +1,2588 @@
+{
+  "schema": 1,
+  "run_id": "super-code-complete100-high-v009-20260920-r1-super-code-task-697-attempt-1",
+  "started_at": "2026-09-20T10:03:02.269Z",
+  "completed_at": "2026-09-20T10:34:28.378Z",
+  "preset": "super-code",
+  "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
+  "isolation": {
+    "schema": 1,
+    "policy": "swebench-pro-isolation-v3",
+    "policy_revision": 3,
+    "passed": true,
+    "repository_isolation": {
+      "base_only_git": true,
+      "commit_count": 1,
+      "remotes": [],
+      "target_commit_unavailable": true,
+      "test_container_network": "none",
+      "prepared_cache_hit": false
+    },
+    "audited_sessions": 1,
+    "blocked_calls_count": 8,
+    "observations_count": 1,
+    "violations_count": 0
+  },
+  "candidate": {
+    "schema": 1,
+    "identity": "local-0.0.9-candidate",
+    "package": {
+      "name": "dsh-super-code",
+      "version": "0.0.9",
+      "tarball": "dsh-super-code-0.0.9.tgz"
+    },
+    "source": {
+      "git_head": "259f081658d20230d392da418955f190067ddc0f",
+      "tracked_diff_sha256": "1965bf0bf045f6d8f471613c8b50851ab052f98a6338413853536c89f61dcba7",
+      "untracked_package_paths": [
+        "lib/core/experiment-recipes.d.ts",
+        "lib/core/experiment-recipes.d.ts.map",
+        "lib/core/experiment-recipes.js",
+        "lib/core/experiment-recipes.js.map",
+        "lib/experiments.d.ts",
+        "lib/experiments.d.ts.map",
+        "lib/experiments.js",
+        "lib/experiments.js.map",
+        "lib/task-memory-store.d.ts",
+        "lib/task-memory-store.d.ts.map",
+        "lib/task-memory-store.js",
+        "lib/task-memory-store.js.map"
+      ]
+    },
+    "harness": {
+      "git_head": "c291e7961a515f6d7af9304e7fd1d257929aef26",
+      "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+    },
+    "artifacts": {
+      "tarball_sha256": "2e2104209812ae13c701480e5e0ba38bf6d09ee7b6546ebd909bab60b80d83e6",
+      "cordis_patch_sha256": "d8f8e14602aeb4dfafeb6aff3916cccb934c2c88d1d84b222a7c6d3040ca7434",
+      "preset_sha256": "43edc7f7b6dc9fcea423290e48f7b1d245220f10b15a06d8defa5f34685032e9",
+      "packed_files": 71,
+      "packed_bytes": 83113,
+      "unpacked_bytes": 306269
+    },
+    "created_at": "2026-09-19T13:30:54.126Z"
+  },
+  "task_index": 697,
+  "instance_id": "instance_element-hq__element-web-aeabf3b18896ac1eb7ae9757e66ce886120f8309-vnan",
+  "repo": "element-hq/element-web",
+  "base_commit": "c9d9c421bc7e3f2a9d5d5ed05679cb3e8e06a388",
+  "official_evaluator": {
+    "repository": "scaleapi/SWE-bench_Pro-os",
+    "commit": "ca10a60a5fcae51e6948ffe1485d4153d421e6c5",
+    "evaluator_sha256": "bb5d4c5486be296e464e695df3747064aaa3bb197394bc6d39980634afec2034",
+    "dataset_sha256": "b5b2462bfbf5aeb2cb7ba7d215778a1768b85f9d7ad7f748546c7f80a0ad1510",
+    "image_policy": "local-cache-only"
+  },
+  "image": {
+    "reference": "jefzda/sweap-images:element-hq.element-element-hq__element-web-aeabf3b18896ac1eb7ae9757e66ce886120f8309",
+    "acquisition_reference": "docker.1ms.run/jefzda/sweap-images:element-hq.element-element-hq__element-web-aeabf3b18896ac1eb7ae9757e66ce886120f8309",
+    "platform": "linux/amd64",
+    "id": "sha256:2de71dfff7a4c487e36dd00a3fb0f4b209449514585a96e33e26e6f47a7c1611",
+    "repo_digests": [
+      "docker.1ms.run/jefzda/sweap-images@sha256:2de71dfff7a4c487e36dd00a3fb0f4b209449514585a96e33e26e6f47a7c1611",
+      "jefzda/sweap-images@sha256:2de71dfff7a4c487e36dd00a3fb0f4b209449514585a96e33e26e6f47a7c1611"
+    ]
+  },
+  "page_runtime": {
+    "schema": 2,
+    "runtime": "deepseek-harness-web-rpc",
+    "mode": "agent-run",
+    "session_id": "session-9f4b5474-9203-436b-89da-e5b98743d6fd",
+    "web_rpc": {
+      "authenticated": true,
+      "calls": [
+        "session/create",
+        "session/list",
+        "session/selectModel",
+        "session/prompt",
+        "session/list"
+      ],
+      "prompt_submitted": true
+    },
+    "preset": "super-code",
+    "isolation": {
+      "policy": "swebench-pro-isolation-v3",
+      "permission_preset": "workspace-write",
+      "tool_guard": "workspace-files-and-assigned-offline-container"
+    },
+    "candidate": {
+      "schema": 1,
+      "identity": "local-0.0.9-candidate",
+      "package": {
+        "name": "dsh-super-code",
+        "version": "0.0.9",
+        "tarball": "dsh-super-code-0.0.9.tgz"
+      },
+      "source": {
+        "git_head": "259f081658d20230d392da418955f190067ddc0f",
+        "tracked_diff_sha256": "1965bf0bf045f6d8f471613c8b50851ab052f98a6338413853536c89f61dcba7",
+        "untracked_package_paths": [
+          "lib/core/experiment-recipes.d.ts",
+          "lib/core/experiment-recipes.d.ts.map",
+          "lib/core/experiment-recipes.js",
+          "lib/core/experiment-recipes.js.map",
+          "lib/experiments.d.ts",
+          "lib/experiments.d.ts.map",
+          "lib/experiments.js",
+          "lib/experiments.js.map",
+          "lib/task-memory-store.d.ts",
+          "lib/task-memory-store.d.ts.map",
+          "lib/task-memory-store.js",
+          "lib/task-memory-store.js.map"
+        ]
+      },
+      "harness": {
+        "git_head": "c291e7961a515f6d7af9304e7fd1d257929aef26",
+        "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+      },
+      "artifacts": {
+        "tarball_sha256": "2e2104209812ae13c701480e5e0ba38bf6d09ee7b6546ebd909bab60b80d83e6",
+        "cordis_patch_sha256": "d8f8e14602aeb4dfafeb6aff3916cccb934c2c88d1d84b222a7c6d3040ca7434",
+        "preset_sha256": "43edc7f7b6dc9fcea423290e48f7b1d245220f10b15a06d8defa5f34685032e9",
+        "packed_files": 71,
+        "packed_bytes": 83113,
+        "unpacked_bytes": 306269
+      },
+      "created_at": "2026-09-19T13:30:54.126Z"
+    },
+    "model": {
+      "display_name": "deepseek-v4.1-flash",
+      "reasoning_effort": "high",
+      "max_tokens": 384000
+    },
+    "elapsed_ms": 1728938,
+    "time_budget_exhausted": false,
+    "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+  },
+  "metrics": {
+    "schema": 2,
+    "accounting": {
+      "observed_requests": 86,
+      "requests_with_usage": 86,
+      "unknown_usage_requests": 0,
+      "cost_complete": false,
+      "actual_cost": null,
+      "reason": "Observed log usage only; request inventory and billing reconciliation required",
+      "ledger": [
+        {
+          "id": "1/1/0",
+          "usage": {
+            "inputTokens": 1992,
+            "outputTokens": 170,
+            "totalTokens": 7538,
+            "cacheReadTokens": 5376
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 14,
+          "time": 1789898625056
+        },
+        {
+          "id": "1/2/0",
+          "usage": {
+            "inputTokens": 525,
+            "outputTokens": 411,
+            "totalTokens": 8360,
+            "cacheReadTokens": 7424
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 22,
+          "time": 1789898628190
+        },
+        {
+          "id": "1/3/0",
+          "usage": {
+            "inputTokens": 5721,
+            "outputTokens": 323,
+            "totalTokens": 14364,
+            "cacheReadTokens": 8320
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 29,
+          "time": 1789898630532
+        },
+        {
+          "id": "1/4/0",
+          "usage": {
+            "inputTokens": 198,
+            "outputTokens": 197,
+            "totalTokens": 14731,
+            "cacheReadTokens": 14336
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 36,
+          "time": 1789898632474
+        },
+        {
+          "id": "1/5/0",
+          "usage": {
+            "inputTokens": 1082,
+            "outputTokens": 761,
+            "totalTokens": 16563,
+            "cacheReadTokens": 14720
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 41,
+          "time": 1789898636014
+        },
+        {
+          "id": "1/6/0",
+          "usage": {
+            "inputTokens": 2990,
+            "outputTokens": 2713,
+            "totalTokens": 22215,
+            "cacheReadTokens": 16512
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 46,
+          "time": 1789898646671
+        },
+        {
+          "id": "1/7/0",
+          "usage": {
+            "inputTokens": 984,
+            "outputTokens": 621,
+            "totalTokens": 23749,
+            "cacheReadTokens": 22144
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 51,
+          "time": 1789898649936
+        },
+        {
+          "id": "1/8/0",
+          "usage": {
+            "inputTokens": 255,
+            "outputTokens": 281,
+            "totalTokens": 24088,
+            "cacheReadTokens": 23552
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 58,
+          "time": 1789898652496
+        },
+        {
+          "id": "1/9/0",
+          "usage": {
+            "inputTokens": 166,
+            "outputTokens": 3668,
+            "totalTokens": 27770,
+            "cacheReadTokens": 23936
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 63,
+          "time": 1789898667127
+        },
+        {
+          "id": "1/10/0",
+          "usage": {
+            "inputTokens": 217,
+            "outputTokens": 5081,
+            "totalTokens": 32946,
+            "cacheReadTokens": 27648
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 70,
+          "time": 1789898688518
+        },
+        {
+          "id": "1/11/0",
+          "usage": {
+            "inputTokens": 1851,
+            "outputTokens": 416,
+            "totalTokens": 35163,
+            "cacheReadTokens": 32896
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 77,
+          "time": 1789898691346
+        },
+        {
+          "id": "1/12/0",
+          "usage": {
+            "inputTokens": 1799,
+            "outputTokens": 1156,
+            "totalTokens": 38027,
+            "cacheReadTokens": 35072
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 84,
+          "time": 1789898697105
+        },
+        {
+          "id": "1/13/0",
+          "usage": {
+            "inputTokens": 1025,
+            "outputTokens": 886,
+            "totalTokens": 39927,
+            "cacheReadTokens": 38016
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 91,
+          "time": 1789898702153
+        },
+        {
+          "id": "1/14/0",
+          "usage": {
+            "inputTokens": 1683,
+            "outputTokens": 1582,
+            "totalTokens": 43073,
+            "cacheReadTokens": 39808
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 98,
+          "time": 1789898709456
+        },
+        {
+          "id": "1/15/0",
+          "usage": {
+            "inputTokens": 2657,
+            "outputTokens": 341,
+            "totalTokens": 46006,
+            "cacheReadTokens": 43008
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 105,
+          "time": 1789898712826
+        },
+        {
+          "id": "1/16/0",
+          "usage": {
+            "inputTokens": 769,
+            "outputTokens": 1831,
+            "totalTokens": 48552,
+            "cacheReadTokens": 45952
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 112,
+          "time": 1789898808751
+        },
+        {
+          "id": "1/17/0",
+          "usage": {
+            "inputTokens": 381,
+            "outputTokens": 523,
+            "totalTokens": 49416,
+            "cacheReadTokens": 48512
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 119,
+          "time": 1789898812394
+        },
+        {
+          "id": "1/18/0",
+          "usage": {
+            "inputTokens": 947,
+            "outputTokens": 267,
+            "totalTokens": 50622,
+            "cacheReadTokens": 49408
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 124,
+          "time": 1789898814343
+        },
+        {
+          "id": "1/19/0",
+          "usage": {
+            "inputTokens": 247,
+            "outputTokens": 4390,
+            "totalTokens": 55069,
+            "cacheReadTokens": 50432
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 129,
+          "time": 1789898833397
+        },
+        {
+          "id": "1/20/0",
+          "usage": {
+            "inputTokens": 188,
+            "outputTokens": 552,
+            "totalTokens": 55652,
+            "cacheReadTokens": 54912
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 134,
+          "time": 1789898836599
+        },
+        {
+          "id": "1/21/0",
+          "usage": {
+            "inputTokens": 135,
+            "outputTokens": 6602,
+            "totalTokens": 62289,
+            "cacheReadTokens": 55552
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 139,
+          "time": 1789898863225
+        },
+        {
+          "id": "1/22/0",
+          "usage": {
+            "inputTokens": 1690,
+            "outputTokens": 893,
+            "totalTokens": 64791,
+            "cacheReadTokens": 62208
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 146,
+          "time": 1789898868183
+        },
+        {
+          "id": "1/23/0",
+          "usage": {
+            "inputTokens": 182,
+            "outputTokens": 166,
+            "totalTokens": 64988,
+            "cacheReadTokens": 64640
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 151,
+          "time": 1789898870010
+        },
+        {
+          "id": "1/24/0",
+          "usage": {
+            "inputTokens": 217,
+            "outputTokens": 117,
+            "totalTokens": 65230,
+            "cacheReadTokens": 64896
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 156,
+          "time": 1789898871694
+        },
+        {
+          "id": "1/25/0",
+          "usage": {
+            "inputTokens": 851,
+            "outputTokens": 2391,
+            "totalTokens": 68394,
+            "cacheReadTokens": 65152
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 161,
+          "time": 1789898881171
+        },
+        {
+          "id": "1/26/0",
+          "usage": {
+            "inputTokens": 550,
+            "outputTokens": 4094,
+            "totalTokens": 72996,
+            "cacheReadTokens": 68352
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 168,
+          "time": 1789898898944
+        },
+        {
+          "id": "1/27/0",
+          "usage": {
+            "inputTokens": 192,
+            "outputTokens": 241,
+            "totalTokens": 73265,
+            "cacheReadTokens": 72832
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 173,
+          "time": 1789898901254
+        },
+        {
+          "id": "1/28/0",
+          "usage": {
+            "inputTokens": 148,
+            "outputTokens": 366,
+            "totalTokens": 73730,
+            "cacheReadTokens": 73216
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 178,
+          "time": 1789898903813
+        },
+        {
+          "id": "1/29/0",
+          "usage": {
+            "inputTokens": 7729,
+            "outputTokens": 1492,
+            "totalTokens": 82949,
+            "cacheReadTokens": 73728
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 185,
+          "time": 1789898912498
+        },
+        {
+          "id": "1/30/0",
+          "usage": {
+            "inputTokens": 505,
+            "outputTokens": 104,
+            "totalTokens": 83553,
+            "cacheReadTokens": 82944
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 190,
+          "time": 1789898914614
+        },
+        {
+          "id": "1/31/0",
+          "usage": {
+            "inputTokens": 256,
+            "outputTokens": 113,
+            "totalTokens": 83697,
+            "cacheReadTokens": 83328
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 195,
+          "time": 1789898916182
+        },
+        {
+          "id": "1/32/0",
+          "usage": {
+            "inputTokens": 287,
+            "outputTokens": 2363,
+            "totalTokens": 86106,
+            "cacheReadTokens": 83456
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 200,
+          "time": 1789898925410
+        },
+        {
+          "id": "1/33/0",
+          "usage": {
+            "inputTokens": 195,
+            "outputTokens": 712,
+            "totalTokens": 86923,
+            "cacheReadTokens": 86016
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 205,
+          "time": 1789898928648
+        },
+        {
+          "id": "1/34/0",
+          "usage": {
+            "inputTokens": 482,
+            "outputTokens": 378,
+            "totalTokens": 87772,
+            "cacheReadTokens": 86912
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 212,
+          "time": 1789898930919
+        },
+        {
+          "id": "1/35/0",
+          "usage": {
+            "inputTokens": 507,
+            "outputTokens": 335,
+            "totalTokens": 88522,
+            "cacheReadTokens": 87680
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 219,
+          "time": 1789898933300
+        },
+        {
+          "id": "1/36/0",
+          "usage": {
+            "inputTokens": 892,
+            "outputTokens": 1497,
+            "totalTokens": 90837,
+            "cacheReadTokens": 88448
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 226,
+          "time": 1789898938991
+        },
+        {
+          "id": "1/37/0",
+          "usage": {
+            "inputTokens": 176,
+            "outputTokens": 504,
+            "totalTokens": 91432,
+            "cacheReadTokens": 90752
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 231,
+          "time": 1789898941905
+        },
+        {
+          "id": "1/38/0",
+          "usage": {
+            "inputTokens": 259,
+            "outputTokens": 219,
+            "totalTokens": 91742,
+            "cacheReadTokens": 91264
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 236,
+          "time": 1789898943893
+        },
+        {
+          "id": "1/39/0",
+          "usage": {
+            "inputTokens": 185,
+            "outputTokens": 136,
+            "totalTokens": 91969,
+            "cacheReadTokens": 91648
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 241,
+          "time": 1789898945448
+        },
+        {
+          "id": "1/40/0",
+          "usage": {
+            "inputTokens": 728,
+            "outputTokens": 704,
+            "totalTokens": 93336,
+            "cacheReadTokens": 91904
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 246,
+          "time": 1789898949508
+        },
+        {
+          "id": "1/41/0",
+          "usage": {
+            "inputTokens": 245,
+            "outputTokens": 191,
+            "totalTokens": 93620,
+            "cacheReadTokens": 93184
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 251,
+          "time": 1789898951296
+        },
+        {
+          "id": "1/42/0",
+          "usage": {
+            "inputTokens": 145,
+            "outputTokens": 174,
+            "totalTokens": 93887,
+            "cacheReadTokens": 93568
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 256,
+          "time": 1789898953466
+        },
+        {
+          "id": "1/43/0",
+          "usage": {
+            "inputTokens": 823,
+            "outputTokens": 145,
+            "totalTokens": 94792,
+            "cacheReadTokens": 93824
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 261,
+          "time": 1789898955070
+        },
+        {
+          "id": "1/44/0",
+          "usage": {
+            "inputTokens": 349,
+            "outputTokens": 704,
+            "totalTokens": 95773,
+            "cacheReadTokens": 94720
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 266,
+          "time": 1789898958275
+        },
+        {
+          "id": "1/45/0",
+          "usage": {
+            "inputTokens": 250,
+            "outputTokens": 148,
+            "totalTokens": 96014,
+            "cacheReadTokens": 95616
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 271,
+          "time": 1789898960375
+        },
+        {
+          "id": "1/46/0",
+          "usage": {
+            "inputTokens": 642,
+            "outputTokens": 233,
+            "totalTokens": 96875,
+            "cacheReadTokens": 96000
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 276,
+          "time": 1789898962328
+        },
+        {
+          "id": "1/47/0",
+          "usage": {
+            "inputTokens": 198,
+            "outputTokens": 181,
+            "totalTokens": 97147,
+            "cacheReadTokens": 96768
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 281,
+          "time": 1789898964312
+        },
+        {
+          "id": "1/48/0",
+          "usage": {
+            "inputTokens": 214,
+            "outputTokens": 144,
+            "totalTokens": 97382,
+            "cacheReadTokens": 97024
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 286,
+          "time": 1789898966478
+        },
+        {
+          "id": "1/49/0",
+          "usage": {
+            "inputTokens": 475,
+            "outputTokens": 302,
+            "totalTokens": 98057,
+            "cacheReadTokens": 97280
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 291,
+          "time": 1789898968650
+        },
+        {
+          "id": "1/50/0",
+          "usage": {
+            "inputTokens": 228,
+            "outputTokens": 646,
+            "totalTokens": 98794,
+            "cacheReadTokens": 97920
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 296,
+          "time": 1789898972359
+        },
+        {
+          "id": "1/51/0",
+          "usage": {
+            "inputTokens": 824,
+            "outputTokens": 618,
+            "totalTokens": 100130,
+            "cacheReadTokens": 98688
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 303,
+          "time": 1789898975664
+        },
+        {
+          "id": "1/52/0",
+          "usage": {
+            "inputTokens": 208,
+            "outputTokens": 479,
+            "totalTokens": 100783,
+            "cacheReadTokens": 100096
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 310,
+          "time": 1789898979176
+        },
+        {
+          "id": "1/53/0",
+          "usage": {
+            "inputTokens": 1623,
+            "outputTokens": 1233,
+            "totalTokens": 103592,
+            "cacheReadTokens": 100736
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 315,
+          "time": 1789899017047
+        },
+        {
+          "id": "1/54/0",
+          "usage": {
+            "inputTokens": 497,
+            "outputTokens": 2100,
+            "totalTokens": 106149,
+            "cacheReadTokens": 103552
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 320,
+          "time": 1789899025220
+        },
+        {
+          "id": "1/55/0",
+          "usage": {
+            "inputTokens": 151,
+            "outputTokens": 154,
+            "totalTokens": 106417,
+            "cacheReadTokens": 106112
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 325,
+          "time": 1789899027245
+        },
+        {
+          "id": "1/56/0",
+          "usage": {
+            "inputTokens": 885,
+            "outputTokens": 1423,
+            "totalTokens": 108676,
+            "cacheReadTokens": 106368
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 330,
+          "time": 1789899069087
+        },
+        {
+          "id": "1/57/0",
+          "usage": {
+            "inputTokens": 223,
+            "outputTokens": 154,
+            "totalTokens": 108921,
+            "cacheReadTokens": 108544
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 335,
+          "time": 1789899071578
+        },
+        {
+          "id": "1/58/0",
+          "usage": {
+            "inputTokens": 802,
+            "outputTokens": 1271,
+            "totalTokens": 110873,
+            "cacheReadTokens": 108800
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 340,
+          "time": 1789899114988
+        },
+        {
+          "id": "1/59/0",
+          "usage": {
+            "inputTokens": 199,
+            "outputTokens": 204,
+            "totalTokens": 111123,
+            "cacheReadTokens": 110720
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 347,
+          "time": 1789899117333
+        },
+        {
+          "id": "1/60/0",
+          "usage": {
+            "inputTokens": 172,
+            "outputTokens": 498,
+            "totalTokens": 111646,
+            "cacheReadTokens": 110976
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 352,
+          "time": 1789899721305
+        },
+        {
+          "id": "1/61/0",
+          "usage": {
+            "inputTokens": 486,
+            "outputTokens": 545,
+            "totalTokens": 112647,
+            "cacheReadTokens": 111616
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 357,
+          "time": 1789899724608
+        },
+        {
+          "id": "1/62/0",
+          "usage": {
+            "inputTokens": 236,
+            "outputTokens": 153,
+            "totalTokens": 112901,
+            "cacheReadTokens": 112512
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 362,
+          "time": 1789899726535
+        },
+        {
+          "id": "1/63/0",
+          "usage": {
+            "inputTokens": 1384,
+            "outputTokens": 831,
+            "totalTokens": 115111,
+            "cacheReadTokens": 112896
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 367,
+          "time": 1789899859938
+        },
+        {
+          "id": "1/64/0",
+          "usage": {
+            "inputTokens": 516,
+            "outputTokens": 732,
+            "totalTokens": 116320,
+            "cacheReadTokens": 115072
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 374,
+          "time": 1789900017520
+        },
+        {
+          "id": "1/65/0",
+          "usage": {
+            "inputTokens": 253,
+            "outputTokens": 129,
+            "totalTokens": 116478,
+            "cacheReadTokens": 116096
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 379,
+          "time": 1789900019815
+        },
+        {
+          "id": "1/66/0",
+          "usage": {
+            "inputTokens": 391,
+            "outputTokens": 965,
+            "totalTokens": 117708,
+            "cacheReadTokens": 116352
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 384,
+          "time": 1789900025480
+        },
+        {
+          "id": "1/67/0",
+          "usage": {
+            "inputTokens": 15947,
+            "outputTokens": 250,
+            "totalTokens": 133829,
+            "cacheReadTokens": 117632
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 391,
+          "time": 1789900029489
+        },
+        {
+          "id": "1/68/0",
+          "usage": {
+            "inputTokens": 1202,
+            "outputTokens": 215,
+            "totalTokens": 135177,
+            "cacheReadTokens": 133760
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 396,
+          "time": 1789900031904
+        },
+        {
+          "id": "1/69/0",
+          "usage": {
+            "inputTokens": 1213,
+            "outputTokens": 5764,
+            "totalTokens": 142145,
+            "cacheReadTokens": 135168
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 401,
+          "time": 1789900057831
+        },
+        {
+          "id": "1/70/0",
+          "usage": {
+            "inputTokens": 765,
+            "outputTokens": 4026,
+            "totalTokens": 146871,
+            "cacheReadTokens": 142080
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 406,
+          "time": 1789900106532
+        },
+        {
+          "id": "1/71/0",
+          "usage": {
+            "inputTokens": 343,
+            "outputTokens": 342,
+            "totalTokens": 147501,
+            "cacheReadTokens": 146816
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 413,
+          "time": 1789900110487
+        },
+        {
+          "id": "1/72/0",
+          "usage": {
+            "inputTokens": 187,
+            "outputTokens": 149,
+            "totalTokens": 147664,
+            "cacheReadTokens": 147328
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 418,
+          "time": 1789900136293
+        },
+        {
+          "id": "1/73/0",
+          "usage": {
+            "inputTokens": 262,
+            "outputTokens": 467,
+            "totalTokens": 148313,
+            "cacheReadTokens": 147584
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 423,
+          "time": 1789900140357
+        },
+        {
+          "id": "1/74/0",
+          "usage": {
+            "inputTokens": 294,
+            "outputTokens": 448,
+            "totalTokens": 148966,
+            "cacheReadTokens": 148224
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 428,
+          "time": 1789900143732
+        },
+        {
+          "id": "1/75/0",
+          "usage": {
+            "inputTokens": 275,
+            "outputTokens": 1852,
+            "totalTokens": 150991,
+            "cacheReadTokens": 148864
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 433,
+          "time": 1789900152978
+        },
+        {
+          "id": "1/76/0",
+          "usage": {
+            "inputTokens": 730,
+            "outputTokens": 190,
+            "totalTokens": 151832,
+            "cacheReadTokens": 150912
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 440,
+          "time": 1789900200511
+        },
+        {
+          "id": "1/77/0",
+          "usage": {
+            "inputTokens": 3226,
+            "outputTokens": 1720,
+            "totalTokens": 156754,
+            "cacheReadTokens": 151808
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 445,
+          "time": 1789900209607
+        },
+        {
+          "id": "1/78/0",
+          "usage": {
+            "inputTokens": 1561,
+            "outputTokens": 904,
+            "totalTokens": 159137,
+            "cacheReadTokens": 156672
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 450,
+          "time": 1789900214914
+        },
+        {
+          "id": "1/79/0",
+          "usage": {
+            "inputTokens": 252,
+            "outputTokens": 1135,
+            "totalTokens": 160363,
+            "cacheReadTokens": 158976
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 455,
+          "time": 1789900221272
+        },
+        {
+          "id": "1/80/0",
+          "usage": {
+            "inputTokens": 165,
+            "outputTokens": 145,
+            "totalTokens": 160566,
+            "cacheReadTokens": 160256
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 460,
+          "time": 1789900246654
+        },
+        {
+          "id": "1/81/0",
+          "usage": {
+            "inputTokens": 199,
+            "outputTokens": 1196,
+            "totalTokens": 161779,
+            "cacheReadTokens": 160384
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 465,
+          "time": 1789900252635
+        },
+        {
+          "id": "1/82/0",
+          "usage": {
+            "inputTokens": 228,
+            "outputTokens": 168,
+            "totalTokens": 162060,
+            "cacheReadTokens": 161664
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 470,
+          "time": 1789900255101
+        },
+        {
+          "id": "1/83/0",
+          "usage": {
+            "inputTokens": 147,
+            "outputTokens": 481,
+            "totalTokens": 162676,
+            "cacheReadTokens": 162048
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 475,
+          "time": 1789900288629
+        },
+        {
+          "id": "1/84/0",
+          "usage": {
+            "inputTokens": 235,
+            "outputTokens": 139,
+            "totalTokens": 162934,
+            "cacheReadTokens": 162560
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 480,
+          "time": 1789900330939
+        },
+        {
+          "id": "1/85/0",
+          "usage": {
+            "inputTokens": 395,
+            "outputTokens": 355,
+            "totalTokens": 163566,
+            "cacheReadTokens": 162816
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 485,
+          "time": 1789900334543
+        },
+        {
+          "id": "1/86/0",
+          "usage": {
+            "inputTokens": 417,
+            "outputTokens": 2446,
+            "totalTokens": 166319,
+            "cacheReadTokens": 163456
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 490,
+          "time": 1789900345824
+        }
+      ]
+    },
+    "usage": {
+      "model_calls": 86,
+      "requests": 86,
+      "input_tokens": {
+        "count": 86,
+        "total": 7963265,
+        "average": 92596.1046511628,
+        "minimum": 7368,
+        "maximum": 163873
+      },
+      "uncached_input_tokens": {
+        "count": 86,
+        "total": 82305,
+        "average": 957.0348837209302,
+        "minimum": 135,
+        "maximum": 15947
+      },
+      "cached_input_tokens": {
+        "count": 86,
+        "total": 7880960,
+        "average": 91639.06976744186,
+        "minimum": 5376,
+        "maximum": 163456
+      },
+      "output_tokens": {
+        "count": 86,
+        "total": 86346,
+        "average": 1004.0232558139535,
+        "minimum": 104,
+        "maximum": 6602
+      },
+      "total_tokens": 8049611,
+      "cache_hit_rate": 0.9896644152869457
+    },
+    "timing_ms": {
+      "first_token": {
+        "count": 86,
+        "total": 112672,
+        "average": 1310.139534883721,
+        "minimum": 548,
+        "maximum": 2051
+      },
+      "input_wait": {
+        "count": 86,
+        "total": 112672,
+        "average": 1310.139534883721,
+        "minimum": 548,
+        "maximum": 2051
+      },
+      "output": {
+        "count": 86,
+        "total": 328723,
+        "average": 3822.360465116279,
+        "minimum": 373,
+        "maximum": 25625
+      },
+      "llm": {
+        "count": 86,
+        "total": 441395,
+        "average": 5132.5,
+        "minimum": 1429,
+        "maximum": 26423
+      },
+      "tools": {
+        "count": 110,
+        "total": 1280090,
+        "average": 11637.181818181818,
+        "minimum": 0,
+        "maximum": 600022
+      },
+      "output_tokens_per_second": 262.671002637479
+    },
+    "session": {
+      "steps": 86,
+      "turns": 1,
+      "model_calls": 86,
+      "tool_calls": 110
+    }
+  },
+  "patch": {
+    "sha256": "06940cb08dc27135024f907b0431bf5966da31f21ce5a55ac29d68f3352b9677",
+    "bytes": 18834,
+    "changed_paths": [
+      "res/css/_components.pcss",
+      "res/css/views/rooms/_EventPreview.pcss",
+      "res/css/views/rooms/_PinnedMessageBanner.pcss",
+      "src/components/views/rooms/EventPreview.tsx",
+      "src/components/views/rooms/EventTile.tsx",
+      "src/components/views/rooms/PinnedMessageBanner.tsx",
+      "src/components/views/rooms/ThreadSummary.tsx",
+      "src/i18n/strings/en_EN.json"
+    ],
+    "excluded_generated_paths": [],
+    "official_overwritten_paths": []
+  },
+  "official_result": {
+    "passed": false,
+    "failure_kind": "official_test_failure",
+    "evaluator_exit_code": 0,
+    "parsed": {
+      "tests": [
+        {
+          "name": "test/unit-tests/utils/LruCache-test.ts | LruCache | when creating a cache with negative capacity it should raise an error",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/LruCache-test.ts | LruCache | when creating a cache with 0 capacity it should raise an error",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/LruCache-test.ts | when there is a cache with a capacity of 3 | has",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/LruCache-test.ts | when there is a cache with a capacity of 3 | get",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/LruCache-test.ts | when there is a cache with a capacity of 3 | values",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/LruCache-test.ts | when there is a cache with a capacity of 3 | delete",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/LruCache-test.ts | when the cache contains 2 items | has",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/LruCache-test.ts | when the cache contains 2 items | get",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/LruCache-test.ts | when the cache contains 2 items | values",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/LruCache-test.ts | when the cache contains 2 items | clear",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/LruCache-test.ts | when the cache contains 2 items | when an error occurs while setting an item the cache should be cleard",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/LruCache-test.ts | and adding another item | deleting an unkonwn item should not raise an error",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/LruCache-test.ts | and adding another item | deleting the first item should work",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/LruCache-test.ts | and adding another item | deleting the item in the middle should work",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/LruCache-test.ts | and adding another item | deleting the last item should work",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/LruCache-test.ts | and adding another item | deleting all items should work",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/LruCache-test.ts | and adding another item | deleting and adding some items should work",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/LruCache-test.ts | and accesing the first added item and adding another item | should contain the last recently accessed items",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/LruCache-test.ts | and accesing the first added item and adding another item | should not contain the least recently accessed items",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/LruCache-test.ts | and adding 2 additional items | has",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/LruCache-test.ts | and adding 2 additional items | has",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/LruCache-test.ts | and adding 2 additional items | get",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/LruCache-test.ts | and adding 2 additional items | get",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/LruCache-test.ts | and adding 2 additional items | values",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/LruCache-test.ts | when the cache contains some items where one of them is a replacement | should contain the last recently set items",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/notifications-test.ts | createLocalNotification | creates account data event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/notifications-test.ts | createLocalNotification | does not do anything for guests",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/notifications-test.ts | createLocalNotification | unsilenced for existing sessions when notificationsEnabled setting is truthy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/notifications-test.ts | createLocalNotification | unsilenced for existing sessions when notificationBodyEnabled setting is truthy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/notifications-test.ts | createLocalNotification | unsilenced for existing sessions when audioNotificationsEnabled setting is truthy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/notifications-test.ts | createLocalNotification | does not override an existing account event data",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/notifications-test.ts | localNotificationsAreSilenced | defaults to false when no setting exists",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/notifications-test.ts | localNotificationsAreSilenced | checks the persisted value",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/notifications-test.ts | clearRoomNotification | sends a request even if everything has been read",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/notifications-test.ts | clearRoomNotification | marks the room as read even if the receipt failed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/notifications-test.ts | when sendReadReceipts setting is disabled | should send a private read receipt",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/notifications-test.ts | clearAllNotifications | does not send any requests if everything has been read",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/notifications-test.ts | clearAllNotifications | sends unthreaded receipt requests",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/notifications-test.ts | clearAllNotifications | sends private read receipts",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/notifications-test.ts | getMarkedUnreadState | reads from stable prefix",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/notifications-test.ts | getMarkedUnreadState | reads from unstable prefix",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/notifications-test.ts | getMarkedUnreadState | returns undefined if neither prefix is present",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/notifications-test.ts | setUnreadMarker | sets unread flag if event doesn't exist",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/notifications-test.ts | setUnreadMarker | does nothing when clearing if flag is false",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/notifications-test.ts | setUnreadMarker | sets unread flag to if existing event is false",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/notifications-test.ts | setUnreadMarker | does nothing if set false and existing event is false",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/notifications-test.ts | setUnreadMarker | does nothing if setting true and existing event is true",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/notifications-test.ts | setUnreadMarker | sets flag if setting false and existing event is true",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/notifications-test.ts | notificationLevelToIndicator | returns undefined if notification level is None",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/notifications-test.ts | notificationLevelToIndicator | returns default if notification level is Activity",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/notifications-test.ts | notificationLevelToIndicator | returns success if notification level is Notification",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/notifications-test.ts | notificationLevelToIndicator | returns critical if notification level is Highlight",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/notifications-test.ts | getThreadNotificationLevel | returns NotificationLevel 4 when notificationCountType is 4",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/notifications-test.ts | getThreadNotificationLevel | returns NotificationLevel 3 when notificationCountType is 3",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/notifications-test.ts | getThreadNotificationLevel | returns NotificationLevel 2 when notificationCountType is 2",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/stores/room-list/algorithms/list-ordering/NaturalAlgorithm-test.ts | When sortAlgorithm is alphabetical | orders rooms by alpha",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/stores/room-list/algorithms/list-ordering/NaturalAlgorithm-test.ts | handleRoomUpdate | removes a room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/stores/room-list/algorithms/list-ordering/NaturalAlgorithm-test.ts | handleRoomUpdate | warns when removing a room that is not indexed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/stores/room-list/algorithms/list-ordering/NaturalAlgorithm-test.ts | handleRoomUpdate | adds a new room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/stores/room-list/algorithms/list-ordering/NaturalAlgorithm-test.ts | handleRoomUpdate | adds a new muted room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/stores/room-list/algorithms/list-ordering/NaturalAlgorithm-test.ts | handleRoomUpdate | ignores a mute change update",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/stores/room-list/algorithms/list-ordering/NaturalAlgorithm-test.ts | handleRoomUpdate | throws for an unhandled update cause",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/stores/room-list/algorithms/list-ordering/NaturalAlgorithm-test.ts | time and read receipt updates | handles when a room is not indexed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/stores/room-list/algorithms/list-ordering/NaturalAlgorithm-test.ts | time and read receipt updates | re-sorts rooms when timeline updates",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/stores/room-list/algorithms/list-ordering/NaturalAlgorithm-test.ts | When sortAlgorithm is recent | orders rooms by recent with muted rooms to the bottom",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/stores/room-list/algorithms/list-ordering/NaturalAlgorithm-test.ts | handleRoomUpdate | removes a room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/stores/room-list/algorithms/list-ordering/NaturalAlgorithm-test.ts | handleRoomUpdate | warns and returns without change when removing a room that is not indexed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/stores/room-list/algorithms/list-ordering/NaturalAlgorithm-test.ts | handleRoomUpdate | adds a new room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/stores/room-list/algorithms/list-ordering/NaturalAlgorithm-test.ts | handleRoomUpdate | does not re-sort on possible mute change when room did not change effective mutedness",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/stores/room-list/algorithms/list-ordering/NaturalAlgorithm-test.ts | handleRoomUpdate | re-sorts on a mute change",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/stores/room-list/algorithms/list-ordering/NaturalAlgorithm-test.ts | <PinnedMessageBanner /> | should render nothing when there are no pinned events",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/stores/room-list/algorithms/list-ordering/NaturalAlgorithm-test.ts | ✕ should display the last message when the pinned event array changed (125 ms) | should rotate the pinned events when the banner is clicked",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/stores/room-list/algorithms/list-ordering/NaturalAlgorithm-test.ts | Right button | should display View all button if the right panel is closed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/stores/room-list/algorithms/list-ordering/NaturalAlgorithm-test.ts | Right button | should display View all button if the right panel is not opened on the pinned message list",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/stores/room-list/algorithms/list-ordering/NaturalAlgorithm-test.ts | Right button | should display Close list button if the message pinning list is displayed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/stores/room-list/algorithms/list-ordering/NaturalAlgorithm-test.ts | Right button | should open or close the message pinning list",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/stores/room-list/algorithms/list-ordering/NaturalAlgorithm-test.ts | Right button | should listen to the right panel",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/modules/ProxiedModuleApi-test.tsx | translations | should cache translations",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/modules/ProxiedModuleApi-test.tsx | translations | should overwriteAccountAuth",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/modules/ProxiedModuleApi-test.tsx | integration | should translate strings using translation system",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/modules/ProxiedModuleApi-test.tsx | openDialog | should open dialog with a custom title and default options",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/modules/ProxiedModuleApi-test.tsx | openDialog | should open dialog with custom options",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/modules/ProxiedModuleApi-test.tsx | openDialog | should update the options from the opened dialog",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/modules/ProxiedModuleApi-test.tsx | openDialog | should cancel the dialog from within the dialog",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/modules/ProxiedModuleApi-test.tsx | getApps | should return apps from the widget store",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/modules/ProxiedModuleApi-test.tsx | getAppAvatarUrl | should return null if the app has no avatar URL",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/modules/ProxiedModuleApi-test.tsx | getAppAvatarUrl | should return the app avatar URL",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/modules/ProxiedModuleApi-test.tsx | getAppAvatarUrl | should support optional thumbnail params",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/modules/ProxiedModuleApi-test.tsx | isAppInContainer | should return false if there is no room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/modules/ProxiedModuleApi-test.tsx | isAppInContainer | should return false if the app is not in the container",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/modules/ProxiedModuleApi-test.tsx | isAppInContainer | should return true if the app is in the container",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/modules/ProxiedModuleApi-test.tsx | moveAppToContainer | should not move if there is no room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/modules/ProxiedModuleApi-test.tsx | moveAppToContainer | should move if there is a room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/settings/tabs/room/RolesRoomSettingsTab-test.tsx | RolesRoomSettingsTab | should allow an Admin to demote themselves but not others",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/settings/tabs/room/RolesRoomSettingsTab-test.tsx | RolesRoomSettingsTab | should initially show »Moderator« permission for »Voice broadcasts«",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/settings/tabs/room/RolesRoomSettingsTab-test.tsx | RolesRoomSettingsTab | should roll back power level change on error",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/settings/tabs/room/RolesRoomSettingsTab-test.tsx | when setting »Default« permission for »Voice broadcasts« | should update the power levels",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/settings/tabs/room/RolesRoomSettingsTab-test.tsx | Element Call | hides when group calls disabled",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/settings/tabs/room/RolesRoomSettingsTab-test.tsx | Join Element calls | defaults to moderator for joining calls",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/settings/tabs/room/RolesRoomSettingsTab-test.tsx | Join Element calls | can change joining calls power level",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/settings/tabs/room/RolesRoomSettingsTab-test.tsx | Start Element calls | defaults to moderator for starting calls",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/settings/tabs/room/RolesRoomSettingsTab-test.tsx | Start Element calls | can change starting calls power level",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/settings/tabs/room/RolesRoomSettingsTab-test.tsx | Banned users | should not render banned section when no banned users",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/settings/tabs/room/RolesRoomSettingsTab-test.tsx | Banned users | renders banned users",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/settings/tabs/room/RolesRoomSettingsTab-test.tsx | Banned users | uses banners display name when available",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/voice-broadcast/components/molecules/VoiceBroadcastRecordingPip-test.tsx | when rendering a started recording | should render as expected",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/voice-broadcast/components/molecules/VoiceBroadcastRecordingPip-test.tsx | and selecting another input device | should select the device and pause and resume the broadcast",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/voice-broadcast/components/molecules/VoiceBroadcastRecordingPip-test.tsx | and clicking the room name | should show the broadcast room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/voice-broadcast/components/molecules/VoiceBroadcastRecordingPip-test.tsx | and clicking the room avatar | should show the broadcast room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/voice-broadcast/components/molecules/VoiceBroadcastRecordingPip-test.tsx | and clicking the pause button | should pause the recording",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/voice-broadcast/components/molecules/VoiceBroadcastRecordingPip-test.tsx | and clicking the stop button | should display the confirm end dialog",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/voice-broadcast/components/molecules/VoiceBroadcastRecordingPip-test.tsx | and confirming the dialog | should end the recording",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/voice-broadcast/components/molecules/VoiceBroadcastRecordingPip-test.tsx | and there is no connection and clicking the pause button | should show a connection error info",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/voice-broadcast/components/molecules/VoiceBroadcastRecordingPip-test.tsx | and the connection is back | should render a paused recording",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/voice-broadcast/components/molecules/VoiceBroadcastRecordingPip-test.tsx | when rendering a paused recording | should render as expected",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/voice-broadcast/components/molecules/VoiceBroadcastRecordingPip-test.tsx | and clicking the resume button | should resume the recording",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/rooms/RoomHeader/CallGuestLinkButton-test.tsx | <CallGuestLinkButton /> | shows the JoinRuleDialog on click with private join rules",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/rooms/RoomHeader/CallGuestLinkButton-test.tsx | <CallGuestLinkButton /> | shows the ShareDialog on click with public join rules",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/rooms/RoomHeader/CallGuestLinkButton-test.tsx | <CallGuestLinkButton /> | shows the ShareDialog on click with knock join rules",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/rooms/RoomHeader/CallGuestLinkButton-test.tsx | <CallGuestLinkButton /> | don't show external conference button if room not public nor knock and the user cannot change join rules",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/rooms/RoomHeader/CallGuestLinkButton-test.tsx | <CallGuestLinkButton /> | don't show external conference button if now guest spa link is configured",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/rooms/RoomHeader/CallGuestLinkButton-test.tsx | <CallGuestLinkButton /> | opens the share dialog with the correct share link in an encrypted room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/rooms/RoomHeader/CallGuestLinkButton-test.tsx | <CallGuestLinkButton /> | share dialog has correct link in an unencrypted room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/rooms/RoomHeader/CallGuestLinkButton-test.tsx | <JoinRuleDialog /> | shows ask to join if feature is enabled",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/rooms/RoomHeader/CallGuestLinkButton-test.tsx | <JoinRuleDialog /> | font show ask to join if feature is enabled but cannot invite",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/rooms/RoomHeader/CallGuestLinkButton-test.tsx | <JoinRuleDialog /> | doesn't show ask to join if feature is disabled",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/rooms/RoomHeader/CallGuestLinkButton-test.tsx | <JoinRuleDialog /> | sends correct state event on click",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/settings/tabs/user/PreferencesUserSettingsTab-test.tsx | PreferencesUserSettingsTab | should render",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/settings/tabs/user/PreferencesUserSettingsTab-test.tsx | PreferencesUserSettingsTab | should reload when changing language",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/settings/tabs/user/PreferencesUserSettingsTab-test.tsx | PreferencesUserSettingsTab | should search and select a user timezone",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/settings/tabs/user/PreferencesUserSettingsTab-test.tsx | PreferencesUserSettingsTab | should not show spell check setting if unsupported",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/settings/tabs/user/PreferencesUserSettingsTab-test.tsx | PreferencesUserSettingsTab | should enable spell check",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/settings/tabs/user/PreferencesUserSettingsTab-test.tsx | with server support | can be enabled",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/settings/tabs/user/PreferencesUserSettingsTab-test.tsx | with server support | can be disabled",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/settings/tabs/user/PreferencesUserSettingsTab-test.tsx | without server support | is forcibly enabled",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/settings/tabs/user/PreferencesUserSettingsTab-test.tsx | without server support | cannot be disabled",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/hooks/useLatestResult-test.tsx | renderhook tests | should return a result",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/hooks/useLatestResult-test.tsx | renderhook tests | should not let a slower response to an earlier query overwrite the result of a later query",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/hooks/useLatestResult-test.tsx | renderhook tests | should return expected results when all response times similar",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/hooks/useLatestResult-test.tsx | renderhook tests | should prevent out of order results",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/StorageManager-test.ts | Crypto store checks | should not be ok if sync store but no crypto store",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/StorageManager-test.ts | Crypto store checks | should be ok if sync store and a rust crypto store",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/StorageManager-test.ts | without rust store | should be ok if there is non migrated legacy crypto store",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/StorageManager-test.ts | without rust store | should be ok if legacy store in MigrationState `NOT_STARTED`",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/StorageManager-test.ts | without rust store | should not be ok if MigrationState greater than `NOT_STARTED`",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/StorageManager-test.ts | without rust store | should not be healthy if no indexeddb",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/oidc/persistOidcSettings-test.ts | persistOidcAuthenticatedSettings | should set clientId and issuer in localStorage",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/oidc/persistOidcSettings-test.ts | getStoredOidcTokenIssuer() | should return issuer from localStorage",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/oidc/persistOidcSettings-test.ts | getStoredOidcTokenIssuer() | should return undefined when no issuer in localStorage",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/oidc/persistOidcSettings-test.ts | getStoredOidcClientId() | should return clientId from localStorage",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/oidc/persistOidcSettings-test.ts | getStoredOidcClientId() | should throw when no clientId in localStorage",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/oidc/persistOidcSettings-test.ts | getStoredOidcIdToken() | should return token from localStorage",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/oidc/persistOidcSettings-test.ts | getStoredOidcIdToken() | should return undefined when no token in localStorage",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/oidc/persistOidcSettings-test.ts | getStoredOidcIdTokenClaims() | should return claims from localStorage",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/oidc/persistOidcSettings-test.ts | getStoredOidcIdTokenClaims() | should return claims extracted from id_token in localStorage",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/oidc/persistOidcSettings-test.ts | getStoredOidcIdTokenClaims() | should return undefined when no claims in localStorage",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/stores/RoomNotificationStateStore-test.ts | RoomNotificationStateStore | Emits no event when a room has no unreads",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/stores/RoomNotificationStateStore-test.ts | RoomNotificationStateStore | Emits an event when a room has unreads",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/stores/RoomNotificationStateStore-test.ts | RoomNotificationStateStore | Emits an event when a feature flag changes notification state",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/stores/RoomNotificationStateStore-test.ts | If the feature_dynamic_room_predecessors is not enabled | Passes the dynamic predecessor flag to getVisibleRooms",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/stores/RoomNotificationStateStore-test.ts | If the feature_dynamic_room_predecessors is enabled | Passes the dynamic predecessor flag to getVisibleRooms",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/settings/SecureBackupPanel-test.tsx | <SecureBackupPanel /> | displays a loader while checking keybackup",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/settings/SecureBackupPanel-test.tsx | <SecureBackupPanel /> | handles error fetching backup",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/settings/SecureBackupPanel-test.tsx | <SecureBackupPanel /> | handles absence of backup",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/settings/SecureBackupPanel-test.tsx | <SecureBackupPanel /> | suggests connecting session to key backup when backup exists",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/settings/SecureBackupPanel-test.tsx | <SecureBackupPanel /> | displays when session is connected to key backup",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/settings/SecureBackupPanel-test.tsx | <SecureBackupPanel /> | asks for confirmation before deleting a backup",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/settings/SecureBackupPanel-test.tsx | <SecureBackupPanel /> | deletes backup after confirmation",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/settings/SecureBackupPanel-test.tsx | <SecureBackupPanel /> | resets secret storage",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/voice-broadcast/components/VoiceBroadcastBody-test.tsx | when there is a stopped voice broadcast | should render a voice broadcast playback body",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/voice-broadcast/components/VoiceBroadcastBody-test.tsx | when there is a started voice broadcast from the current user | should render a voice broadcast recording body",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/voice-broadcast/components/VoiceBroadcastBody-test.tsx | and the recordings ends | should render a voice broadcast playback body",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/voice-broadcast/components/VoiceBroadcastBody-test.tsx | when displaying a voice broadcast playback | should render a voice broadcast playback body",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/widgets/ManagedHybrid-test.ts | isManagedHybridWidgetEnabled | should return false if widget_build_url is unset",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/widgets/ManagedHybrid-test.ts | isManagedHybridWidgetEnabled | should return true for 1-1 rooms when widget_build_url_ignore_dm is unset",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/widgets/ManagedHybrid-test.ts | isManagedHybridWidgetEnabled | should return false for 1-1 rooms when widget_build_url_ignore_dm is true",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/widgets/ManagedHybrid-test.ts | addManagedHybridWidget | should noop if user lacks permission",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/widgets/ManagedHybrid-test.ts | addManagedHybridWidget | should noop if no widget_build_url",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/widgets/ManagedHybrid-test.ts | addManagedHybridWidget | should add the widget successfully",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/hooks/useUserDirectory-test.tsx | useUserDirectory | search for users in the identity server",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/hooks/useUserDirectory-test.tsx | useUserDirectory | should work with empty queries",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/hooks/useUserDirectory-test.tsx | useUserDirectory | should recover from a server exception",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/FixedRollingArray-test.ts | FixedRollingArray | should seed the array with the given value",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/FixedRollingArray-test.ts | FixedRollingArray | should insert at the correct end",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/utils/FixedRollingArray-test.ts | FixedRollingArray | should roll over",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/voip/DialPad-test.tsx | when hasDial is true, displays all expected numbers and letters",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/voip/DialPad-test.tsx | clicking a digit button calls the correct function",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/voip/DialPad-test.tsx | clicking the dial button calls the correct function",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/emojipicker/EmojiPicker-test.tsx | EmojiPicker | should not mangle default order after filtering",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/emojipicker/EmojiPicker-test.tsx | EmojiPicker | sort emojis by shortcode and size",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/emojipicker/EmojiPicker-test.tsx | EmojiPicker | should allow keyboard navigation using arrow keys",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/dialogs/spotlight/RoomResultContextMenus-test.tsx | RoomResultContextMenus | does not render the room options context menu when UIComponent customisations disable room options",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/dialogs/spotlight/RoomResultContextMenus-test.tsx | RoomResultContextMenus | renders the room options context menu when UIComponent customisations enable room options",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <UserInfo /> | closes on close button click",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | without a room | does not render space header",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | without a room | renders user info",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | without a room | renders user timezone if set",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | without a room | does not renders user timezone if timezone is invalid",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | without a room | renders encryption info panel without pending verification",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | without a room | renders encryption verification panel with pending verification",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | without a room | should show error modal when the verification request is cancelled with a mismatch",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | without a room | should not show error modal when the verification request is changed for some other reason",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | without a room | renders close button correctly when encryption panel with a pending verification request",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | with a room | renders user info",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | with a room | does not render space header when room is not a space room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | with a room | renders encryption info panel without pending verification",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | with a room | renders encryption verification panel with pending verification",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | with a room | renders the message button",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | with a room | hides the message button if the visibility customisation hides all create room features",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | Ignore | shows block button when member userId does not match client userId",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | Ignore | shows a modal before ignoring the user",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | Ignore | cancels ignoring the user",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | Ignore | unignores the user",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | with crypto enabled | renders a device list which can be expanded",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | with crypto enabled | renders <BasicUserInfo />",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | with crypto enabled | should render a deactivate button for users of the same server if we are a server admin",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | device dehydration | hides a verified dehydrated device",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | device dehydration | hides a verified dehydrated device",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | device dehydration | shows an unverified dehydrated device",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | device dehydration | shows dehydrated devices if there is more than one",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | with an encrypted room | renders unverified user info",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | with an encrypted room | renders verified user info",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <UserInfoHeader /> | does not render an e2e icon in the header if e2eStatus prop is undefined",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <UserInfoHeader /> | renders an e2e icon in the header if e2eStatus prop is defined",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <UserInfoHeader /> | renders custom user identifiers in the header",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <DeviceItem /> | with unverified user and device, displays button without a label",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <DeviceItem /> | with verified user only, displays button with a 'Not trusted' label",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <DeviceItem /> | with verified device only, displays no button without a label",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <DeviceItem /> | when userId is the same as userId from client, uses isCrossSigningVerified to determine if button is shown",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <DeviceItem /> | with verified user and device, displays no button and a 'Trusted' label",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <DeviceItem /> | does not call verifyDevice if client.getUser returns null",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <DeviceItem /> | calls verifyDevice if client.getUser returns an object",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <DeviceItem /> | with display name",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <DeviceItem /> | without display name",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <DeviceItem /> | ambiguous display name",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <UserOptionsSection /> | always shows share user button and clicking it should produce a ShareDialog",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <UserOptionsSection /> | does not show ignore or direct message buttons when member userId matches client userId",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <UserOptionsSection /> | shows direct message and mention buttons when member userId does not match client userId",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <UserOptionsSection /> | mention button fires ComposerInsert Action",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <UserOptionsSection /> | when call to client.getRoom is null, shows disabled read receipt button",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <UserOptionsSection /> | when call to client.getRoom is non-null and room.getEventReadUpTo is null, shows disabled read receipt button",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <UserOptionsSection /> | when calls to client.getRoom and room.getEventReadUpTo are non-null, shows read receipt button",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <UserOptionsSection /> | clicking the read receipt button calls dispatch with correct event_id",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <UserOptionsSection /> | firing the read receipt event handler with a null event_id calls dispatch with undefined not null",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <UserOptionsSection /> | does not show the invite button when canInvite is false",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <UserOptionsSection /> | shows the invite button when canInvite is true",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <UserOptionsSection /> | clicking the invite button will call MultiInviter.invite",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <UserOptionsSection /> | if calling .invite throws something strange, show default error message",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <UserOptionsSection /> | clicking »message« for a RoomMember should start a DM",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <UserOptionsSection /> | clicking »message« for a User should start a DM",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <PowerLevelEditor /> | renders a power level combobox",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <PowerLevelEditor /> | renders a combobox and attempts to change power level on change of the combobox",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <RoomKickButton /> | renders nothing if member.membership is undefined",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <RoomKickButton /> | renders something if member.membership is 'invite' or 'join'",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <RoomKickButton /> | renders the correct label",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <RoomKickButton /> | clicking the kick button calls Modal.createDialog with the correct arguments",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <BanToggleButton /> | renders the correct labels for banned and unbanned members",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <BanToggleButton /> | clicking the ban or unban button calls Modal.createDialog with the correct arguments if user is not banned",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <BanToggleButton /> | clicking the ban or unban button calls Modal.createDialog with the correct arguments if user _is_ banned",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <RoomAdminToolsContainer /> | returns a single empty div if room.getMember is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <RoomAdminToolsContainer /> | can return a single empty div in case where room.getMember is not falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <RoomAdminToolsContainer /> | returns kick, redact messages, ban buttons if conditions met",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <RoomAdminToolsContainer /> | should show BulkRedactDialog upon clicking the Remove messages button",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <RoomAdminToolsContainer /> | returns mute toggle button if conditions met",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <RoomAdminToolsContainer /> | should disable buttons when isUpdating=true",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | <RoomAdminToolsContainer /> | should not show mute button for one's own member",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | disambiguateDevices | does not add ambiguous key to unique names",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | disambiguateDevices | adds ambiguous key to all ids with non-unique names",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | isMuted | returns false if either argument is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | isMuted | when powerLevelContent.events and .events_default are undefined, returns false",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | isMuted | when powerLevelContent.events is undefined, uses .events_default",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | isMuted | when powerLevelContent.events is defined but '.m.room.message' isn't, uses .events_default",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | isMuted | when powerLevelContent.events and '.m.room.message' are defined, uses the value",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/unit-tests/components/views/right_panel/UserInfo-test.tsx | getPowerLevels | returns an empty object when room.currentState.getStateEvents return null",
+          "status": "PASSED"
+        }
+      ]
+    }
+  },
+  "cleanup": {
+    "task_container_removed": true,
+    "task_workspace_removed": true,
+    "shared_image_retained": true
+  },
+  "public_export": {
+    "model_name_kind": "display_name",
+    "omitted": [
+      "development provider and route",
+      "local environment and paths",
+      "raw tool diagnostics"
+    ],
+    "note": "Redacted report, not runtime configuration. Scores and numeric usage are preserved; original evidence is retained locally."
+  }
+}

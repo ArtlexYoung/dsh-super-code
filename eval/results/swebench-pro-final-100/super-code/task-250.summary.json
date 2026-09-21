@@ -1,0 +1,1601 @@
+{
+  "schema": 1,
+  "run_id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-250-attempt-1",
+  "started_at": "2026-09-20T00:39:30.573Z",
+  "completed_at": "2026-09-20T00:39:30.574Z",
+  "preset": "super-code",
+  "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
+  "isolation": {
+    "schema": 1,
+    "policy": "swebench-pro-isolation-v3",
+    "passed": true,
+    "audited_sessions": 1,
+    "blocked_calls_count": 2,
+    "violations_count": 0
+  },
+  "candidate": {
+    "schema": 1,
+    "identity": "local-0.0.9-candidate",
+    "package": {
+      "name": "dsh-super-code",
+      "version": "0.0.9",
+      "tarball": "dsh-super-code-0.0.9.tgz"
+    },
+    "source": {
+      "git_head": "259f081658d20230d392da418955f190067ddc0f",
+      "tracked_diff_sha256": "1965bf0bf045f6d8f471613c8b50851ab052f98a6338413853536c89f61dcba7",
+      "untracked_package_paths": [
+        "lib/core/experiment-recipes.d.ts",
+        "lib/core/experiment-recipes.d.ts.map",
+        "lib/core/experiment-recipes.js",
+        "lib/core/experiment-recipes.js.map",
+        "lib/experiments.d.ts",
+        "lib/experiments.d.ts.map",
+        "lib/experiments.js",
+        "lib/experiments.js.map",
+        "lib/task-memory-store.d.ts",
+        "lib/task-memory-store.d.ts.map",
+        "lib/task-memory-store.js",
+        "lib/task-memory-store.js.map"
+      ]
+    },
+    "harness": {
+      "git_head": "c291e7961a515f6d7af9304e7fd1d257929aef26",
+      "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+    },
+    "artifacts": {
+      "tarball_sha256": "2e2104209812ae13c701480e5e0ba38bf6d09ee7b6546ebd909bab60b80d83e6",
+      "cordis_patch_sha256": "d8f8e14602aeb4dfafeb6aff3916cccb934c2c88d1d84b222a7c6d3040ca7434",
+      "preset_sha256": "43edc7f7b6dc9fcea423290e48f7b1d245220f10b15a06d8defa5f34685032e9",
+      "packed_files": 71,
+      "packed_bytes": 83113,
+      "unpacked_bytes": 306269
+    },
+    "created_at": "2026-09-19T13:30:54.126Z"
+  },
+  "task_index": 250,
+  "instance_id": "instance_element-hq__element-web-4fec436883b601a3cac2d4a58067e597f737b817-vnan",
+  "repo": "element-hq/element-web",
+  "base_commit": "b8bb8f163a89cb6f2af0ac1cfc97e89deb938368",
+  "official_evaluator": {
+    "repository": "scaleapi/SWE-bench_Pro-os",
+    "commit": "ca10a60a5fcae51e6948ffe1485d4153d421e6c5",
+    "evaluator_sha256": "bb5d4c5486be296e464e695df3747064aaa3bb197394bc6d39980634afec2034",
+    "dataset_sha256": "b5b2462bfbf5aeb2cb7ba7d215778a1768b85f9d7ad7f748546c7f80a0ad1510",
+    "image_policy": "local-cache-only",
+    "rescore_attempt": 1
+  },
+  "image": {
+    "reference": "jefzda/sweap-images:element-hq.element-element-hq__element-web-4fec436883b601a3cac2d4a58067e597f737b817",
+    "acquisition_reference": "jefzda/sweap-images:element-hq.element-element-hq__element-web-4fec436883b601a3cac2d4a58067e597f737b817",
+    "platform": "linux/amd64",
+    "id": "sha256:0cc1aa6046220d76f10b5b7d895fff7d329e9a65b2df5811f680d1c9f31218bf",
+    "repo_digests": [
+      "docker.1ms.run/jefzda/sweap-images@sha256:0cc1aa6046220d76f10b5b7d895fff7d329e9a65b2df5811f680d1c9f31218bf",
+      "jefzda/sweap-images@sha256:0cc1aa6046220d76f10b5b7d895fff7d329e9a65b2df5811f680d1c9f31218bf"
+    ]
+  },
+  "page_runtime": {
+    "schema": 2,
+    "runtime": "deepseek-harness-web-rpc",
+    "mode": "agent-run",
+    "session_id": "session-ab460535-5009-454f-84dc-1d6ddb38eed1",
+    "web_rpc": {
+      "authenticated": true,
+      "calls": [
+        "session/create",
+        "session/list",
+        "session/selectModel",
+        "session/prompt",
+        "session/list"
+      ],
+      "prompt_submitted": true
+    },
+    "preset": "super-code",
+    "isolation": {
+      "policy": "swebench-pro-isolation-v3",
+      "permission_preset": "workspace-write",
+      "tool_guard": "workspace-files-and-assigned-offline-container"
+    },
+    "candidate": {
+      "schema": 1,
+      "identity": "local-0.0.9-candidate",
+      "package": {
+        "name": "dsh-super-code",
+        "version": "0.0.9",
+        "tarball": "dsh-super-code-0.0.9.tgz"
+      },
+      "source": {
+        "git_head": "259f081658d20230d392da418955f190067ddc0f",
+        "tracked_diff_sha256": "1965bf0bf045f6d8f471613c8b50851ab052f98a6338413853536c89f61dcba7",
+        "untracked_package_paths": [
+          "lib/core/experiment-recipes.d.ts",
+          "lib/core/experiment-recipes.d.ts.map",
+          "lib/core/experiment-recipes.js",
+          "lib/core/experiment-recipes.js.map",
+          "lib/experiments.d.ts",
+          "lib/experiments.d.ts.map",
+          "lib/experiments.js",
+          "lib/experiments.js.map",
+          "lib/task-memory-store.d.ts",
+          "lib/task-memory-store.d.ts.map",
+          "lib/task-memory-store.js",
+          "lib/task-memory-store.js.map"
+        ]
+      },
+      "harness": {
+        "git_head": "c291e7961a515f6d7af9304e7fd1d257929aef26",
+        "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+      },
+      "artifacts": {
+        "tarball_sha256": "2e2104209812ae13c701480e5e0ba38bf6d09ee7b6546ebd909bab60b80d83e6",
+        "cordis_patch_sha256": "d8f8e14602aeb4dfafeb6aff3916cccb934c2c88d1d84b222a7c6d3040ca7434",
+        "preset_sha256": "43edc7f7b6dc9fcea423290e48f7b1d245220f10b15a06d8defa5f34685032e9",
+        "packed_files": 71,
+        "packed_bytes": 83113,
+        "unpacked_bytes": 306269
+      },
+      "created_at": "2026-09-19T13:30:54.126Z"
+    },
+    "model": {
+      "display_name": "deepseek-v4.1-flash",
+      "reasoning_effort": "high",
+      "max_tokens": 384000
+    },
+    "elapsed_ms": 1455439,
+    "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+  },
+  "metrics": {
+    "schema": 2,
+    "accounting": {
+      "observed_requests": 77,
+      "requests_with_usage": 77,
+      "unknown_usage_requests": 0,
+      "cost_complete": false,
+      "actual_cost": null,
+      "reason": "Observed log usage only; request inventory and billing reconciliation required",
+      "ledger": [
+        {
+          "id": "1/1/0",
+          "usage": {
+            "inputTokens": 1916,
+            "outputTokens": 241,
+            "totalTokens": 7533,
+            "cacheReadTokens": 5376
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 14,
+          "time": 1789859365628
+        },
+        {
+          "id": "1/2/0",
+          "usage": {
+            "inputTokens": 397,
+            "outputTokens": 344,
+            "totalTokens": 8165,
+            "cacheReadTokens": 7424
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 22,
+          "time": 1789859370711
+        },
+        {
+          "id": "1/3/0",
+          "usage": {
+            "inputTokens": 1642,
+            "outputTokens": 397,
+            "totalTokens": 10103,
+            "cacheReadTokens": 8064
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 29,
+          "time": 1789859373339
+        },
+        {
+          "id": "1/4/0",
+          "usage": {
+            "inputTokens": 3573,
+            "outputTokens": 6804,
+            "totalTokens": 20361,
+            "cacheReadTokens": 9984
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 36,
+          "time": 1789859399786
+        },
+        {
+          "id": "1/5/0",
+          "usage": {
+            "inputTokens": 2095,
+            "outputTokens": 446,
+            "totalTokens": 22893,
+            "cacheReadTokens": 20352
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 43,
+          "time": 1789859405545
+        },
+        {
+          "id": "1/6/0",
+          "usage": {
+            "inputTokens": 1384,
+            "outputTokens": 381,
+            "totalTokens": 24549,
+            "cacheReadTokens": 22784
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 50,
+          "time": 1789859408800
+        },
+        {
+          "id": "1/7/0",
+          "usage": {
+            "inputTokens": 1959,
+            "outputTokens": 3765,
+            "totalTokens": 30172,
+            "cacheReadTokens": 24448
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 55,
+          "time": 1789859425267
+        },
+        {
+          "id": "1/8/0",
+          "usage": {
+            "inputTokens": 848,
+            "outputTokens": 382,
+            "totalTokens": 31310,
+            "cacheReadTokens": 30080
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 62,
+          "time": 1789859427909
+        },
+        {
+          "id": "1/9/0",
+          "usage": {
+            "inputTokens": 1117,
+            "outputTokens": 311,
+            "totalTokens": 32660,
+            "cacheReadTokens": 31232
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 69,
+          "time": 1789859430472
+        },
+        {
+          "id": "1/10/0",
+          "usage": {
+            "inputTokens": 806,
+            "outputTokens": 5907,
+            "totalTokens": 39353,
+            "cacheReadTokens": 32640
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 76,
+          "time": 1789859455590
+        },
+        {
+          "id": "1/11/0",
+          "usage": {
+            "inputTokens": 2852,
+            "outputTokens": 3550,
+            "totalTokens": 45698,
+            "cacheReadTokens": 39296
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 83,
+          "time": 1789859471494
+        },
+        {
+          "id": "1/12/0",
+          "usage": {
+            "inputTokens": 527,
+            "outputTokens": 8181,
+            "totalTokens": 54404,
+            "cacheReadTokens": 45696
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 90,
+          "time": 1789859508420
+        },
+        {
+          "id": "1/13/0",
+          "usage": {
+            "inputTokens": 185,
+            "outputTokens": 774,
+            "totalTokens": 55231,
+            "cacheReadTokens": 54272
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 97,
+          "time": 1789859513645
+        },
+        {
+          "id": "1/14/0",
+          "usage": {
+            "inputTokens": 2158,
+            "outputTokens": 4369,
+            "totalTokens": 61695,
+            "cacheReadTokens": 55168
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 104,
+          "time": 1789859535819
+        },
+        {
+          "id": "1/15/0",
+          "usage": {
+            "inputTokens": 1268,
+            "outputTokens": 10215,
+            "totalTokens": 73051,
+            "cacheReadTokens": 61568
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 111,
+          "time": 1789859582996
+        },
+        {
+          "id": "1/16/0",
+          "usage": {
+            "inputTokens": 154,
+            "outputTokens": 11196,
+            "totalTokens": 84310,
+            "cacheReadTokens": 72960
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 118,
+          "time": 1789859631082
+        },
+        {
+          "id": "1/17/0",
+          "usage": {
+            "inputTokens": 465,
+            "outputTokens": 3600,
+            "totalTokens": 88289,
+            "cacheReadTokens": 84224
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 123,
+          "time": 1789859645366
+        },
+        {
+          "id": "1/18/0",
+          "usage": {
+            "inputTokens": 828,
+            "outputTokens": 5302,
+            "totalTokens": 94322,
+            "cacheReadTokens": 88192
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 130,
+          "time": 1789859665321
+        },
+        {
+          "id": "1/19/0",
+          "usage": {
+            "inputTokens": 230,
+            "outputTokens": 111,
+            "totalTokens": 94549,
+            "cacheReadTokens": 94208
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 135,
+          "time": 1789859667423
+        },
+        {
+          "id": "1/20/0",
+          "usage": {
+            "inputTokens": 629,
+            "outputTokens": 295,
+            "totalTokens": 95388,
+            "cacheReadTokens": 94464
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 140,
+          "time": 1789859669614
+        },
+        {
+          "id": "1/21/0",
+          "usage": {
+            "inputTokens": 257,
+            "outputTokens": 155,
+            "totalTokens": 95644,
+            "cacheReadTokens": 95232
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 145,
+          "time": 1789859671465
+        },
+        {
+          "id": "1/22/0",
+          "usage": {
+            "inputTokens": 257,
+            "outputTokens": 135,
+            "totalTokens": 95880,
+            "cacheReadTokens": 95488
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 150,
+          "time": 1789859673149
+        },
+        {
+          "id": "1/23/0",
+          "usage": {
+            "inputTokens": 237,
+            "outputTokens": 89,
+            "totalTokens": 96070,
+            "cacheReadTokens": 95744
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 155,
+          "time": 1789859675039
+        },
+        {
+          "id": "1/24/0",
+          "usage": {
+            "inputTokens": 562,
+            "outputTokens": 592,
+            "totalTokens": 97154,
+            "cacheReadTokens": 96000
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 160,
+          "time": 1789859678177
+        },
+        {
+          "id": "1/25/0",
+          "usage": {
+            "inputTokens": 232,
+            "outputTokens": 91,
+            "totalTokens": 97347,
+            "cacheReadTokens": 97024
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 165,
+          "time": 1789859679954
+        },
+        {
+          "id": "1/26/0",
+          "usage": {
+            "inputTokens": 604,
+            "outputTokens": 194,
+            "totalTokens": 98078,
+            "cacheReadTokens": 97280
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 170,
+          "time": 1789859681564
+        },
+        {
+          "id": "1/27/0",
+          "usage": {
+            "inputTokens": 261,
+            "outputTokens": 84,
+            "totalTokens": 98265,
+            "cacheReadTokens": 97920
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 175,
+          "time": 1789859683457
+        },
+        {
+          "id": "1/28/0",
+          "usage": {
+            "inputTokens": 810,
+            "outputTokens": 544,
+            "totalTokens": 99530,
+            "cacheReadTokens": 98176
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 180,
+          "time": 1789859686078
+        },
+        {
+          "id": "1/29/0",
+          "usage": {
+            "inputTokens": 177,
+            "outputTokens": 84,
+            "totalTokens": 99717,
+            "cacheReadTokens": 99456
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 185,
+          "time": 1789859687879
+        },
+        {
+          "id": "1/30/0",
+          "usage": {
+            "inputTokens": 887,
+            "outputTokens": 149,
+            "totalTokens": 100748,
+            "cacheReadTokens": 99712
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 190,
+          "time": 1789859689723
+        },
+        {
+          "id": "1/31/0",
+          "usage": {
+            "inputTokens": 243,
+            "outputTokens": 162,
+            "totalTokens": 101013,
+            "cacheReadTokens": 100608
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 195,
+          "time": 1789859691751
+        },
+        {
+          "id": "1/32/0",
+          "usage": {
+            "inputTokens": 252,
+            "outputTokens": 92,
+            "totalTokens": 101208,
+            "cacheReadTokens": 100864
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 200,
+          "time": 1789859693414
+        },
+        {
+          "id": "1/33/0",
+          "usage": {
+            "inputTokens": 856,
+            "outputTokens": 219,
+            "totalTokens": 102195,
+            "cacheReadTokens": 101120
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 205,
+          "time": 1789859695634
+        },
+        {
+          "id": "1/34/0",
+          "usage": {
+            "inputTokens": 153,
+            "outputTokens": 423,
+            "totalTokens": 102720,
+            "cacheReadTokens": 102144
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 210,
+          "time": 1789859698105
+        },
+        {
+          "id": "1/35/0",
+          "usage": {
+            "inputTokens": 166,
+            "outputTokens": 150,
+            "totalTokens": 102972,
+            "cacheReadTokens": 102656
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 215,
+          "time": 1789859699890
+        },
+        {
+          "id": "1/36/0",
+          "usage": {
+            "inputTokens": 162,
+            "outputTokens": 90,
+            "totalTokens": 103164,
+            "cacheReadTokens": 102912
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 220,
+          "time": 1789859701538
+        },
+        {
+          "id": "1/37/0",
+          "usage": {
+            "inputTokens": 428,
+            "outputTokens": 127,
+            "totalTokens": 103595,
+            "cacheReadTokens": 103040
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 225,
+          "time": 1789859703272
+        },
+        {
+          "id": "1/38/0",
+          "usage": {
+            "inputTokens": 146,
+            "outputTokens": 143,
+            "totalTokens": 103841,
+            "cacheReadTokens": 103552
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 230,
+          "time": 1789859704980
+        },
+        {
+          "id": "1/39/0",
+          "usage": {
+            "inputTokens": 136,
+            "outputTokens": 177,
+            "totalTokens": 104121,
+            "cacheReadTokens": 103808
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 235,
+          "time": 1789859706682
+        },
+        {
+          "id": "1/40/0",
+          "usage": {
+            "inputTokens": 160,
+            "outputTokens": 221,
+            "totalTokens": 104445,
+            "cacheReadTokens": 104064
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 240,
+          "time": 1789859708803
+        },
+        {
+          "id": "1/41/0",
+          "usage": {
+            "inputTokens": 577,
+            "outputTokens": 512,
+            "totalTokens": 105409,
+            "cacheReadTokens": 104320
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 245,
+          "time": 1789859712465
+        },
+        {
+          "id": "1/42/0",
+          "usage": {
+            "inputTokens": 851,
+            "outputTokens": 563,
+            "totalTokens": 106758,
+            "cacheReadTokens": 105344
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 252,
+          "time": 1789859843143
+        },
+        {
+          "id": "1/43/0",
+          "usage": {
+            "inputTokens": 230,
+            "outputTokens": 1289,
+            "totalTokens": 108271,
+            "cacheReadTokens": 106752
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 257,
+          "time": 1789859847819
+        },
+        {
+          "id": "1/44/0",
+          "usage": {
+            "inputTokens": 231,
+            "outputTokens": 155,
+            "totalTokens": 108546,
+            "cacheReadTokens": 108160
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 262,
+          "time": 1789859849703
+        },
+        {
+          "id": "1/45/0",
+          "usage": {
+            "inputTokens": 850,
+            "outputTokens": 1750,
+            "totalTokens": 111144,
+            "cacheReadTokens": 108544
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 267,
+          "time": 1789859900825
+        },
+        {
+          "id": "1/46/0",
+          "usage": {
+            "inputTokens": 160,
+            "outputTokens": 363,
+            "totalTokens": 111627,
+            "cacheReadTokens": 111104
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 272,
+          "time": 1789859903456
+        },
+        {
+          "id": "1/47/0",
+          "usage": {
+            "inputTokens": 245,
+            "outputTokens": 156,
+            "totalTokens": 111889,
+            "cacheReadTokens": 111488
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 277,
+          "time": 1789859905630
+        },
+        {
+          "id": "1/48/0",
+          "usage": {
+            "inputTokens": 976,
+            "outputTokens": 333,
+            "totalTokens": 113181,
+            "cacheReadTokens": 111872
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 282,
+          "time": 1789859922219
+        },
+        {
+          "id": "1/49/0",
+          "usage": {
+            "inputTokens": 135,
+            "outputTokens": 157,
+            "totalTokens": 113444,
+            "cacheReadTokens": 113152
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 287,
+          "time": 1789859924317
+        },
+        {
+          "id": "1/50/0",
+          "usage": {
+            "inputTokens": 386,
+            "outputTokens": 457,
+            "totalTokens": 114251,
+            "cacheReadTokens": 113408
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 292,
+          "time": 1789859943225
+        },
+        {
+          "id": "1/51/0",
+          "usage": {
+            "inputTokens": 753,
+            "outputTokens": 1078,
+            "totalTokens": 116007,
+            "cacheReadTokens": 114176
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 297,
+          "time": 1789860063114
+        },
+        {
+          "id": "1/52/0",
+          "usage": {
+            "inputTokens": 179,
+            "outputTokens": 848,
+            "totalTokens": 116995,
+            "cacheReadTokens": 115968
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 304,
+          "time": 1789860257130
+        },
+        {
+          "id": "1/53/0",
+          "usage": {
+            "inputTokens": 869,
+            "outputTokens": 366,
+            "totalTokens": 118227,
+            "cacheReadTokens": 116992
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 309,
+          "time": 1789860260048
+        },
+        {
+          "id": "1/54/0",
+          "usage": {
+            "inputTokens": 2392,
+            "outputTokens": 4575,
+            "totalTokens": 125111,
+            "cacheReadTokens": 118144
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 314,
+          "time": 1789860281555
+        },
+        {
+          "id": "1/55/0",
+          "usage": {
+            "inputTokens": 157,
+            "outputTokens": 177,
+            "totalTokens": 125390,
+            "cacheReadTokens": 125056
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 319,
+          "time": 1789860283701
+        },
+        {
+          "id": "1/56/0",
+          "usage": {
+            "inputTokens": 180,
+            "outputTokens": 367,
+            "totalTokens": 125859,
+            "cacheReadTokens": 125312
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 324,
+          "time": 1789860286876
+        },
+        {
+          "id": "1/57/0",
+          "usage": {
+            "inputTokens": 141,
+            "outputTokens": 155,
+            "totalTokens": 126120,
+            "cacheReadTokens": 125824
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 329,
+          "time": 1789860288822
+        },
+        {
+          "id": "1/58/0",
+          "usage": {
+            "inputTokens": 411,
+            "outputTokens": 2263,
+            "totalTokens": 128754,
+            "cacheReadTokens": 126080
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 334,
+          "time": 1789860327665
+        },
+        {
+          "id": "1/59/0",
+          "usage": {
+            "inputTokens": 312,
+            "outputTokens": 887,
+            "totalTokens": 129839,
+            "cacheReadTokens": 128640
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 339,
+          "time": 1789860334354
+        },
+        {
+          "id": "1/60/0",
+          "usage": {
+            "inputTokens": 211,
+            "outputTokens": 1257,
+            "totalTokens": 131260,
+            "cacheReadTokens": 129792
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 344,
+          "time": 1789860341740
+        },
+        {
+          "id": "1/61/0",
+          "usage": {
+            "inputTokens": 517,
+            "outputTokens": 633,
+            "totalTokens": 132350,
+            "cacheReadTokens": 131200
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 349,
+          "time": 1789860375171
+        },
+        {
+          "id": "1/62/0",
+          "usage": {
+            "inputTokens": 1930,
+            "outputTokens": 325,
+            "totalTokens": 134479,
+            "cacheReadTokens": 132224
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 356,
+          "time": 1789860379183
+        },
+        {
+          "id": "1/63/0",
+          "usage": {
+            "inputTokens": 221,
+            "outputTokens": 425,
+            "totalTokens": 134918,
+            "cacheReadTokens": 134272
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 361,
+          "time": 1789860400625
+        },
+        {
+          "id": "1/64/0",
+          "usage": {
+            "inputTokens": 341,
+            "outputTokens": 1524,
+            "totalTokens": 136777,
+            "cacheReadTokens": 134912
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 368,
+          "time": 1789860672930
+        },
+        {
+          "id": "1/65/0",
+          "usage": {
+            "inputTokens": 1537,
+            "outputTokens": 2923,
+            "totalTokens": 141164,
+            "cacheReadTokens": 136704
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 373,
+          "time": 1789860688105
+        },
+        {
+          "id": "1/66/0",
+          "usage": {
+            "inputTokens": 151,
+            "outputTokens": 130,
+            "totalTokens": 141337,
+            "cacheReadTokens": 141056
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 378,
+          "time": 1789860690602
+        },
+        {
+          "id": "1/67/0",
+          "usage": {
+            "inputTokens": 291,
+            "outputTokens": 254,
+            "totalTokens": 141857,
+            "cacheReadTokens": 141312
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 383,
+          "time": 1789860693471
+        },
+        {
+          "id": "1/68/0",
+          "usage": {
+            "inputTokens": 762,
+            "outputTokens": 733,
+            "totalTokens": 143319,
+            "cacheReadTokens": 141824
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 388,
+          "time": 1789860698302
+        },
+        {
+          "id": "1/69/0",
+          "usage": {
+            "inputTokens": 292,
+            "outputTokens": 451,
+            "totalTokens": 143975,
+            "cacheReadTokens": 143232
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 393,
+          "time": 1789860701698
+        },
+        {
+          "id": "1/70/0",
+          "usage": {
+            "inputTokens": 220,
+            "outputTokens": 75,
+            "totalTokens": 144167,
+            "cacheReadTokens": 143872
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 398,
+          "time": 1789860703537
+        },
+        {
+          "id": "1/71/0",
+          "usage": {
+            "inputTokens": 272,
+            "outputTokens": 124,
+            "totalTokens": 144524,
+            "cacheReadTokens": 144128
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 403,
+          "time": 1789860705388
+        },
+        {
+          "id": "1/72/0",
+          "usage": {
+            "inputTokens": 234,
+            "outputTokens": 163,
+            "totalTokens": 144781,
+            "cacheReadTokens": 144384
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 408,
+          "time": 1789860707161
+        },
+        {
+          "id": "1/73/0",
+          "usage": {
+            "inputTokens": 155,
+            "outputTokens": 551,
+            "totalTokens": 145346,
+            "cacheReadTokens": 144640
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 413,
+          "time": 1789860717110
+        },
+        {
+          "id": "1/74/0",
+          "usage": {
+            "inputTokens": 226,
+            "outputTokens": 520,
+            "totalTokens": 146026,
+            "cacheReadTokens": 145280
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 418,
+          "time": 1789860787359
+        },
+        {
+          "id": "1/75/0",
+          "usage": {
+            "inputTokens": 481,
+            "outputTokens": 1331,
+            "totalTokens": 147732,
+            "cacheReadTokens": 145920
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 423,
+          "time": 1789860794906
+        },
+        {
+          "id": "1/76/0",
+          "usage": {
+            "inputTokens": 341,
+            "outputTokens": 695,
+            "totalTokens": 148748,
+            "cacheReadTokens": 147712
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 428,
+          "time": 1789860799840
+        },
+        {
+          "id": "1/77/0",
+          "usage": {
+            "inputTokens": 834,
+            "outputTokens": 1266,
+            "totalTokens": 150836,
+            "cacheReadTokens": 148736
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 435,
+          "time": 1789860806191
+        }
+      ]
+    },
+    "usage": {
+      "model_calls": 77,
+      "requests": 77,
+      "input_tokens": {
+        "count": 77,
+        "total": 7651838,
+        "average": 99374.51948051948,
+        "minimum": 7292,
+        "maximum": 149570
+      },
+      "uncached_input_tokens": {
+        "count": 77,
+        "total": 51070,
+        "average": 663.2467532467532,
+        "minimum": 135,
+        "maximum": 3573
+      },
+      "cached_input_tokens": {
+        "count": 77,
+        "total": 7600768,
+        "average": 98711.27272727272,
+        "minimum": 5376,
+        "maximum": 148736
+      },
+      "output_tokens": {
+        "count": 77,
+        "total": 100323,
+        "average": 1302.8961038961038,
+        "minimum": 75,
+        "maximum": 11196
+      },
+      "total_tokens": 7752161,
+      "cache_hit_rate": 0.9933257865626534
+    },
+    "timing_ms": {
+      "first_token": {
+        "count": 77,
+        "total": 107262,
+        "average": 1393.012987012987,
+        "minimum": 732,
+        "maximum": 2302
+      },
+      "input_wait": {
+        "count": 77,
+        "total": 107262,
+        "average": 1393.012987012987,
+        "minimum": 732,
+        "maximum": 2302
+      },
+      "output": {
+        "count": 77,
+        "total": 394491,
+        "average": 5123.25974025974,
+        "minimum": 224,
+        "maximum": 46398
+      },
+      "llm": {
+        "count": 77,
+        "total": 501753,
+        "average": 6516.272727272727,
+        "minimum": 1588,
+        "maximum": 47724
+      },
+      "tools": {
+        "count": 96,
+        "total": 939335,
+        "average": 9784.739583333334,
+        "minimum": 1,
+        "maximum": 211380
+      },
+      "output_tokens_per_second": 254.309984258196
+    },
+    "session": {
+      "steps": 77,
+      "turns": 1,
+      "model_calls": 77,
+      "tool_calls": 96
+    }
+  },
+  "patch": {
+    "sha256": "9a7673dd88bcad3afe588f57e7fb3b59d009f9293f566b34a01dd783f0ce3095",
+    "bytes": 19160,
+    "changed_paths": [
+      "res/css/_components.pcss",
+      "res/css/components/views/settings/devices/_DeviceDetailHeading.pcss",
+      "src/components/views/settings/devices/CurrentDeviceSection.tsx",
+      "src/components/views/settings/devices/DeviceDetailHeading.tsx",
+      "src/components/views/settings/devices/DeviceDetails.tsx",
+      "src/components/views/settings/devices/FilteredDeviceList.tsx",
+      "src/components/views/settings/devices/useOwnDevices.ts",
+      "src/components/views/settings/tabs/user/SessionManagerTab.tsx",
+      "src/i18n/strings/en_EN.json"
+    ],
+    "excluded_generated_paths": [],
+    "recovered_from_persisted_session": false
+  },
+  "official_result": {
+    "passed": false,
+    "failure_kind": "official_test_failure",
+    "evaluator_exit_code": 0,
+    "parsed": {
+      "tests": [
+        {
+          "name": "test/settings/controllers/ThemeController-test.ts | ThemeController | returns null when calculatedValue is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/settings/controllers/ThemeController-test.ts | ThemeController | returns light when login flag is set",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/settings/controllers/ThemeController-test.ts | ThemeController | returns default theme when value is not a valid theme",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/settings/controllers/ThemeController-test.ts | ThemeController | returns null when value is a valid theme",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/ExternalLink-test.tsx | <ExternalLink /> | renders link correctly",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/ExternalLink-test.tsx | <ExternalLink /> | defaults target and rel",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/ExternalLink-test.tsx | <ExternalLink /> | renders plain text link correctly",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/ExternalLink-test.tsx | ✕ renders a verified device (15 ms) | disables sign out button while sign out is pending",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/ExternalLink-test.tsx | <CurrentDeviceSection /> | renders spinner while device is loading",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/ExternalLink-test.tsx | <CurrentDeviceSection /> | handles when device is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/ExternalLink-test.tsx | <CurrentDeviceSection /> | renders device and correct security card when device is verified",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/ExternalLink-test.tsx | <CurrentDeviceSection /> | renders device and correct security card when device is unverified",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/ExternalLink-test.tsx | ✕ renders device name (45 ms) | renders device id as fallback when device has no display name",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | <FilteredDeviceList /> | renders devices in correct order",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | <FilteredDeviceList /> | updates list order when devices change",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | <FilteredDeviceList /> | displays no results message when there are no devices",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | does not display filter description when filter is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | updates filter when prop changes",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | calls onFilterChange handler",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | calls onFilterChange handler correctly when setting filter to All",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | filters correctly for Verified",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | filters correctly for Unverified",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | filters correctly for Inactive",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | renders no results correctly for Verified",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | renders no results correctly for Unverified",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | renders no results correctly for Inactive",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | clears filter from no results message",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | device details | renders expanded devices with device details",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | device details | clicking toggle calls onDeviceExpandToggle",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/widgets/StopGapWidgetDriver-test.ts | sendToDevice | sends unencrypted messages",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/widgets/StopGapWidgetDriver-test.ts | sendToDevice | sends encrypted messages",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/widgets/StopGapWidgetDriver-test.ts | getTurnServers | stops if VoIP isn't supported",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/widgets/StopGapWidgetDriver-test.ts | getTurnServers | stops if the homeserver provides no TURN servers",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/widgets/StopGapWidgetDriver-test.ts | getTurnServers | gets TURN servers",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/widgets/StopGapWidgetDriver-test.ts | readEventRelations | reads related events from the current room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/widgets/StopGapWidgetDriver-test.ts | readEventRelations | reads related events if the original event is missing",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/widgets/StopGapWidgetDriver-test.ts | readEventRelations | reads related events from a selected room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/widgets/StopGapWidgetDriver-test.ts | readEventRelations | reads related events with custom parameters",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | SearchResultTile | Sets up appropriate callEventGrouper for m.call. events",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | <SessionManagerTab /> | renders spinner while devices load",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | <SessionManagerTab /> | removes spinner when device fetch fails",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | <SessionManagerTab /> | removes spinner when device fetch fails",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | <SessionManagerTab /> | does not fail when checking device verification fails",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | <SessionManagerTab /> | sets device verification status correctly",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | <SessionManagerTab /> | renders current session section with an unverified session",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | <SessionManagerTab /> | opens encryption setup dialog when verifiying current session",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | <SessionManagerTab /> | renders current session section with a verified session",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | <SessionManagerTab /> | does not render other sessions section when user has only one device",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | <SessionManagerTab /> | renders other sessions section when user has more than one device",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | <SessionManagerTab /> | goes to filtered list from security recommendations",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | device detail expansion | renders no devices expanded by default",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | device detail expansion | toggles device expansion on click",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | Device verification | does not render device verification cta when current session is not verified",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | Device verification | renders device verification cta on other sessions when current session is verified",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | Device verification | refreshes devices after verifying other device",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | Sign out | Signs out of current device",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | other devices | deletes a device when interactive auth is not required",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | other devices | deletes a device when interactive auth is required",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/SearchResultTile-test.tsx | other devices | clears loading state when device deletion is cancelled during interactive auth",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/structures/RightPanel-test.tsx | RightPanel | navigates from room summary to member list",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/structures/RightPanel-test.tsx | RightPanel | renders info from only one room during room changes",
+          "status": "PASSED"
+        }
+      ]
+    }
+  },
+  "cleanup": {
+    "task_container_removed": true,
+    "task_workspace_removed": true,
+    "shared_image_retained": true
+  },
+  "public_export": {
+    "model_name_kind": "display_name",
+    "omitted": [
+      "development provider and route",
+      "local environment and paths",
+      "raw tool diagnostics"
+    ],
+    "note": "Redacted report, not runtime configuration. Scores and numeric usage are preserved; original evidence is retained locally."
+  }
+}

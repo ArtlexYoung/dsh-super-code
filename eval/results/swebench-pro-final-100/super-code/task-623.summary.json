@@ -1,0 +1,1811 @@
+{
+  "schema": 1,
+  "run_id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-623-attempt-1",
+  "started_at": "2026-09-19T16:16:10.898Z",
+  "completed_at": "2026-09-19T16:42:07.515Z",
+  "preset": "super-code",
+  "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
+  "isolation": {
+    "schema": 1,
+    "policy": "swebench-pro-isolation-v3",
+    "passed": true,
+    "audited_sessions": 1,
+    "blocked_calls_count": 3,
+    "violations_count": 0
+  },
+  "candidate": {
+    "schema": 1,
+    "identity": "local-0.0.9-candidate",
+    "package": {
+      "name": "dsh-super-code",
+      "version": "0.0.9",
+      "tarball": "dsh-super-code-0.0.9.tgz"
+    },
+    "source": {
+      "git_head": "259f081658d20230d392da418955f190067ddc0f",
+      "tracked_diff_sha256": "1965bf0bf045f6d8f471613c8b50851ab052f98a6338413853536c89f61dcba7",
+      "untracked_package_paths": [
+        "lib/core/experiment-recipes.d.ts",
+        "lib/core/experiment-recipes.d.ts.map",
+        "lib/core/experiment-recipes.js",
+        "lib/core/experiment-recipes.js.map",
+        "lib/experiments.d.ts",
+        "lib/experiments.d.ts.map",
+        "lib/experiments.js",
+        "lib/experiments.js.map",
+        "lib/task-memory-store.d.ts",
+        "lib/task-memory-store.d.ts.map",
+        "lib/task-memory-store.js",
+        "lib/task-memory-store.js.map"
+      ]
+    },
+    "harness": {
+      "git_head": "c291e7961a515f6d7af9304e7fd1d257929aef26",
+      "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+    },
+    "artifacts": {
+      "tarball_sha256": "2e2104209812ae13c701480e5e0ba38bf6d09ee7b6546ebd909bab60b80d83e6",
+      "cordis_patch_sha256": "d8f8e14602aeb4dfafeb6aff3916cccb934c2c88d1d84b222a7c6d3040ca7434",
+      "preset_sha256": "43edc7f7b6dc9fcea423290e48f7b1d245220f10b15a06d8defa5f34685032e9",
+      "packed_files": 71,
+      "packed_bytes": 83113,
+      "unpacked_bytes": 306269
+    },
+    "created_at": "2026-09-19T13:30:54.126Z"
+  },
+  "task_index": 623,
+  "instance_id": "instance_element-hq__element-web-fe14847bb9bb07cab1b9c6c54335ff22ca5e516a-vnan",
+  "repo": "element-hq/element-web",
+  "base_commit": "ad9cbe93994888e8f8ba88ce3614dc041a698930",
+  "official_evaluator": {
+    "repository": "scaleapi/SWE-bench_Pro-os",
+    "commit": "ca10a60a5fcae51e6948ffe1485d4153d421e6c5",
+    "evaluator_sha256": "bb5d4c5486be296e464e695df3747064aaa3bb197394bc6d39980634afec2034",
+    "dataset_sha256": "b5b2462bfbf5aeb2cb7ba7d215778a1768b85f9d7ad7f748546c7f80a0ad1510",
+    "image_policy": "local-cache-only"
+  },
+  "image": {
+    "reference": "jefzda/sweap-images:element-hq.element-element-hq__element-web-fe14847bb9bb07cab1b9c6c54335ff22ca5e516a",
+    "acquisition_reference": "docker.1ms.run/jefzda/sweap-images:element-hq.element-element-hq__element-web-fe14847bb9bb07cab1b9c6c54335ff22ca5e516a",
+    "platform": "linux/amd64",
+    "id": "sha256:ce7d137e709eb79d40a55c29203b91b22cac892281e2dc512c25cacd88cf4665",
+    "repo_digests": [
+      "jefzda/sweap-images@sha256:ce7d137e709eb79d40a55c29203b91b22cac892281e2dc512c25cacd88cf4665",
+      "hub.rat.dev/jefzda/sweap-images@sha256:ce7d137e709eb79d40a55c29203b91b22cac892281e2dc512c25cacd88cf4665"
+    ]
+  },
+  "page_runtime": {
+    "schema": 2,
+    "runtime": "deepseek-harness-web-rpc",
+    "mode": "agent-run",
+    "session_id": "session-5f2657e6-d95f-42ef-b53b-f88c9463cc7a",
+    "web_rpc": {
+      "authenticated": true,
+      "calls": [
+        "session/create",
+        "session/list",
+        "session/selectModel",
+        "session/prompt",
+        "session/list"
+      ],
+      "prompt_submitted": true
+    },
+    "preset": "super-code",
+    "isolation": {
+      "policy": "swebench-pro-isolation-v3",
+      "permission_preset": "workspace-write",
+      "tool_guard": "workspace-files-and-assigned-offline-container"
+    },
+    "candidate": {
+      "schema": 1,
+      "identity": "local-0.0.9-candidate",
+      "package": {
+        "name": "dsh-super-code",
+        "version": "0.0.9",
+        "tarball": "dsh-super-code-0.0.9.tgz"
+      },
+      "source": {
+        "git_head": "259f081658d20230d392da418955f190067ddc0f",
+        "tracked_diff_sha256": "1965bf0bf045f6d8f471613c8b50851ab052f98a6338413853536c89f61dcba7",
+        "untracked_package_paths": [
+          "lib/core/experiment-recipes.d.ts",
+          "lib/core/experiment-recipes.d.ts.map",
+          "lib/core/experiment-recipes.js",
+          "lib/core/experiment-recipes.js.map",
+          "lib/experiments.d.ts",
+          "lib/experiments.d.ts.map",
+          "lib/experiments.js",
+          "lib/experiments.js.map",
+          "lib/task-memory-store.d.ts",
+          "lib/task-memory-store.d.ts.map",
+          "lib/task-memory-store.js",
+          "lib/task-memory-store.js.map"
+        ]
+      },
+      "harness": {
+        "git_head": "c291e7961a515f6d7af9304e7fd1d257929aef26",
+        "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+      },
+      "artifacts": {
+        "tarball_sha256": "2e2104209812ae13c701480e5e0ba38bf6d09ee7b6546ebd909bab60b80d83e6",
+        "cordis_patch_sha256": "d8f8e14602aeb4dfafeb6aff3916cccb934c2c88d1d84b222a7c6d3040ca7434",
+        "preset_sha256": "43edc7f7b6dc9fcea423290e48f7b1d245220f10b15a06d8defa5f34685032e9",
+        "packed_files": 71,
+        "packed_bytes": 83113,
+        "unpacked_bytes": 306269
+      },
+      "created_at": "2026-09-19T13:30:54.126Z"
+    },
+    "model": {
+      "display_name": "deepseek-v4.1-flash",
+      "reasoning_effort": "high",
+      "max_tokens": 384000
+    },
+    "elapsed_ms": 1475079,
+    "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+  },
+  "metrics": {
+    "schema": 2,
+    "accounting": {
+      "observed_requests": 83,
+      "requests_with_usage": 83,
+      "unknown_usage_requests": 0,
+      "cost_complete": false,
+      "actual_cost": null,
+      "reason": "Observed log usage only; request inventory and billing reconciliation required",
+      "ledger": [
+        {
+          "id": "1/1/0",
+          "usage": {
+            "inputTokens": 2373,
+            "outputTokens": 328,
+            "totalTokens": 8077,
+            "cacheReadTokens": 5376
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 14,
+          "time": 1789834602397
+        },
+        {
+          "id": "1/2/0",
+          "usage": {
+            "inputTokens": 315,
+            "outputTokens": 334,
+            "totalTokens": 8713,
+            "cacheReadTokens": 8064
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 22,
+          "time": 1789834605225
+        },
+        {
+          "id": "1/3/0",
+          "usage": {
+            "inputTokens": 367,
+            "outputTokens": 315,
+            "totalTokens": 9386,
+            "cacheReadTokens": 8704
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 29,
+          "time": 1789834607420
+        },
+        {
+          "id": "1/4/0",
+          "usage": {
+            "inputTokens": 2533,
+            "outputTokens": 2754,
+            "totalTokens": 14631,
+            "cacheReadTokens": 9344
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 42,
+          "time": 1789834617611
+        },
+        {
+          "id": "1/5/0",
+          "usage": {
+            "inputTokens": 3262,
+            "outputTokens": 5524,
+            "totalTokens": 23378,
+            "cacheReadTokens": 14592
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 51,
+          "time": 1789834637411
+        },
+        {
+          "id": "1/6/0",
+          "usage": {
+            "inputTokens": 383,
+            "outputTokens": 295,
+            "totalTokens": 23974,
+            "cacheReadTokens": 23296
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 58,
+          "time": 1789834639846
+        },
+        {
+          "id": "1/7/0",
+          "usage": {
+            "inputTokens": 1399,
+            "outputTokens": 292,
+            "totalTokens": 25627,
+            "cacheReadTokens": 23936
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 65,
+          "time": 1789834642021
+        },
+        {
+          "id": "1/8/0",
+          "usage": {
+            "inputTokens": 756,
+            "outputTokens": 144,
+            "totalTokens": 26500,
+            "cacheReadTokens": 25600
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 70,
+          "time": 1789834643636
+        },
+        {
+          "id": "1/9/0",
+          "usage": {
+            "inputTokens": 1826,
+            "outputTokens": 7116,
+            "totalTokens": 35438,
+            "cacheReadTokens": 26496
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 75,
+          "time": 1789834670593
+        },
+        {
+          "id": "1/10/0",
+          "usage": {
+            "inputTokens": 7749,
+            "outputTokens": 2283,
+            "totalTokens": 38832,
+            "cacheReadTokens": 28800
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 82,
+          "time": 1789834680454
+        },
+        {
+          "id": "1/11/0",
+          "usage": {
+            "inputTokens": 1498,
+            "outputTokens": 2511,
+            "totalTokens": 42793,
+            "cacheReadTokens": 38784
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 89,
+          "time": 1789834691159
+        },
+        {
+          "id": "1/12/0",
+          "usage": {
+            "inputTokens": 1412,
+            "outputTokens": 297,
+            "totalTokens": 44461,
+            "cacheReadTokens": 42752
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 96,
+          "time": 1789834693922
+        },
+        {
+          "id": "1/13/0",
+          "usage": {
+            "inputTokens": 169,
+            "outputTokens": 505,
+            "totalTokens": 45090,
+            "cacheReadTokens": 44416
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 101,
+          "time": 1789834696961
+        },
+        {
+          "id": "1/14/0",
+          "usage": {
+            "inputTokens": 678,
+            "outputTokens": 4743,
+            "totalTokens": 50477,
+            "cacheReadTokens": 45056
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 108,
+          "time": 1789834717170
+        },
+        {
+          "id": "1/15/0",
+          "usage": {
+            "inputTokens": 1783,
+            "outputTokens": 2798,
+            "totalTokens": 55013,
+            "cacheReadTokens": 50432
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 115,
+          "time": 1789834732795
+        },
+        {
+          "id": "1/16/0",
+          "usage": {
+            "inputTokens": 1716,
+            "outputTokens": 3212,
+            "totalTokens": 59840,
+            "cacheReadTokens": 54912
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 122,
+          "time": 1789834747010
+        },
+        {
+          "id": "1/17/0",
+          "usage": {
+            "inputTokens": 332,
+            "outputTokens": 128,
+            "totalTokens": 60236,
+            "cacheReadTokens": 59776
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 127,
+          "time": 1789834749057
+        },
+        {
+          "id": "1/18/0",
+          "usage": {
+            "inputTokens": 2161,
+            "outputTokens": 459,
+            "totalTokens": 62780,
+            "cacheReadTokens": 60160
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 132,
+          "time": 1789834751600
+        },
+        {
+          "id": "1/19/0",
+          "usage": {
+            "inputTokens": 219,
+            "outputTokens": 212,
+            "totalTokens": 63023,
+            "cacheReadTokens": 62592
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 137,
+          "time": 1789834753378
+        },
+        {
+          "id": "1/20/0",
+          "usage": {
+            "inputTokens": 432,
+            "outputTokens": 221,
+            "totalTokens": 63629,
+            "cacheReadTokens": 62976
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 142,
+          "time": 1789834755587
+        },
+        {
+          "id": "1/21/0",
+          "usage": {
+            "inputTokens": 1218,
+            "outputTokens": 4567,
+            "totalTokens": 69401,
+            "cacheReadTokens": 63616
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 147,
+          "time": 1789834775004
+        },
+        {
+          "id": "1/22/0",
+          "usage": {
+            "inputTokens": 952,
+            "outputTokens": 179,
+            "totalTokens": 70507,
+            "cacheReadTokens": 69376
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 154,
+          "time": 1789834777698
+        },
+        {
+          "id": "1/23/0",
+          "usage": {
+            "inputTokens": 228,
+            "outputTokens": 129,
+            "totalTokens": 70757,
+            "cacheReadTokens": 70400
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 159,
+          "time": 1789834780007
+        },
+        {
+          "id": "1/24/0",
+          "usage": {
+            "inputTokens": 1237,
+            "outputTokens": 481,
+            "totalTokens": 72374,
+            "cacheReadTokens": 70656
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 164,
+          "time": 1789834783376
+        },
+        {
+          "id": "1/25/0",
+          "usage": {
+            "inputTokens": 666,
+            "outputTokens": 14506,
+            "totalTokens": 87492,
+            "cacheReadTokens": 72320
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 169,
+          "time": 1789834836607
+        },
+        {
+          "id": "1/26/0",
+          "usage": {
+            "inputTokens": 14860,
+            "outputTokens": 1196,
+            "totalTokens": 89400,
+            "cacheReadTokens": 73344
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 174,
+          "time": 1789834842006
+        },
+        {
+          "id": "1/27/0",
+          "usage": {
+            "inputTokens": 278,
+            "outputTokens": 1308,
+            "totalTokens": 90930,
+            "cacheReadTokens": 89344
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 181,
+          "time": 1789834847050
+        },
+        {
+          "id": "1/28/0",
+          "usage": {
+            "inputTokens": 276,
+            "outputTokens": 1153,
+            "totalTokens": 92309,
+            "cacheReadTokens": 90880
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 188,
+          "time": 1789834851586
+        },
+        {
+          "id": "1/29/0",
+          "usage": {
+            "inputTokens": 138,
+            "outputTokens": 575,
+            "totalTokens": 93001,
+            "cacheReadTokens": 92288
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 193,
+          "time": 1789834854793
+        },
+        {
+          "id": "1/30/0",
+          "usage": {
+            "inputTokens": 262,
+            "outputTokens": 598,
+            "totalTokens": 93788,
+            "cacheReadTokens": 92928
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 200,
+          "time": 1789834857838
+        },
+        {
+          "id": "1/31/0",
+          "usage": {
+            "inputTokens": 208,
+            "outputTokens": 645,
+            "totalTokens": 94549,
+            "cacheReadTokens": 93696
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 205,
+          "time": 1789834861587
+        },
+        {
+          "id": "1/32/0",
+          "usage": {
+            "inputTokens": 622,
+            "outputTokens": 403,
+            "totalTokens": 95489,
+            "cacheReadTokens": 94464
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 212,
+          "time": 1789834865144
+        },
+        {
+          "id": "1/33/0",
+          "usage": {
+            "inputTokens": 260,
+            "outputTokens": 4598,
+            "totalTokens": 100218,
+            "cacheReadTokens": 95360
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 217,
+          "time": 1789834879993
+        },
+        {
+          "id": "1/34/0",
+          "usage": {
+            "inputTokens": 362,
+            "outputTokens": 2015,
+            "totalTokens": 102473,
+            "cacheReadTokens": 100096
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 224,
+          "time": 1789834886710
+        },
+        {
+          "id": "1/35/0",
+          "usage": {
+            "inputTokens": 314,
+            "outputTokens": 240,
+            "totalTokens": 102954,
+            "cacheReadTokens": 102400
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 231,
+          "time": 1789834888904
+        },
+        {
+          "id": "1/36/0",
+          "usage": {
+            "inputTokens": 470,
+            "outputTokens": 12969,
+            "totalTokens": 116351,
+            "cacheReadTokens": 102912
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 236,
+          "time": 1789835129059
+        },
+        {
+          "id": "1/37/0",
+          "usage": {
+            "inputTokens": 256,
+            "outputTokens": 517,
+            "totalTokens": 116997,
+            "cacheReadTokens": 116224
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 243,
+          "time": 1789835133037
+        },
+        {
+          "id": "1/38/0",
+          "usage": {
+            "inputTokens": 181,
+            "outputTokens": 786,
+            "totalTokens": 117959,
+            "cacheReadTokens": 116992
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 250,
+          "time": 1789835237230
+        },
+        {
+          "id": "1/39/0",
+          "usage": {
+            "inputTokens": 531,
+            "outputTokens": 3374,
+            "totalTokens": 121793,
+            "cacheReadTokens": 117888
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 257,
+          "time": 1789835269128
+        },
+        {
+          "id": "1/40/0",
+          "usage": {
+            "inputTokens": 166,
+            "outputTokens": 377,
+            "totalTokens": 122271,
+            "cacheReadTokens": 121728
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 262,
+          "time": 1789835272079
+        },
+        {
+          "id": "1/41/0",
+          "usage": {
+            "inputTokens": 1945,
+            "outputTokens": 278,
+            "totalTokens": 124463,
+            "cacheReadTokens": 122240
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 269,
+          "time": 1789835275166
+        },
+        {
+          "id": "1/42/0",
+          "usage": {
+            "inputTokens": 564,
+            "outputTokens": 81,
+            "totalTokens": 125061,
+            "cacheReadTokens": 124416
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 274,
+          "time": 1789835277889
+        },
+        {
+          "id": "1/43/0",
+          "usage": {
+            "inputTokens": 529,
+            "outputTokens": 899,
+            "totalTokens": 126484,
+            "cacheReadTokens": 125056
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 279,
+          "time": 1789835283122
+        },
+        {
+          "id": "1/44/0",
+          "usage": {
+            "inputTokens": 383,
+            "outputTokens": 142,
+            "totalTokens": 126989,
+            "cacheReadTokens": 126464
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 286,
+          "time": 1789835285921
+        },
+        {
+          "id": "1/45/0",
+          "usage": {
+            "inputTokens": 739,
+            "outputTokens": 844,
+            "totalTokens": 128559,
+            "cacheReadTokens": 126976
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 291,
+          "time": 1789835291313
+        },
+        {
+          "id": "1/46/0",
+          "usage": {
+            "inputTokens": 293,
+            "outputTokens": 3566,
+            "totalTokens": 132371,
+            "cacheReadTokens": 128512
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 296,
+          "time": 1789835309017
+        },
+        {
+          "id": "1/47/0",
+          "usage": {
+            "inputTokens": 479,
+            "outputTokens": 734,
+            "totalTokens": 133565,
+            "cacheReadTokens": 132352
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 301,
+          "time": 1789835313637
+        },
+        {
+          "id": "1/48/0",
+          "usage": {
+            "inputTokens": 161,
+            "outputTokens": 81,
+            "totalTokens": 133746,
+            "cacheReadTokens": 133504
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 306,
+          "time": 1789835315946
+        },
+        {
+          "id": "1/49/0",
+          "usage": {
+            "inputTokens": 448,
+            "outputTokens": 214,
+            "totalTokens": 134294,
+            "cacheReadTokens": 133632
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 311,
+          "time": 1789835318220
+        },
+        {
+          "id": "1/50/0",
+          "usage": {
+            "inputTokens": 250,
+            "outputTokens": 1942,
+            "totalTokens": 136336,
+            "cacheReadTokens": 134144
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 316,
+          "time": 1789835327282
+        },
+        {
+          "id": "1/51/0",
+          "usage": {
+            "inputTokens": 253,
+            "outputTokens": 916,
+            "totalTokens": 137361,
+            "cacheReadTokens": 136192
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 321,
+          "time": 1789835331966
+        },
+        {
+          "id": "1/52/0",
+          "usage": {
+            "inputTokens": 254,
+            "outputTokens": 1602,
+            "totalTokens": 139072,
+            "cacheReadTokens": 137216
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 326,
+          "time": 1789835339805
+        },
+        {
+          "id": "1/53/0",
+          "usage": {
+            "inputTokens": 408,
+            "outputTokens": 4783,
+            "totalTokens": 144199,
+            "cacheReadTokens": 139008
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 333,
+          "time": 1789835379833
+        },
+        {
+          "id": "1/54/0",
+          "usage": {
+            "inputTokens": 179,
+            "outputTokens": 328,
+            "totalTokens": 144635,
+            "cacheReadTokens": 144128
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 338,
+          "time": 1789835382523
+        },
+        {
+          "id": "1/55/0",
+          "usage": {
+            "inputTokens": 630,
+            "outputTokens": 7911,
+            "totalTokens": 153053,
+            "cacheReadTokens": 144512
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 345,
+          "time": 1789835564238
+        },
+        {
+          "id": "1/56/0",
+          "usage": {
+            "inputTokens": 767,
+            "outputTokens": 175,
+            "totalTokens": 153902,
+            "cacheReadTokens": 152960
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 350,
+          "time": 1789835567012
+        },
+        {
+          "id": "1/57/0",
+          "usage": {
+            "inputTokens": 277,
+            "outputTokens": 3118,
+            "totalTokens": 157251,
+            "cacheReadTokens": 153856
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 355,
+          "time": 1789835580210
+        },
+        {
+          "id": "1/58/0",
+          "usage": {
+            "inputTokens": 184,
+            "outputTokens": 629,
+            "totalTokens": 157997,
+            "cacheReadTokens": 157184
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 360,
+          "time": 1789835583793
+        },
+        {
+          "id": "1/59/0",
+          "usage": {
+            "inputTokens": 154,
+            "outputTokens": 150,
+            "totalTokens": 158256,
+            "cacheReadTokens": 157952
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 365,
+          "time": 1789835586252
+        },
+        {
+          "id": "1/60/0",
+          "usage": {
+            "inputTokens": 317,
+            "outputTokens": 5394,
+            "totalTokens": 163919,
+            "cacheReadTokens": 158208
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 370,
+          "time": 1789835625512
+        },
+        {
+          "id": "1/61/0",
+          "usage": {
+            "inputTokens": 180,
+            "outputTokens": 748,
+            "totalTokens": 164768,
+            "cacheReadTokens": 163840
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 375,
+          "time": 1789835629780
+        },
+        {
+          "id": "1/62/0",
+          "usage": {
+            "inputTokens": 139,
+            "outputTokens": 149,
+            "totalTokens": 165024,
+            "cacheReadTokens": 164736
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 380,
+          "time": 1789835632048
+        },
+        {
+          "id": "1/63/0",
+          "usage": {
+            "inputTokens": 239,
+            "outputTokens": 361,
+            "totalTokens": 165592,
+            "cacheReadTokens": 164992
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 385,
+          "time": 1789835650452
+        },
+        {
+          "id": "1/64/0",
+          "usage": {
+            "inputTokens": 247,
+            "outputTokens": 167,
+            "totalTokens": 165790,
+            "cacheReadTokens": 165376
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 390,
+          "time": 1789835652486
+        },
+        {
+          "id": "1/65/0",
+          "usage": {
+            "inputTokens": 142,
+            "outputTokens": 147,
+            "totalTokens": 166049,
+            "cacheReadTokens": 165760
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 395,
+          "time": 1789835655187
+        },
+        {
+          "id": "1/66/0",
+          "usage": {
+            "inputTokens": 249,
+            "outputTokens": 1309,
+            "totalTokens": 167574,
+            "cacheReadTokens": 166016
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 400,
+          "time": 1789835678124
+        },
+        {
+          "id": "1/67/0",
+          "usage": {
+            "inputTokens": 1412,
+            "outputTokens": 650,
+            "totalTokens": 169614,
+            "cacheReadTokens": 167552
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 407,
+          "time": 1789835682520
+        },
+        {
+          "id": "1/68/0",
+          "usage": {
+            "inputTokens": 150,
+            "outputTokens": 1192,
+            "totalTokens": 170942,
+            "cacheReadTokens": 169600
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 412,
+          "time": 1789835689868
+        },
+        {
+          "id": "1/69/0",
+          "usage": {
+            "inputTokens": 211,
+            "outputTokens": 773,
+            "totalTokens": 171736,
+            "cacheReadTokens": 170752
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 417,
+          "time": 1789835694618
+        },
+        {
+          "id": "1/70/0",
+          "usage": {
+            "inputTokens": 188,
+            "outputTokens": 753,
+            "totalTokens": 172589,
+            "cacheReadTokens": 171648
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 422,
+          "time": 1789835699329
+        },
+        {
+          "id": "1/71/0",
+          "usage": {
+            "inputTokens": 520,
+            "outputTokens": 836,
+            "totalTokens": 173900,
+            "cacheReadTokens": 172544
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 429,
+          "time": 1789835817979
+        },
+        {
+          "id": "1/72/0",
+          "usage": {
+            "inputTokens": 1537,
+            "outputTokens": 3590,
+            "totalTokens": 178951,
+            "cacheReadTokens": 173824
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 434,
+          "time": 1789835833789
+        },
+        {
+          "id": "1/73/0",
+          "usage": {
+            "inputTokens": 1079,
+            "outputTokens": 279,
+            "totalTokens": 180302,
+            "cacheReadTokens": 178944
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 441,
+          "time": 1789835859496
+        },
+        {
+          "id": "1/74/0",
+          "usage": {
+            "inputTokens": 910,
+            "outputTokens": 670,
+            "totalTokens": 181804,
+            "cacheReadTokens": 180224
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 446,
+          "time": 1789835909604
+        },
+        {
+          "id": "1/75/0",
+          "usage": {
+            "inputTokens": 146,
+            "outputTokens": 161,
+            "totalTokens": 182067,
+            "cacheReadTokens": 181760
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 451,
+          "time": 1789835911999
+        },
+        {
+          "id": "1/76/0",
+          "usage": {
+            "inputTokens": 153,
+            "outputTokens": 1304,
+            "totalTokens": 183473,
+            "cacheReadTokens": 182016
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 456,
+          "time": 1789835917490
+        },
+        {
+          "id": "1/77/0",
+          "usage": {
+            "inputTokens": 170,
+            "outputTokens": 236,
+            "totalTokens": 183830,
+            "cacheReadTokens": 183424
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 461,
+          "time": 1789835920286
+        },
+        {
+          "id": "1/78/0",
+          "usage": {
+            "inputTokens": 164,
+            "outputTokens": 1064,
+            "totalTokens": 184908,
+            "cacheReadTokens": 183680
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 466,
+          "time": 1789835924880
+        },
+        {
+          "id": "1/79/0",
+          "usage": {
+            "inputTokens": 198,
+            "outputTokens": 192,
+            "totalTokens": 185222,
+            "cacheReadTokens": 184832
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 471,
+          "time": 1789835927295
+        },
+        {
+          "id": "1/80/0",
+          "usage": {
+            "inputTokens": 145,
+            "outputTokens": 608,
+            "totalTokens": 185969,
+            "cacheReadTokens": 185216
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 476,
+          "time": 1789835943313
+        },
+        {
+          "id": "1/81/0",
+          "usage": {
+            "inputTokens": 413,
+            "outputTokens": 325,
+            "totalTokens": 186594,
+            "cacheReadTokens": 185856
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 481,
+          "time": 1789835947227
+        },
+        {
+          "id": "1/82/0",
+          "usage": {
+            "inputTokens": 248,
+            "outputTokens": 209,
+            "totalTokens": 186825,
+            "cacheReadTokens": 186368
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 486,
+          "time": 1789836042792
+        },
+        {
+          "id": "1/83/0",
+          "usage": {
+            "inputTokens": 238,
+            "outputTokens": 1102,
+            "totalTokens": 188092,
+            "cacheReadTokens": 186752
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 491,
+          "time": 1789836068906
+        }
+      ]
+    },
+    "usage": {
+      "model_calls": 83,
+      "requests": 83,
+      "input_tokens": {
+        "count": 83,
+        "total": 9420340,
+        "average": 113498.07228915663,
+        "minimum": 7749,
+        "maximum": 186990
+      },
+      "uncached_input_tokens": {
+        "count": 83,
+        "total": 73140,
+        "average": 881.2048192771084,
+        "minimum": 138,
+        "maximum": 14860
+      },
+      "cached_input_tokens": {
+        "count": 83,
+        "total": 9347200,
+        "average": 112616.86746987952,
+        "minimum": 5376,
+        "maximum": 186752
+      },
+      "output_tokens": {
+        "count": 83,
+        "total": 135699,
+        "average": 1634.9277108433735,
+        "minimum": 81,
+        "maximum": 14506
+      },
+      "total_tokens": 9556039,
+      "cache_hit_rate": 0.9922359490209482
+    },
+    "timing_ms": {
+      "first_token": {
+        "count": 83,
+        "total": 124818,
+        "average": 1503.8313253012047,
+        "minimum": 660,
+        "maximum": 2195
+      },
+      "input_wait": {
+        "count": 83,
+        "total": 124818,
+        "average": 1503.8313253012047,
+        "minimum": 660,
+        "maximum": 2195
+      },
+      "output": {
+        "count": 83,
+        "total": 499070,
+        "average": 6012.891566265061,
+        "minimum": 275,
+        "maximum": 51779
+      },
+      "llm": {
+        "count": 83,
+        "total": 623888,
+        "average": 7516.722891566265,
+        "minimum": 1441,
+        "maximum": 53029
+      },
+      "tools": {
+        "count": 115,
+        "total": 843551,
+        "average": 7335.226086956522,
+        "minimum": 0,
+        "maximum": 187133
+      },
+      "output_tokens_per_second": 271.9037409581822
+    },
+    "session": {
+      "steps": 83,
+      "turns": 1,
+      "model_calls": 83,
+      "tool_calls": 115
+    }
+  },
+  "patch": {
+    "sha256": "83486ca4546ca2bd9ed79590b931725ef5ae6ca8dc9f8e2de1e706d6a483b9e6",
+    "bytes": 21729,
+    "changed_paths": [
+      "src/components/views/rooms/MessageComposer.tsx",
+      "src/voice-broadcast/components/VoiceBroadcastBody.tsx",
+      "src/voice-broadcast/index.ts",
+      "src/voice-broadcast/models/VoiceBroadcastRecording.ts",
+      "src/voice-broadcast/models/index.ts",
+      "src/voice-broadcast/stores/VoiceBroadcastRecordingsStore.ts",
+      "src/voice-broadcast/stores/index.ts",
+      "src/voice-broadcast/utils/index.ts",
+      "src/voice-broadcast/utils/startNewVoiceBroadcastRecording.ts"
+    ],
+    "excluded_generated_paths": []
+  },
+  "official_result": {
+    "passed": false,
+    "failure_kind": "official_test_failure",
+    "evaluator_exit_code": 0,
+    "parsed": {
+      "tests": [
+        {
+          "name": "test/components/structures/TabbedView-test.tsx | <TabbedView /> | renders tabs",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/structures/TabbedView-test.tsx | <TabbedView /> | renders first tab as active tab when no initialTabId",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/structures/TabbedView-test.tsx | <TabbedView /> | renders first tab as active tab when initialTabId is not valid",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/structures/TabbedView-test.tsx | <TabbedView /> | renders initialTabId tab as active when valid",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/structures/TabbedView-test.tsx | <TabbedView /> | renders without error when there are no tabs",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/structures/TabbedView-test.tsx | <TabbedView /> | sets active tab on tab click",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/structures/TabbedView-test.tsx | <TabbedView /> | calls onchange on on tab click",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/structures/TabbedView-test.tsx | <TabbedView /> | keeps same tab active when order of tabs changes",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/structures/TabbedView-test.tsx | <TabbedView /> | does not reactivate inititalTabId on rerender",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/notifications/ContentRules-test.ts | parseContentRules | should handle there being no keyword rules",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/notifications/ContentRules-test.ts | parseContentRules | should parse regular keyword notifications",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/notifications/ContentRules-test.ts | parseContentRules | should parse loud keyword notifications",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/notifications/ContentRules-test.ts | parseContentRules | should parse mixed keyword notifications",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/modules/ModuleComponents-test.tsx | Module Components | should override the factory for a TextInputField",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/modules/ModuleComponents-test.tsx | Module Components | should override the factory for a ModuleSpinner",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/validate/numberInRange-test.ts | validateNumberInRange | returns false when value is a not a number",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/validate/numberInRange-test.ts | validateNumberInRange | returns false when value is undefined",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/validate/numberInRange-test.ts | validateNumberInRange | returns false when value is NaN",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/validate/numberInRange-test.ts | validateNumberInRange | returns true when value is equal to min",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/validate/numberInRange-test.ts | validateNumberInRange | returns true when value is equal to max",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/validate/numberInRange-test.ts | validateNumberInRange | returns true when value is an int in range",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/validate/numberInRange-test.ts | validateNumberInRange | returns true when value is a float in range",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/SelectableDeviceTile-test.tsx | <SelectableDeviceTile /> | renders unselected device tile with checkbox",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/SelectableDeviceTile-test.tsx | <SelectableDeviceTile /> | renders selected tile",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/SelectableDeviceTile-test.tsx | <SelectableDeviceTile /> | calls onClick on checkbox click",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/SelectableDeviceTile-test.tsx | <SelectableDeviceTile /> | calls onClick on device tile info click",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/SelectableDeviceTile-test.tsx | <SelectableDeviceTile /> | does not call onClick when clicking device tiles actions",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/hooks/useDebouncedCallback-test.tsx | useDebouncedCallback | should be able to handle empty parameters",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/hooks/useDebouncedCallback-test.tsx | useDebouncedCallback | should call the callback with the parameters",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/hooks/useDebouncedCallback-test.tsx | useDebouncedCallback | should handle multiple parameters",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/hooks/useDebouncedCallback-test.tsx | useDebouncedCallback | should debounce quick changes",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/hooks/useDebouncedCallback-test.tsx | useDebouncedCallback | should not debounce slow changes",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/hooks/useDebouncedCallback-test.tsx | useDebouncedCallback | should not call the callback if it’s disabled",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/createRoom-test.ts | createRoom | sets up Jitsi video rooms correctly",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/createRoom-test.ts | createRoom | sets up Element video rooms correctly",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/createRoom-test.ts | createRoom | doesn't create calls in non-video-rooms",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/createRoom-test.ts | canEncryptToAllUsers | returns true if all devices have crypto",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/createRoom-test.ts | canEncryptToAllUsers | returns false if not all users have crypto",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/Notifications-test.tsx | <Notifications /> | renders spinner while loading",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/Notifications-test.tsx | <Notifications /> | renders error message when fetching push rules fails",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/Notifications-test.tsx | <Notifications /> | renders error message when fetching pushers fails",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/Notifications-test.tsx | <Notifications /> | renders error message when fetching threepids fails",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/Notifications-test.tsx | main notification switches | renders only enable notifications switch when notifications are disabled",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/Notifications-test.tsx | main notification switches | renders switches correctly",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/Notifications-test.tsx | main notification switches | toggles and sets settings correctly",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/Notifications-test.tsx | email switches | renders email switches correctly when email 3pids exist",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/Notifications-test.tsx | email switches | renders email switches correctly when notifications are on for email",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/Notifications-test.tsx | email switches | enables email notification when toggling on",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/Notifications-test.tsx | email switches | displays error when pusher update fails",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/Notifications-test.tsx | email switches | enables email notification when toggling off",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/Notifications-test.tsx | individual notification level settings | renders categories correctly",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/Notifications-test.tsx | individual notification level settings | renders radios correctly",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/Notifications-test.tsx | individual notification level settings | updates notification level when changed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | <ExportDialog /> | renders export dialog",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | <ExportDialog /> | calls onFinished when cancel button is clicked",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | <ExportDialog /> | exports room on submit",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | <ExportDialog /> | exports room using values set from ForceRoomExportParameters",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | <ExportDialog /> | renders success screen when export is finished",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | export format | renders export format with html selected by default",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | export format | sets export format on radio button click",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | export format | hides export format input when format is valid in ForceRoomExportParameters",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | export format | does not render export format when set in ForceRoomExportParameters",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | export type | renders export type with timeline selected by default",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | export type | sets export type on change",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | export type | does not render export type when set in ForceRoomExportParameters",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | export type | does not render message count input",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | export type | renders message count input with default value 100 when export type is lastNMessages",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | export type | sets message count on change",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | export type | does not export when export type is lastNMessages and message count is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | export type | does not export when export type is lastNMessages and message count is more than max",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | export type | exports when export type is NOT lastNMessages and message count is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | size limit | renders size limit input with default value",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | size limit | updates size limit on change",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | size limit | does not export when size limit is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | size limit | does not export when size limit is larger than max",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | size limit | exports when size limit is max",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | size limit | does not render size limit input when set in ForceRoomExportParameters",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | size limit | exports when size limit set in ForceRoomExportParameters is larger than 2000",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | include attachments | renders input with default value of false",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | include attachments | updates include attachments on change",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/ExportDialog-test.tsx | include attachments | does not render input when set in ForceRoomExportParameters",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/SpotlightDialog-test.tsx | Spotlight Dialog | should start a DM when clicking a person",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/SpotlightDialog-test.tsx | should apply filters supplied via props | without filter",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/SpotlightDialog-test.tsx | should apply filters supplied via props | with public room filter",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/SpotlightDialog-test.tsx | should apply filters supplied via props | with people filter",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/SpotlightDialog-test.tsx | should apply manually selected filter | with public rooms",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/SpotlightDialog-test.tsx | should apply manually selected filter | with people",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/SpotlightDialog-test.tsx | should allow clearing filter manually | with public room filter",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/SpotlightDialog-test.tsx | should allow clearing filter manually | with people filter",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/SpotlightDialog-test.tsx | searching for rooms | should find Rooms",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/SpotlightDialog-test.tsx | searching for rooms | should not find LocalRooms",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/SpotlightDialog-test.tsx | Feedback prompt | should show feedback prompt if feedback is enabled",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/SpotlightDialog-test.tsx | Feedback prompt | should hide feedback prompt if feedback is disabled",
+          "status": "PASSED"
+        }
+      ]
+    }
+  },
+  "cleanup": {
+    "task_container_removed": true,
+    "task_workspace_removed": true,
+    "shared_image_retained": true
+  },
+  "public_export": {
+    "model_name_kind": "display_name",
+    "omitted": [
+      "development provider and route",
+      "local environment and paths",
+      "raw tool diagnostics"
+    ],
+    "note": "Redacted report, not runtime configuration. Scores and numeric usage are preserved; original evidence is retained locally."
+  }
+}

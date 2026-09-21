@@ -12,20 +12,46 @@ const { useEffect, useLayoutEffect, useRef, useMemo, useState, useSyncExternalSt
 const { IconRefreshOutline16 } = require('@deepseek-ai/dsh-client-ui-primitives')
 const { SessionEventStream } = require('@deepseek-ai/dsh-api-session-controller')
 
-function TaskMemoryPanel({ state }) {
+const LOCALE_NS = 'dshSuperCode'
+const zh = {
+  'task.memory': '任务档案', 'task.other': '其他任务', 'task.history': '任务记录',
+  'status.active': '进行中', 'status.paused': '已暂停', 'status.completed': '已完成', 'status.cancelled': '已取消',
+  'next': '下一步：', 'tree.title': '协作执行', 'tree.count': '显示 {shown} / {total} · 运行中 {running}',
+  'tree.refresh': '刷新执行记录', 'tree.legend.active': '运行中', 'tree.legend.idle': '待命', 'tree.legend.stopped': '已停止', 'tree.legend.unavailable': '记录不可用',
+  'tree.empty': '暂无会话', 'tree.zoom.out': '缩小节点图', 'tree.zoom.in': '放大节点图', 'tree.fit': '适应窗口',
+  'tree.organize': '自动整理', 'tree.collapsed': '已收起 {count}', 'tree.more': '显示更多', 'tree.canvas': '拖动平移，滚轮缩放，双击空白适应窗口',
+  'tree.aria': 'Agent 执行树', 'tree.status': '状态颜色', 'tree.usage': '本节点及所有已知下级合计，包含本节点。{partial}Token {tokens}；缓存读取 {cache}；{agents} 个 Agent',
+  'usage.unknown': '用量 —', 'usage.cache': '缓存 {value}%', 'usage.partial': '部分', 'usage.incomplete': '部分记录或用量尚不可用；仅显示已知值。',
+  'history.aria': '已收起的 Agent', 'history.search': '搜索 Agent 或上级任务', 'history.find': '查找收起的 Agent', 'history.created': '创建时间', 'history.sort': '排序',
+  'history.all': '全部时间', 'history.today': '今天', 'history.week': '近 7 天', 'history.month': '近 30 天', 'history.custom': '自定义', 'history.latest': '最新创建', 'history.earliest': '最早创建', 'history.tokensHigh': 'Token 从多到少', 'history.tokensLow': 'Token 从少到多', 'history.titleAsc': '标题正序', 'history.titleDesc': '标题倒序',
+  'history.start': '开始日期', 'history.end': '结束日期', 'history.summary': '{shown} / {total} 个已收起节点 · Token 含下级', 'history.invalid': '请选择有效的起止日期', 'history.empty': '没有匹配的节点', 'history.view': '查看 {title} 的详情', 'history.unknownTime': '时间未知', 'history.unknownUsage': '用量未知',
+  'detail.path': 'Agent 路径', 'detail.title': 'Agent 详情', 'detail.refresh': '刷新对话详情', 'detail.task': '任务', 'detail.agent': 'Agent', 'detail.interrupted': 'Agent · 已中断', 'detail.error': '执行错误', 'detail.incomplete': '执行未完成，请稍后重试。', 'detail.input': '输入', 'detail.output': '输出', 'detail.cacheRead': '缓存读取', 'detail.cacheWrite': '缓存写入', 'detail.total': 'Token 总量', 'detail.hitRate': '缓存命中率', 'detail.moreUsage': '用量详情', 'detail.unavailable': '未提供', 'detail.reading': '正在读取对话…', 'detail.read': '读取中…', 'detail.older': '加载更早记录', 'detail.latest': '回到最新', 'detail.empty': '暂无执行内容', 'detail.new': '有新内容 · 查看最新', 'detail.loadError': '对话详情读取失败', 'detail.connection': '连接中断，正在重连', 'detail.historyError': '历史记录读取失败', 'detail.open': '展开全文', 'detail.noAccess': '无法打开详情，请重试', 'tree.loadError': '部分执行记录读取失败，请刷新重试', 'detail.unknown': '用量未知', 'main.agent': '主 Agent', 'tree.open': '点击查看详情', 'tree.expand': '展开', 'tree.collapse': '收起', 'image': '[图片]'
+}
+const en = {
+  'task.memory': 'Task memory', 'task.other': 'Other tasks', 'task.history': 'Task history',
+  'status.active': 'Active', 'status.paused': 'Paused', 'status.completed': 'Completed', 'status.cancelled': 'Cancelled', 'next': 'Next: ',
+  'tree.title': 'Collaborative execution', 'tree.count': 'Showing {shown} / {total} · Running {running}', 'tree.refresh': 'Refresh execution records', 'tree.legend.active': 'Running', 'tree.legend.idle': 'Idle', 'tree.legend.stopped': 'Stopped', 'tree.legend.unavailable': 'Unavailable', 'tree.empty': 'No sessions', 'tree.zoom.out': 'Zoom out', 'tree.zoom.in': 'Zoom in', 'tree.fit': 'Fit to window', 'tree.organize': 'Organize automatically', 'tree.collapsed': '{count} collapsed', 'tree.more': 'Show more', 'tree.canvas': 'Drag to pan, scroll to zoom, double-click empty space to fit', 'tree.aria': 'Agent execution tree', 'tree.status': 'Status colors', 'tree.usage': 'This node and all known descendants. {partial}Tokens {tokens}; cache reads {cache}; {agents} agents', 'usage.unknown': 'Usage —', 'usage.cache': 'Cache {value}%', 'usage.partial': 'partial', 'usage.incomplete': 'Some records or usage are unavailable; showing known values only.',
+  'history.aria': 'Collapsed agents', 'history.search': 'Search agents or parent tasks', 'history.find': 'Find collapsed agents', 'history.created': 'Created', 'history.sort': 'Sort', 'history.all': 'All time', 'history.today': 'Today', 'history.week': 'Last 7 days', 'history.month': 'Last 30 days', 'history.custom': 'Custom', 'history.latest': 'Newest first', 'history.earliest': 'Oldest first', 'history.tokensHigh': 'Most tokens first', 'history.tokensLow': 'Fewest tokens first', 'history.titleAsc': 'Title A–Z', 'history.titleDesc': 'Title Z–A', 'history.start': 'Start date', 'history.end': 'End date', 'history.summary': '{shown} / {total} collapsed nodes · Includes descendants', 'history.invalid': 'Choose a valid date range', 'history.empty': 'No matching nodes', 'history.view': 'View details for {title}', 'history.unknownTime': 'Unknown time', 'history.unknownUsage': 'Usage unknown',
+  'detail.path': 'Agent path', 'detail.title': 'Agent details', 'detail.refresh': 'Refresh conversation details', 'detail.task': 'Task', 'detail.agent': 'Agent', 'detail.interrupted': 'Agent · Interrupted', 'detail.error': 'Execution error', 'detail.incomplete': 'Execution did not finish. Try again later.', 'detail.input': 'Input', 'detail.output': 'Output', 'detail.cacheRead': 'Cache reads', 'detail.cacheWrite': 'Cache writes', 'detail.total': 'Total tokens', 'detail.hitRate': 'Cache hit rate', 'detail.moreUsage': 'Usage details', 'detail.unavailable': 'Unavailable', 'detail.reading': 'Reading conversation…', 'detail.read': 'Reading…', 'detail.older': 'Load earlier records', 'detail.latest': 'Back to latest', 'detail.empty': 'No execution content', 'detail.new': 'New content · View latest', 'detail.loadError': 'Could not read conversation details', 'detail.connection': 'Connection interrupted, reconnecting', 'detail.historyError': 'Could not read history', 'detail.open': 'Expand', 'detail.noAccess': 'Could not open details. Try again.', 'tree.loadError': 'Some execution records failed to load. Refresh to retry.', 'detail.unknown': 'Usage unknown', 'main.agent': 'Main agent', 'tree.open': 'Click to view details', 'tree.expand': 'Expand', 'tree.collapse': 'Collapse', 'image': '[Image]'
+}
+function formatText(template, values = {}) { return template.replace(/\{(\w+)\}/g, (_, key) => values[key] ?? '') }
+function text(t, key, values) { return formatText(t(key), values) }
+function localeCode(t) { return text(t, 'status.active') === en['status.active'] ? 'en-US' : 'zh-CN' }
+
+function TaskMemoryPanel({ state, t = key => zh[key] || key }) {
   const tasks = state?.tasks || []
   if (!tasks.length) return null
   const current = state.current?.kind === 'task' ? state.current : undefined
-  const labels = { active: '进行中', paused: '已暂停', completed: '已完成', cancelled: '已取消' }
-  return React.createElement('section', { className: 'dsh-super-code-task-memory', 'aria-label': '任务档案' },
+  const labels = { active: text(t, 'status.active'), paused: text(t, 'status.paused'), completed: text(t, 'status.completed'), cancelled: text(t, 'status.cancelled') }
+  return React.createElement('section', { className: 'dsh-super-code-task-memory', 'aria-label': text(t, 'task.memory') },
     current && React.createElement(React.Fragment, null,
       React.createElement('div', { className: 'dsh-super-code-task-heading' },
         React.createElement('strong', null, current.title),
         React.createElement('span', null, labels[current.status] || current.status)),
       current.goal && React.createElement('p', null, current.goal),
-      current.next && React.createElement('p', null, '下一步：', current.next)),
+      current.next && React.createElement('p', null, text(t, 'next'), current.next)),
     tasks.some(task => task.id !== current?.id) && React.createElement('details', null,
-      React.createElement('summary', null, current ? '其他任务' : '任务记录'),
+      React.createElement('summary', null, current ? text(t, 'task.other') : text(t, 'task.history')),
       React.createElement('ul', null, tasks.filter(task => task.id !== current?.id).map(task => React.createElement('li', { key: task.id }, `${task.title} · ${labels[task.status] || task.status}`)))),
   )
 }
@@ -151,7 +177,6 @@ function agentTreeTotals(view, catalogs = {}) {
 
 const historyRowHeight = 56
 const historyCollator = new Intl.Collator('zh-CN', { numeric: true, sensitivity: 'base' })
-const historyDateFormat = new Intl.DateTimeFormat('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
 
 function agentHistoryRange(range, from = '', to = '', now = Date.now()) {
   const today = new Date(now)
@@ -181,7 +206,7 @@ function agentHistoryRows(view, hidden, totals, options = {}) {
   const rows = []
   for (const id of hidden) {
     const node = view.nodes.get(id), title = node.title || node.displayTitle || id
-    const parent = view.nodes.get(node.parentId)?.title || '主 Agent', usage = totals.get(id)
+    const parent = view.nodes.get(node.parentId)?.title || text(options.t || (key => zh[key] || key), 'main.agent'), usage = totals.get(id)
     const time = Number.isFinite(node.createdAt) && node.createdAt >= 0 && node.createdAt <= 8640000000000000 ? node.createdAt : -1
     if (query && !`${title} ${parent}`.toLocaleLowerCase().includes(query)) continue
     if (options.range && options.range !== 'all' && (time < 0 || time < range.start || time >= range.end)) continue
@@ -208,11 +233,12 @@ function agentHistoryWindow(count, scrollTop, height) {
 }
 
 /** Local scroll state keeps the graph out of the scrolling render path. */
-function AgentHistory({ view, hidden, totals, open }) {
+function AgentHistory({ view, hidden, totals, open, t = key => zh[key] || key }) {
   const [filters, setFilters] = useState({ query: '', range: 'all', from: '', to: '', sort: 'time-desc' })
   const [scroll, setScroll] = useState({ top: 0, height: 168 })
   const viewport = useRef(null), focusTarget = useRef('')
-  const records = useMemo(() => agentHistoryRows(view, hidden, totals, filters), [view, hidden, totals, filters])
+  const records = useMemo(() => agentHistoryRows(view, hidden, totals, { ...filters, t }), [view, hidden, totals, filters, t])
+  const dateFormat = useMemo(() => new Intl.DateTimeFormat(localeCode(t), { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }), [t])
   const window = agentHistoryWindow(records.length, scroll.top, scroll.height)
   const range = agentHistoryRange(filters.range, filters.from, filters.to)
   const change = (key, value) => setFilters(previous => ({ ...previous, [key]: value }))
@@ -249,33 +275,33 @@ function AgentHistory({ view, hidden, totals, open }) {
   const select = (key, label, choices) => React.createElement('label', null, label,
     React.createElement('select', { value: filters[key], 'aria-label': label, onChange: event => change(key, event.target.value) },
       choices.map(([value, text]) => React.createElement('option', { key: value, value }, text))))
-  return React.createElement('section', { className: 'dsh-super-code-history', 'aria-label': '已收起的 Agent' },
-    React.createElement('input', { type: 'search', value: filters.query, 'aria-label': '查找收起的 Agent', placeholder: '搜索 Agent 或上级任务', onChange: event => change('query', event.target.value) }),
+  return React.createElement('section', { className: 'dsh-super-code-history', 'aria-label': text(t, 'history.aria') },
+    React.createElement('input', { type: 'search', value: filters.query, 'aria-label': text(t, 'history.find'), placeholder: text(t, 'history.search'), onChange: event => change('query', event.target.value) }),
     React.createElement('div', { className: 'dsh-super-code-history-filters' },
-      select('range', '创建时间', [['all', '全部时间'], ['today', '今天'], ['week', '近 7 天'], ['month', '近 30 天'], ['custom', '自定义']]),
-      select('sort', '排序', [['time-desc', '最新创建'], ['time-asc', '最早创建'], ['tokens-desc', 'Token 从多到少'], ['tokens-asc', 'Token 从少到多'], ['title-asc', '标题正序'], ['title-desc', '标题倒序']])),
+      select('range', text(t, 'history.created'), [['all', text(t, 'history.all')], ['today', text(t, 'history.today')], ['week', text(t, 'history.week')], ['month', text(t, 'history.month')], ['custom', text(t, 'history.custom')]]),
+      select('sort', text(t, 'history.sort'), [['time-desc', text(t, 'history.latest')], ['time-asc', text(t, 'history.earliest')], ['tokens-desc', text(t, 'history.tokensHigh')], ['tokens-asc', text(t, 'history.tokensLow')], ['title-asc', text(t, 'history.titleAsc')], ['title-desc', text(t, 'history.titleDesc')]])),
     filters.range === 'custom' && React.createElement('div', { className: 'dsh-super-code-history-filters' },
-      ['from', 'to'].map((key, index) => React.createElement('label', { key }, index ? '结束日期' : '开始日期',
-        React.createElement('input', { type: 'date', value: filters[key], 'aria-label': index ? '结束日期' : '开始日期', onChange: event => change(key, event.target.value) })))),
-    React.createElement('p', { className: 'dsh-super-code-history-summary', role: 'status' }, range.valid ? `${records.length} / ${hidden.length} 个已收起节点 · Token 含下级` : '请选择有效的起止日期'),
-    React.createElement('div', { ref: viewport, className: 'dsh-super-code-history-list', role: 'list', 'aria-label': '收起节点列表',
+      ['from', 'to'].map((key, index) => React.createElement('label', { key }, index ? text(t, 'history.end') : text(t, 'history.start'),
+        React.createElement('input', { type: 'date', value: filters[key], 'aria-label': index ? text(t, 'history.end') : text(t, 'history.start'), onChange: event => change(key, event.target.value) })))),
+    React.createElement('p', { className: 'dsh-super-code-history-summary', role: 'status' }, range.valid ? text(t, 'history.summary', { shown: records.length, total: hidden.length }) : text(t, 'history.invalid')),
+    React.createElement('div', { ref: viewport, className: 'dsh-super-code-history-list', role: 'list', 'aria-label': text(t, 'history.aria'),
       onScroll: event => { const top = event.currentTarget.scrollTop; setScroll(previous => previous.top === top ? previous : { ...previous, top }) } },
       React.createElement('div', { style: { height: window.height, position: 'relative' } }, records.slice(window.start, window.end).map((record, offset) => {
-        const index = window.start + offset, status = agentExecutionStatus(record.node, false)
-        const date = record.time < 0 ? '时间未知' : historyDateFormat.format(record.time)
+        const index = window.start + offset, status = agentExecutionStatus(record.node, false, t)
+        const date = record.time < 0 ? text(t, 'history.unknownTime') : dateFormat.format(record.time)
         return React.createElement('div', { key: record.id, role: 'listitem', 'aria-posinset': index + 1, 'aria-setsize': records.length,
           style: { position: 'absolute', top: index * historyRowHeight, height: historyRowHeight, width: '100%' } },
           React.createElement('button', { type: 'button', 'data-history-id': record.id, onClick: () => open(record.node), onKeyDown: event => keyDown(event, index),
-            title: `${record.title} · ${record.parent} · ${record.time < 0 ? date : new Date(record.time).toLocaleString('zh-CN')} · ${record.tokens < 0 ? '用量未知' : record.tokens + ' Token' + (record.partial ? '（部分）' : '')}`,
-            'aria-label': `查看 ${record.title} 的详情` },
+            title: `${record.title} · ${record.parent} · ${record.time < 0 ? date : new Date(record.time).toLocaleString()} · ${record.tokens < 0 ? text(t, 'history.unknownUsage') : record.tokens + ' Token' + (record.partial ? ' (' + text(t, 'usage.partial') + ')' : '')}`,
+            'aria-label': text(t, 'history.view', { title: record.title }) },
             React.createElement('i', { className: 'dsh-super-code-circle ' + status.tone, 'aria-hidden': true }),
             React.createElement('span', null, React.createElement('strong', null, record.title), React.createElement('small', null, `${status.label} · ${date} · ${record.parent}`)),
-            React.createElement('small', null, record.tokens < 0 ? '—' : `${record.partial ? '≈' : ''}${record.tokens.toLocaleString('zh-CN', { notation: 'compact', maximumFractionDigits: 1 })} tok`)))
+            React.createElement('small', null, record.tokens < 0 ? '—' : `${record.partial ? '≈' : ''}${record.tokens.toLocaleString(localeCode(t), { notation: 'compact', maximumFractionDigits: 1 })} tok`)))
       })),
-      !records.length && React.createElement('p', { className: 'dsh-super-code-history-empty' }, '没有匹配的节点')))
+      !records.length && React.createElement('p', { className: 'dsh-super-code-history-empty' }, text(t, 'history.empty'))))
 }
 
-function AgentTree({ useSessions, useTabInfo, treeStates, openDetail, refresh, watchCatalog }) {
+function AgentTree({ useSessions, useTabInfo, treeStates, openDetail, refresh, watchCatalog, t = key => zh[key] || key }) {
   const state = useSessions(s => s)
   const { tab } = useTabInfo()
   const view = useMemo(() => buildAgentView(state), [state.byId, state.subagentsByParent, state.current, state.currentAddress])
@@ -287,7 +313,7 @@ function AgentTree({ useSessions, useTabInfo, treeStates, openDetail, refresh, w
     }
     return value
   }, [treeStates, tab.signal, view.root])
-  return React.createElement(AgentTreeBody, { key: view.root, state, view, saved, openDetail, refresh, watchCatalog })
+  return React.createElement(AgentTreeBody, { key: view.root, state, view, saved, openDetail, refresh, watchCatalog, t })
 }
 
 function AgentCatalogWatch({ id, watchCatalog }) {
@@ -316,13 +342,13 @@ function agentTreeLayout(view, limit) {
     height: Math.max(140, ...rows.map(row => row.level * 128)) }
 }
 
-function agentExecutionStatus(node, isRoot) {
-  if (!node || node.unavailable || typeof node.running !== 'boolean') return { tone: 'unavailable', label: '记录不可用' }
-  if (node.running) return { tone: 'active', label: '运行中' }
-  return isRoot || node.mode === 'continuable' ? { tone: 'idle', label: '待命' } : { tone: 'stopped', label: '已停止' }
+function agentExecutionStatus(node, isRoot, t = key => zh[key] || key) {
+  if (!node || node.unavailable || typeof node.running !== 'boolean') return { tone: 'unavailable', label: text(t, 'tree.legend.unavailable') }
+  if (node.running) return { tone: 'active', label: text(t, 'tree.legend.active') }
+  return isRoot || node.mode === 'continuable' ? { tone: 'idle', label: text(t, 'tree.legend.idle') } : { tone: 'stopped', label: text(t, 'tree.legend.stopped') }
 }
 
-function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog }) {
+function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog, t = key => zh[key] || key }) {
   const [pan, setPan] = useState(saved.pan || { x: 0, y: 0 })
   const [zoom, setZoom] = useState(saved.zoom || 1)
   const viewport = useRef(null), graph = useRef(null)
@@ -402,12 +428,12 @@ function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog }
     ...Object.keys(catalogs).filter(id => view.nodes.has(id))])]
   const open = node => {
     setError('')
-    Promise.resolve().then(() => openDetail(node)).catch(() => setError('无法打开详情，请重试'))
+    Promise.resolve().then(() => openDetail(node)).catch(() => setError(text(t, 'detail.noAccess')))
   }
   const reload = async () => {
     setBusy(true); setError('')
     try { await Promise.all([...new Set([view.root, ...watched])].filter(Boolean).map(id => refresh(id))) }
-    catch { setError('执行记录刷新失败') }
+    catch { setError(text(t, 'tree.loadError')) }
     finally { setBusy(false) }
   }
   const keyDown = (event, row) => {
@@ -438,23 +464,23 @@ function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog }
     watched.map(id => React.createElement(AgentCatalogWatch, { key: id, id, watchCatalog })),
     React.createElement('header', { className: 'dsh-super-code-tree-header' },
       React.createElement('div', null,
-        React.createElement('strong', null, '协作执行'),
-        React.createElement('span', { className: 'dsh-super-code-tree-count' }, `显示 ${rows.length} / ${view.nodes.size} · 运行中 ${running}`)),
-      React.createElement('button', { type: 'button', className: 'dsh-super-code-icon-button', disabled: busy || !view.root, onClick: reload, title: '刷新执行记录', 'aria-label': '刷新执行记录' }, React.createElement(IconRefreshOutline16))),
-    (error || catalogError) && React.createElement('p', { role: 'alert', className: 'dsh-super-code-tree-error' }, error || '部分执行记录读取失败，请刷新重试'),
-    React.createElement('div', { className: 'dsh-super-code-graph-legend', 'aria-label': '状态颜色' },
-      ['运行中', '待命', '已停止', '记录不可用'].map((label, index) => React.createElement('span', { key: label },
-        React.createElement('i', { className: 'dsh-super-code-circle ' + ['active', 'idle', 'stopped', 'unavailable'][index], 'aria-hidden': true }), label))),
-    !view.root && React.createElement('p', { className: 'dsh-super-code-tree-empty' }, '暂无会话'),
-    React.createElement('div', { className: 'dsh-super-code-graph-controls', 'aria-label': '画布操作' },
-      React.createElement('button', { type: 'button', 'aria-label': '缩小节点图', disabled: zoom <= .4, onClick: () => zoomButton(1 / 1.2) }, '−'),
+        React.createElement('strong', null, text(t, 'tree.title')),
+        React.createElement('span', { className: 'dsh-super-code-tree-count' }, text(t, 'tree.count', { shown: rows.length, total: view.nodes.size, running }))),
+      React.createElement('button', { type: 'button', className: 'dsh-super-code-icon-button', disabled: busy || !view.root, onClick: reload, title: text(t, 'tree.refresh'), 'aria-label': text(t, 'tree.refresh') }, React.createElement(IconRefreshOutline16))),
+    (error || catalogError) && React.createElement('p', { role: 'alert', className: 'dsh-super-code-tree-error' }, error || text(t, 'tree.loadError')),
+    React.createElement('div', { className: 'dsh-super-code-graph-legend', 'aria-label': text(t, 'tree.status') },
+      ['tree.legend.active', 'tree.legend.idle', 'tree.legend.stopped', 'tree.legend.unavailable'].map((key, index) => React.createElement('span', { key },
+        React.createElement('i', { className: 'dsh-super-code-circle ' + ['active', 'idle', 'stopped', 'unavailable'][index], 'aria-hidden': true }), text(t, key)))),
+    !view.root && React.createElement('p', { className: 'dsh-super-code-tree-empty' }, text(t, 'tree.empty')),
+    React.createElement('div', { className: 'dsh-super-code-graph-controls', 'aria-label': text(t, 'tree.canvas') },
+      React.createElement('button', { type: 'button', 'aria-label': text(t, 'tree.zoom.out'), disabled: zoom <= .4, onClick: () => zoomButton(1 / 1.2) }, '−'),
       React.createElement('span', { 'aria-live': 'polite' }, `${Math.round(zoom * 100)}%`),
-      React.createElement('button', { type: 'button', 'aria-label': '放大节点图', disabled: zoom >= 2, onClick: () => zoomButton(1.2) }, '+'),
-      React.createElement('button', { type: 'button', onClick: fit }, '适应窗口')),
+      React.createElement('button', { type: 'button', 'aria-label': text(t, 'tree.zoom.in'), disabled: zoom >= 2, onClick: () => zoomButton(1.2) }, '+'),
+      React.createElement('button', { type: 'button', onClick: fit }, text(t, 'tree.fit'))),
     (display.hidden.length > 0 || expanded.size > 0 || collapsed.size > 0) && React.createElement('div', { className: 'dsh-super-code-history-controls' },
-      React.createElement('button', { type: 'button', 'aria-expanded': historyOpen, onClick: () => setHistoryOpen(!historyOpen) }, `已收起 ${display.hidden.length}`),
-      (expanded.size > 0 || collapsed.size > 0) && React.createElement('button', { type: 'button', onClick: () => { autoFit.current = true; setExpanded(new Set()); setCollapsed(new Set()); setFocused(state.current) } }, '自动整理')),
-    historyOpen && React.createElement(AgentHistory, { view, hidden: display.hidden, totals, open }),
+      React.createElement('button', { type: 'button', 'aria-expanded': historyOpen, onClick: () => setHistoryOpen(!historyOpen) }, text(t, 'tree.collapsed', { count: display.hidden.length })),
+      (expanded.size > 0 || collapsed.size > 0) && React.createElement('button', { type: 'button', onClick: () => { autoFit.current = true; setExpanded(new Set()); setCollapsed(new Set()); setFocused(state.current) } }, text(t, 'tree.organize'))),
+    historyOpen && React.createElement(AgentHistory, { view, hidden: display.hidden, totals, open, t }),
     React.createElement('div', { ref: viewport, className: 'dsh-super-code-graph-scroll',
       onPointerDown: event => {
         if (!event.isPrimary || event.button !== 0) return
@@ -474,20 +500,20 @@ function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog }
       onPointerUp: finishDrag, onPointerCancel: finishDrag, onLostPointerCapture: finishDrag,
       onClickCapture: event => { if (gesture.current.moved && event.detail !== 0) { event.preventDefault(); event.stopPropagation() } },
       onDoubleClick: event => { if (!event.target.closest('[role="treeitem"]')) fit() },
-      title: '拖动平移，滚轮缩放，双击空白适应窗口',
+      title: text(t, 'tree.canvas'),
     },
-    React.createElement('div', { ref: graph, role: 'tree', 'aria-label': 'Agent 执行树', className: 'dsh-super-code-graph', style: { width, height, transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` } },
+    React.createElement('div', { ref: graph, role: 'tree', 'aria-label': text(t, 'tree.aria'), className: 'dsh-super-code-graph', style: { width, height, transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` } },
       React.createElement('svg', { width, height, className: 'dsh-super-code-graph-edges', 'aria-hidden': true }, edges.map(edge => {
         const parent = positions.get(edge.parent), child = positions.get(edge.child)
         return React.createElement('path', { key: edge.child, d: `M ${parent.x} ${parent.y + 105} V ${child.y - 12} H ${child.x} V ${child.y}`, fill: 'none' })
       })),
       rows.map(row => {
       const node = view.nodes.get(row.id)
-      const title = node.title || node.displayTitle || '主 Agent'
-      const { label: status, tone } = agentExecutionStatus(node, row.id === view.root)
+      const title = node.title || node.displayTitle || text(t, 'main.agent')
+      const { label: status, tone } = agentExecutionStatus(node, row.id === view.root, t)
       const usage = totals.get(row.id)
       const partial = usage.partial || usage.known < usage.agents
-      const number = value => value.toLocaleString('zh-CN', { notation: 'compact', maximumFractionDigits: 1 })
+      const number = value => value.toLocaleString(localeCode(t), { notation: 'compact', maximumFractionDigits: 1 })
       const hasChildren = (view.children.get(row.id) || []).length > 0
       const isExpanded = (display.view.children.get(row.id) || []).length > 0
       return React.createElement(React.Fragment, { key: row.id }, React.createElement('button', {
@@ -497,23 +523,23 @@ function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog }
           'aria-expanded': hasChildren ? isExpanded : undefined,
           'aria-disabled': node.unavailable || undefined, 'aria-label': `${title}，${status}`,
           className: `dsh-super-code-graph-node${row.id === state.current ? ' selected' : ''}${node.running ? ' running' : ''}`,
-          style: { left: row.x - 64, top: row.y }, title: `${title} · ${status} · 点击查看详情`,
+          style: { left: row.x - 64, top: row.y }, title: `${title} · ${status} · ${text(t, 'tree.open')}`,
           onFocus: () => setFocused(row.id), onClick: () => { if (!node.unavailable) open(node) },
           onKeyDown: event => { if (event.target === event.currentTarget) keyDown(event, row) },
         },
-        React.createElement('span', { className: 'dsh-super-code-circle ' + tone, 'aria-hidden': true }, row.id === view.root ? '主' : String(rows.findIndex(item => item.id === row.id))),
+        React.createElement('span', { className: 'dsh-super-code-circle ' + tone, 'aria-hidden': true }, row.id === view.root ? text(t, 'main.agent').slice(0, 1) : String(rows.findIndex(item => item.id === row.id))),
         React.createElement('span', { className: 'dsh-super-code-tree-content' },
           React.createElement('span', { className: 'dsh-super-code-tree-title' }, title),
-          React.createElement('span', { className: 'dsh-super-code-tree-usage', title: `本节点及所有已知下级合计，包含本节点。${partial ? '部分记录或用量尚不可用；仅显示已知值。' : ''}Token ${usage.tokens.toLocaleString('zh-CN')}；缓存读取 ${usage.cache.toLocaleString('zh-CN')}；${usage.agents} 个 Agent` },
-            React.createElement('span', null, usage.known ? `${number(usage.tokens)} token` : '用量 —'),
-            React.createElement('span', null, usage.known ? `缓存 ${usage.input ? Math.round(usage.cache / usage.input * 100) : 0}%${partial ? ' · 部分' : ''}` : '缓存 —')))),
+          React.createElement('span', { className: 'dsh-super-code-tree-usage', title: text(t, 'tree.usage', { partial: partial ? text(t, 'usage.incomplete') : '', tokens: usage.tokens.toLocaleString(), cache: usage.cache.toLocaleString(), agents: usage.agents }) },
+            React.createElement('span', null, usage.known ? `${number(usage.tokens)} token` : text(t, 'usage.unknown')),
+            React.createElement('span', null, usage.known ? text(t, 'usage.cache', { value: usage.input ? Math.round(usage.cache / usage.input * 100) : 0 }) + (partial ? ` · ${text(t, 'usage.partial')}` : '') : 'Cache —')))),
         hasChildren && React.createElement('button', { type: 'button', className: 'dsh-super-code-branch-toggle',
-          style: { left: row.x + 21, top: row.y + 25 }, 'aria-label': `${collapsed.has(row.id) || !isExpanded ? '展开' : '收起'} ${title} 的下级`,
-          title: '整理下级节点；运行中的分支始终保留', onClick: () => toggleBranch(row.id) },
+          style: { left: row.x + 21, top: row.y + 25 }, 'aria-label': `${collapsed.has(row.id) || !isExpanded ? text(t, 'tree.expand') : text(t, 'tree.collapse')} ${title}`,
+          title: text(t, 'tree.organize'), onClick: () => toggleBranch(row.id) },
           React.createElement('svg', { width: 12, height: 12, viewBox: '0 0 12 12', 'aria-hidden': true, style: { transform: collapsed.has(row.id) || !isExpanded ? 'rotate(-90deg)' : undefined } },
             React.createElement('path', { d: 'M3 4.5 6 7.5 9 4.5', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5 }))))
     }))),
-    more && React.createElement('button', { type: 'button', className: 'dsh-super-code-tree-more', onClick: () => setLimit(limit + 200) }, '显示更多'))
+    more && React.createElement('button', { type: 'button', className: 'dsh-super-code-tree-more', onClick: () => setLimit(limit + 200) }, text(t, 'tree.more')))
 }
 
 function agentDetailAddress(node) {
@@ -554,22 +580,22 @@ function contentText(blocks) {
   }).filter(Boolean).join('\n\n')
 }
 
-function detailRecord(entry) {
+function detailRecord(entry, t = key => zh[key] || key) {
   const event = entry.event, data = event?.data
   if (!data) return { kind: 'skip' }
   const base = { seq: event.seq, time: event.time }
   if (event.type === 'user/message') {
     if (data.source?.kind !== 'user') return { kind: 'skip' }
-    return { ...base, kind: 'message', label: '任务', text: contentText(data.content) }
+    return { ...base, kind: 'message', label: text(t, 'detail.task'), text: contentText(data.content) }
   }
-  if (event.type === 'assistant/message') return { ...base, kind: 'message', label: data.interrupted ? 'Agent · 已中断' : 'Agent', text: contentText(data.message?.content) }
-  if (event.type === 'turn/error') return { ...base, kind: 'error', label: '执行错误', text: data.message || '执行未完成，请稍后重试。' }
+  if (event.type === 'assistant/message') return { ...base, kind: 'message', label: data.interrupted ? text(t, 'detail.interrupted') : text(t, 'detail.agent'), text: contentText(data.message?.content) }
+  if (event.type === 'turn/error') return { ...base, kind: 'error', label: text(t, 'detail.error'), text: data.message || text(t, 'detail.incomplete') }
   return { kind: 'skip' }
 }
 
 // The host journal owns decoding, cursor validation and reconnects. This view
 // keeps a bounded display window and never stages or sends to another session.
-function createAgentInspector(createStream, address, readPage, initial) {
+function createAgentInspector(createStream, address, readPage, initial, t = key => zh[key] || key) {
   let snapshot = initial || { status: 'loading', items: [], hasMore: false, earlier: false, truncated: false, projections: {}, error: '', firstSeq: 0, cursor: -1 }
   let cursor = snapshot.cursor
   let disposed = false, stream
@@ -580,7 +606,7 @@ function createAgentInspector(createStream, address, readPage, initial) {
     snapshot = { ...snapshot, cursor, ...patch }
     listeners.forEach(listener => listener())
   }
-  const itemsOf = entries => entries.map(detailRecord).filter(item => item.kind !== 'skip' && item.text)
+  const itemsOf = entries => entries.map(entry => detailRecord(entry, t)).filter(item => item.kind !== 'skip' && item.text)
   stream = createStream(agentDetailTarget(address), {
     publish: change => {
       if (disposed) return
@@ -609,13 +635,13 @@ function createAgentInspector(createStream, address, readPage, initial) {
         }
       }
     },
-    carrierFailed: () => publish({ error: '连接中断，正在重连' }),
-    failed: () => publish({ status: 'error', error: '对话详情读取失败' }),
+    carrierFailed: () => publish({ error: text(t, 'detail.connection') }),
+    failed: () => publish({ status: 'error', error: text(t, 'detail.loadError') }),
   })
   return {
     getSnapshot: () => snapshot,
     subscribe: listener => { listeners.add(listener); return () => listeners.delete(listener) },
-    start: () => { stream.open({ maxMessages: 40 }).catch(() => publish({ status: 'error', error: '对话详情读取失败' })) },
+    start: () => { stream.open({ maxMessages: 40 }).catch(() => publish({ status: 'error', error: text(t, 'detail.loadError') })) },
     older: async () => {
       if (snapshot.status === 'paging' || !snapshot.hasMore) return
       publish({ status: 'paging', error: '' })
@@ -628,20 +654,20 @@ function createAgentInspector(createStream, address, readPage, initial) {
           firstSeq: items.length > 200 ? visible[0].seq : result.value.records[0]?.event.seq ?? 0,
           hasMore: result.value.hasMore || items.length > 200 })
       }
-      catch { publish({ status: 'error', error: '历史记录读取失败' }) }
+      catch { publish({ status: 'error', error: text(t, 'detail.historyError') }) }
     },
     dispose: () => { disposed = true; listeners.clear(); void stream.dispose() },
   }
 }
 
-function DetailText({ text }) {
+function DetailText({ text: value, t = key => zh[key] || key }) {
   const [full, setFull] = useState(false)
   return React.createElement(React.Fragment, null,
-    React.createElement('pre', null, full ? text : text.slice(0, 12000)),
-    !full && text.length > 12000 && React.createElement('button', { type: 'button', onClick: () => setFull(true) }, '展开全文'))
+    React.createElement('pre', null, full ? value : value.slice(0, 12000)),
+    !full && value.length > 12000 && React.createElement('button', { type: 'button', onClick: () => setFull(true) }, text(t, 'detail.open')))
 }
 
-function AgentDetail({ useTabInfo, useSessions, createInspector, detailStates }) {
+function AgentDetail({ useTabInfo, useSessions, createInspector, detailStates, t = key => zh[key] || key }) {
   const { tab } = useTabInfo()
   const state = useSessions(s => s)
   const saved = useMemo(() => {
@@ -687,52 +713,52 @@ function AgentDetail({ useTabInfo, useSessions, createInspector, detailStates })
   const projections = state.byId[id]?.projectionValues || snapshot.projections
   const totals = projections.superAgentUsage?.totals || projections.tokenUsage
   const input = totals ? (totals.uncachedInputTokens || 0) + (totals.cacheReadTokens || 0) + (totals.cacheWriteTokens || 0) : 0
-  const format = value => value === undefined ? '未提供' : value.toLocaleString('zh-CN')
+  const format = value => value === undefined ? text(t, 'detail.unavailable') : value.toLocaleString(localeCode(t))
   const tasks = projections.superCodeTasks
   const task = tasks?.current?.kind === 'task' ? tasks.current : undefined
-  const title = node?.title || node?.displayTitle || 'Agent 详情'
+  const title = node?.title || node?.displayTitle || text(t, 'detail.title')
   const metrics = [
-    ['输入', totals ? input : undefined], ['输出', totals?.outputTokens],
-    ['缓存读取', totals?.cacheReadTokens], ['缓存写入', totals?.cacheWriteTokens],
+    [text(t, 'detail.input'), totals ? input : undefined], [text(t, 'detail.output'), totals?.outputTokens],
+    [text(t, 'detail.cacheRead'), totals?.cacheReadTokens], [text(t, 'detail.cacheWrite'), totals?.cacheWriteTokens],
   ]
   return React.createElement('section', { className: 'dsh-super-code-detail', 'data-agent-detail': id },
     React.createElement('header', { className: 'dsh-super-code-detail-header' },
-      React.createElement('nav', { 'aria-label': 'Agent 路径' }, path.map((part, index) => React.createElement('span', { key: part.id }, index > 0 ? ' / ' : '', part.title))),
+      React.createElement('nav', { 'aria-label': text(t, 'detail.path') }, path.map((part, index) => React.createElement('span', { key: part.id }, index > 0 ? ' / ' : '', part.title))),
       React.createElement('div', { className: 'dsh-super-code-detail-heading' },
         React.createElement('div', null,
           React.createElement('h2', null, title),
-          React.createElement('span', { className: 'dsh-super-code-detail-status' }, agentExecutionStatus(node, id === view.root).label)),
-        React.createElement('button', { type: 'button', className: 'dsh-super-code-icon-button', title: '刷新对话详情', 'aria-label': '刷新对话详情', onClick: latest }, React.createElement(IconRefreshOutline16))),
+          React.createElement('span', { className: 'dsh-super-code-detail-status' }, agentExecutionStatus(node, id === view.root, t).label)),
+        React.createElement('button', { type: 'button', className: 'dsh-super-code-icon-button', title: text(t, 'detail.refresh'), 'aria-label': text(t, 'detail.refresh'), onClick: latest }, React.createElement(IconRefreshOutline16))),
       id !== view.root && task?.goal && task.goal !== title && React.createElement('p', { className: 'dsh-super-code-detail-task' }, task.goal),
-      id === view.root && React.createElement(TaskMemoryPanel, { state: tasks }),
+      id === view.root && React.createElement(TaskMemoryPanel, { state: tasks, t }),
       React.createElement('dl', { className: 'dsh-super-code-detail-metrics' },
-        React.createElement('div', null, React.createElement('dt', null, 'Token 总量'), React.createElement('dd', null, format(totals ? input + (totals.outputTokens || 0) : undefined))),
-        React.createElement('div', null, React.createElement('dt', null, '缓存命中率'), React.createElement('dd', null, totals ? (input ? Math.round((totals.cacheReadTokens || 0) / input * 100) : 0) + '%' : '未提供'))),
+        React.createElement('div', null, React.createElement('dt', null, text(t, 'detail.total')), React.createElement('dd', null, format(totals ? input + (totals.outputTokens || 0) : undefined))),
+        React.createElement('div', null, React.createElement('dt', null, text(t, 'detail.hitRate')), React.createElement('dd', null, totals ? (input ? Math.round((totals.cacheReadTokens || 0) / input * 100) : 0) + '%' : text(t, 'detail.unavailable')))),
       React.createElement('details', { className: 'dsh-super-code-usage-details', open: saved.open.has('usage'), onToggle: event => { if (event.currentTarget.open) saved.open.add('usage'); else saved.open.delete('usage') } },
-        React.createElement('summary', null, '用量详情'),
+        React.createElement('summary', null, text(t, 'detail.moreUsage')),
         React.createElement('dl', { className: 'dsh-super-code-detail-metrics' }, metrics.map(([label, value]) => React.createElement('div', { key: label }, React.createElement('dt', null, label), React.createElement('dd', null, format(value))))))),
-    React.createElement('div', { ref: log, className: 'dsh-super-code-detail-log', 'aria-label': 'Agent 执行内容', onScroll: event => {
+    React.createElement('div', { ref: log, className: 'dsh-super-code-detail-log', 'aria-label': text(t, 'tree.title'), onScroll: event => {
       const element = event.currentTarget
       saved.top = element.scrollTop
       saved.following = !snapshot.earlier && element.scrollHeight - element.clientHeight - element.scrollTop < 32
       if (saved.following) markUnread(false)
     } },
       snapshot.error && React.createElement('p', { role: 'alert' }, snapshot.error),
-      snapshot.status === 'loading' && React.createElement('p', { role: 'status' }, '正在读取对话…'),
-      snapshot.hasMore && React.createElement('button', { type: 'button', disabled: snapshot.status === 'paging', onClick: inspector.older }, snapshot.status === 'paging' ? '读取中…' : '加载更早记录'),
-      (snapshot.earlier || snapshot.truncated) && React.createElement('button', { type: 'button', onClick: latest }, '回到最新'),
-      snapshot.status === 'ready' && !snapshot.items.length && React.createElement('p', null, '暂无执行内容'),
+      snapshot.status === 'loading' && React.createElement('p', { role: 'status' }, text(t, 'detail.reading')),
+      snapshot.hasMore && React.createElement('button', { type: 'button', disabled: snapshot.status === 'paging', onClick: inspector.older }, snapshot.status === 'paging' ? text(t, 'detail.read') : text(t, 'detail.older')),
+      (snapshot.earlier || snapshot.truncated) && React.createElement('button', { type: 'button', onClick: latest }, text(t, 'detail.latest')),
+      snapshot.status === 'ready' && !snapshot.items.length && React.createElement('p', null, text(t, 'detail.empty')),
       snapshot.items.map(item => React.createElement('article', { key: item.seq, className: 'dsh-super-code-detail-entry ' + item.kind },
         item.collapsed ? React.createElement('details', { open: saved.open.has(item.seq), onToggle: event => { if (event.currentTarget.open) saved.open.add(item.seq); else saved.open.delete(item.seq) } },
           React.createElement('summary', null, item.label),
-          React.createElement(DetailText, { text: item.text }))
+            React.createElement(DetailText, { text: item.text, t }))
           : React.createElement(React.Fragment, null,
             React.createElement('div', { className: 'dsh-super-code-detail-entry-label' }, item.label,
-              React.createElement('time', null, new Date(item.time).toLocaleTimeString('zh-CN', { hour12: false }))),
-            React.createElement(DetailText, { text: item.text })))) ),
+              React.createElement('time', null, new Date(item.time).toLocaleTimeString(localeCode(t), { hour12: false }))),
+            React.createElement(DetailText, { text: item.text, t })))) ),
     unread && React.createElement('button', { type: 'button', className: 'dsh-super-code-new-content', onClick: () => {
       saved.following = true; log.current.scrollTop = log.current.scrollHeight; markUnread(false)
-    } }, '有新内容 · 查看最新'))
+    } }, text(t, 'detail.new')))
 }
 
 const inject = [
@@ -741,6 +767,9 @@ const inject = [
 ]
 
 function apply(ctx) {
+  const locale = ctx.locale || { register: () => () => {}, bind: () => key => zh[key] || key }
+  ctx.effect(() => locale.register(LOCALE_NS, { zh, en }), 'dsh-super-code: dictionaries')
+  const t = locale.bind(LOCALE_NS)
   ctx.effect(() => {
     const style = document.createElement('style')
     style.dataset.dshSuperCode = 'true'
@@ -882,8 +911,8 @@ function apply(ctx) {
   const treeKind = 'super-agent-agents'
   const disposeTreeType = ctx.sidebarRightTabs.register({
     id: treeId, kind: treeKind,
-    title: () => 'Agent 执行树',
-    guide: [{ order: 40, title: () => 'Agent 执行树', description: () => '查看 Agent 层级和执行对话' }],
+    title: () => t('tree.aria'),
+    guide: [{ order: 40, title: () => t('tree.aria'), description: () => t('tree.canvas') }],
   })
   const treeActions = {
     // The host unmounts hidden bodies; tab signals live until close/unload.
@@ -897,20 +926,20 @@ function apply(ctx) {
     title: address => {
       const target = agentDetailTarget(address), state = ctx.sessions.list.getSnapshot()
       const node = buildAgentView(state).nodes.get(target.childSessionId || target.sessionId)
-      return node?.title || node?.displayTitle || 'Agent 详情'
+      return node?.title || node?.displayTitle || t('detail.title')
     },
   })
   const detailActions = { detailStates: new WeakMap(), createInspector: (address, initial) => createAgentInspector(
     (target, options) => new SessionEventStream(ctx.remote, target, options), address,
-    (request, signal) => ctx.remote.session.page(request, signal), initial) }
+    (request, signal) => ctx.remote.session.page(request, signal), initial, t) }
   ctx.slots.inject('sidebar.right.pane.tab', () => ctx.slots.register({
-    name: 'sidebar.right.pane.tab', key: 'dsh-super-code-detail', inject: () => detailActions,
+    name: 'sidebar.right.pane.tab', key: 'dsh-super-code-detail', inject: () => ({ ...detailActions, t }),
   }, AgentDetail))
   ctx.slots.inject('sidebar.right.pane.tab', () => ctx.slots.register({
     // Keyed tab bodies dispatch by the definition id, while `kind` is the
     // page/content discriminator used by the Sidebar controller.
     name: 'sidebar.right.pane.tab', key: treeId,
-    inject: () => treeActions,
+    inject: () => ({ ...treeActions, t }),
   }, AgentTree))
   ctx.effect(() => disposeTreeType, 'super-code: Agent tree tab')
   ctx.effect(() => disposeDetailType, 'super-code: Agent detail tab')

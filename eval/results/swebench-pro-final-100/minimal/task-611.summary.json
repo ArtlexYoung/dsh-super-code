@@ -1,0 +1,481 @@
+{
+  "schema": 1,
+  "run_id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-611-attempt-1",
+  "started_at": "2026-09-18T13:03:59.686Z",
+  "completed_at": "2026-09-18T13:44:06.631Z",
+  "preset": "minimal",
+  "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
+  "isolation": {
+    "schema": 1,
+    "policy": "swebench-pro-isolation-v3",
+    "passed": true,
+    "audited_sessions": 1,
+    "blocked_calls_count": 5,
+    "violations_count": 0
+  },
+  "candidate": null,
+  "task_index": 611,
+  "instance_id": "instance_flipt-io__flipt-f1bc91a1b999656dbdb2495ccb57bf2105b84920",
+  "repo": "flipt-io/flipt",
+  "base_commit": "56d261e7c28e47faf537061e6ad3b306459a3e93",
+  "official_evaluator": {
+    "repository": "scaleapi/SWE-bench_Pro-os",
+    "commit": "ca10a60a5fcae51e6948ffe1485d4153d421e6c5",
+    "evaluator_sha256": "bb5d4c5486be296e464e695df3747064aaa3bb197394bc6d39980634afec2034",
+    "dataset_sha256": "b5b2462bfbf5aeb2cb7ba7d215778a1768b85f9d7ad7f748546c7f80a0ad1510",
+    "image_policy": "local-cache-only"
+  },
+  "image": {
+    "reference": "jefzda/sweap-images:flipt-io.flipt-flipt-io__flipt-f1bc91a1b999656dbdb2495ccb57bf2105b84920",
+    "acquisition_reference": "docker.1panel.live/jefzda/sweap-images:flipt-io.flipt-flipt-io__flipt-f1bc91a1b999656dbdb2495ccb57bf2105b84920",
+    "platform": "linux/amd64",
+    "id": "sha256:7801573e8b6531516301c39fbd685259b655861af547bd29ef63ba4aba550e63",
+    "repo_digests": [
+      "docker.1panel.live/jefzda/sweap-images@sha256:7801573e8b6531516301c39fbd685259b655861af547bd29ef63ba4aba550e63",
+      "jefzda/sweap-images@sha256:7801573e8b6531516301c39fbd685259b655861af547bd29ef63ba4aba550e63"
+    ]
+  },
+  "page_runtime": {
+    "schema": 2,
+    "runtime": "deepseek-harness-web-rpc",
+    "mode": "agent-run",
+    "session_id": "session-c976344f-2663-4ced-b41d-6ac3242af100",
+    "web_rpc": {
+      "authenticated": true,
+      "calls": [
+        "session/create",
+        "session/list",
+        "session/selectModel",
+        "session/prompt",
+        "session/list"
+      ],
+      "prompt_submitted": true
+    },
+    "preset": "minimal",
+    "isolation": {
+      "policy": "swebench-pro-isolation-v3",
+      "permission_preset": "workspace-write",
+      "tool_guard": "workspace-files-and-assigned-offline-container"
+    },
+    "candidate": null,
+    "model": {
+      "display_name": "deepseek-v4.1-flash",
+      "reasoning_effort": "high",
+      "max_tokens": 384000
+    },
+    "elapsed_ms": 1169102,
+    "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+  },
+  "metrics": {
+    "schema": 1,
+    "usage": {
+      "model_calls": 103,
+      "requests": 103,
+      "input_tokens": {
+        "count": 103,
+        "total": 6595428,
+        "average": 64033.28155339806,
+        "minimum": 1760,
+        "maximum": 119661
+      },
+      "uncached_input_tokens": {
+        "count": 103,
+        "total": 57956,
+        "average": 562.6796116504854,
+        "minimum": 136,
+        "maximum": 5068
+      },
+      "cached_input_tokens": {
+        "count": 103,
+        "total": 6537472,
+        "average": 63470.601941747576,
+        "minimum": 256,
+        "maximum": 118912
+      },
+      "output_tokens": {
+        "count": 103,
+        "total": 72129,
+        "average": 700.2815533980582,
+        "minimum": 90,
+        "maximum": 4895
+      },
+      "total_tokens": 6667557,
+      "cache_hit_rate": 0.9912127006768932
+    },
+    "timing_ms": {
+      "first_token": {
+        "count": 103,
+        "total": 132965,
+        "average": 1290.9223300970873,
+        "minimum": 757,
+        "maximum": 2251
+      },
+      "input_wait": {
+        "count": 103,
+        "total": 132965,
+        "average": 1290.9223300970873,
+        "minimum": 757,
+        "maximum": 2251
+      },
+      "output": {
+        "count": 103,
+        "total": 285922,
+        "average": 2775.9417475728155,
+        "minimum": 195,
+        "maximum": 19318
+      },
+      "llm": {
+        "count": 103,
+        "total": 418887,
+        "average": 4066.864077669903,
+        "minimum": 1167,
+        "maximum": 20134
+      },
+      "tools": {
+        "count": 102,
+        "total": 739845,
+        "average": 7253.382352941177,
+        "minimum": 1,
+        "maximum": 303287
+      },
+      "output_tokens_per_second": 252.26810109050717
+    },
+    "session": {
+      "steps": 103,
+      "turns": 1,
+      "model_calls": 103,
+      "tool_calls": 102
+    }
+  },
+  "patch": {
+    "sha256": "e4d80e3c26956028e976e8576c527b41764268950df0c59bf98f6457e31d65e0",
+    "bytes": 27696,
+    "changed_paths": [
+      "server/evaluator.go",
+      "server/rule.go",
+      "server/server.go",
+      "storage/evaluator.go",
+      "storage/rule.go"
+    ],
+    "excluded_generated_paths": []
+  },
+  "official_result": {
+    "passed": true,
+    "failure_kind": null,
+    "evaluator_exit_code": 0,
+    "parsed": {
+      "tests": [
+        {
+          "name": "TestEvaluate",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestWithCache",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestGetRule",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestListRules",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestCreateRule",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestUpdateRule",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestDeleteRule",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestOrderRules",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestCreateDistribution",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestUpdateDistribution",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestDeleteDistribution",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestGetSegment",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestListSegments",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestCreateSegment",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestUpdateSegment",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestDeleteSegment",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestCreateConstraint",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestUpdateConstraint",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestDeleteConstraint",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestNew",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestErrorUnaryInterceptor",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestParse",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestEvaluate_FlagNotFound",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestEvaluate_FlagDisabled",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestEvaluate_FlagNoRules",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestEvaluate_NoVariants_NoDistributions",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestEvaluate_SingleVariantDistribution",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestEvaluate_RolloutDistribution",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestEvaluate_NoConstraints",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_validate",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_matchesString",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_matchesNumber",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_matchesBool",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_evaluate",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestFlagsPagination",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestCreateFlag_DuplicateKey",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestUpdateFlag_NotFound",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestDeleteFlag_NotFound",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestCreateVariant_FlagNotFound",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestCreateVariant_DuplicateName",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestCreateVariant_DuplicateName_DifferentFlag",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestUpdateVariant_NotFound",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestUpdateVariant_DuplicateName",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestDeleteVariant_NotFound",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestGetRule",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestListRules",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestListRulesPagination",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestCreateRuleAndDistribution",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestCreateDistribution_NoRule",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestCreateRule_FlagNotFound",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestCreateRule_SegmentNotFound",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestUpdateRuleAndDistribution",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestUpdateRule_NotFound",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestDeleteRule",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestDeleteRule_NotFound",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestOrderRules",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestGetSegment",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestGetSegmentNotFound",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestListSegments",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestListSegmentsPagination",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestCreateSegment",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestCreateSegment_DuplicateKey",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestUpdateSegment",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestUpdateSegment_NotFound",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestDeleteSegment",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestDeleteSegment_NotFound",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestCreateConstraint",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestCreateConstraint_ErrInvalid",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestCreateConstraint_SegmentNotFound",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestUpdateConstraint",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestUpdateConstraint_ErrInvalid",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestUpdateConstraint_NotFound",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestDeleteConstraint",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestDeleteConstraint_NotFound",
+          "status": "PASSED"
+        }
+      ]
+    }
+  },
+  "cleanup": {
+    "task_container_removed": true,
+    "task_workspace_removed": true,
+    "shared_image_retained": true
+  },
+  "public_export": {
+    "model_name_kind": "display_name",
+    "omitted": [
+      "development provider and route",
+      "local environment and paths",
+      "raw tool diagnostics"
+    ],
+    "note": "Redacted report, not runtime configuration. Scores and numeric usage are preserved; original evidence is retained locally."
+  }
+}

@@ -1,0 +1,1838 @@
+{
+  "schema": 1,
+  "run_id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-040-attempt-1",
+  "started_at": "2026-09-19T13:54:40.258Z",
+  "completed_at": "2026-09-19T14:10:30.610Z",
+  "preset": "minimal",
+  "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
+  "isolation": {
+    "schema": 1,
+    "policy": "swebench-pro-isolation-v3",
+    "passed": true,
+    "audited_sessions": 1,
+    "blocked_calls_count": 8,
+    "violations_count": 0
+  },
+  "candidate": null,
+  "task_index": 40,
+  "instance_id": "instance_qutebrowser__qutebrowser-70248f256f93ed9b1984494d0a1a919ddd774892-v2ef375ac784985212b1805e1d0431dc8f1b3c171",
+  "repo": "qutebrowser/qutebrowser",
+  "base_commit": "bf65a1db0f3f49977de77d7d61eeaaecd022185c",
+  "official_evaluator": {
+    "repository": "scaleapi/SWE-bench_Pro-os",
+    "commit": "ca10a60a5fcae51e6948ffe1485d4153d421e6c5",
+    "evaluator_sha256": "bb5d4c5486be296e464e695df3747064aaa3bb197394bc6d39980634afec2034",
+    "dataset_sha256": "b5b2462bfbf5aeb2cb7ba7d215778a1768b85f9d7ad7f748546c7f80a0ad1510",
+    "image_policy": "local-cache-only"
+  },
+  "image": {
+    "reference": "jefzda/sweap-images:qutebrowser.qutebrowser-qutebrowser__qutebrowser-70248f256f93ed9b1984494d0a1a919ddd774892-v2ef375ac784985212b1805e1d0431dc8f1b3c",
+    "acquisition_reference": "docker.1ms.run/jefzda/sweap-images:qutebrowser.qutebrowser-qutebrowser__qutebrowser-70248f256f93ed9b1984494d0a1a919ddd774892-v2ef375ac784985212b1805e1d0431dc8f1b3c",
+    "platform": "linux/amd64",
+    "id": "sha256:41b3a05536ff5fccaf9a3c79bda5a8cd394264e419cc8ea63f8a70213f09e649",
+    "repo_digests": [
+      "docker.1ms.run/jefzda/sweap-images@sha256:41b3a05536ff5fccaf9a3c79bda5a8cd394264e419cc8ea63f8a70213f09e649",
+      "jefzda/sweap-images@sha256:41b3a05536ff5fccaf9a3c79bda5a8cd394264e419cc8ea63f8a70213f09e649"
+    ]
+  },
+  "page_runtime": {
+    "schema": 2,
+    "runtime": "deepseek-harness-web-rpc",
+    "mode": "agent-run",
+    "session_id": "session-31cf9a55-e41f-4703-be75-89c2236547bc",
+    "web_rpc": {
+      "authenticated": true,
+      "calls": [
+        "session/create",
+        "session/list",
+        "session/selectModel",
+        "session/prompt",
+        "session/list"
+      ],
+      "prompt_submitted": true
+    },
+    "preset": "minimal",
+    "isolation": {
+      "policy": "swebench-pro-isolation-v3",
+      "permission_preset": "workspace-write",
+      "tool_guard": "workspace-files-and-assigned-offline-container"
+    },
+    "candidate": null,
+    "model": {
+      "display_name": "deepseek-v4.1-flash",
+      "reasoning_effort": "high",
+      "max_tokens": 384000
+    },
+    "elapsed_ms": 790858,
+    "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+  },
+  "metrics": {
+    "schema": 2,
+    "accounting": {
+      "observed_requests": 68,
+      "requests_with_usage": 68,
+      "unknown_usage_requests": 0,
+      "cost_complete": false,
+      "actual_cost": null,
+      "reason": "Observed log usage only; request inventory and billing reconciliation required",
+      "ledger": [
+        {
+          "id": "1/1/0",
+          "usage": {
+            "inputTokens": 1144,
+            "outputTokens": 114,
+            "totalTokens": 1514,
+            "cacheReadTokens": 256
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 13,
+          "time": 1789826210964
+        },
+        {
+          "id": "1/2/0",
+          "usage": {
+            "inputTokens": 229,
+            "outputTokens": 143,
+            "totalTokens": 1780,
+            "cacheReadTokens": 1408
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 18,
+          "time": 1789826213339
+        },
+        {
+          "id": "1/3/0",
+          "usage": {
+            "inputTokens": 147,
+            "outputTokens": 173,
+            "totalTokens": 1984,
+            "cacheReadTokens": 1664
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 23,
+          "time": 1789826214878
+        },
+        {
+          "id": "1/4/0",
+          "usage": {
+            "inputTokens": 212,
+            "outputTokens": 102,
+            "totalTokens": 2106,
+            "cacheReadTokens": 1792
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 28,
+          "time": 1789826216139
+        },
+        {
+          "id": "1/5/0",
+          "usage": {
+            "inputTokens": 728,
+            "outputTokens": 87,
+            "totalTokens": 2863,
+            "cacheReadTokens": 2048
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 33,
+          "time": 1789826217847
+        },
+        {
+          "id": "1/6/0",
+          "usage": {
+            "inputTokens": 380,
+            "outputTokens": 105,
+            "totalTokens": 3301,
+            "cacheReadTokens": 2816
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 38,
+          "time": 1789826219309
+        },
+        {
+          "id": "1/7/0",
+          "usage": {
+            "inputTokens": 261,
+            "outputTokens": 103,
+            "totalTokens": 3436,
+            "cacheReadTokens": 3072
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 43,
+          "time": 1789826221042
+        },
+        {
+          "id": "1/8/0",
+          "usage": {
+            "inputTokens": 161,
+            "outputTokens": 96,
+            "totalTokens": 3585,
+            "cacheReadTokens": 3328
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 48,
+          "time": 1789826222629
+        },
+        {
+          "id": "1/9/0",
+          "usage": {
+            "inputTokens": 770,
+            "outputTokens": 125,
+            "totalTokens": 4479,
+            "cacheReadTokens": 3584
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 53,
+          "time": 1789826224167
+        },
+        {
+          "id": "1/10/0",
+          "usage": {
+            "inputTokens": 147,
+            "outputTokens": 581,
+            "totalTokens": 5080,
+            "cacheReadTokens": 4352
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 58,
+          "time": 1789826227502
+        },
+        {
+          "id": "1/11/0",
+          "usage": {
+            "inputTokens": 217,
+            "outputTokens": 139,
+            "totalTokens": 5348,
+            "cacheReadTokens": 4992
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 63,
+          "time": 1789826229569
+        },
+        {
+          "id": "1/12/0",
+          "usage": {
+            "inputTokens": 2467,
+            "outputTokens": 121,
+            "totalTokens": 7836,
+            "cacheReadTokens": 5248
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 68,
+          "time": 1789826231118
+        },
+        {
+          "id": "1/13/0",
+          "usage": {
+            "inputTokens": 323,
+            "outputTokens": 98,
+            "totalTokens": 8229,
+            "cacheReadTokens": 7808
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 73,
+          "time": 1789826232714
+        },
+        {
+          "id": "1/14/0",
+          "usage": {
+            "inputTokens": 512,
+            "outputTokens": 1161,
+            "totalTokens": 9865,
+            "cacheReadTokens": 8192
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 78,
+          "time": 1789826237902
+        },
+        {
+          "id": "1/15/0",
+          "usage": {
+            "inputTokens": 168,
+            "outputTokens": 191,
+            "totalTokens": 10087,
+            "cacheReadTokens": 9728
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 83,
+          "time": 1789826239449
+        },
+        {
+          "id": "1/16/0",
+          "usage": {
+            "inputTokens": 725,
+            "outputTokens": 1323,
+            "totalTokens": 12032,
+            "cacheReadTokens": 9984
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 88,
+          "time": 1789826244962
+        },
+        {
+          "id": "1/17/0",
+          "usage": {
+            "inputTokens": 172,
+            "outputTokens": 1692,
+            "totalTokens": 13768,
+            "cacheReadTokens": 11904
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 93,
+          "time": 1789826252714
+        },
+        {
+          "id": "1/18/0",
+          "usage": {
+            "inputTokens": 146,
+            "outputTokens": 310,
+            "totalTokens": 14152,
+            "cacheReadTokens": 13696
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 98,
+          "time": 1789826255342
+        },
+        {
+          "id": "1/19/0",
+          "usage": {
+            "inputTokens": 816,
+            "outputTokens": 2001,
+            "totalTokens": 16897,
+            "cacheReadTokens": 14080
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 103,
+          "time": 1789826264585
+        },
+        {
+          "id": "1/20/0",
+          "usage": {
+            "inputTokens": 753,
+            "outputTokens": 3306,
+            "totalTokens": 20955,
+            "cacheReadTokens": 16896
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 108,
+          "time": 1789826279142
+        },
+        {
+          "id": "1/21/0",
+          "usage": {
+            "inputTokens": 256,
+            "outputTokens": 283,
+            "totalTokens": 21403,
+            "cacheReadTokens": 20864
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 113,
+          "time": 1789826282049
+        },
+        {
+          "id": "1/22/0",
+          "usage": {
+            "inputTokens": 626,
+            "outputTokens": 103,
+            "totalTokens": 22105,
+            "cacheReadTokens": 21376
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 118,
+          "time": 1789826283735
+        },
+        {
+          "id": "1/23/0",
+          "usage": {
+            "inputTokens": 463,
+            "outputTokens": 6289,
+            "totalTokens": 28768,
+            "cacheReadTokens": 22016
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 123,
+          "time": 1789826310900
+        },
+        {
+          "id": "1/24/0",
+          "usage": {
+            "inputTokens": 255,
+            "outputTokens": 190,
+            "totalTokens": 28989,
+            "cacheReadTokens": 28544
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 128,
+          "time": 1789826312692
+        },
+        {
+          "id": "1/25/0",
+          "usage": {
+            "inputTokens": 220,
+            "outputTokens": 144,
+            "totalTokens": 29164,
+            "cacheReadTokens": 28800
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 133,
+          "time": 1789826314015
+        },
+        {
+          "id": "1/26/0",
+          "usage": {
+            "inputTokens": 139,
+            "outputTokens": 2635,
+            "totalTokens": 31830,
+            "cacheReadTokens": 29056
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 138,
+          "time": 1789826326777
+        },
+        {
+          "id": "1/27/0",
+          "usage": {
+            "inputTokens": 237,
+            "outputTokens": 3709,
+            "totalTokens": 35562,
+            "cacheReadTokens": 31616
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 143,
+          "time": 1789826342491
+        },
+        {
+          "id": "1/28/0",
+          "usage": {
+            "inputTokens": 140,
+            "outputTokens": 1398,
+            "totalTokens": 36994,
+            "cacheReadTokens": 35456
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 148,
+          "time": 1789826348297
+        },
+        {
+          "id": "1/29/0",
+          "usage": {
+            "inputTokens": 155,
+            "outputTokens": 545,
+            "totalTokens": 37692,
+            "cacheReadTokens": 36992
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 153,
+          "time": 1789826655339
+        },
+        {
+          "id": "1/30/0",
+          "usage": {
+            "inputTokens": 211,
+            "outputTokens": 112,
+            "totalTokens": 37827,
+            "cacheReadTokens": 37504
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 158,
+          "time": 1789826658123
+        },
+        {
+          "id": "1/31/0",
+          "usage": {
+            "inputTokens": 226,
+            "outputTokens": 162,
+            "totalTokens": 38020,
+            "cacheReadTokens": 37632
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 163,
+          "time": 1789826660042
+        },
+        {
+          "id": "1/32/0",
+          "usage": {
+            "inputTokens": 163,
+            "outputTokens": 439,
+            "totalTokens": 38490,
+            "cacheReadTokens": 37888
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 168,
+          "time": 1789826663326
+        },
+        {
+          "id": "1/33/0",
+          "usage": {
+            "inputTokens": 257,
+            "outputTokens": 791,
+            "totalTokens": 39320,
+            "cacheReadTokens": 38272
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 173,
+          "time": 1789826678093
+        },
+        {
+          "id": "1/34/0",
+          "usage": {
+            "inputTokens": 168,
+            "outputTokens": 385,
+            "totalTokens": 39849,
+            "cacheReadTokens": 39296
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 178,
+          "time": 1789826681023
+        },
+        {
+          "id": "1/35/0",
+          "usage": {
+            "inputTokens": 402,
+            "outputTokens": 406,
+            "totalTokens": 40616,
+            "cacheReadTokens": 39808
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 183,
+          "time": 1789826684379
+        },
+        {
+          "id": "1/36/0",
+          "usage": {
+            "inputTokens": 231,
+            "outputTokens": 102,
+            "totalTokens": 40781,
+            "cacheReadTokens": 40448
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 188,
+          "time": 1789826686292
+        },
+        {
+          "id": "1/37/0",
+          "usage": {
+            "inputTokens": 464,
+            "outputTokens": 4629,
+            "totalTokens": 45797,
+            "cacheReadTokens": 40704
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 193,
+          "time": 1789826704443
+        },
+        {
+          "id": "1/38/0",
+          "usage": {
+            "inputTokens": 420,
+            "outputTokens": 347,
+            "totalTokens": 46463,
+            "cacheReadTokens": 45696
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 198,
+          "time": 1789826707411
+        },
+        {
+          "id": "1/39/0",
+          "usage": {
+            "inputTokens": 158,
+            "outputTokens": 1518,
+            "totalTokens": 48012,
+            "cacheReadTokens": 46336
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 203,
+          "time": 1789826715085
+        },
+        {
+          "id": "1/40/0",
+          "usage": {
+            "inputTokens": 171,
+            "outputTokens": 785,
+            "totalTokens": 48956,
+            "cacheReadTokens": 48000
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 208,
+          "time": 1789826720386
+        },
+        {
+          "id": "1/41/0",
+          "usage": {
+            "inputTokens": 402,
+            "outputTokens": 109,
+            "totalTokens": 49407,
+            "cacheReadTokens": 48896
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 213,
+          "time": 1789826740410
+        },
+        {
+          "id": "1/42/0",
+          "usage": {
+            "inputTokens": 503,
+            "outputTokens": 1754,
+            "totalTokens": 51537,
+            "cacheReadTokens": 49280
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 218,
+          "time": 1789826752947
+        },
+        {
+          "id": "1/43/0",
+          "usage": {
+            "inputTokens": 224,
+            "outputTokens": 1217,
+            "totalTokens": 52897,
+            "cacheReadTokens": 51456
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 223,
+          "time": 1789826760247
+        },
+        {
+          "id": "1/44/0",
+          "usage": {
+            "inputTokens": 424,
+            "outputTokens": 581,
+            "totalTokens": 53869,
+            "cacheReadTokens": 52864
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 228,
+          "time": 1789826769300
+        },
+        {
+          "id": "1/45/0",
+          "usage": {
+            "inputTokens": 186,
+            "outputTokens": 302,
+            "totalTokens": 54248,
+            "cacheReadTokens": 53760
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 233,
+          "time": 1789826772430
+        },
+        {
+          "id": "1/46/0",
+          "usage": {
+            "inputTokens": 197,
+            "outputTokens": 120,
+            "totalTokens": 54461,
+            "cacheReadTokens": 54144
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 238,
+          "time": 1789826775167
+        },
+        {
+          "id": "1/47/0",
+          "usage": {
+            "inputTokens": 702,
+            "outputTokens": 733,
+            "totalTokens": 55835,
+            "cacheReadTokens": 54400
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 243,
+          "time": 1789826779970
+        },
+        {
+          "id": "1/48/0",
+          "usage": {
+            "inputTokens": 262,
+            "outputTokens": 3624,
+            "totalTokens": 59694,
+            "cacheReadTokens": 55808
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 248,
+          "time": 1789826795761
+        },
+        {
+          "id": "1/49/0",
+          "usage": {
+            "inputTokens": 194,
+            "outputTokens": 129,
+            "totalTokens": 59843,
+            "cacheReadTokens": 59520
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 253,
+          "time": 1789826797975
+        },
+        {
+          "id": "1/50/0",
+          "usage": {
+            "inputTokens": 242,
+            "outputTokens": 197,
+            "totalTokens": 60087,
+            "cacheReadTokens": 59648
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 258,
+          "time": 1789826800373
+        },
+        {
+          "id": "1/51/0",
+          "usage": {
+            "inputTokens": 198,
+            "outputTokens": 98,
+            "totalTokens": 60328,
+            "cacheReadTokens": 60032
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 263,
+          "time": 1789826803096
+        },
+        {
+          "id": "1/52/0",
+          "usage": {
+            "inputTokens": 1251,
+            "outputTokens": 524,
+            "totalTokens": 62063,
+            "cacheReadTokens": 60288
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 268,
+          "time": 1789826806840
+        },
+        {
+          "id": "1/53/0",
+          "usage": {
+            "inputTokens": 166,
+            "outputTokens": 447,
+            "totalTokens": 62565,
+            "cacheReadTokens": 61952
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 273,
+          "time": 1789826810393
+        },
+        {
+          "id": "1/54/0",
+          "usage": {
+            "inputTokens": 256,
+            "outputTokens": 154,
+            "totalTokens": 62746,
+            "cacheReadTokens": 62336
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 278,
+          "time": 1789826813367
+        },
+        {
+          "id": "1/55/0",
+          "usage": {
+            "inputTokens": 237,
+            "outputTokens": 158,
+            "totalTokens": 63115,
+            "cacheReadTokens": 62720
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 283,
+          "time": 1789826816095
+        },
+        {
+          "id": "1/56/0",
+          "usage": {
+            "inputTokens": 173,
+            "outputTokens": 746,
+            "totalTokens": 63895,
+            "cacheReadTokens": 62976
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 288,
+          "time": 1789826821441
+        },
+        {
+          "id": "1/57/0",
+          "usage": {
+            "inputTokens": 178,
+            "outputTokens": 513,
+            "totalTokens": 64435,
+            "cacheReadTokens": 63744
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 293,
+          "time": 1789826827388
+        },
+        {
+          "id": "1/58/0",
+          "usage": {
+            "inputTokens": 1549,
+            "outputTokens": 2740,
+            "totalTokens": 68673,
+            "cacheReadTokens": 64384
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 298,
+          "time": 1789826891776
+        },
+        {
+          "id": "1/59/0",
+          "usage": {
+            "inputTokens": 425,
+            "outputTokens": 294,
+            "totalTokens": 69327,
+            "cacheReadTokens": 68608
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 303,
+          "time": 1789826906467
+        },
+        {
+          "id": "1/60/0",
+          "usage": {
+            "inputTokens": 242,
+            "outputTokens": 252,
+            "totalTokens": 69614,
+            "cacheReadTokens": 69120
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 308,
+          "time": 1789826917299
+        },
+        {
+          "id": "1/61/0",
+          "usage": {
+            "inputTokens": 172,
+            "outputTokens": 727,
+            "totalTokens": 70403,
+            "cacheReadTokens": 69504
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 313,
+          "time": 1789826929350
+        },
+        {
+          "id": "1/62/0",
+          "usage": {
+            "inputTokens": 187,
+            "outputTokens": 1011,
+            "totalTokens": 71598,
+            "cacheReadTokens": 70400
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 318,
+          "time": 1789826935975
+        },
+        {
+          "id": "1/63/0",
+          "usage": {
+            "inputTokens": 1427,
+            "outputTokens": 1752,
+            "totalTokens": 74731,
+            "cacheReadTokens": 71552
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 323,
+          "time": 1789826944732
+        },
+        {
+          "id": "1/64/0",
+          "usage": {
+            "inputTokens": 176,
+            "outputTokens": 374,
+            "totalTokens": 75174,
+            "cacheReadTokens": 74624
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 328,
+          "time": 1789826971367
+        },
+        {
+          "id": "1/65/0",
+          "usage": {
+            "inputTokens": 147,
+            "outputTokens": 856,
+            "totalTokens": 76139,
+            "cacheReadTokens": 75136
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 333,
+          "time": 1789826976016
+        },
+        {
+          "id": "1/66/0",
+          "usage": {
+            "inputTokens": 199,
+            "outputTokens": 180,
+            "totalTokens": 76411,
+            "cacheReadTokens": 76032
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 338,
+          "time": 1789826978809
+        },
+        {
+          "id": "1/67/0",
+          "usage": {
+            "inputTokens": 1354,
+            "outputTokens": 1329,
+            "totalTokens": 78971,
+            "cacheReadTokens": 76288
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 343,
+          "time": 1789826986628
+        },
+        {
+          "id": "1/68/0",
+          "usage": {
+            "inputTokens": 192,
+            "outputTokens": 703,
+            "totalTokens": 79743,
+            "cacheReadTokens": 78848
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 348,
+          "time": 1789826990880
+        }
+      ]
+    },
+    "usage": {
+      "model_calls": 68,
+      "requests": 68,
+      "input_tokens": {
+        "count": 68,
+        "total": 2629177,
+        "average": 38664.367647058825,
+        "minimum": 1400,
+        "maximum": 79040
+      },
+      "uncached_input_tokens": {
+        "count": 68,
+        "total": 27705,
+        "average": 407.4264705882353,
+        "minimum": 139,
+        "maximum": 2467
+      },
+      "cached_input_tokens": {
+        "count": 68,
+        "total": 2601472,
+        "average": 38256.94117647059,
+        "minimum": 256,
+        "maximum": 78848
+      },
+      "output_tokens": {
+        "count": 68,
+        "total": 58567,
+        "average": 861.2794117647059,
+        "minimum": 87,
+        "maximum": 6289
+      },
+      "total_tokens": 2687744,
+      "cache_hit_rate": 0.9894624819858078
+    },
+    "timing_ms": {
+      "first_token": {
+        "count": 68,
+        "total": 80118,
+        "average": 1178.2058823529412,
+        "minimum": 554,
+        "maximum": 2187
+      },
+      "input_wait": {
+        "count": 68,
+        "total": 80118,
+        "average": 1178.2058823529412,
+        "minimum": 554,
+        "maximum": 2187
+      },
+      "output": {
+        "count": 68,
+        "total": 232877,
+        "average": 3424.6617647058824,
+        "minimum": 334,
+        "maximum": 25998
+      },
+      "llm": {
+        "count": 68,
+        "total": 312995,
+        "average": 4602.867647058823,
+        "minimum": 993,
+        "maximum": 26894
+      },
+      "tools": {
+        "count": 67,
+        "total": 467716,
+        "average": 6980.835820895522,
+        "minimum": 0,
+        "maximum": 303288
+      },
+      "output_tokens_per_second": 251.4932775671277
+    },
+    "session": {
+      "steps": 68,
+      "turns": 1,
+      "model_calls": 68,
+      "tool_calls": 67
+    }
+  },
+  "patch": {
+    "sha256": "d08d94506fbe159ae953b15822e9a5050d4e00966f10e4084f4a3490a72260d1",
+    "bytes": 3846,
+    "changed_paths": [
+      "doc/changelog.asciidoc",
+      "doc/help/commands.asciidoc",
+      "qutebrowser/misc/utilcmds.py",
+      "qutebrowser/utils/utils.py"
+    ],
+    "excluded_generated_paths": []
+  },
+  "official_result": {
+    "passed": false,
+    "failure_kind": "official_test_failure",
+    "evaluator_exit_code": 0,
+    "parsed": {
+      "tests": [
+        {
+          "name": "tests/unit/utils/test_utils.py::TestCompactText::test_compact_text['foo\\\\nbar'-'foobar']",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestCompactText::test_compact_text['\\\\nfoo\\\\n'-'foo']",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestCompactText::test_eliding[None-'xxxxxxxxxxxxxxxxxxx-'xxxxxxxxxxxxxxxxxxx]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestCompactText::test_eliding[6-'foobar'-'foobar']",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestCompactText::test_eliding[5-'foobar'-'foob\\u2026']",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestCompactText::test_eliding[5-'foo\\\\nbar'-'foob\\u2026']",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestCompactText::test_eliding[7-'foo\\\\nbar'-'foobar']",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestEliding::test_too_small",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestEliding::test_elided[foo-1-\\u2026]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestEliding::test_elided[foo-3-foo]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestEliding::test_elided[foobar-3-fo\\u2026]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestElidingFilenames::test_too_small",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestElidingFilenames::test_elided[foobar-3-...]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestElidingFilenames::test_elided[foobar.txt-50-foobar.txt]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestElidingFilenames::test_elided[foobarbazqux.py-10-foo...x.py]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestReadFile::test_readfile[True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestReadFile::test_readfile[False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestReadFile::test_read_cached_file[True-javascript/scroll.js]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestReadFile::test_read_cached_file[True-html/error.html]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestReadFile::test_read_cached_file[False-javascript/scroll.js]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestReadFile::test_read_cached_file[False-html/error.html]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestReadFile::test_readfile_binary[True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestReadFile::test_readfile_binary[False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_resource_filename[True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_resource_filename[False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_format_seconds[-1--0:01]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_format_seconds[0-0:00]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_format_seconds[59-0:59]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_format_seconds[60-1:00]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_format_seconds[60.4-1:00]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_format_seconds[61-1:01]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_format_seconds[-61--1:01]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_format_seconds[3599-59:59]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_format_seconds[3600-1:00:00]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_format_seconds[3601-1:00:01]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_format_seconds[36000-10:00:00]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_format_size[-1024--1.00k]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_format_size[-1--1.00]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_format_size[0-0.00]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_format_size[1023-1023.00]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_format_size[1024-1.00k]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_format_size[1034.24-1.01k]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_format_size[2097152-2.00M]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_format_size[1267650600228229401496703205376-1024.00Y]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_format_size[None-?.??]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_suffix[-1024--1.00k]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_suffix[-1--1.00]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_suffix[0-0.00]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_suffix[1023-1023.00]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_suffix[1024-1.00k]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_suffix[1034.24-1.01k]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_suffix[2097152-2.00M]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_suffix[1267650600228229401496703205376-1024.00Y]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_suffix[None-?.??]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_base[999-999.00]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_base[1000-1.00k]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_base[1010-1.01k]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFakeIOStream::test_flush",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFakeIOStream::test_isatty",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFakeIOStream::test_write",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFakeIO::test_normal",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFakeIO::test_stdout_replaced",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFakeIO::test_stderr_replaced",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestDisabledExcepthook::test_normal",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestDisabledExcepthook::test_changed",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestPreventExceptions::test_raising",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestPreventExceptions::test_not_raising",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestPreventExceptions::test_predicate_true",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestPreventExceptions::test_predicate_false",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_get_repr[False-attrs0-<test_utils.Obj>]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_get_repr[True-attrs3-test_utils.Obj()]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_get_repr[True-attrs4-test_utils.Obj(foo=None)]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_qualname[instance]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_qualname[class]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_qualname[unbound-method]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_qualname[bound-method]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_qualname[function]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_qualname[partial]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_qualname[module]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_qualname[submodule]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_qualname[from-import]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestIsEnum::test_enum",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestIsEnum::test_class",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestIsEnum::test_object",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestRaises::test_raises_int[ValueError-a-True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestRaises::test_raises_int[exception1-a-True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestRaises::test_raises_int[exception2-None-True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestRaises::test_raises_int[ValueError-1-False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestRaises::test_raises_int[exception4-1-False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestRaises::test_no_args_true",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestRaises::test_no_args_false",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestRaises::test_unrelated_exception",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestSanitizeFilename::test_special_chars[normal.txt-normal.txt]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestSanitizeFilename::test_empty_replacement",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestSanitizeFilename::test_invariants",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestGetSetClipboard::test_set",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestGetSetClipboard::test_set_unsupported_selection",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestGetSetClipboard::test_set_logging[False-clipboard-f\\xfcb-f\\\\u00fcb]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestGetSetClipboard::test_get",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestGetSetClipboard::test_get_empty[True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestGetSetClipboard::test_get_empty[False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestGetSetClipboard::test_get_unsupported_selection",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestGetSetClipboard::test_get_unsupported_selection_fallback",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestGetSetClipboard::test_get_fake_clipboard[True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestGetSetClipboard::test_get_fake_clipboard[False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestGetSetClipboard::test_supports_selection[True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestGetSetClipboard::test_supports_selection[False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestGetSetClipboard::test_fallback_without_selection",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestOpenFile::test_cmdline_without_argument",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestOpenFile::test_cmdline_with_argument",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestOpenFile::test_setting_override",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestOpenFile::test_system_default_application",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestOpenFile::test_cmdline_sandboxed",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestOpenFile::test_setting_override_sandboxed",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestOpenFile::test_system_default_sandboxed",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_unused",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_expand_windows_drive[E:-E:\\\\]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_expand_windows_drive[e:-e:\\\\]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_expand_windows_drive[E:foo-E:foo]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_expand_windows_drive[E:\\\\-E:\\\\]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_expand_windows_drive[E:\\\\foo-E:\\\\foo]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_expand_windows_drive[foo:-foo:]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_expand_windows_drive[foo:bar-foo:bar]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestYaml::test_load",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestYaml::test_load_float_bug",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestYaml::test_load_file",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestYaml::test_dump",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestYaml::test_dump_file",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_chunk[elems0-1-expected0]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_chunk[elems1-1-expected1]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_chunk[elems2-2-expected2]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_chunk[elems3-2-expected3]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_chunk_invalid[-1]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_chunk_invalid[0]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_guess_mimetype[test.jpg-image/jpeg]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_guess_mimetype[test.blabla-application/octet-stream]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_guess_mimetype_no_fallback",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_ceil_log_hypothesis",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_ceil_log_invalid[64-0]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_ceil_log_invalid[0-64]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_ceil_log_invalid[64--1]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_ceil_log_invalid[-1-64]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_ceil_log_invalid[1-1]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_libgl_workaround[True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_libgl_workaround[False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[0-0]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[0s-0]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[0.5s-500]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[59s-59000]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[60-60]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[60.4s-60400]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[1m1s-61000]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[1.5m-90000]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[1m-60000]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[1h-3600000]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[0.5h-1800000]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[1h1s-3601000]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[1h1m-3660000]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[1h1m1s-3661000]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[1h1m10s-3670000]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[10h1m10s-36070000]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration_invalid[-1s]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration_invalid[-1]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration_invalid[34ss]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration_invalid[]",
+          "status": "FAILED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration_invalid[h]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration_invalid[1.s]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration_invalid[1.1.1s]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration_invalid[.1s]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration_invalid[.s]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration_invalid[10e5s]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration_invalid[5s10m]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration_hypothesis",
+          "status": "PASSED"
+        }
+      ]
+    }
+  },
+  "cleanup": {
+    "task_container_removed": true,
+    "task_workspace_removed": true,
+    "shared_image_retained": true
+  },
+  "public_export": {
+    "model_name_kind": "display_name",
+    "omitted": [
+      "development provider and route",
+      "local environment and paths",
+      "raw tool diagnostics"
+    ],
+    "note": "Redacted report, not runtime configuration. Scores and numeric usage are preserved; original evidence is retained locally."
+  }
+}

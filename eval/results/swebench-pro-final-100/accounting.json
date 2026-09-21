@@ -1,0 +1,1450 @@
+{
+  "generated_at": "2026-09-21T01:31:44.086Z",
+  "batches": {
+    "minimal-pro-hard100-v2-high-isolation-v3-20260918": {
+      "scope": "all batch attempts and persisted root/member sessions, regardless of score",
+      "sessions": 99,
+      "observed_requests": 11746,
+      "requests_with_usage": 11743,
+      "unknown_usage_requests": 3,
+      "uncached_input_tokens": 7000081,
+      "cached_input_tokens": 1038503040,
+      "cache_write_tokens": 0,
+      "output_tokens": 9353080,
+      "actual_cost": null,
+      "cost_complete": false,
+      "errors": [],
+      "runs": [
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-000-attempt-1",
+          "sessions": 1,
+          "requests": 145
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-008-attempt-1",
+          "sessions": 1,
+          "requests": 201
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-024-attempt-1",
+          "sessions": 1,
+          "requests": 138
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-027-attempt-1",
+          "sessions": 0,
+          "requests": 0
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-027-attempt-2",
+          "sessions": 0,
+          "requests": 0
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-027-attempt-3",
+          "sessions": 0,
+          "requests": 0
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-027-attempt-4",
+          "sessions": 0,
+          "requests": 0
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-029-attempt-1",
+          "sessions": 1,
+          "requests": 159
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-037-attempt-1",
+          "sessions": 1,
+          "requests": 99
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-040-attempt-1",
+          "sessions": 1,
+          "requests": 68
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-041-attempt-1",
+          "sessions": 1,
+          "requests": 109
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-042-attempt-1",
+          "sessions": 1,
+          "requests": 200
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-049-attempt-1",
+          "sessions": 1,
+          "requests": 133
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-050-attempt-1",
+          "sessions": 1,
+          "requests": 98
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-055-attempt-1",
+          "sessions": 1,
+          "requests": 82
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-056-attempt-1",
+          "sessions": 1,
+          "requests": 76
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-063-attempt-1",
+          "sessions": 1,
+          "requests": 120
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-065-attempt-1",
+          "sessions": 1,
+          "requests": 90
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-066-attempt-1",
+          "sessions": 0,
+          "requests": 0
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-066-attempt-2",
+          "sessions": 0,
+          "requests": 0
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-066-attempt-3",
+          "sessions": 1,
+          "requests": 82
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-073-attempt-1",
+          "sessions": 1,
+          "requests": 103
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-075-attempt-1",
+          "sessions": 1,
+          "requests": 135
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-083-attempt-1",
+          "sessions": 1,
+          "requests": 67
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-085-attempt-1",
+          "sessions": 1,
+          "requests": 109
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-086-attempt-1",
+          "sessions": 1,
+          "requests": 123
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-099-attempt-1",
+          "sessions": 1,
+          "requests": 90
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-101-attempt-1",
+          "sessions": 1,
+          "requests": 78
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-107-attempt-1",
+          "sessions": 1,
+          "requests": 167
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-110-attempt-1",
+          "sessions": 1,
+          "requests": 144
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-114-attempt-1",
+          "sessions": 1,
+          "requests": 173
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-117-attempt-1",
+          "sessions": 1,
+          "requests": 104
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-127-attempt-1",
+          "sessions": 1,
+          "requests": 207
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-136-attempt-1",
+          "sessions": 1,
+          "requests": 44
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-144-attempt-1",
+          "sessions": 1,
+          "requests": 118
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-146-attempt-1",
+          "sessions": 1,
+          "requests": 91
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-164-attempt-1",
+          "sessions": 1,
+          "requests": 194
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-175-attempt-1",
+          "sessions": 0,
+          "requests": 0
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-175-attempt-2",
+          "sessions": 0,
+          "requests": 0
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-175-attempt-3",
+          "sessions": 1,
+          "requests": 148
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-182-attempt-1",
+          "sessions": 1,
+          "requests": 154
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-186-attempt-1",
+          "sessions": 1,
+          "requests": 98
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-192-attempt-1",
+          "sessions": 1,
+          "requests": 170
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-209-attempt-1",
+          "sessions": 1,
+          "requests": 121
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-214-attempt-1",
+          "sessions": 1,
+          "requests": 143
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-231-attempt-1",
+          "sessions": 1,
+          "requests": 152
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-233-attempt-1",
+          "sessions": 1,
+          "requests": 74
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-244-attempt-1",
+          "sessions": 1,
+          "requests": 127
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-247-attempt-1",
+          "sessions": 1,
+          "requests": 133
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-250-attempt-1",
+          "sessions": 1,
+          "requests": 159
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-257-attempt-1",
+          "sessions": 1,
+          "requests": 66
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-266-attempt-1",
+          "sessions": 1,
+          "requests": 64
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-272-attempt-1",
+          "sessions": 1,
+          "requests": 78
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-273-attempt-1",
+          "sessions": 1,
+          "requests": 129
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-276-attempt-1",
+          "sessions": 1,
+          "requests": 94
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-300-attempt-1",
+          "sessions": 1,
+          "requests": 127
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-301-attempt-1",
+          "sessions": 1,
+          "requests": 40
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-313-attempt-1",
+          "sessions": 1,
+          "requests": 49
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-327-attempt-1",
+          "sessions": 1,
+          "requests": 67
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-339-attempt-1",
+          "sessions": 1,
+          "requests": 45
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-348-attempt-1",
+          "sessions": 1,
+          "requests": 96
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-358-attempt-1",
+          "sessions": 1,
+          "requests": 113
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-360-attempt-1",
+          "sessions": 1,
+          "requests": 109
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-361-attempt-1",
+          "sessions": 1,
+          "requests": 93
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-368-attempt-1",
+          "sessions": 1,
+          "requests": 177
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-378-attempt-1",
+          "sessions": 1,
+          "requests": 95
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-382-attempt-1",
+          "sessions": 1,
+          "requests": 132
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-396-attempt-1",
+          "sessions": 1,
+          "requests": 89
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-400-attempt-1",
+          "sessions": 1,
+          "requests": 132
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-429-attempt-1",
+          "sessions": 1,
+          "requests": 134
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-430-attempt-1",
+          "sessions": 1,
+          "requests": 113
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-437-attempt-1",
+          "sessions": 0,
+          "requests": 0
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-437-attempt-2",
+          "sessions": 0,
+          "requests": 0
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-437-attempt-3",
+          "sessions": 1,
+          "requests": 129
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-446-attempt-1",
+          "sessions": 1,
+          "requests": 126
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-450-attempt-1",
+          "sessions": 1,
+          "requests": 102
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-456-attempt-1",
+          "sessions": 1,
+          "requests": 145
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-460-attempt-1",
+          "sessions": 1,
+          "requests": 153
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-485-attempt-1",
+          "sessions": 1,
+          "requests": 188
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-489-attempt-1",
+          "sessions": 1,
+          "requests": 133
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-503-attempt-1",
+          "sessions": 1,
+          "requests": 80
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-505-attempt-1",
+          "sessions": 1,
+          "requests": 135
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-509-attempt-1",
+          "sessions": 1,
+          "requests": 86
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-514-attempt-1",
+          "sessions": 1,
+          "requests": 79
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-521-attempt-1",
+          "sessions": 1,
+          "requests": 117
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-528-attempt-1",
+          "sessions": 1,
+          "requests": 78
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-532-attempt-1",
+          "sessions": 1,
+          "requests": 74
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-543-attempt-1",
+          "sessions": 1,
+          "requests": 67
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-552-attempt-1",
+          "sessions": 1,
+          "requests": 179
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-568-attempt-1",
+          "sessions": 1,
+          "requests": 287
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-608-attempt-1",
+          "sessions": 1,
+          "requests": 164
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-610-attempt-1",
+          "sessions": 1,
+          "requests": 140
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-611-attempt-1",
+          "sessions": 1,
+          "requests": 103
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-615-attempt-1",
+          "sessions": 1,
+          "requests": 146
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-616-attempt-1",
+          "sessions": 1,
+          "requests": 63
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-622-attempt-1",
+          "sessions": 1,
+          "requests": 58
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-623-attempt-1",
+          "sessions": 0,
+          "requests": 0
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-623-attempt-2",
+          "sessions": 1,
+          "requests": 137
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-626-attempt-1",
+          "sessions": 1,
+          "requests": 79
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-657-attempt-1",
+          "sessions": 1,
+          "requests": 113
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-668-attempt-1",
+          "sessions": 1,
+          "requests": 148
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-671-attempt-1",
+          "sessions": 1,
+          "requests": 64
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-680-attempt-1",
+          "sessions": 1,
+          "requests": 207
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-683-attempt-1",
+          "sessions": 1,
+          "requests": 172
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-686-attempt-1",
+          "sessions": 1,
+          "requests": 154
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-687-attempt-1",
+          "sessions": 1,
+          "requests": 146
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-696-attempt-1",
+          "sessions": 1,
+          "requests": 94
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-697-attempt-1",
+          "sessions": 1,
+          "requests": 100
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-715-attempt-1",
+          "sessions": 0,
+          "requests": 0
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-715-attempt-2",
+          "sessions": 0,
+          "requests": 0
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-715-attempt-3",
+          "sessions": 1,
+          "requests": 85
+        },
+        {
+          "id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-728-attempt-1",
+          "sessions": 1,
+          "requests": 147
+        }
+      ]
+    },
+    "minimal-provider-retry-high-isolation-v3-20260920": {
+      "scope": "all batch attempts and persisted root/member sessions, regardless of score",
+      "sessions": 3,
+      "observed_requests": 342,
+      "requests_with_usage": 342,
+      "unknown_usage_requests": 0,
+      "uncached_input_tokens": 182730,
+      "cached_input_tokens": 27933568,
+      "cache_write_tokens": 0,
+      "output_tokens": 346206,
+      "actual_cost": null,
+      "cost_complete": false,
+      "errors": [],
+      "runs": [
+        {
+          "id": "minimal-provider-retry-high-isolation-v3-20260920-minimal-task-186-attempt-1",
+          "sessions": 1,
+          "requests": 140
+        },
+        {
+          "id": "minimal-provider-retry-high-isolation-v3-20260920-minimal-task-301-attempt-1",
+          "sessions": 1,
+          "requests": 130
+        },
+        {
+          "id": "minimal-provider-retry-high-isolation-v3-20260920-minimal-task-616-attempt-1",
+          "sessions": 1,
+          "requests": 72
+        }
+      ]
+    },
+    "minimal-complete100-high-v009-20260920-r1": {
+      "scope": "all batch attempts and persisted root/member sessions, regardless of score",
+      "sessions": 29,
+      "observed_requests": 3736,
+      "requests_with_usage": 3730,
+      "unknown_usage_requests": 6,
+      "uncached_input_tokens": 2247498,
+      "cached_input_tokens": 352846464,
+      "cache_write_tokens": 0,
+      "output_tokens": 3085074,
+      "actual_cost": null,
+      "cost_complete": false,
+      "errors": [],
+      "runs": [
+        {
+          "id": "minimal-complete100-high-v009-20260920-r1-minimal-task-000-attempt-1",
+          "sessions": 1,
+          "requests": 60
+        },
+        {
+          "id": "minimal-complete100-high-v009-20260920-r1-minimal-task-027-attempt-1",
+          "sessions": 1,
+          "requests": 122
+        },
+        {
+          "id": "minimal-complete100-high-v009-20260920-r1-minimal-task-037-attempt-1",
+          "sessions": 1,
+          "requests": 131
+        },
+        {
+          "id": "minimal-complete100-high-v009-20260920-r1-minimal-task-055-attempt-1",
+          "sessions": 1,
+          "requests": 66
+        },
+        {
+          "id": "minimal-complete100-high-v009-20260920-r1-minimal-task-075-attempt-1",
+          "sessions": 1,
+          "requests": 58
+        },
+        {
+          "id": "minimal-complete100-high-v009-20260920-r1-minimal-task-099-attempt-1",
+          "sessions": 1,
+          "requests": 136
+        },
+        {
+          "id": "minimal-complete100-high-v009-20260920-r1-minimal-task-117-attempt-1",
+          "sessions": 1,
+          "requests": 125
+        },
+        {
+          "id": "minimal-complete100-high-v009-20260920-r1-minimal-task-146-attempt-1",
+          "sessions": 1,
+          "requests": 96
+        },
+        {
+          "id": "minimal-complete100-high-v009-20260920-r1-minimal-task-231-attempt-1",
+          "sessions": 1,
+          "requests": 178
+        },
+        {
+          "id": "minimal-complete100-high-v009-20260920-r1-minimal-task-247-attempt-1",
+          "sessions": 1,
+          "requests": 162
+        },
+        {
+          "id": "minimal-complete100-high-v009-20260920-r1-minimal-task-266-attempt-1",
+          "sessions": 1,
+          "requests": 127
+        },
+        {
+          "id": "minimal-complete100-high-v009-20260920-r1-minimal-task-300-attempt-1",
+          "sessions": 1,
+          "requests": 131
+        },
+        {
+          "id": "minimal-complete100-high-v009-20260920-r1-minimal-task-339-attempt-1",
+          "sessions": 1,
+          "requests": 156
+        },
+        {
+          "id": "minimal-complete100-high-v009-20260920-r1-minimal-task-348-attempt-1",
+          "sessions": 1,
+          "requests": 124
+        },
+        {
+          "id": "minimal-complete100-high-v009-20260920-r1-minimal-task-361-attempt-1",
+          "sessions": 1,
+          "requests": 131
+        },
+        {
+          "id": "minimal-complete100-high-v009-20260920-r1-minimal-task-446-attempt-1",
+          "sessions": 1,
+          "requests": 118
+        },
+        {
+          "id": "minimal-complete100-high-v009-20260920-r1-minimal-task-485-attempt-1",
+          "sessions": 1,
+          "requests": 162
+        },
+        {
+          "id": "minimal-complete100-high-v009-20260920-r1-minimal-task-489-attempt-1",
+          "sessions": 1,
+          "requests": 130
+        },
+        {
+          "id": "minimal-complete100-high-v009-20260920-r1-minimal-task-503-attempt-1",
+          "sessions": 1,
+          "requests": 86
+        },
+        {
+          "id": "minimal-complete100-high-v009-20260920-r1-minimal-task-509-attempt-1",
+          "sessions": 1,
+          "requests": 110
+        },
+        {
+          "id": "minimal-complete100-high-v009-20260920-r1-minimal-task-610-attempt-1",
+          "sessions": 1,
+          "requests": 185
+        },
+        {
+          "id": "minimal-complete100-high-v009-20260920-r1-minimal-task-615-attempt-1",
+          "sessions": 1,
+          "requests": 152
+        },
+        {
+          "id": "minimal-complete100-high-v009-20260920-r1-minimal-task-623-attempt-1",
+          "sessions": 1,
+          "requests": 121
+        },
+        {
+          "id": "minimal-complete100-high-v009-20260920-r1-minimal-task-668-attempt-1",
+          "sessions": 1,
+          "requests": 175
+        },
+        {
+          "id": "minimal-complete100-high-v009-20260920-r1-minimal-task-680-attempt-1",
+          "sessions": 1,
+          "requests": 207
+        },
+        {
+          "id": "minimal-complete100-high-v009-20260920-r1-minimal-task-686-attempt-1",
+          "sessions": 1,
+          "requests": 136
+        },
+        {
+          "id": "minimal-complete100-high-v009-20260920-r1-minimal-task-696-attempt-1",
+          "sessions": 1,
+          "requests": 123
+        },
+        {
+          "id": "minimal-complete100-high-v009-20260920-r1-minimal-task-697-attempt-1",
+          "sessions": 1,
+          "requests": 133
+        },
+        {
+          "id": "minimal-complete100-high-v009-20260920-r1-minimal-task-715-attempt-1",
+          "sessions": 1,
+          "requests": 95
+        }
+      ]
+    },
+    "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919": {
+      "scope": "all batch attempts and persisted root/member sessions, regardless of score",
+      "sessions": 104,
+      "observed_requests": 7482,
+      "requests_with_usage": 7471,
+      "unknown_usage_requests": 11,
+      "uncached_input_tokens": 5020450,
+      "cached_input_tokens": 749671168,
+      "cache_write_tokens": 0,
+      "output_tokens": 7959655,
+      "actual_cost": null,
+      "cost_complete": false,
+      "errors": [],
+      "runs": [
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-000-attempt-1",
+          "sessions": 1,
+          "requests": 6
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-008-attempt-1",
+          "sessions": 1,
+          "requests": 136
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-024-attempt-1",
+          "sessions": 1,
+          "requests": 84
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-027-attempt-1",
+          "sessions": 0,
+          "requests": 0
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-027-attempt-2",
+          "sessions": 0,
+          "requests": 0
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-029-attempt-1",
+          "sessions": 1,
+          "requests": 147
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-037-attempt-1",
+          "sessions": 1,
+          "requests": 85
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-040-attempt-1",
+          "sessions": 1,
+          "requests": 6
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-041-attempt-1",
+          "sessions": 1,
+          "requests": 100
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-042-attempt-1",
+          "sessions": 5,
+          "requests": 219
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-049-attempt-1",
+          "sessions": 1,
+          "requests": 103
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-050-attempt-1",
+          "sessions": 1,
+          "requests": 72
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-055-attempt-1",
+          "sessions": 1,
+          "requests": 6
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-056-attempt-1",
+          "sessions": 1,
+          "requests": 45
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-063-attempt-1",
+          "sessions": 1,
+          "requests": 83
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-065-attempt-1",
+          "sessions": 1,
+          "requests": 101
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-066-attempt-1",
+          "sessions": 1,
+          "requests": 38
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-073-attempt-1",
+          "sessions": 1,
+          "requests": 6
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-075-attempt-1",
+          "sessions": 1,
+          "requests": 6
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-083-attempt-1",
+          "sessions": 1,
+          "requests": 81
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-085-attempt-1",
+          "sessions": 1,
+          "requests": 76
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-086-attempt-1",
+          "sessions": 1,
+          "requests": 101
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-099-attempt-1",
+          "sessions": 1,
+          "requests": 100
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-101-attempt-1",
+          "sessions": 1,
+          "requests": 49
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-107-attempt-1",
+          "sessions": 1,
+          "requests": 187
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-110-attempt-1",
+          "sessions": 1,
+          "requests": 6
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-114-attempt-1",
+          "sessions": 1,
+          "requests": 130
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-117-attempt-1",
+          "sessions": 1,
+          "requests": 83
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-127-attempt-1",
+          "sessions": 1,
+          "requests": 216
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-136-attempt-1",
+          "sessions": 1,
+          "requests": 35
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-144-attempt-1",
+          "sessions": 1,
+          "requests": 6
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-146-attempt-1",
+          "sessions": 1,
+          "requests": 39
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-164-attempt-1",
+          "sessions": 1,
+          "requests": 195
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-175-attempt-1",
+          "sessions": 1,
+          "requests": 166
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-182-attempt-1",
+          "sessions": 1,
+          "requests": 109
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-186-attempt-1",
+          "sessions": 2,
+          "requests": 95
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-192-attempt-1",
+          "sessions": 1,
+          "requests": 94
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-209-attempt-1",
+          "sessions": 1,
+          "requests": 79
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-214-attempt-1",
+          "sessions": 1,
+          "requests": 111
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-231-attempt-1",
+          "sessions": 1,
+          "requests": 158
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-233-attempt-1",
+          "sessions": 1,
+          "requests": 44
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-244-attempt-1",
+          "sessions": 1,
+          "requests": 6
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-247-attempt-1",
+          "sessions": 1,
+          "requests": 125
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-250-attempt-1",
+          "sessions": 1,
+          "requests": 77
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-257-attempt-1",
+          "sessions": 1,
+          "requests": 6
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-266-attempt-1",
+          "sessions": 1,
+          "requests": 71
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-272-attempt-1",
+          "sessions": 1,
+          "requests": 6
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-273-attempt-1",
+          "sessions": 1,
+          "requests": 101
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-276-attempt-1",
+          "sessions": 1,
+          "requests": 70
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-300-attempt-1",
+          "sessions": 1,
+          "requests": 85
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-301-attempt-1",
+          "sessions": 1,
+          "requests": 87
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-313-attempt-1",
+          "sessions": 1,
+          "requests": 36
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-327-attempt-1",
+          "sessions": 1,
+          "requests": 6
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-339-attempt-1",
+          "sessions": 1,
+          "requests": 64
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-348-attempt-1",
+          "sessions": 1,
+          "requests": 6
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-358-attempt-1",
+          "sessions": 1,
+          "requests": 74
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-360-attempt-1",
+          "sessions": 1,
+          "requests": 78
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-361-attempt-1",
+          "sessions": 1,
+          "requests": 53
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-368-attempt-1",
+          "sessions": 1,
+          "requests": 61
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-378-attempt-1",
+          "sessions": 1,
+          "requests": 76
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-382-attempt-1",
+          "sessions": 1,
+          "requests": 6
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-396-attempt-1",
+          "sessions": 1,
+          "requests": 6
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-400-attempt-1",
+          "sessions": 1,
+          "requests": 101
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-429-attempt-1",
+          "sessions": 1,
+          "requests": 83
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-430-attempt-1",
+          "sessions": 1,
+          "requests": 6
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-437-attempt-1",
+          "sessions": 1,
+          "requests": 92
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-446-attempt-1",
+          "sessions": 1,
+          "requests": 86
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-450-attempt-1",
+          "sessions": 1,
+          "requests": 97
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-456-attempt-1",
+          "sessions": 1,
+          "requests": 95
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-460-attempt-1",
+          "sessions": 1,
+          "requests": 136
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-485-attempt-1",
+          "sessions": 1,
+          "requests": 91
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-489-attempt-1",
+          "sessions": 1,
+          "requests": 90
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-503-attempt-1",
+          "sessions": 1,
+          "requests": 88
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-505-attempt-1",
+          "sessions": 1,
+          "requests": 78
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-509-attempt-1",
+          "sessions": 1,
+          "requests": 103
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-514-attempt-1",
+          "sessions": 1,
+          "requests": 44
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-521-attempt-1",
+          "sessions": 1,
+          "requests": 65
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-528-attempt-1",
+          "sessions": 1,
+          "requests": 6
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-532-attempt-1",
+          "sessions": 1,
+          "requests": 49
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-543-attempt-1",
+          "sessions": 1,
+          "requests": 67
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-552-attempt-1",
+          "sessions": 1,
+          "requests": 107
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-568-attempt-1",
+          "sessions": 1,
+          "requests": 6
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-608-attempt-1",
+          "sessions": 1,
+          "requests": 6
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-610-attempt-1",
+          "sessions": 1,
+          "requests": 94
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-611-attempt-1",
+          "sessions": 1,
+          "requests": 61
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-615-attempt-1",
+          "sessions": 1,
+          "requests": 167
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-616-attempt-1",
+          "sessions": 1,
+          "requests": 48
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-622-attempt-1",
+          "sessions": 1,
+          "requests": 6
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-623-attempt-1",
+          "sessions": 1,
+          "requests": 83
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-626-attempt-1",
+          "sessions": 1,
+          "requests": 40
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-657-attempt-1",
+          "sessions": 1,
+          "requests": 6
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-668-attempt-1",
+          "sessions": 1,
+          "requests": 129
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-671-attempt-1",
+          "sessions": 1,
+          "requests": 61
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-680-attempt-1",
+          "sessions": 1,
+          "requests": 73
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-683-attempt-1",
+          "sessions": 1,
+          "requests": 117
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-686-attempt-1",
+          "sessions": 1,
+          "requests": 151
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-687-attempt-1",
+          "sessions": 1,
+          "requests": 91
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-696-attempt-1",
+          "sessions": 1,
+          "requests": 65
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-697-attempt-1",
+          "sessions": 1,
+          "requests": 114
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-715-attempt-1",
+          "sessions": 1,
+          "requests": 66
+        },
+        {
+          "id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-728-attempt-1",
+          "sessions": 1,
+          "requests": 111
+        }
+      ]
+    },
+    "super-code-0.0.9-provider-retry-high-isolation-v3-20260920": {
+      "scope": "all batch attempts and persisted root/member sessions, regardless of score",
+      "sessions": 2,
+      "observed_requests": 245,
+      "requests_with_usage": 245,
+      "unknown_usage_requests": 0,
+      "uncached_input_tokens": 132525,
+      "cached_input_tokens": 23817600,
+      "cache_write_tokens": 0,
+      "output_tokens": 223950,
+      "actual_cost": null,
+      "cost_complete": false,
+      "errors": [],
+      "runs": [
+        {
+          "id": "super-code-0.0.9-provider-retry-high-isolation-v3-20260920-super-code-task-429-attempt-1",
+          "sessions": 1,
+          "requests": 101
+        },
+        {
+          "id": "super-code-0.0.9-provider-retry-high-isolation-v3-20260920-super-code-task-680-attempt-1",
+          "sessions": 1,
+          "requests": 144
+        }
+      ]
+    },
+    "super-code-complete100-high-v009-20260920-r1": {
+      "scope": "all batch attempts and persisted root/member sessions, regardless of score",
+      "sessions": 21,
+      "observed_requests": 2026,
+      "requests_with_usage": 2023,
+      "unknown_usage_requests": 3,
+      "uncached_input_tokens": 1448345,
+      "cached_input_tokens": 205091584,
+      "cache_write_tokens": 0,
+      "output_tokens": 2038564,
+      "actual_cost": null,
+      "cost_complete": false,
+      "errors": [],
+      "runs": [
+        {
+          "id": "super-code-complete100-high-v009-20260920-r1-super-code-task-008-attempt-1",
+          "sessions": 1,
+          "requests": 88
+        },
+        {
+          "id": "super-code-complete100-high-v009-20260920-r1-super-code-task-027-attempt-1",
+          "sessions": 1,
+          "requests": 83
+        },
+        {
+          "id": "super-code-complete100-high-v009-20260920-r1-super-code-task-037-attempt-1",
+          "sessions": 1,
+          "requests": 117
+        },
+        {
+          "id": "super-code-complete100-high-v009-20260920-r1-super-code-task-055-attempt-1",
+          "sessions": 1,
+          "requests": 39
+        },
+        {
+          "id": "super-code-complete100-high-v009-20260920-r1-super-code-task-117-attempt-1",
+          "sessions": 1,
+          "requests": 75
+        },
+        {
+          "id": "super-code-complete100-high-v009-20260920-r1-super-code-task-266-attempt-1",
+          "sessions": 1,
+          "requests": 78
+        },
+        {
+          "id": "super-code-complete100-high-v009-20260920-r1-super-code-task-300-attempt-1",
+          "sessions": 1,
+          "requests": 98
+        },
+        {
+          "id": "super-code-complete100-high-v009-20260920-r1-super-code-task-348-attempt-1",
+          "sessions": 1,
+          "requests": 90
+        },
+        {
+          "id": "super-code-complete100-high-v009-20260920-r1-super-code-task-361-attempt-1",
+          "sessions": 1,
+          "requests": 86
+        },
+        {
+          "id": "super-code-complete100-high-v009-20260920-r1-super-code-task-446-attempt-1",
+          "sessions": 1,
+          "requests": 84
+        },
+        {
+          "id": "super-code-complete100-high-v009-20260920-r1-super-code-task-485-attempt-1",
+          "sessions": 1,
+          "requests": 129
+        },
+        {
+          "id": "super-code-complete100-high-v009-20260920-r1-super-code-task-489-attempt-1",
+          "sessions": 1,
+          "requests": 81
+        },
+        {
+          "id": "super-code-complete100-high-v009-20260920-r1-super-code-task-503-attempt-1",
+          "sessions": 1,
+          "requests": 70
+        },
+        {
+          "id": "super-code-complete100-high-v009-20260920-r1-super-code-task-610-attempt-1",
+          "sessions": 1,
+          "requests": 106
+        },
+        {
+          "id": "super-code-complete100-high-v009-20260920-r1-super-code-task-615-attempt-1",
+          "sessions": 1,
+          "requests": 121
+        },
+        {
+          "id": "super-code-complete100-high-v009-20260920-r1-super-code-task-668-attempt-1",
+          "sessions": 1,
+          "requests": 134
+        },
+        {
+          "id": "super-code-complete100-high-v009-20260920-r1-super-code-task-680-attempt-1",
+          "sessions": 1,
+          "requests": 117
+        },
+        {
+          "id": "super-code-complete100-high-v009-20260920-r1-super-code-task-686-attempt-1",
+          "sessions": 1,
+          "requests": 210
+        },
+        {
+          "id": "super-code-complete100-high-v009-20260920-r1-super-code-task-696-attempt-1",
+          "sessions": 1,
+          "requests": 81
+        },
+        {
+          "id": "super-code-complete100-high-v009-20260920-r1-super-code-task-697-attempt-1",
+          "sessions": 1,
+          "requests": 86
+        },
+        {
+          "id": "super-code-complete100-high-v009-20260920-r1-super-code-task-715-attempt-1",
+          "sessions": 1,
+          "requests": 53
+        }
+      ]
+    }
+  },
+  "public_export": {
+    "model_name_kind": "display_name",
+    "omitted": [
+      "development provider and route",
+      "local environment and paths",
+      "raw tool diagnostics"
+    ],
+    "note": "Redacted report, not runtime configuration. Scores and numeric usage are preserved; original evidence is retained locally."
+  }
+}

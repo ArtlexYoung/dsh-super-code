@@ -1,0 +1,1800 @@
+{
+  "schema": 1,
+  "run_id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-301-attempt-1",
+  "started_at": "2026-09-20T05:12:20.270Z",
+  "completed_at": "2026-09-20T05:12:20.272Z",
+  "preset": "super-code",
+  "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
+  "isolation": {
+    "schema": 1,
+    "policy": "swebench-pro-isolation-v3",
+    "policy_revision": 3,
+    "passed": true,
+    "repository_isolation": {
+      "base_only_git": true,
+      "commit_count": 1,
+      "remotes": [],
+      "target_commit_unavailable": true,
+      "test_container_network": "none",
+      "prepared_cache_hit": false
+    },
+    "audited_sessions": 1,
+    "blocked_calls_count": 7,
+    "observations_count": 1,
+    "violations_count": 0
+  },
+  "candidate": {
+    "schema": 1,
+    "identity": "local-0.0.9-candidate",
+    "package": {
+      "name": "dsh-super-code",
+      "version": "0.0.9",
+      "tarball": "dsh-super-code-0.0.9.tgz"
+    },
+    "source": {
+      "git_head": "259f081658d20230d392da418955f190067ddc0f",
+      "tracked_diff_sha256": "1965bf0bf045f6d8f471613c8b50851ab052f98a6338413853536c89f61dcba7",
+      "untracked_package_paths": [
+        "lib/core/experiment-recipes.d.ts",
+        "lib/core/experiment-recipes.d.ts.map",
+        "lib/core/experiment-recipes.js",
+        "lib/core/experiment-recipes.js.map",
+        "lib/experiments.d.ts",
+        "lib/experiments.d.ts.map",
+        "lib/experiments.js",
+        "lib/experiments.js.map",
+        "lib/task-memory-store.d.ts",
+        "lib/task-memory-store.d.ts.map",
+        "lib/task-memory-store.js",
+        "lib/task-memory-store.js.map"
+      ]
+    },
+    "harness": {
+      "git_head": "c291e7961a515f6d7af9304e7fd1d257929aef26",
+      "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+    },
+    "artifacts": {
+      "tarball_sha256": "2e2104209812ae13c701480e5e0ba38bf6d09ee7b6546ebd909bab60b80d83e6",
+      "cordis_patch_sha256": "d8f8e14602aeb4dfafeb6aff3916cccb934c2c88d1d84b222a7c6d3040ca7434",
+      "preset_sha256": "43edc7f7b6dc9fcea423290e48f7b1d245220f10b15a06d8defa5f34685032e9",
+      "packed_files": 71,
+      "packed_bytes": 83113,
+      "unpacked_bytes": 306269
+    },
+    "created_at": "2026-09-19T13:30:54.126Z"
+  },
+  "task_index": 301,
+  "instance_id": "instance_element-hq__element-web-66d0b318bc6fee0d17b54c1781d6ab5d5d323135-vnan",
+  "repo": "element-hq/element-web",
+  "base_commit": "04bc8fb71c4a1ee1eb1f0c4a1de1641d353e9f2c",
+  "official_evaluator": {
+    "repository": "scaleapi/SWE-bench_Pro-os",
+    "commit": "ca10a60a5fcae51e6948ffe1485d4153d421e6c5",
+    "evaluator_sha256": "bb5d4c5486be296e464e695df3747064aaa3bb197394bc6d39980634afec2034",
+    "dataset_sha256": "b5b2462bfbf5aeb2cb7ba7d215778a1768b85f9d7ad7f748546c7f80a0ad1510",
+    "image_policy": "local-cache-only",
+    "rescore_attempt": 1
+  },
+  "image": {
+    "reference": "jefzda/sweap-images:element-hq.element-element-hq__element-web-66d0b318bc6fee0d17b54c1781d6ab5d5d323135",
+    "acquisition_reference": "jefzda/sweap-images:element-hq.element-element-hq__element-web-66d0b318bc6fee0d17b54c1781d6ab5d5d323135",
+    "platform": "linux/amd64",
+    "id": "sha256:39cbee8c16a08f800ef07d86b607c558c5679c5fee116c683c238b6754ca561f",
+    "repo_digests": [
+      "docker.1ms.run/jefzda/sweap-images@sha256:39cbee8c16a08f800ef07d86b607c558c5679c5fee116c683c238b6754ca561f",
+      "jefzda/sweap-images@sha256:39cbee8c16a08f800ef07d86b607c558c5679c5fee116c683c238b6754ca561f"
+    ]
+  },
+  "page_runtime": {
+    "schema": 2,
+    "runtime": "deepseek-harness-web-rpc",
+    "mode": "agent-run",
+    "session_id": "session-4bcb0a41-af5a-405c-adbd-c5ade9447326",
+    "web_rpc": {
+      "authenticated": true,
+      "calls": [
+        "session/create",
+        "session/list",
+        "session/selectModel",
+        "session/prompt",
+        "session/list"
+      ],
+      "prompt_submitted": true
+    },
+    "preset": "super-code",
+    "isolation": {
+      "policy": "swebench-pro-isolation-v3",
+      "permission_preset": "workspace-write",
+      "tool_guard": "workspace-files-and-assigned-offline-container"
+    },
+    "candidate": {
+      "schema": 1,
+      "identity": "local-0.0.9-candidate",
+      "package": {
+        "name": "dsh-super-code",
+        "version": "0.0.9",
+        "tarball": "dsh-super-code-0.0.9.tgz"
+      },
+      "source": {
+        "git_head": "259f081658d20230d392da418955f190067ddc0f",
+        "tracked_diff_sha256": "1965bf0bf045f6d8f471613c8b50851ab052f98a6338413853536c89f61dcba7",
+        "untracked_package_paths": [
+          "lib/core/experiment-recipes.d.ts",
+          "lib/core/experiment-recipes.d.ts.map",
+          "lib/core/experiment-recipes.js",
+          "lib/core/experiment-recipes.js.map",
+          "lib/experiments.d.ts",
+          "lib/experiments.d.ts.map",
+          "lib/experiments.js",
+          "lib/experiments.js.map",
+          "lib/task-memory-store.d.ts",
+          "lib/task-memory-store.d.ts.map",
+          "lib/task-memory-store.js",
+          "lib/task-memory-store.js.map"
+        ]
+      },
+      "harness": {
+        "git_head": "c291e7961a515f6d7af9304e7fd1d257929aef26",
+        "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+      },
+      "artifacts": {
+        "tarball_sha256": "2e2104209812ae13c701480e5e0ba38bf6d09ee7b6546ebd909bab60b80d83e6",
+        "cordis_patch_sha256": "d8f8e14602aeb4dfafeb6aff3916cccb934c2c88d1d84b222a7c6d3040ca7434",
+        "preset_sha256": "43edc7f7b6dc9fcea423290e48f7b1d245220f10b15a06d8defa5f34685032e9",
+        "packed_files": 71,
+        "packed_bytes": 83113,
+        "unpacked_bytes": 306269
+      },
+      "created_at": "2026-09-19T13:30:54.126Z"
+    },
+    "model": {
+      "display_name": "deepseek-v4.1-flash",
+      "reasoning_effort": "high",
+      "max_tokens": 384000
+    },
+    "elapsed_ms": 1762038,
+    "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+  },
+  "metrics": {
+    "schema": 2,
+    "accounting": {
+      "observed_requests": 87,
+      "requests_with_usage": 87,
+      "unknown_usage_requests": 0,
+      "cost_complete": false,
+      "actual_cost": null,
+      "reason": "Observed log usage only; request inventory and billing reconciliation required",
+      "ledger": [
+        {
+          "id": "1/1/0",
+          "usage": {
+            "inputTokens": 1957,
+            "outputTokens": 181,
+            "totalTokens": 7514,
+            "cacheReadTokens": 5376
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 14,
+          "time": 1789829967552
+        },
+        {
+          "id": "1/2/0",
+          "usage": {
+            "inputTokens": 340,
+            "outputTokens": 266,
+            "totalTokens": 8030,
+            "cacheReadTokens": 7424
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 22,
+          "time": 1789829970112
+        },
+        {
+          "id": "1/3/0",
+          "usage": {
+            "inputTokens": 3463,
+            "outputTokens": 362,
+            "totalTokens": 11761,
+            "cacheReadTokens": 7936
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 29,
+          "time": 1789829972383
+        },
+        {
+          "id": "1/4/0",
+          "usage": {
+            "inputTokens": 3114,
+            "outputTokens": 372,
+            "totalTokens": 15134,
+            "cacheReadTokens": 11648
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 36,
+          "time": 1789829974870
+        },
+        {
+          "id": "1/5/0",
+          "usage": {
+            "inputTokens": 1187,
+            "outputTokens": 446,
+            "totalTokens": 16737,
+            "cacheReadTokens": 15104
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 43,
+          "time": 1789829977672
+        },
+        {
+          "id": "1/6/0",
+          "usage": {
+            "inputTokens": 3995,
+            "outputTokens": 440,
+            "totalTokens": 21075,
+            "cacheReadTokens": 16640
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 50,
+          "time": 1789829980619
+        },
+        {
+          "id": "1/7/0",
+          "usage": {
+            "inputTokens": 1581,
+            "outputTokens": 1834,
+            "totalTokens": 24407,
+            "cacheReadTokens": 20992
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 57,
+          "time": 1789829988240
+        },
+        {
+          "id": "1/8/0",
+          "usage": {
+            "inputTokens": 3664,
+            "outputTokens": 308,
+            "totalTokens": 28292,
+            "cacheReadTokens": 24320
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 64,
+          "time": 1789829990723
+        },
+        {
+          "id": "1/9/0",
+          "usage": {
+            "inputTokens": 3498,
+            "outputTokens": 1997,
+            "totalTokens": 33783,
+            "cacheReadTokens": 28288
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 71,
+          "time": 1789829998731
+        },
+        {
+          "id": "1/10/0",
+          "usage": {
+            "inputTokens": 237,
+            "outputTokens": 1152,
+            "totalTokens": 35053,
+            "cacheReadTokens": 33664
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 78,
+          "time": 1789830004300
+        },
+        {
+          "id": "1/11/0",
+          "usage": {
+            "inputTokens": 1737,
+            "outputTokens": 7388,
+            "totalTokens": 44069,
+            "cacheReadTokens": 34944
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 85,
+          "time": 1789830034594
+        },
+        {
+          "id": "1/12/0",
+          "usage": {
+            "inputTokens": 3244,
+            "outputTokens": 7459,
+            "totalTokens": 54735,
+            "cacheReadTokens": 44032
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 92,
+          "time": 1789830065969
+        },
+        {
+          "id": "1/13/0",
+          "usage": {
+            "inputTokens": 441,
+            "outputTokens": 146,
+            "totalTokens": 55243,
+            "cacheReadTokens": 54656
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 99,
+          "time": 1789830068420
+        },
+        {
+          "id": "1/14/0",
+          "usage": {
+            "inputTokens": 879,
+            "outputTokens": 2857,
+            "totalTokens": 58904,
+            "cacheReadTokens": 55168
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 104,
+          "time": 1789830081688
+        },
+        {
+          "id": "1/15/0",
+          "usage": {
+            "inputTokens": 210,
+            "outputTokens": 429,
+            "totalTokens": 59391,
+            "cacheReadTokens": 58752
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 111,
+          "time": 1789830084436
+        },
+        {
+          "id": "1/16/0",
+          "usage": {
+            "inputTokens": 246,
+            "outputTokens": 189,
+            "totalTokens": 59699,
+            "cacheReadTokens": 59264
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 118,
+          "time": 1789830086574
+        },
+        {
+          "id": "1/17/0",
+          "usage": {
+            "inputTokens": 1062,
+            "outputTokens": 1702,
+            "totalTokens": 62412,
+            "cacheReadTokens": 59648
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 123,
+          "time": 1789830094805
+        },
+        {
+          "id": "1/18/0",
+          "usage": {
+            "inputTokens": 277,
+            "outputTokens": 355,
+            "totalTokens": 62968,
+            "cacheReadTokens": 62336
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 128,
+          "time": 1789830098001
+        },
+        {
+          "id": "1/19/0",
+          "usage": {
+            "inputTokens": 138,
+            "outputTokens": 6612,
+            "totalTokens": 69598,
+            "cacheReadTokens": 62848
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 133,
+          "time": 1789830127421
+        },
+        {
+          "id": "1/20/0",
+          "usage": {
+            "inputTokens": 1828,
+            "outputTokens": 4040,
+            "totalTokens": 75372,
+            "cacheReadTokens": 69504
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 138,
+          "time": 1789830145167
+        },
+        {
+          "id": "1/21/0",
+          "usage": {
+            "inputTokens": 338,
+            "outputTokens": 6723,
+            "totalTokens": 82325,
+            "cacheReadTokens": 75264
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 143,
+          "time": 1789830174107
+        },
+        {
+          "id": "1/22/0",
+          "usage": {
+            "inputTokens": 343,
+            "outputTokens": 8225,
+            "totalTokens": 90872,
+            "cacheReadTokens": 82304
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 148,
+          "time": 1789830206726
+        },
+        {
+          "id": "1/23/0",
+          "usage": {
+            "inputTokens": 1656,
+            "outputTokens": 6149,
+            "totalTokens": 98557,
+            "cacheReadTokens": 90752
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 153,
+          "time": 1789830234219
+        },
+        {
+          "id": "1/24/0",
+          "usage": {
+            "inputTokens": 153,
+            "outputTokens": 208,
+            "totalTokens": 98793,
+            "cacheReadTokens": 98432
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 158,
+          "time": 1789830236635
+        },
+        {
+          "id": "1/25/0",
+          "usage": {
+            "inputTokens": 213,
+            "outputTokens": 181,
+            "totalTokens": 99082,
+            "cacheReadTokens": 98688
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 163,
+          "time": 1789830238983
+        },
+        {
+          "id": "1/26/0",
+          "usage": {
+            "inputTokens": 169,
+            "outputTokens": 516,
+            "totalTokens": 99757,
+            "cacheReadTokens": 99072
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 168,
+          "time": 1789830242164
+        },
+        {
+          "id": "1/27/0",
+          "usage": {
+            "inputTokens": 1150,
+            "outputTokens": 1499,
+            "totalTokens": 102361,
+            "cacheReadTokens": 99712
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 175,
+          "time": 1789830249231
+        },
+        {
+          "id": "1/28/0",
+          "usage": {
+            "inputTokens": 192,
+            "outputTokens": 472,
+            "totalTokens": 102936,
+            "cacheReadTokens": 102272
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 180,
+          "time": 1789830252858
+        },
+        {
+          "id": "1/29/0",
+          "usage": {
+            "inputTokens": 762,
+            "outputTokens": 242,
+            "totalTokens": 103916,
+            "cacheReadTokens": 102912
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 185,
+          "time": 1789830255303
+        },
+        {
+          "id": "1/30/0",
+          "usage": {
+            "inputTokens": 203,
+            "outputTokens": 9565,
+            "totalTokens": 113576,
+            "cacheReadTokens": 103808
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 190,
+          "time": 1789830287678
+        },
+        {
+          "id": "1/31/0",
+          "usage": {
+            "inputTokens": 155,
+            "outputTokens": 179,
+            "totalTokens": 113870,
+            "cacheReadTokens": 113536
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 195,
+          "time": 1789830289785
+        },
+        {
+          "id": "1/32/0",
+          "usage": {
+            "inputTokens": 644,
+            "outputTokens": 3380,
+            "totalTokens": 117816,
+            "cacheReadTokens": 113792
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 200,
+          "time": 1789830299352
+        },
+        {
+          "id": "1/33/0",
+          "usage": {
+            "inputTokens": 172,
+            "outputTokens": 196,
+            "totalTokens": 118128,
+            "cacheReadTokens": 117760
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 205,
+          "time": 1789830301614
+        },
+        {
+          "id": "1/34/0",
+          "usage": {
+            "inputTokens": 761,
+            "outputTokens": 2326,
+            "totalTokens": 121103,
+            "cacheReadTokens": 118016
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 210,
+          "time": 1789830312845
+        },
+        {
+          "id": "1/35/0",
+          "usage": {
+            "inputTokens": 245,
+            "outputTokens": 448,
+            "totalTokens": 121653,
+            "cacheReadTokens": 120960
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 215,
+          "time": 1789830315493
+        },
+        {
+          "id": "1/36/0",
+          "usage": {
+            "inputTokens": 155,
+            "outputTokens": 398,
+            "totalTokens": 122153,
+            "cacheReadTokens": 121600
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 220,
+          "time": 1789830318701
+        },
+        {
+          "id": "1/37/0",
+          "usage": {
+            "inputTokens": 449,
+            "outputTokens": 228,
+            "totalTokens": 122789,
+            "cacheReadTokens": 122112
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 225,
+          "time": 1789830320859
+        },
+        {
+          "id": "1/38/0",
+          "usage": {
+            "inputTokens": 143,
+            "outputTokens": 158,
+            "totalTokens": 123053,
+            "cacheReadTokens": 122752
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 230,
+          "time": 1789830322842
+        },
+        {
+          "id": "1/39/0",
+          "usage": {
+            "inputTokens": 380,
+            "outputTokens": 775,
+            "totalTokens": 124163,
+            "cacheReadTokens": 123008
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 235,
+          "time": 1789830327231
+        },
+        {
+          "id": "1/40/0",
+          "usage": {
+            "inputTokens": 237,
+            "outputTokens": 212,
+            "totalTokens": 124481,
+            "cacheReadTokens": 124032
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 240,
+          "time": 1789830329462
+        },
+        {
+          "id": "1/41/0",
+          "usage": {
+            "inputTokens": 535,
+            "outputTokens": 151,
+            "totalTokens": 125102,
+            "cacheReadTokens": 124416
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 245,
+          "time": 1789830332083
+        },
+        {
+          "id": "1/42/0",
+          "usage": {
+            "inputTokens": 199,
+            "outputTokens": 237,
+            "totalTokens": 125364,
+            "cacheReadTokens": 124928
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 250,
+          "time": 1789830934876
+        },
+        {
+          "id": "1/43/0",
+          "usage": {
+            "inputTokens": 206,
+            "outputTokens": 404,
+            "totalTokens": 125794,
+            "cacheReadTokens": 125184
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 255,
+          "time": 1789830937894
+        },
+        {
+          "id": "1/44/0",
+          "usage": {
+            "inputTokens": 362,
+            "outputTokens": 315,
+            "totalTokens": 126373,
+            "cacheReadTokens": 125696
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 260,
+          "time": 1789830949923
+        },
+        {
+          "id": "1/45/0",
+          "usage": {
+            "inputTokens": 775,
+            "outputTokens": 2075,
+            "totalTokens": 129186,
+            "cacheReadTokens": 126336
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 265,
+          "time": 1789830969901
+        },
+        {
+          "id": "1/46/0",
+          "usage": {
+            "inputTokens": 365,
+            "outputTokens": 195,
+            "totalTokens": 129712,
+            "cacheReadTokens": 129152
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 270,
+          "time": 1789830991477
+        },
+        {
+          "id": "1/47/0",
+          "usage": {
+            "inputTokens": 707,
+            "outputTokens": 4670,
+            "totalTokens": 135041,
+            "cacheReadTokens": 129664
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 275,
+          "time": 1789831018452
+        },
+        {
+          "id": "1/48/0",
+          "usage": {
+            "inputTokens": 244,
+            "outputTokens": 151,
+            "totalTokens": 135307,
+            "cacheReadTokens": 134912
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 280,
+          "time": 1789831020535
+        },
+        {
+          "id": "1/49/0",
+          "usage": {
+            "inputTokens": 393,
+            "outputTokens": 342,
+            "totalTokens": 136031,
+            "cacheReadTokens": 135296
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 285,
+          "time": 1789831032656
+        },
+        {
+          "id": "1/50/0",
+          "usage": {
+            "inputTokens": 442,
+            "outputTokens": 7488,
+            "totalTokens": 143866,
+            "cacheReadTokens": 135936
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 290,
+          "time": 1789831080161
+        },
+        {
+          "id": "1/51/0",
+          "usage": {
+            "inputTokens": 1729,
+            "outputTokens": 1307,
+            "totalTokens": 146780,
+            "cacheReadTokens": 143744
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 295,
+          "time": 1789831087354
+        },
+        {
+          "id": "1/52/0",
+          "usage": {
+            "inputTokens": 624,
+            "outputTokens": 249,
+            "totalTokens": 147561,
+            "cacheReadTokens": 146688
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 300,
+          "time": 1789831090072
+        },
+        {
+          "id": "1/53/0",
+          "usage": {
+            "inputTokens": 207,
+            "outputTokens": 188,
+            "totalTokens": 147851,
+            "cacheReadTokens": 147456
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 305,
+          "time": 1789831092920
+        },
+        {
+          "id": "1/54/0",
+          "usage": {
+            "inputTokens": 527,
+            "outputTokens": 392,
+            "totalTokens": 148759,
+            "cacheReadTokens": 147840
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 310,
+          "time": 1789831095774
+        },
+        {
+          "id": "1/55/0",
+          "usage": {
+            "inputTokens": 253,
+            "outputTokens": 173,
+            "totalTokens": 149034,
+            "cacheReadTokens": 148608
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 315,
+          "time": 1789831098281
+        },
+        {
+          "id": "1/56/0",
+          "usage": {
+            "inputTokens": 650,
+            "outputTokens": 266,
+            "totalTokens": 149908,
+            "cacheReadTokens": 148992
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 320,
+          "time": 1789831100912
+        },
+        {
+          "id": "1/57/0",
+          "usage": {
+            "inputTokens": 250,
+            "outputTokens": 503,
+            "totalTokens": 150513,
+            "cacheReadTokens": 149760
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 325,
+          "time": 1789831104573
+        },
+        {
+          "id": "1/58/0",
+          "usage": {
+            "inputTokens": 664,
+            "outputTokens": 918,
+            "totalTokens": 151982,
+            "cacheReadTokens": 150400
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 330,
+          "time": 1789831128055
+        },
+        {
+          "id": "1/59/0",
+          "usage": {
+            "inputTokens": 188,
+            "outputTokens": 2846,
+            "totalTokens": 154842,
+            "cacheReadTokens": 151808
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 335,
+          "time": 1789831234487
+        },
+        {
+          "id": "1/60/0",
+          "usage": {
+            "inputTokens": 510,
+            "outputTokens": 3518,
+            "totalTokens": 158780,
+            "cacheReadTokens": 154752
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 340,
+          "time": 1789831299939
+        },
+        {
+          "id": "1/61/0",
+          "usage": {
+            "inputTokens": 4512,
+            "outputTokens": 3572,
+            "totalTokens": 166804,
+            "cacheReadTokens": 158720
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 345,
+          "time": 1789831317783
+        },
+        {
+          "id": "1/62/0",
+          "usage": {
+            "inputTokens": 217,
+            "outputTokens": 279,
+            "totalTokens": 167280,
+            "cacheReadTokens": 166784
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 350,
+          "time": 1789831320808
+        },
+        {
+          "id": "1/63/0",
+          "usage": {
+            "inputTokens": 216,
+            "outputTokens": 206,
+            "totalTokens": 167590,
+            "cacheReadTokens": 167168
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 355,
+          "time": 1789831323330
+        },
+        {
+          "id": "1/64/0",
+          "usage": {
+            "inputTokens": 180,
+            "outputTokens": 627,
+            "totalTokens": 168231,
+            "cacheReadTokens": 167424
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 360,
+          "time": 1789831334134
+        },
+        {
+          "id": "1/65/0",
+          "usage": {
+            "inputTokens": 976,
+            "outputTokens": 3097,
+            "totalTokens": 172265,
+            "cacheReadTokens": 168192
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 365,
+          "time": 1789831348984
+        },
+        {
+          "id": "1/66/0",
+          "usage": {
+            "inputTokens": 213,
+            "outputTokens": 299,
+            "totalTokens": 172672,
+            "cacheReadTokens": 172160
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 370,
+          "time": 1789831352534
+        },
+        {
+          "id": "1/67/0",
+          "usage": {
+            "inputTokens": 417,
+            "outputTokens": 6373,
+            "totalTokens": 179462,
+            "cacheReadTokens": 172672
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 375,
+          "time": 1789831401571
+        },
+        {
+          "id": "1/68/0",
+          "usage": {
+            "inputTokens": 715,
+            "outputTokens": 931,
+            "totalTokens": 181102,
+            "cacheReadTokens": 179456
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 380,
+          "time": 1789831406435
+        },
+        {
+          "id": "1/69/0",
+          "usage": {
+            "inputTokens": 212,
+            "outputTokens": 1117,
+            "totalTokens": 182321,
+            "cacheReadTokens": 180992
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 385,
+          "time": 1789831411944
+        },
+        {
+          "id": "1/70/0",
+          "usage": {
+            "inputTokens": 167,
+            "outputTokens": 156,
+            "totalTokens": 182595,
+            "cacheReadTokens": 182272
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 390,
+          "time": 1789831414458
+        },
+        {
+          "id": "1/71/0",
+          "usage": {
+            "inputTokens": 503,
+            "outputTokens": 565,
+            "totalTokens": 183596,
+            "cacheReadTokens": 182528
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 395,
+          "time": 1789831425425
+        },
+        {
+          "id": "1/72/0",
+          "usage": {
+            "inputTokens": 307,
+            "outputTokens": 1912,
+            "totalTokens": 185771,
+            "cacheReadTokens": 183552
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 400,
+          "time": 1789831445444
+        },
+        {
+          "id": "1/73/0",
+          "usage": {
+            "inputTokens": 234,
+            "outputTokens": 1925,
+            "totalTokens": 187759,
+            "cacheReadTokens": 185600
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 405,
+          "time": 1789831485700
+        },
+        {
+          "id": "1/74/0",
+          "usage": {
+            "inputTokens": 344,
+            "outputTokens": 821,
+            "totalTokens": 188813,
+            "cacheReadTokens": 187648
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 410,
+          "time": 1789831491633
+        },
+        {
+          "id": "1/75/0",
+          "usage": {
+            "inputTokens": 1501,
+            "outputTokens": 1182,
+            "totalTokens": 191483,
+            "cacheReadTokens": 188800
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 415,
+          "time": 1789831498256
+        },
+        {
+          "id": "1/76/0",
+          "usage": {
+            "inputTokens": 225,
+            "outputTokens": 342,
+            "totalTokens": 191927,
+            "cacheReadTokens": 191360
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 420,
+          "time": 1789831502271
+        },
+        {
+          "id": "1/77/0",
+          "usage": {
+            "inputTokens": 380,
+            "outputTokens": 1444,
+            "totalTokens": 193696,
+            "cacheReadTokens": 191872
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 425,
+          "time": 1789831531134
+        },
+        {
+          "id": "1/78/0",
+          "usage": {
+            "inputTokens": 198,
+            "outputTokens": 1484,
+            "totalTokens": 195346,
+            "cacheReadTokens": 193664
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 430,
+          "time": 1789831538606
+        },
+        {
+          "id": "1/79/0",
+          "usage": {
+            "inputTokens": 249,
+            "outputTokens": 868,
+            "totalTokens": 196317,
+            "cacheReadTokens": 195200
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 435,
+          "time": 1789831543670
+        },
+        {
+          "id": "1/80/0",
+          "usage": {
+            "inputTokens": 196,
+            "outputTokens": 1226,
+            "totalTokens": 197646,
+            "cacheReadTokens": 196224
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 440,
+          "time": 1789831549125
+        },
+        {
+          "id": "1/81/0",
+          "usage": {
+            "inputTokens": 259,
+            "outputTokens": 154,
+            "totalTokens": 197917,
+            "cacheReadTokens": 197504
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 445,
+          "time": 1789831551758
+        },
+        {
+          "id": "1/82/0",
+          "usage": {
+            "inputTokens": 278,
+            "outputTokens": 437,
+            "totalTokens": 198603,
+            "cacheReadTokens": 197888
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 450,
+          "time": 1789831565436
+        },
+        {
+          "id": "1/83/0",
+          "usage": {
+            "inputTokens": 222,
+            "outputTokens": 199,
+            "totalTokens": 198821,
+            "cacheReadTokens": 198400
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 455,
+          "time": 1789831667050
+        },
+        {
+          "id": "1/84/0",
+          "usage": {
+            "inputTokens": 634,
+            "outputTokens": 1170,
+            "totalTokens": 200588,
+            "cacheReadTokens": 198784
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 460,
+          "time": 1789831704941
+        },
+        {
+          "id": "1/85/0",
+          "usage": {
+            "inputTokens": 676,
+            "outputTokens": 576,
+            "totalTokens": 201828,
+            "cacheReadTokens": 200576
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 465,
+          "time": 1789831709224
+        },
+        {
+          "id": "1/86/0",
+          "usage": {
+            "inputTokens": 202,
+            "outputTokens": 278,
+            "totalTokens": 202208,
+            "cacheReadTokens": 201728
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 470,
+          "time": 1789831712223
+        },
+        {
+          "id": "1/87/0",
+          "usage": {
+            "inputTokens": 242,
+            "outputTokens": 1296,
+            "totalTokens": 203522,
+            "cacheReadTokens": 201984
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 475,
+          "time": 1789831722519
+        }
+      ]
+    },
+    "usage": {
+      "model_calls": 87,
+      "requests": 87,
+      "input_tokens": {
+        "count": 87,
+        "total": 10739971,
+        "average": 123447.94252873563,
+        "minimum": 7333,
+        "maximum": 202226
+      },
+      "uncached_input_tokens": {
+        "count": 87,
+        "total": 65923,
+        "average": 757.735632183908,
+        "minimum": 138,
+        "maximum": 4512
+      },
+      "cached_input_tokens": {
+        "count": 87,
+        "total": 10674048,
+        "average": 122690.20689655172,
+        "minimum": 5376,
+        "maximum": 201984
+      },
+      "output_tokens": {
+        "count": 87,
+        "total": 139539,
+        "average": 1603.896551724138,
+        "minimum": 146,
+        "maximum": 9565
+      },
+      "total_tokens": 10879510,
+      "cache_hit_rate": 0.9938619014893056
+    },
+    "timing_ms": {
+      "first_token": {
+        "count": 87,
+        "total": 135347,
+        "average": 1555.712643678161,
+        "minimum": 630,
+        "maximum": 2646
+      },
+      "input_wait": {
+        "count": 87,
+        "total": 135347,
+        "average": 1555.712643678161,
+        "minimum": 630,
+        "maximum": 2646
+      },
+      "output": {
+        "count": 87,
+        "total": 541784,
+        "average": 6227.402298850575,
+        "minimum": 407,
+        "maximum": 32450
+      },
+      "llm": {
+        "count": 87,
+        "total": 677131,
+        "average": 7783.114942528736,
+        "minimum": 1164,
+        "maximum": 33799
+      },
+      "tools": {
+        "count": 101,
+        "total": 1078034,
+        "average": 10673.60396039604,
+        "minimum": 0,
+        "maximum": 600007
+      },
+      "output_tokens_per_second": 257.55467123429264
+    },
+    "session": {
+      "steps": 87,
+      "turns": 1,
+      "model_calls": 87,
+      "tool_calls": 101
+    }
+  },
+  "patch": {
+    "sha256": "4072d6b058c027a8d780ffca8276cdaca3f8c81de87484cbb19cbd9890f49461",
+    "bytes": 18524,
+    "changed_paths": [
+      "res/css/voice-broadcast/molecules/_VoiceBroadcastBody.pcss",
+      "src/audio/Playback.ts",
+      "src/components/views/audio_messages/SeekBar.tsx",
+      "src/voice-broadcast/components/molecules/VoiceBroadcastPlaybackBody.tsx",
+      "src/voice-broadcast/models/VoiceBroadcastPlayback.ts",
+      "src/voice-broadcast/utils/VoiceBroadcastChunkEvents.ts"
+    ],
+    "excluded_generated_paths": [],
+    "recovered_from_persisted_session": false
+  },
+  "official_result": {
+    "passed": false,
+    "failure_kind": "official_test_failure",
+    "evaluator_exit_code": 0,
+    "parsed": {
+      "tests": [
+        {
+          "name": "test/components/views/settings/UiFeatureSettingWrapper-test.tsx | <UiFeatureSettingWrapper> | renders children when setting is truthy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/UiFeatureSettingWrapper-test.tsx | <UiFeatureSettingWrapper> | returns null when setting is truthy but children are undefined",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/UiFeatureSettingWrapper-test.tsx | <UiFeatureSettingWrapper> | returns null when setting is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/Linkify-test.tsx | Linkify | linkifies the context",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/Linkify-test.tsx | Linkify | correctly linkifies a room alias",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/Linkify-test.tsx | Linkify | changes the root tag name",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/elements/Linkify-test.tsx | Linkify | relinkifies on update",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/DeviceExpandDetailsButton-test.tsx | <DeviceExpandDetailsButton /> | renders when not expanded",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/DeviceExpandDetailsButton-test.tsx | <DeviceExpandDetailsButton /> | renders when expanded",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/DeviceExpandDetailsButton-test.tsx | <DeviceExpandDetailsButton /> | calls onClick",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/hasRoomLiveVoiceBroadcast-test.ts | when there is no voice broadcast info at all | should return false/false",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/hasRoomLiveVoiceBroadcast-test.ts | when the »state« prop is missing | should return false/false",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/hasRoomLiveVoiceBroadcast-test.ts | when there is a live broadcast from the current and another user | should return true/true",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/hasRoomLiveVoiceBroadcast-test.ts | when there are only stopped info events | should return false/false",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/hasRoomLiveVoiceBroadcast-test.ts | when there is a live broadcast (started) from the current user | should return true/true",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/hasRoomLiveVoiceBroadcast-test.ts | when there is a live broadcast (paused) from the current user | should return true/true",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/hasRoomLiveVoiceBroadcast-test.ts | when there is a live broadcast (resumed) from the current user | should return true/true",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/hasRoomLiveVoiceBroadcast-test.ts | when there was a live broadcast, that has been stopped | should return false/false",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/utils/hasRoomLiveVoiceBroadcast-test.ts | when there is a live broadcast from another user | should return true/false",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/widgets/StopGapWidget-test.ts | StopGapWidget | feeds incoming to-device messages to the widget",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/widgets/StopGapWidget-test.ts | and receiving a action:io.element.join message | should stop the current voice broadcast recording",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and calling start | should be in buffering state",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and calling start | should have duration 0",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and calling start | should be at time 0",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and calling stop | should set the state to 2",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and calling pause | should set the state to 2",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and calling pause | should set the state to 0",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and receiving the first chunk | should set the state to 1",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and receiving the first chunk | should update the duration",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and receiving the first chunk | should play the first chunk",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and calling start | should play the last chunk",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and the playback of the last chunk ended | should set the state to 3",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and the next chunk arrived | should set the state to 1",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and the next chunk arrived | should play the next chunk",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and there are some chunks | should expose the info event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and there are some chunks | should set the state to 2",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and calling start | should set the state to 1",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and calling start | should play the chunks beginning with the first one",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and the chunk playback progresses | should update the time",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and skipping to the middle of the second chunk | should play the second chunk",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and skipping to the middle of the second chunk | should update the time",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and skipping to the start | should play the second chunk",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and skipping to the start | should update the time",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and the first chunk ends | should play until the end",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and calling pause | should set the state to 0",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and calling pause | should emit a 0 state changed event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and calling stop | should set the state to 2",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and calling destroy | should call removeAllListeners",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and calling destroy | should call destroy on the playbacks",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and calling toggle for the first time | should set the state to 1",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and calling toggle a second time | should set the state to 0",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and calling toggle a third time | should set the state to 1",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and calling stop | should set the state to 2",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and calling toggle | should set the state to 1",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and calling toggle | should emit a 1 state changed event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastPlayback-test.ts | and clicking the play button | should toggle the recording",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/right_panel/PinnedMessagesCard-test.tsx | <PinnedMessagesCard /> | updates when messages are pinned",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/right_panel/PinnedMessagesCard-test.tsx | <PinnedMessagesCard /> | updates when messages are unpinned",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/right_panel/PinnedMessagesCard-test.tsx | <PinnedMessagesCard /> | hides unpinnable events found in local timeline",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/right_panel/PinnedMessagesCard-test.tsx | <PinnedMessagesCard /> | hides unpinnable events not found in local timeline",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/right_panel/PinnedMessagesCard-test.tsx | <PinnedMessagesCard /> | accounts for edits",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/right_panel/PinnedMessagesCard-test.tsx | <PinnedMessagesCard /> | displays votes on polls not found in local timeline",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/voip/CallView-test.tsx | with an existing call | calls clean on mount",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/voip/CallView-test.tsx | with an existing call | shows lobby and keeps widget loaded when disconnected",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/voip/CallView-test.tsx | with an existing call | only shows widget when connected",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/voip/CallView-test.tsx | with an existing call | tracks participants",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/voip/CallView-test.tsx | with an existing call | connects to the call when the join button is pressed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/voip/CallView-test.tsx | with an existing call | disables join button when the participant limit has been exceeded",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/voip/CallView-test.tsx | without an existing call | creates and connects to a new call when the join button is pressed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/voip/CallView-test.tsx | device buttons | hide when no devices are available",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/voip/CallView-test.tsx | device buttons | show without dropdown when only one device is available",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/voip/CallView-test.tsx | device buttons | show with dropdown when multiple devices are available",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/voip/CallView-test.tsx | device buttons | sets video device when selected",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/voip/CallView-test.tsx | device buttons | sets audio device when selected",
+          "status": "PASSED"
+        }
+      ]
+    }
+  },
+  "cleanup": {
+    "task_container_removed": true,
+    "task_workspace_removed": true,
+    "shared_image_retained": true
+  },
+  "public_export": {
+    "model_name_kind": "display_name",
+    "omitted": [
+      "development provider and route",
+      "local environment and paths",
+      "raw tool diagnostics"
+    ],
+    "note": "Redacted report, not runtime configuration. Scores and numeric usage are preserved; original evidence is retained locally."
+  }
+}

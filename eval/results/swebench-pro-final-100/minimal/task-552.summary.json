@@ -1,0 +1,529 @@
+{
+  "schema": 1,
+  "run_id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-552-attempt-1",
+  "started_at": "2026-09-18T21:30:19.073Z",
+  "completed_at": "2026-09-18T21:45:12.037Z",
+  "preset": "minimal",
+  "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
+  "isolation": {
+    "schema": 1,
+    "policy": "swebench-pro-isolation-v3",
+    "passed": true,
+    "audited_sessions": 1,
+    "blocked_calls_count": 24,
+    "violations_count": 0
+  },
+  "candidate": null,
+  "task_index": 552,
+  "instance_id": "instance_ansible__ansible-d33bedc48fdd933b5abd65a77c081876298e2f07-v0f01c69f1e2528b935359cfe578530722bca2c59",
+  "repo": "ansible/ansible",
+  "base_commit": "dcc5dac1846be3bf6e948a2950b93477b9193076",
+  "official_evaluator": {
+    "repository": "scaleapi/SWE-bench_Pro-os",
+    "commit": "ca10a60a5fcae51e6948ffe1485d4153d421e6c5",
+    "evaluator_sha256": "bb5d4c5486be296e464e695df3747064aaa3bb197394bc6d39980634afec2034",
+    "dataset_sha256": "b5b2462bfbf5aeb2cb7ba7d215778a1768b85f9d7ad7f748546c7f80a0ad1510",
+    "image_policy": "local-cache-only"
+  },
+  "image": {
+    "reference": "jefzda/sweap-images:ansible.ansible-ansible__ansible-d33bedc48fdd933b5abd65a77c081876298e2f07-v0f01c69f1e2528b935359cfe578530722bca2c59",
+    "acquisition_reference": "docker.1ms.run/jefzda/sweap-images:ansible.ansible-ansible__ansible-d33bedc48fdd933b5abd65a77c081876298e2f07-v0f01c69f1e2528b935359cfe578530722bca2c59",
+    "platform": "linux/amd64",
+    "id": "sha256:fa8e767b97002c82dff483566901cff25f0d51ce190b09c2fad887c275115473",
+    "repo_digests": [
+      "docker.1ms.run/jefzda/sweap-images@sha256:fa8e767b97002c82dff483566901cff25f0d51ce190b09c2fad887c275115473",
+      "jefzda/sweap-images@sha256:fa8e767b97002c82dff483566901cff25f0d51ce190b09c2fad887c275115473"
+    ]
+  },
+  "page_runtime": {
+    "schema": 2,
+    "runtime": "deepseek-harness-web-rpc",
+    "mode": "agent-run",
+    "session_id": "session-e02065ca-21f4-46b1-bc84-7f1e169f26ad",
+    "web_rpc": {
+      "authenticated": true,
+      "calls": [
+        "session/create",
+        "session/list",
+        "session/selectModel",
+        "session/prompt",
+        "session/list"
+      ],
+      "prompt_submitted": true
+    },
+    "preset": "minimal",
+    "isolation": {
+      "policy": "swebench-pro-isolation-v3",
+      "permission_preset": "workspace-write",
+      "tool_guard": "workspace-files-and-assigned-offline-container"
+    },
+    "candidate": null,
+    "model": {
+      "display_name": "deepseek-v4.1-flash",
+      "reasoning_effort": "high",
+      "max_tokens": 384000
+    },
+    "elapsed_ms": 863794,
+    "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+  },
+  "metrics": {
+    "schema": 1,
+    "usage": {
+      "model_calls": 179,
+      "requests": 179,
+      "input_tokens": {
+        "count": 179,
+        "total": 13660392,
+        "average": 76315.03910614525,
+        "minimum": 1599,
+        "maximum": 145151
+      },
+      "uncached_input_tokens": {
+        "count": 179,
+        "total": 77928,
+        "average": 435.3519553072626,
+        "minimum": 134,
+        "maximum": 3555
+      },
+      "cached_input_tokens": {
+        "count": 179,
+        "total": 13582464,
+        "average": 75879.68715083798,
+        "minimum": 256,
+        "maximum": 144896
+      },
+      "output_tokens": {
+        "count": 179,
+        "total": 89969,
+        "average": 502.62011173184356,
+        "minimum": 57,
+        "maximum": 6598
+      },
+      "total_tokens": 13750361,
+      "cache_hit_rate": 0.9942953320812463
+    },
+    "timing_ms": {
+      "first_token": {
+        "count": 179,
+        "total": 210972,
+        "average": 1178.6145251396647,
+        "minimum": 561,
+        "maximum": 2482
+      },
+      "input_wait": {
+        "count": 179,
+        "total": 210972,
+        "average": 1178.6145251396647,
+        "minimum": 561,
+        "maximum": 2482
+      },
+      "output": {
+        "count": 179,
+        "total": 351196,
+        "average": 1961.9888268156424,
+        "minimum": 253,
+        "maximum": 27081
+      },
+      "llm": {
+        "count": 179,
+        "total": 562168,
+        "average": 3140.603351955307,
+        "minimum": 975,
+        "maximum": 27846
+      },
+      "tools": {
+        "count": 178,
+        "total": 290713,
+        "average": 1633.2191011235955,
+        "minimum": 0,
+        "maximum": 66304
+      },
+      "output_tokens_per_second": 256.17888586430365
+    },
+    "session": {
+      "steps": 179,
+      "turns": 1,
+      "model_calls": 179,
+      "tool_calls": 178
+    }
+  },
+  "patch": {
+    "sha256": "ef5dcf0f013f79702bde6a6a960ba7f626738a1478b28e88fe04887a954dab50",
+    "bytes": 10401,
+    "changed_paths": [
+      "lib/ansible/config/base.yml",
+      "lib/ansible/config/manager.py",
+      "lib/ansible/constants.py",
+      "lib/ansible/module_utils/parsing/convert_bool.py",
+      "lib/ansible/plugins/loader.py",
+      "lib/ansible/utils/display.py"
+    ],
+    "excluded_generated_paths": []
+  },
+  "official_result": {
+    "passed": false,
+    "failure_kind": "official_test_failure",
+    "evaluator_exit_code": 0,
+    "parsed": {
+      "tests": [
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[None-str-None]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[value1-bool-False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[y-bool-True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[yes-bool-True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[on-bool-True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[1-bool-True0]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[true-bool-True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[t-bool-True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[1-bool-True1]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[1.0-bool-True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[True-bool-True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[n-bool-False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[no-bool-False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[off-bool-False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[0-bool-False0]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[false-bool-False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[f-bool-False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[0-bool-False1]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[0.0-bool-False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[False-bool-False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[False-boolean-False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[10-int-10]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[20-int-20]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[True-int-1]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[False-int-0]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[42.0-int-42]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[-42.0-int--42]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[-42.0-integer--42]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[2-float-2.0]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[0.10-float-0.1]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[0.2-float-0.2]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[a,b-list-expected_value31]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[value32-list-expected_value32]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[value33-list-expected_value33]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[None-none-None]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[/p1-pathspec-expected_value35]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[/p1:/p2-pathspec-expected_value36]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[/p1:/p2-pathspec-expected_value37]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[value38-pathspec-expected_value38]",
+          "status": "PASSED"
+        },
+        {
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[a-str-a]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[Caf\\xe9-str-Caf\\xe9]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[-str-]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[29-str-29_0]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[13.37-str-13.37_0]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[123j-str-123j0]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[0x123-str-0x123]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[true-str-true]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[True-str-True0]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[0-str-0]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[29-str-29_1]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[13.37-str-13.37_1]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[123j-str-123j1]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[291-str-291]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[True-str-True1]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[True-string-True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[value56-dict-expected_value56]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[value57-dict-expected_value57]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[value58-dictionary-expected_value58]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type[123-bogustype-123]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type_unquoting[\"value\"-\"value\"-str-/app/test/units/config/test.yml-yaml]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type_unquoting[\"value\"-value-str-/app/test/units/config/test.cfg-ini]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type_unquoting['value'-value-str-/app/test/units/config/test.cfg-ini]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type_unquoting[''value''-'value'-str-/app/test/units/config/test.cfg-ini]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type_unquoting[\"\"value\"\"-\"value\"-str-/app/test/units/config/test.cfg-ini]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type_unquoting[\"x\"-x-bogustype-/app/test/units/config/test.cfg-ini]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type_tag_propagation[a,b,c-list]",
+          "status": "FAILED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type_tag_propagation[value1-list]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type_tag_propagation[1-int]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type_tag_propagation[plainstr-str]",
+          "status": "FAILED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type_no_tag_propagation[plainstr-tmp]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type_temppath[blah1-temppath]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type_temppath[blah2-tmp]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_ensure_type_temppath[blah3-tmppath]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::TestConfigManager::test_resolve_path",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::TestConfigManager::test_resolve_path_cwd",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::TestConfigManager::test_value_and_origin_from_ini",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::TestConfigManager::test_value_from_ini",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::TestConfigManager::test_value_and_origin_from_alt_ini",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::TestConfigManager::test_value_from_alt_ini",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::TestConfigManager::test_config_types",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::TestConfigManager::test_config_types_negative",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::TestConfigManager::test_read_config_yaml_file",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::TestConfigManager::test_read_config_yaml_file_negative",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_256color_support[COLOR_VERBOSE-rgb013]",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/units/config/test_manager.py::test_256color_support[COLOR_DEBUG-gray10]",
+          "status": "PASSED"
+        }
+      ]
+    }
+  },
+  "cleanup": {
+    "task_container_removed": true,
+    "task_workspace_removed": true,
+    "shared_image_retained": true
+  },
+  "public_export": {
+    "model_name_kind": "display_name",
+    "omitted": [
+      "development provider and route",
+      "local environment and paths",
+      "raw tool diagnostics"
+    ],
+    "note": "Redacted report, not runtime configuration. Scores and numeric usage are preserved; original evidence is retained locally."
+  }
+}

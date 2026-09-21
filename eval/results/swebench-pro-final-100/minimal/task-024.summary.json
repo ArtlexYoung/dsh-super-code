@@ -1,0 +1,2742 @@
+{
+  "schema": 1,
+  "run_id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-024-attempt-1",
+  "started_at": "2026-09-20T07:42:28.799Z",
+  "completed_at": "2026-09-20T07:42:28.799Z",
+  "preset": "minimal",
+  "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
+  "isolation": {
+    "schema": 1,
+    "policy": "swebench-pro-isolation-v3",
+    "policy_revision": 3,
+    "passed": true,
+    "repository_isolation": {
+      "base_only_git": true,
+      "commit_count": 1,
+      "remotes": [],
+      "target_commit_unavailable": true,
+      "test_container_network": "none"
+    },
+    "audited_sessions": 1,
+    "blocked_calls_count": 5,
+    "observations_count": 0,
+    "violations_count": 0
+  },
+  "candidate": null,
+  "task_index": 24,
+  "instance_id": "instance_element-hq__element-web-5dfde12c1c1c0b6e48f17e3405468593e39d9492-vnan",
+  "repo": "element-hq/element-web",
+  "base_commit": "f97cef80aed8ee6011543f08bee8b1745a33a7db",
+  "official_evaluator": {
+    "repository": "scaleapi/SWE-bench_Pro-os",
+    "commit": "ca10a60a5fcae51e6948ffe1485d4153d421e6c5",
+    "evaluator_sha256": "bb5d4c5486be296e464e695df3747064aaa3bb197394bc6d39980634afec2034",
+    "dataset_sha256": "b5b2462bfbf5aeb2cb7ba7d215778a1768b85f9d7ad7f748546c7f80a0ad1510",
+    "image_policy": "local-cache-only",
+    "rescore_attempt": 3
+  },
+  "image": {
+    "reference": "jefzda/sweap-images:element-hq.element-element-hq__element-web-5dfde12c1c1c0b6e48f17e3405468593e39d9492",
+    "acquisition_reference": "jefzda/sweap-images:element-hq.element-element-hq__element-web-5dfde12c1c1c0b6e48f17e3405468593e39d9492",
+    "platform": "linux/amd64",
+    "id": "sha256:409ccc6a1fd965ebf2ea9c30f5b16ee345ae2af9697d8f703009e1e72d6b3387",
+    "repo_digests": [
+      "docker.1ms.run/jefzda/sweap-images@sha256:409ccc6a1fd965ebf2ea9c30f5b16ee345ae2af9697d8f703009e1e72d6b3387",
+      "jefzda/sweap-images@sha256:409ccc6a1fd965ebf2ea9c30f5b16ee345ae2af9697d8f703009e1e72d6b3387"
+    ]
+  },
+  "page_runtime": {
+    "schema": 2,
+    "runtime": "deepseek-harness-web-rpc",
+    "mode": "agent-run",
+    "session_id": "session-a70426d4-f7e1-4907-9b95-3bfe111f2743",
+    "web_rpc": {
+      "authenticated": true,
+      "calls": [
+        "session/create",
+        "session/list",
+        "session/selectModel",
+        "session/prompt",
+        "session/list"
+      ],
+      "prompt_submitted": true
+    },
+    "preset": "minimal",
+    "isolation": {
+      "policy": "swebench-pro-isolation-v3",
+      "permission_preset": "workspace-write",
+      "tool_guard": "workspace-files-and-assigned-offline-container"
+    },
+    "candidate": null,
+    "model": {
+      "display_name": "deepseek-v4.1-flash",
+      "reasoning_effort": "high",
+      "max_tokens": 384000
+    },
+    "elapsed_ms": 1912151,
+    "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+  },
+  "metrics": {
+    "schema": 2,
+    "accounting": {
+      "observed_requests": 138,
+      "requests_with_usage": 138,
+      "unknown_usage_requests": 0,
+      "cost_complete": false,
+      "actual_cost": null,
+      "reason": "Observed log usage only; request inventory and billing reconciliation required",
+      "ledger": [
+        {
+          "id": "1/1/0",
+          "usage": {
+            "inputTokens": 1413,
+            "outputTokens": 121,
+            "totalTokens": 1790,
+            "cacheReadTokens": 256
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 13,
+          "time": 1789760329913
+        },
+        {
+          "id": "1/2/0",
+          "usage": {
+            "inputTokens": 264,
+            "outputTokens": 121,
+            "totalTokens": 2049,
+            "cacheReadTokens": 1664
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 18,
+          "time": 1789760332454
+        },
+        {
+          "id": "1/3/0",
+          "usage": {
+            "inputTokens": 180,
+            "outputTokens": 85,
+            "totalTokens": 2185,
+            "cacheReadTokens": 1920
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 23,
+          "time": 1789760333961
+        },
+        {
+          "id": "1/4/0",
+          "usage": {
+            "inputTokens": 745,
+            "outputTokens": 132,
+            "totalTokens": 3053,
+            "cacheReadTokens": 2176
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 28,
+          "time": 1789760335363
+        },
+        {
+          "id": "1/5/0",
+          "usage": {
+            "inputTokens": 536,
+            "outputTokens": 92,
+            "totalTokens": 3572,
+            "cacheReadTokens": 2944
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 33,
+          "time": 1789760336805
+        },
+        {
+          "id": "1/6/0",
+          "usage": {
+            "inputTokens": 2305,
+            "outputTokens": 111,
+            "totalTokens": 5872,
+            "cacheReadTokens": 3456
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 38,
+          "time": 1789760338456
+        },
+        {
+          "id": "1/7/0",
+          "usage": {
+            "inputTokens": 212,
+            "outputTokens": 117,
+            "totalTokens": 6089,
+            "cacheReadTokens": 5760
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 43,
+          "time": 1789760339957
+        },
+        {
+          "id": "1/8/0",
+          "usage": {
+            "inputTokens": 826,
+            "outputTokens": 153,
+            "totalTokens": 6995,
+            "cacheReadTokens": 6016
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 48,
+          "time": 1789760341537
+        },
+        {
+          "id": "1/9/0",
+          "usage": {
+            "inputTokens": 1951,
+            "outputTokens": 137,
+            "totalTokens": 9000,
+            "cacheReadTokens": 6912
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 53,
+          "time": 1789760343121
+        },
+        {
+          "id": "1/10/0",
+          "usage": {
+            "inputTokens": 1470,
+            "outputTokens": 168,
+            "totalTokens": 10598,
+            "cacheReadTokens": 8960
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 58,
+          "time": 1789760344733
+        },
+        {
+          "id": "1/11/0",
+          "usage": {
+            "inputTokens": 303,
+            "outputTokens": 118,
+            "totalTokens": 10917,
+            "cacheReadTokens": 10496
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 63,
+          "time": 1789760346509
+        },
+        {
+          "id": "1/12/0",
+          "usage": {
+            "inputTokens": 989,
+            "outputTokens": 146,
+            "totalTokens": 12015,
+            "cacheReadTokens": 10880
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 68,
+          "time": 1789760348505
+        },
+        {
+          "id": "1/13/0",
+          "usage": {
+            "inputTokens": 202,
+            "outputTokens": 86,
+            "totalTokens": 12192,
+            "cacheReadTokens": 11904
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 73,
+          "time": 1789760350426
+        },
+        {
+          "id": "1/14/0",
+          "usage": {
+            "inputTokens": 1002,
+            "outputTokens": 178,
+            "totalTokens": 13340,
+            "cacheReadTokens": 12160
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 78,
+          "time": 1789760352085
+        },
+        {
+          "id": "1/15/0",
+          "usage": {
+            "inputTokens": 516,
+            "outputTokens": 543,
+            "totalTokens": 14371,
+            "cacheReadTokens": 13312
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 83,
+          "time": 1789760355342
+        },
+        {
+          "id": "1/16/0",
+          "usage": {
+            "inputTokens": 1057,
+            "outputTokens": 410,
+            "totalTokens": 15803,
+            "cacheReadTokens": 14336
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 88,
+          "time": 1789760358051
+        },
+        {
+          "id": "1/17/0",
+          "usage": {
+            "inputTokens": 1807,
+            "outputTokens": 134,
+            "totalTokens": 17685,
+            "cacheReadTokens": 15744
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 93,
+          "time": 1789760359650
+        },
+        {
+          "id": "1/18/0",
+          "usage": {
+            "inputTokens": 1210,
+            "outputTokens": 202,
+            "totalTokens": 19076,
+            "cacheReadTokens": 17664
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 98,
+          "time": 1789760361788
+        },
+        {
+          "id": "1/19/0",
+          "usage": {
+            "inputTokens": 861,
+            "outputTokens": 390,
+            "totalTokens": 20323,
+            "cacheReadTokens": 19072
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 103,
+          "time": 1789760364574
+        },
+        {
+          "id": "1/20/0",
+          "usage": {
+            "inputTokens": 1284,
+            "outputTokens": 383,
+            "totalTokens": 21891,
+            "cacheReadTokens": 20224
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 108,
+          "time": 1789760367127
+        },
+        {
+          "id": "1/21/0",
+          "usage": {
+            "inputTokens": 185,
+            "outputTokens": 192,
+            "totalTokens": 22137,
+            "cacheReadTokens": 21760
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 113,
+          "time": 1789760369048
+        },
+        {
+          "id": "1/22/0",
+          "usage": {
+            "inputTokens": 297,
+            "outputTokens": 266,
+            "totalTokens": 22579,
+            "cacheReadTokens": 22016
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 118,
+          "time": 1789760371368
+        },
+        {
+          "id": "1/23/0",
+          "usage": {
+            "inputTokens": 202,
+            "outputTokens": 256,
+            "totalTokens": 22858,
+            "cacheReadTokens": 22400
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 123,
+          "time": 1789760382199
+        },
+        {
+          "id": "1/24/0",
+          "usage": {
+            "inputTokens": 144,
+            "outputTokens": 121,
+            "totalTokens": 23049,
+            "cacheReadTokens": 22784
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 128,
+          "time": 1789760383749
+        },
+        {
+          "id": "1/25/0",
+          "usage": {
+            "inputTokens": 347,
+            "outputTokens": 671,
+            "totalTokens": 24058,
+            "cacheReadTokens": 23040
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 133,
+          "time": 1789760387305
+        },
+        {
+          "id": "1/26/0",
+          "usage": {
+            "inputTokens": 353,
+            "outputTokens": 631,
+            "totalTokens": 24920,
+            "cacheReadTokens": 23936
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 138,
+          "time": 1789760390890
+        },
+        {
+          "id": "1/27/0",
+          "usage": {
+            "inputTokens": 256,
+            "outputTokens": 221,
+            "totalTokens": 25309,
+            "cacheReadTokens": 24832
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 143,
+          "time": 1789760392896
+        },
+        {
+          "id": "1/28/0",
+          "usage": {
+            "inputTokens": 517,
+            "outputTokens": 192,
+            "totalTokens": 25925,
+            "cacheReadTokens": 25216
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 148,
+          "time": 1789760395059
+        },
+        {
+          "id": "1/29/0",
+          "usage": {
+            "inputTokens": 581,
+            "outputTokens": 132,
+            "totalTokens": 26569,
+            "cacheReadTokens": 25856
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 153,
+          "time": 1789760396950
+        },
+        {
+          "id": "1/30/0",
+          "usage": {
+            "inputTokens": 335,
+            "outputTokens": 345,
+            "totalTokens": 27176,
+            "cacheReadTokens": 26496
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 158,
+          "time": 1789760399354
+        },
+        {
+          "id": "1/31/0",
+          "usage": {
+            "inputTokens": 188,
+            "outputTokens": 100,
+            "totalTokens": 27296,
+            "cacheReadTokens": 27008
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 163,
+          "time": 1789760401281
+        },
+        {
+          "id": "1/32/0",
+          "usage": {
+            "inputTokens": 217,
+            "outputTokens": 92,
+            "totalTokens": 27573,
+            "cacheReadTokens": 27264
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 168,
+          "time": 1789760403161
+        },
+        {
+          "id": "1/33/0",
+          "usage": {
+            "inputTokens": 902,
+            "outputTokens": 1091,
+            "totalTokens": 29513,
+            "cacheReadTokens": 27520
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 173,
+          "time": 1789760407734
+        },
+        {
+          "id": "1/34/0",
+          "usage": {
+            "inputTokens": 149,
+            "outputTokens": 467,
+            "totalTokens": 30056,
+            "cacheReadTokens": 29440
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 178,
+          "time": 1789760410863
+        },
+        {
+          "id": "1/35/0",
+          "usage": {
+            "inputTokens": 1028,
+            "outputTokens": 91,
+            "totalTokens": 31071,
+            "cacheReadTokens": 29952
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 183,
+          "time": 1789760412528
+        },
+        {
+          "id": "1/36/0",
+          "usage": {
+            "inputTokens": 2212,
+            "outputTokens": 313,
+            "totalTokens": 33501,
+            "cacheReadTokens": 30976
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 188,
+          "time": 1789760414630
+        },
+        {
+          "id": "1/37/0",
+          "usage": {
+            "inputTokens": 720,
+            "outputTokens": 1001,
+            "totalTokens": 35129,
+            "cacheReadTokens": 33408
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 193,
+          "time": 1789760418831
+        },
+        {
+          "id": "1/38/0",
+          "usage": {
+            "inputTokens": 216,
+            "outputTokens": 203,
+            "totalTokens": 35363,
+            "cacheReadTokens": 34944
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 198,
+          "time": 1789760420328
+        },
+        {
+          "id": "1/39/0",
+          "usage": {
+            "inputTokens": 194,
+            "outputTokens": 160,
+            "totalTokens": 35554,
+            "cacheReadTokens": 35200
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 203,
+          "time": 1789760421829
+        },
+        {
+          "id": "1/40/0",
+          "usage": {
+            "inputTokens": 257,
+            "outputTokens": 109,
+            "totalTokens": 35694,
+            "cacheReadTokens": 35328
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 208,
+          "time": 1789760423145
+        },
+        {
+          "id": "1/41/0",
+          "usage": {
+            "inputTokens": 141,
+            "outputTokens": 154,
+            "totalTokens": 35879,
+            "cacheReadTokens": 35584
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 213,
+          "time": 1789760424941
+        },
+        {
+          "id": "1/42/0",
+          "usage": {
+            "inputTokens": 190,
+            "outputTokens": 241,
+            "totalTokens": 36143,
+            "cacheReadTokens": 35712
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 218,
+          "time": 1789760427214
+        },
+        {
+          "id": "1/43/0",
+          "usage": {
+            "inputTokens": 195,
+            "outputTokens": 691,
+            "totalTokens": 36854,
+            "cacheReadTokens": 35968
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 223,
+          "time": 1789760433813
+        },
+        {
+          "id": "1/44/0",
+          "usage": {
+            "inputTokens": 155,
+            "outputTokens": 94,
+            "totalTokens": 36985,
+            "cacheReadTokens": 36736
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 228,
+          "time": 1789760435657
+        },
+        {
+          "id": "1/45/0",
+          "usage": {
+            "inputTokens": 1122,
+            "outputTokens": 280,
+            "totalTokens": 38266,
+            "cacheReadTokens": 36864
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 233,
+          "time": 1789760437912
+        },
+        {
+          "id": "1/46/0",
+          "usage": {
+            "inputTokens": 549,
+            "outputTokens": 2107,
+            "totalTokens": 40800,
+            "cacheReadTokens": 38144
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 238,
+          "time": 1789760446318
+        },
+        {
+          "id": "1/47/0",
+          "usage": {
+            "inputTokens": 3448,
+            "outputTokens": 396,
+            "totalTokens": 44548,
+            "cacheReadTokens": 40704
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 243,
+          "time": 1789760449417
+        },
+        {
+          "id": "1/48/0",
+          "usage": {
+            "inputTokens": 185,
+            "outputTokens": 1579,
+            "totalTokens": 46180,
+            "cacheReadTokens": 44416
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 248,
+          "time": 1789760456553
+        },
+        {
+          "id": "1/49/0",
+          "usage": {
+            "inputTokens": 328,
+            "outputTokens": 380,
+            "totalTokens": 46788,
+            "cacheReadTokens": 46080
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 253,
+          "time": 1789760459483
+        },
+        {
+          "id": "1/50/0",
+          "usage": {
+            "inputTokens": 878,
+            "outputTokens": 159,
+            "totalTokens": 47757,
+            "cacheReadTokens": 46720
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 258,
+          "time": 1789760461579
+        },
+        {
+          "id": "1/51/0",
+          "usage": {
+            "inputTokens": 1070,
+            "outputTokens": 4404,
+            "totalTokens": 53218,
+            "cacheReadTokens": 47744
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 263,
+          "time": 1789760478784
+        },
+        {
+          "id": "1/52/0",
+          "usage": {
+            "inputTokens": 658,
+            "outputTokens": 121,
+            "totalTokens": 53899,
+            "cacheReadTokens": 53120
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 268,
+          "time": 1789760480948
+        },
+        {
+          "id": "1/53/0",
+          "usage": {
+            "inputTokens": 523,
+            "outputTokens": 816,
+            "totalTokens": 55227,
+            "cacheReadTokens": 53888
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 273,
+          "time": 1789760485620
+        },
+        {
+          "id": "1/54/0",
+          "usage": {
+            "inputTokens": 251,
+            "outputTokens": 161,
+            "totalTokens": 55580,
+            "cacheReadTokens": 55168
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 278,
+          "time": 1789760488094
+        },
+        {
+          "id": "1/55/0",
+          "usage": {
+            "inputTokens": 292,
+            "outputTokens": 117,
+            "totalTokens": 55961,
+            "cacheReadTokens": 55552
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 283,
+          "time": 1789760490184
+        },
+        {
+          "id": "1/56/0",
+          "usage": {
+            "inputTokens": 268,
+            "outputTokens": 403,
+            "totalTokens": 56607,
+            "cacheReadTokens": 55936
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 288,
+          "time": 1789760493474
+        },
+        {
+          "id": "1/57/0",
+          "usage": {
+            "inputTokens": 1052,
+            "outputTokens": 4547,
+            "totalTokens": 62175,
+            "cacheReadTokens": 56576
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 293,
+          "time": 1789760511505
+        },
+        {
+          "id": "1/58/0",
+          "usage": {
+            "inputTokens": 452,
+            "outputTokens": 6361,
+            "totalTokens": 68893,
+            "cacheReadTokens": 62080
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 298,
+          "time": 1789760539652
+        },
+        {
+          "id": "1/59/0",
+          "usage": {
+            "inputTokens": 198,
+            "outputTokens": 358,
+            "totalTokens": 69292,
+            "cacheReadTokens": 68736
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 303,
+          "time": 1789760542546
+        },
+        {
+          "id": "1/60/0",
+          "usage": {
+            "inputTokens": 213,
+            "outputTokens": 150,
+            "totalTokens": 69483,
+            "cacheReadTokens": 69120
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 308,
+          "time": 1789760544733
+        },
+        {
+          "id": "1/61/0",
+          "usage": {
+            "inputTokens": 258,
+            "outputTokens": 495,
+            "totalTokens": 70001,
+            "cacheReadTokens": 69248
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 313,
+          "time": 1789760548142
+        },
+        {
+          "id": "1/62/0",
+          "usage": {
+            "inputTokens": 136,
+            "outputTokens": 221,
+            "totalTokens": 70245,
+            "cacheReadTokens": 69888
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 318,
+          "time": 1789760550735
+        },
+        {
+          "id": "1/63/0",
+          "usage": {
+            "inputTokens": 253,
+            "outputTokens": 165,
+            "totalTokens": 70434,
+            "cacheReadTokens": 70016
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 323,
+          "time": 1789760553053
+        },
+        {
+          "id": "1/64/0",
+          "usage": {
+            "inputTokens": 188,
+            "outputTokens": 1819,
+            "totalTokens": 72279,
+            "cacheReadTokens": 70272
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 328,
+          "time": 1789760560293
+        },
+        {
+          "id": "1/65/0",
+          "usage": {
+            "inputTokens": 240,
+            "outputTokens": 1032,
+            "totalTokens": 73464,
+            "cacheReadTokens": 72192
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 333,
+          "time": 1789760869952
+        },
+        {
+          "id": "1/66/0",
+          "usage": {
+            "inputTokens": 143,
+            "outputTokens": 118,
+            "totalTokens": 73605,
+            "cacheReadTokens": 73344
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 338,
+          "time": 1789760872446
+        },
+        {
+          "id": "1/67/0",
+          "usage": {
+            "inputTokens": 163,
+            "outputTokens": 618,
+            "totalTokens": 74253,
+            "cacheReadTokens": 73472
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 343,
+          "time": 1789760876521
+        },
+        {
+          "id": "1/68/0",
+          "usage": {
+            "inputTokens": 207,
+            "outputTokens": 497,
+            "totalTokens": 74816,
+            "cacheReadTokens": 74112
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 348,
+          "time": 1789760880145
+        },
+        {
+          "id": "1/69/0",
+          "usage": {
+            "inputTokens": 212,
+            "outputTokens": 93,
+            "totalTokens": 74929,
+            "cacheReadTokens": 74624
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 353,
+          "time": 1789760881692
+        },
+        {
+          "id": "1/70/0",
+          "usage": {
+            "inputTokens": 187,
+            "outputTokens": 135,
+            "totalTokens": 75202,
+            "cacheReadTokens": 74880
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 358,
+          "time": 1789760883977
+        },
+        {
+          "id": "1/71/0",
+          "usage": {
+            "inputTokens": 219,
+            "outputTokens": 482,
+            "totalTokens": 75837,
+            "cacheReadTokens": 75136
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 363,
+          "time": 1789761190593
+        },
+        {
+          "id": "1/72/0",
+          "usage": {
+            "inputTokens": 209,
+            "outputTokens": 940,
+            "totalTokens": 76797,
+            "cacheReadTokens": 75648
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 368,
+          "time": 1789761195642
+        },
+        {
+          "id": "1/73/0",
+          "usage": {
+            "inputTokens": 145,
+            "outputTokens": 93,
+            "totalTokens": 76910,
+            "cacheReadTokens": 76672
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 373,
+          "time": 1789761197605
+        },
+        {
+          "id": "1/74/0",
+          "usage": {
+            "inputTokens": 746,
+            "outputTokens": 723,
+            "totalTokens": 78269,
+            "cacheReadTokens": 76800
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 378,
+          "time": 1789761201692
+        },
+        {
+          "id": "1/75/0",
+          "usage": {
+            "inputTokens": 209,
+            "outputTokens": 193,
+            "totalTokens": 78482,
+            "cacheReadTokens": 78080
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 383,
+          "time": 1789761203975
+        },
+        {
+          "id": "1/76/0",
+          "usage": {
+            "inputTokens": 166,
+            "outputTokens": 289,
+            "totalTokens": 78791,
+            "cacheReadTokens": 78336
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 388,
+          "time": 1789761206714
+        },
+        {
+          "id": "1/77/0",
+          "usage": {
+            "inputTokens": 622,
+            "outputTokens": 244,
+            "totalTokens": 79586,
+            "cacheReadTokens": 78720
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 393,
+          "time": 1789761209335
+        },
+        {
+          "id": "1/78/0",
+          "usage": {
+            "inputTokens": 246,
+            "outputTokens": 304,
+            "totalTokens": 79910,
+            "cacheReadTokens": 79360
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 398,
+          "time": 1789761211704
+        },
+        {
+          "id": "1/79/0",
+          "usage": {
+            "inputTokens": 186,
+            "outputTokens": 110,
+            "totalTokens": 80040,
+            "cacheReadTokens": 79744
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 403,
+          "time": 1789761213726
+        },
+        {
+          "id": "1/80/0",
+          "usage": {
+            "inputTokens": 406,
+            "outputTokens": 848,
+            "totalTokens": 81254,
+            "cacheReadTokens": 80000
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 408,
+          "time": 1789761218332
+        },
+        {
+          "id": "1/81/0",
+          "usage": {
+            "inputTokens": 250,
+            "outputTokens": 365,
+            "totalTokens": 81639,
+            "cacheReadTokens": 81024
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 413,
+          "time": 1789761221175
+        },
+        {
+          "id": "1/82/0",
+          "usage": {
+            "inputTokens": 251,
+            "outputTokens": 310,
+            "totalTokens": 81969,
+            "cacheReadTokens": 81408
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 418,
+          "time": 1789761223733
+        },
+        {
+          "id": "1/83/0",
+          "usage": {
+            "inputTokens": 197,
+            "outputTokens": 238,
+            "totalTokens": 82227,
+            "cacheReadTokens": 81792
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 423,
+          "time": 1789761226378
+        },
+        {
+          "id": "1/84/0",
+          "usage": {
+            "inputTokens": 199,
+            "outputTokens": 147,
+            "totalTokens": 82394,
+            "cacheReadTokens": 82048
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 428,
+          "time": 1789761228323
+        },
+        {
+          "id": "1/85/0",
+          "usage": {
+            "inputTokens": 507,
+            "outputTokens": 271,
+            "totalTokens": 83082,
+            "cacheReadTokens": 82304
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 433,
+          "time": 1789761231306
+        },
+        {
+          "id": "1/86/0",
+          "usage": {
+            "inputTokens": 195,
+            "outputTokens": 128,
+            "totalTokens": 83267,
+            "cacheReadTokens": 82944
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 438,
+          "time": 1789761233153
+        },
+        {
+          "id": "1/87/0",
+          "usage": {
+            "inputTokens": 209,
+            "outputTokens": 227,
+            "totalTokens": 83636,
+            "cacheReadTokens": 83200
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 443,
+          "time": 1789761235579
+        },
+        {
+          "id": "1/88/0",
+          "usage": {
+            "inputTokens": 331,
+            "outputTokens": 192,
+            "totalTokens": 84107,
+            "cacheReadTokens": 83584
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 448,
+          "time": 1789761237813
+        },
+        {
+          "id": "1/89/0",
+          "usage": {
+            "inputTokens": 203,
+            "outputTokens": 175,
+            "totalTokens": 84474,
+            "cacheReadTokens": 84096
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 453,
+          "time": 1789761285504
+        },
+        {
+          "id": "1/90/0",
+          "usage": {
+            "inputTokens": 811,
+            "outputTokens": 495,
+            "totalTokens": 85658,
+            "cacheReadTokens": 84352
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 458,
+          "time": 1789761297692
+        },
+        {
+          "id": "1/91/0",
+          "usage": {
+            "inputTokens": 385,
+            "outputTokens": 248,
+            "totalTokens": 86265,
+            "cacheReadTokens": 85632
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 463,
+          "time": 1789761316844
+        },
+        {
+          "id": "1/92/0",
+          "usage": {
+            "inputTokens": 356,
+            "outputTokens": 114,
+            "totalTokens": 86614,
+            "cacheReadTokens": 86144
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 468,
+          "time": 1789761318811
+        },
+        {
+          "id": "1/93/0",
+          "usage": {
+            "inputTokens": 236,
+            "outputTokens": 1477,
+            "totalTokens": 88241,
+            "cacheReadTokens": 86528
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 473,
+          "time": 1789761408722
+        },
+        {
+          "id": "1/94/0",
+          "usage": {
+            "inputTokens": 232,
+            "outputTokens": 231,
+            "totalTokens": 88527,
+            "cacheReadTokens": 88064
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 478,
+          "time": 1789761412974
+        },
+        {
+          "id": "1/95/0",
+          "usage": {
+            "inputTokens": 166,
+            "outputTokens": 101,
+            "totalTokens": 88715,
+            "cacheReadTokens": 88448
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 483,
+          "time": 1789761416976
+        },
+        {
+          "id": "1/96/0",
+          "usage": {
+            "inputTokens": 359,
+            "outputTokens": 360,
+            "totalTokens": 89423,
+            "cacheReadTokens": 88704
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 488,
+          "time": 1789761420209
+        },
+        {
+          "id": "1/97/0",
+          "usage": {
+            "inputTokens": 287,
+            "outputTokens": 1656,
+            "totalTokens": 91287,
+            "cacheReadTokens": 89344
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 493,
+          "time": 1789761437694
+        },
+        {
+          "id": "1/98/0",
+          "usage": {
+            "inputTokens": 617,
+            "outputTokens": 664,
+            "totalTokens": 92545,
+            "cacheReadTokens": 91264
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 498,
+          "time": 1789761442040
+        },
+        {
+          "id": "1/99/0",
+          "usage": {
+            "inputTokens": 847,
+            "outputTokens": 135,
+            "totalTokens": 93526,
+            "cacheReadTokens": 92544
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 503,
+          "time": 1789761471021
+        },
+        {
+          "id": "1/100/0",
+          "usage": {
+            "inputTokens": 369,
+            "outputTokens": 1065,
+            "totalTokens": 94874,
+            "cacheReadTokens": 93440
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 508,
+          "time": 1789761523739
+        },
+        {
+          "id": "1/101/0",
+          "usage": {
+            "inputTokens": 195,
+            "outputTokens": 214,
+            "totalTokens": 95257,
+            "cacheReadTokens": 94848
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 513,
+          "time": 1789761526139
+        },
+        {
+          "id": "1/102/0",
+          "usage": {
+            "inputTokens": 192,
+            "outputTokens": 507,
+            "totalTokens": 95803,
+            "cacheReadTokens": 95104
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 518,
+          "time": 1789761529776
+        },
+        {
+          "id": "1/103/0",
+          "usage": {
+            "inputTokens": 207,
+            "outputTokens": 1442,
+            "totalTokens": 97265,
+            "cacheReadTokens": 95616
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 523,
+          "time": 1789761541568
+        },
+        {
+          "id": "1/104/0",
+          "usage": {
+            "inputTokens": 361,
+            "outputTokens": 292,
+            "totalTokens": 97805,
+            "cacheReadTokens": 97152
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 528,
+          "time": 1789761544450
+        },
+        {
+          "id": "1/105/0",
+          "usage": {
+            "inputTokens": 1963,
+            "outputTokens": 1720,
+            "totalTokens": 101475,
+            "cacheReadTokens": 97792
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 533,
+          "time": 1789761553210
+        },
+        {
+          "id": "1/106/0",
+          "usage": {
+            "inputTokens": 247,
+            "outputTokens": 1643,
+            "totalTokens": 103138,
+            "cacheReadTokens": 101248
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 538,
+          "time": 1789761561300
+        },
+        {
+          "id": "1/107/0",
+          "usage": {
+            "inputTokens": 550,
+            "outputTokens": 2656,
+            "totalTokens": 106246,
+            "cacheReadTokens": 103040
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 543,
+          "time": 1789761571460
+        },
+        {
+          "id": "1/108/0",
+          "usage": {
+            "inputTokens": 175,
+            "outputTokens": 2353,
+            "totalTokens": 108640,
+            "cacheReadTokens": 106112
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 548,
+          "time": 1789761580854
+        },
+        {
+          "id": "1/109/0",
+          "usage": {
+            "inputTokens": 244,
+            "outputTokens": 105,
+            "totalTokens": 108765,
+            "cacheReadTokens": 108416
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 553,
+          "time": 1789761583368
+        },
+        {
+          "id": "1/110/0",
+          "usage": {
+            "inputTokens": 435,
+            "outputTokens": 269,
+            "totalTokens": 109376,
+            "cacheReadTokens": 108672
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 558,
+          "time": 1789761592845
+        },
+        {
+          "id": "1/111/0",
+          "usage": {
+            "inputTokens": 427,
+            "outputTokens": 283,
+            "totalTokens": 110022,
+            "cacheReadTokens": 109312
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 563,
+          "time": 1789761604716
+        },
+        {
+          "id": "1/112/0",
+          "usage": {
+            "inputTokens": 312,
+            "outputTokens": 119,
+            "totalTokens": 110383,
+            "cacheReadTokens": 109952
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 568,
+          "time": 1789761615883
+        },
+        {
+          "id": "1/113/0",
+          "usage": {
+            "inputTokens": 254,
+            "outputTokens": 398,
+            "totalTokens": 110860,
+            "cacheReadTokens": 110208
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 573,
+          "time": 1789761619355
+        },
+        {
+          "id": "1/114/0",
+          "usage": {
+            "inputTokens": 173,
+            "outputTokens": 593,
+            "totalTokens": 111614,
+            "cacheReadTokens": 110848
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 578,
+          "time": 1789761623141
+        },
+        {
+          "id": "1/115/0",
+          "usage": {
+            "inputTokens": 655,
+            "outputTokens": 1659,
+            "totalTokens": 113802,
+            "cacheReadTokens": 111488
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 583,
+          "time": 1789761630325
+        },
+        {
+          "id": "1/116/0",
+          "usage": {
+            "inputTokens": 158,
+            "outputTokens": 100,
+            "totalTokens": 113922,
+            "cacheReadTokens": 113664
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 588,
+          "time": 1789761632438
+        },
+        {
+          "id": "1/117/0",
+          "usage": {
+            "inputTokens": 198,
+            "outputTokens": 475,
+            "totalTokens": 114593,
+            "cacheReadTokens": 113920
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 593,
+          "time": 1789761648192
+        },
+        {
+          "id": "1/118/0",
+          "usage": {
+            "inputTokens": 240,
+            "outputTokens": 1325,
+            "totalTokens": 115997,
+            "cacheReadTokens": 114432
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 598,
+          "time": 1789761655501
+        },
+        {
+          "id": "1/119/0",
+          "usage": {
+            "inputTokens": 177,
+            "outputTokens": 841,
+            "totalTokens": 116858,
+            "cacheReadTokens": 115840
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 603,
+          "time": 1789761660537
+        },
+        {
+          "id": "1/120/0",
+          "usage": {
+            "inputTokens": 160,
+            "outputTokens": 2515,
+            "totalTokens": 119411,
+            "cacheReadTokens": 116736
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 608,
+          "time": 1789761678705
+        },
+        {
+          "id": "1/121/0",
+          "usage": {
+            "inputTokens": 135,
+            "outputTokens": 733,
+            "totalTokens": 120164,
+            "cacheReadTokens": 119296
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 613,
+          "time": 1789761683425
+        },
+        {
+          "id": "1/122/0",
+          "usage": {
+            "inputTokens": 255,
+            "outputTokens": 153,
+            "totalTokens": 120344,
+            "cacheReadTokens": 119936
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 618,
+          "time": 1789761685717
+        },
+        {
+          "id": "1/123/0",
+          "usage": {
+            "inputTokens": 357,
+            "outputTokens": 1609,
+            "totalTokens": 122286,
+            "cacheReadTokens": 120320
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 623,
+          "time": 1789761713190
+        },
+        {
+          "id": "1/124/0",
+          "usage": {
+            "inputTokens": 288,
+            "outputTokens": 104,
+            "totalTokens": 122632,
+            "cacheReadTokens": 122240
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 628,
+          "time": 1789761723966
+        },
+        {
+          "id": "1/125/0",
+          "usage": {
+            "inputTokens": 215,
+            "outputTokens": 814,
+            "totalTokens": 123525,
+            "cacheReadTokens": 122496
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 633,
+          "time": 1789761729582
+        },
+        {
+          "id": "1/126/0",
+          "usage": {
+            "inputTokens": 1816,
+            "outputTokens": 1363,
+            "totalTokens": 126699,
+            "cacheReadTokens": 123520
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 638,
+          "time": 1789761736749
+        },
+        {
+          "id": "1/127/0",
+          "usage": {
+            "inputTokens": 486,
+            "outputTokens": 148,
+            "totalTokens": 127226,
+            "cacheReadTokens": 126592
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 643,
+          "time": 1789762041983
+        },
+        {
+          "id": "1/128/0",
+          "usage": {
+            "inputTokens": 207,
+            "outputTokens": 255,
+            "totalTokens": 127566,
+            "cacheReadTokens": 127104
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 648,
+          "time": 1789762045202
+        },
+        {
+          "id": "1/129/0",
+          "usage": {
+            "inputTokens": 198,
+            "outputTokens": 4014,
+            "totalTokens": 131700,
+            "cacheReadTokens": 127488
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 653,
+          "time": 1789762061317
+        },
+        {
+          "id": "1/130/0",
+          "usage": {
+            "inputTokens": 136,
+            "outputTokens": 163,
+            "totalTokens": 131883,
+            "cacheReadTokens": 131584
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 658,
+          "time": 1789762063926
+        },
+        {
+          "id": "1/131/0",
+          "usage": {
+            "inputTokens": 267,
+            "outputTokens": 1071,
+            "totalTokens": 133178,
+            "cacheReadTokens": 131840
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 663,
+          "time": 1789762078728
+        },
+        {
+          "id": "1/132/0",
+          "usage": {
+            "inputTokens": 321,
+            "outputTokens": 413,
+            "totalTokens": 133854,
+            "cacheReadTokens": 133120
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 668,
+          "time": 1789762092444
+        },
+        {
+          "id": "1/133/0",
+          "usage": {
+            "inputTokens": 387,
+            "outputTokens": 379,
+            "totalTokens": 134526,
+            "cacheReadTokens": 133760
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 673,
+          "time": 1789762104017
+        },
+        {
+          "id": "1/134/0",
+          "usage": {
+            "inputTokens": 221,
+            "outputTokens": 109,
+            "totalTokens": 134730,
+            "cacheReadTokens": 134400
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 678,
+          "time": 1789762113008
+        },
+        {
+          "id": "1/135/0",
+          "usage": {
+            "inputTokens": 224,
+            "outputTokens": 196,
+            "totalTokens": 135076,
+            "cacheReadTokens": 134656
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 683,
+          "time": 1789762197189
+        },
+        {
+          "id": "1/136/0",
+          "usage": {
+            "inputTokens": 239,
+            "outputTokens": 669,
+            "totalTokens": 135948,
+            "cacheReadTokens": 135040
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 688,
+          "time": 1789762224888
+        },
+        {
+          "id": "1/137/0",
+          "usage": {
+            "inputTokens": 171,
+            "outputTokens": 164,
+            "totalTokens": 136143,
+            "cacheReadTokens": 135808
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 693,
+          "time": 1789762227155
+        },
+        {
+          "id": "1/138/0",
+          "usage": {
+            "inputTokens": 259,
+            "outputTokens": 738,
+            "totalTokens": 136933,
+            "cacheReadTokens": 135936
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 698,
+          "time": 1789762231490
+        }
+      ]
+    },
+    "usage": {
+      "model_calls": 138,
+      "requests": 138,
+      "input_tokens": {
+        "count": 138,
+        "total": 9443278,
+        "average": 68429.55072463768,
+        "minimum": 1669,
+        "maximum": 136195
+      },
+      "uncached_input_tokens": {
+        "count": 138,
+        "total": 66254,
+        "average": 480.1014492753623,
+        "minimum": 135,
+        "maximum": 3448
+      },
+      "cached_input_tokens": {
+        "count": 138,
+        "total": 9377024,
+        "average": 67949.44927536232,
+        "minimum": 256,
+        "maximum": 135936
+      },
+      "output_tokens": {
+        "count": 138,
+        "total": 84622,
+        "average": 613.2028985507246,
+        "minimum": 85,
+        "maximum": 6361
+      },
+      "total_tokens": 9527900,
+      "cache_hit_rate": 0.9929840040714676
+    },
+    "timing_ms": {
+      "first_token": {
+        "count": 138,
+        "total": 162160,
+        "average": 1175.072463768116,
+        "minimum": 368,
+        "maximum": 2025
+      },
+      "input_wait": {
+        "count": 138,
+        "total": 162160,
+        "average": 1175.072463768116,
+        "minimum": 368,
+        "maximum": 2025
+      },
+      "output": {
+        "count": 138,
+        "total": 320570,
+        "average": 2322.9710144927535,
+        "minimum": 300,
+        "maximum": 26892
+      },
+      "llm": {
+        "count": 138,
+        "total": 482730,
+        "average": 3498.0434782608695,
+        "minimum": 958,
+        "maximum": 27873
+      },
+      "tools": {
+        "count": 137,
+        "total": 1418759,
+        "average": 10355.905109489051,
+        "minimum": 0,
+        "maximum": 303283
+      },
+      "output_tokens_per_second": 263.97354711919394
+    },
+    "session": {
+      "steps": 138,
+      "turns": 1,
+      "model_calls": 138,
+      "tool_calls": 137
+    }
+  },
+  "patch": {
+    "sha256": "61a149c47832b0ff94d0414b1947364074e660137d54485692aff02d991a3e4c",
+    "bytes": 7423,
+    "changed_paths": [
+      "src/components/views/settings/devices/useOwnDevices.ts",
+      "src/utils/device/clientInformation.ts",
+      "src/voice-broadcast/models/VoiceBroadcastRecording.ts",
+      "src/voice-broadcast/utils/checkVoiceBroadcastPreConditions.tsx"
+    ],
+    "excluded_generated_paths": [],
+    "official_overwritten_paths": [],
+    "recovered_from_persisted_session": false
+  },
+  "official_result": {
+    "passed": false,
+    "failure_kind": "official_test_failure",
+    "evaluator_exit_code": 0,
+    "parsed": {
+      "tests": [
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | <LoginWithQRFlow /> | renders spinner while loading",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | <LoginWithQRFlow /> | renders spinner whilst QR generating",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | <LoginWithQRFlow /> | renders QR code",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | <LoginWithQRFlow /> | renders spinner while connecting",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | <LoginWithQRFlow /> | renders code when connected",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | <LoginWithQRFlow /> | renders spinner while signing in",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | <LoginWithQRFlow /> | renders spinner while verifying",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | errors | renders user_declined",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | errors | renders other_device_not_signed_in",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | errors | renders other_device_already_signed_in",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | errors | renders unknown",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | errors | renders expired",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | errors | renders user_cancelled",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | errors | renders invalid_code",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | errors | renders unsupported_algorithm",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | errors | renders data_mismatch",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | errors | renders unsupported_transport",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/LoginWithQRFlow-test.tsx | errors | renders homeserver_lacks_support",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | createVoiceBroadcastRecorder | should return a VoiceBroadcastRecorder instance with targetChunkLength from config",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | instance | start should forward the call to VoiceRecording.start",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | instance | contentType should return the value from VoiceRecording",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | stop | should forward the call to VoiceRecording.stop",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | stop | should not emit a ChunkRecorded event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | when calling destroy | should call VoiceRecording.destroy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | when calling destroy | should remove all listeners",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | when the first page from recorder has been received | should not emit a ChunkRecorded event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | when a second page from recorder has been received | should not emit a ChunkRecorded event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | when a third page from recorder has been received | should not emit a ChunkRecorded event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | and calling stop | should return the remaining chunk",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | and calling start again and receiving some data | should emit the ChunkRecorded event for the first chunk",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/audio/VoiceBroadcastRecorder-test.ts | when some chunks have been received | should emit ChunkRecorded events",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/messages/MessageEvent-test.tsx | when a voice broadcast start event occurs | should render a VoiceBroadcast component",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/DialogSidebar-test.tsx | <DialogSidebar /> | renders sidebar correctly without beacons",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/DialogSidebar-test.tsx | <DialogSidebar /> | renders sidebar correctly with beacons",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/DialogSidebar-test.tsx | <DialogSidebar /> | calls on beacon click",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/DialogSidebar-test.tsx | <DialogSidebar /> | closes on close button click",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/DialogSidebar-test.tsx | and there is no user id | should return null",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/DialogSidebar-test.tsx | and there is no user id | should not create a broadcast pre recording",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/DialogSidebar-test.tsx | and there is no room member | should return null",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/DialogSidebar-test.tsx | and there is no room member | should not create a broadcast pre recording",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/DialogSidebar-test.tsx | and there is a room member and listening to another broadcast | should pause the current playback and create a voice broadcast pre-recording",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/DialogSidebar-test.tsx | when currently listening to a broadcast and there is no recording | should stop listen to the current broadcast and create a new recording",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/DialogSidebar-test.tsx | when there is already a current voice broadcast | should not start a voice broadcast",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/DialogSidebar-test.tsx | when there is already a current voice broadcast | should show an info dialog",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/DialogSidebar-test.tsx | when there already is a live broadcast of the current user in the room | should not start a voice broadcast",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/DialogSidebar-test.tsx | when there already is a live broadcast of the current user in the room | should show an info dialog",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/DialogSidebar-test.tsx | when there already is a live broadcast of another user | should not start a voice broadcast",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/DialogSidebar-test.tsx | when there already is a live broadcast of another user | should show an info dialog",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/DialogSidebar-test.tsx | when the current user is not allowed to send voice broadcast info state events | should not start a voice broadcast",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/DialogSidebar-test.tsx | when the current user is not allowed to send voice broadcast info state events | should show an info dialog",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | when created for a Voice Broadcast Info without relations | should be in Started state",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and calling stop | should send a stopped info event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and calling stop | should be in state stopped stopped",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and calling stop | should emit a stopped state changed event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and calling start | should start the recorder",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and the info event is redacted | should be in state stopped stopped",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and the info event is redacted | should destroy the recording",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and receiving a call action | should be in state stopped paused",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and a chunk time update occurs | should update time left",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and a chunk time update occurs, that would increase time left | should not change time left",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and a chunk has been recorded | should send a voice message",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and another chunk has been recorded, that exceeds the max time | should be in state stopped stopped",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and another chunk has been recorded, that exceeds the max time | should send a voice message",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and another chunk has been recorded, that exceeds the max time | should send a stopped info event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and calling stop | should send a voice message",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and calling stop | should send a stopped info event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and calling pause | should be in state stopped paused",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and calling pause | should send a paused info event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and calling pause | should stop the recorder",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and calling pause | should emit a paused state changed event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and calling toggle | should be in state stopped paused",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and calling toggle | should send a paused info event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and calling toggle | should stop the recorder",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and calling toggle | should emit a paused state changed event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and calling destroy | should stop the recorder and remove all listeners",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and calling resume | should be in state stopped resumed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and calling resume | should send a resumed info event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and calling resume | should start the recorder",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and calling resume | should emit a resumed state changed event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and calling toggle | should be in state stopped resumed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and calling toggle | should send a resumed info event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and calling toggle | should start the recorder",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | and calling toggle | should emit a resumed state changed event",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/models/VoiceBroadcastRecording-test.ts | when created for a Voice Broadcast Info with a Stopped relation | should be in Stopped state",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/avatars/MemberAvatar-test.tsx | MemberAvatar | shows an avatar for useOnlyCurrentProfiles",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/utils/createMessageContent-test.ts | createMessageContent | Should create html message",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/utils/createMessageContent-test.ts | createMessageContent | Should add reply to message content",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/utils/createMessageContent-test.ts | createMessageContent | Should add relation to message",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/utils/createMessageContent-test.ts | createMessageContent | Should add fields related to edition",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/CryptographyPanel-test.tsx | CryptographyPanel | shows the session ID and key",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomListHeader-test.tsx | RoomListHeader | renders a main menu for the home space",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomListHeader-test.tsx | RoomListHeader | renders a main menu for spaces",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomListHeader-test.tsx | RoomListHeader | renders a plus menu for spaces",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomListHeader-test.tsx | RoomListHeader | closes menu if space changes from under it",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomListHeader-test.tsx | Main menu | does not render Add Space when user does not have permission to add spaces",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomListHeader-test.tsx | Main menu | does not render Add Room when user does not have permission to add rooms",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomListHeader-test.tsx | Plus menu | does not render Add Space when user does not have permission to add spaces",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomListHeader-test.tsx | Plus menu | disables Add Room when user does not have permission to add rooms",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomListHeader-test.tsx | adding children to space | if user cannot add children to space, MainMenu adding buttons are hidden",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomListHeader-test.tsx | adding children to space | if user cannot add children to space, PlusMenu add buttons are disabled",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | <SessionManagerTab /> | renders spinner while devices load",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | <SessionManagerTab /> | removes spinner when device fetch fails",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | <SessionManagerTab /> | removes spinner when device fetch fails",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | <SessionManagerTab /> | does not fail when checking device verification fails",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | <SessionManagerTab /> | sets device verification status correctly",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | <SessionManagerTab /> | extends device with client information when available",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | <SessionManagerTab /> | renders devices without available client information without error",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | <SessionManagerTab /> | does not render other sessions section when user has only one device",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | <SessionManagerTab /> | renders other sessions section when user has more than one device",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | <SessionManagerTab /> | goes to filtered list from security recommendations",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | <SessionManagerTab /> | lets you change the pusher state",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | <SessionManagerTab /> | lets you change the local notification settings state",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | <SessionManagerTab /> | updates the UI when another session changes the local notifications",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | current session section | disables current session context menu while devices are loading",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | current session section | disables current session context menu when there is no current device",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | current session section | renders current session section with an unverified session",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | current session section | opens encryption setup dialog when verifiying current session",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | current session section | renders current session section with a verified session",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | current session section | expands current session details",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | device detail expansion | renders no devices expanded by default",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | device detail expansion | toggles device expansion on click",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Device verification | does not render device verification cta when current session is not verified",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Device verification | renders device verification cta on other sessions when current session is verified",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Device verification | does not allow device verification on session that do not support encryption",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Device verification | refreshes devices after verifying other device",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Sign out | Signs out of current device",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Sign out | Signs out of current device from kebab menu",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Sign out | does not render sign out other devices option when only one device",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Sign out | signs out of all other devices from current session context menu",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Sign out | removes account data events for devices after sign out",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | other devices | deletes a device when interactive auth is not required",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | other devices | deletes a device when interactive auth is not required",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | other devices | deletes a device when interactive auth is required",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | other devices | clears loading state when device deletion is cancelled during interactive auth",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | other devices | deletes multiple devices",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | other devices | signs out of all other devices from other sessions context menu",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Rename sessions | renames current session",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Rename sessions | renames other session",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Rename sessions | does not rename session or refresh devices is session name is unchanged",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Rename sessions | saves an empty session display name successfully",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Rename sessions | displays an error when session display name fails to save",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Multiple selection | toggles session selection",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Multiple selection | cancel button clears selection",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | Multiple selection | changing the filter clears selection",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | toggling select all | selects all sessions when there is not existing selection",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | toggling select all | selects all sessions when some sessions are already selected",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | toggling select all | deselects all sessions when all sessions are selected",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | toggling select all | selects only sessions that are part of the active filter",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | QR code login | does not render qr code login section when disabled",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | QR code login | renders qr code login section when enabled",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/SessionManagerTab-test.tsx | QR code login | enters qr code login section when show QR code button clicked",
+          "status": "PASSED"
+        }
+      ]
+    }
+  },
+  "cleanup": {
+    "task_container_removed": true,
+    "task_workspace_removed": true,
+    "shared_image_retained": true
+  },
+  "public_export": {
+    "model_name_kind": "display_name",
+    "omitted": [
+      "development provider and route",
+      "local environment and paths",
+      "raw tool diagnostics"
+    ],
+    "note": "Redacted report, not runtime configuration. Scores and numeric usage are preserved; original evidence is retained locally."
+  }
+}

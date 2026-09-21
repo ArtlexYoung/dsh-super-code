@@ -1,0 +1,1965 @@
+{
+  "schema": 1,
+  "run_id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-626-attempt-1",
+  "started_at": "2026-09-20T01:19:34.413Z",
+  "completed_at": "2026-09-20T01:23:55.411Z",
+  "preset": "super-code",
+  "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
+  "isolation": {
+    "schema": 1,
+    "policy": "swebench-pro-isolation-v3",
+    "policy_revision": 2,
+    "passed": true,
+    "audited_sessions": 1,
+    "blocked_calls_count": 5,
+    "violations_count": 0
+  },
+  "candidate": {
+    "schema": 1,
+    "identity": "local-0.0.9-candidate",
+    "package": {
+      "name": "dsh-super-code",
+      "version": "0.0.9",
+      "tarball": "dsh-super-code-0.0.9.tgz"
+    },
+    "source": {
+      "git_head": "259f081658d20230d392da418955f190067ddc0f",
+      "tracked_diff_sha256": "1965bf0bf045f6d8f471613c8b50851ab052f98a6338413853536c89f61dcba7",
+      "untracked_package_paths": [
+        "lib/core/experiment-recipes.d.ts",
+        "lib/core/experiment-recipes.d.ts.map",
+        "lib/core/experiment-recipes.js",
+        "lib/core/experiment-recipes.js.map",
+        "lib/experiments.d.ts",
+        "lib/experiments.d.ts.map",
+        "lib/experiments.js",
+        "lib/experiments.js.map",
+        "lib/task-memory-store.d.ts",
+        "lib/task-memory-store.d.ts.map",
+        "lib/task-memory-store.js",
+        "lib/task-memory-store.js.map"
+      ]
+    },
+    "harness": {
+      "git_head": "c291e7961a515f6d7af9304e7fd1d257929aef26",
+      "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+    },
+    "artifacts": {
+      "tarball_sha256": "2e2104209812ae13c701480e5e0ba38bf6d09ee7b6546ebd909bab60b80d83e6",
+      "cordis_patch_sha256": "d8f8e14602aeb4dfafeb6aff3916cccb934c2c88d1d84b222a7c6d3040ca7434",
+      "preset_sha256": "43edc7f7b6dc9fcea423290e48f7b1d245220f10b15a06d8defa5f34685032e9",
+      "packed_files": 71,
+      "packed_bytes": 83113,
+      "unpacked_bytes": 306269
+    },
+    "created_at": "2026-09-19T13:30:54.126Z"
+  },
+  "task_index": 626,
+  "instance_id": "instance_NodeBB__NodeBB-f083cd559d69c16481376868c8da65172729c0ca-vnan",
+  "repo": "NodeBB/NodeBB",
+  "base_commit": "163c977d2f4891fa7c4372b9f6a686b1fa34350f",
+  "official_evaluator": {
+    "repository": "scaleapi/SWE-bench_Pro-os",
+    "commit": "ca10a60a5fcae51e6948ffe1485d4153d421e6c5",
+    "evaluator_sha256": "bb5d4c5486be296e464e695df3747064aaa3bb197394bc6d39980634afec2034",
+    "dataset_sha256": "b5b2462bfbf5aeb2cb7ba7d215778a1768b85f9d7ad7f748546c7f80a0ad1510",
+    "image_policy": "local-cache-only"
+  },
+  "image": {
+    "reference": "jefzda/sweap-images:nodebb.nodebb-NodeBB__NodeBB-f083cd559d69c16481376868c8da65172729c0ca",
+    "acquisition_reference": "docker.1ms.run/jefzda/sweap-images:nodebb.nodebb-NodeBB__NodeBB-f083cd559d69c16481376868c8da65172729c0ca",
+    "platform": "linux/amd64",
+    "id": "sha256:dae9709cad65af7f6d0e69afa8c411b3e5dfe9802833bde6bca048f5ffa36451",
+    "repo_digests": [
+      "docker.1ms.run/jefzda/sweap-images@sha256:dae9709cad65af7f6d0e69afa8c411b3e5dfe9802833bde6bca048f5ffa36451",
+      "jefzda/sweap-images@sha256:dae9709cad65af7f6d0e69afa8c411b3e5dfe9802833bde6bca048f5ffa36451"
+    ]
+  },
+  "page_runtime": {
+    "schema": 2,
+    "runtime": "deepseek-harness-web-rpc",
+    "mode": "agent-run",
+    "session_id": "session-d88a3093-ea77-4c45-b260-7de867592e2c",
+    "web_rpc": {
+      "authenticated": true,
+      "calls": [
+        "session/create",
+        "session/list",
+        "session/selectModel",
+        "session/prompt",
+        "session/list"
+      ],
+      "prompt_submitted": true
+    },
+    "preset": "super-code",
+    "isolation": {
+      "policy": "swebench-pro-isolation-v3",
+      "permission_preset": "workspace-write",
+      "tool_guard": "workspace-files-and-assigned-offline-container"
+    },
+    "candidate": {
+      "schema": 1,
+      "identity": "local-0.0.9-candidate",
+      "package": {
+        "name": "dsh-super-code",
+        "version": "0.0.9",
+        "tarball": "dsh-super-code-0.0.9.tgz"
+      },
+      "source": {
+        "git_head": "259f081658d20230d392da418955f190067ddc0f",
+        "tracked_diff_sha256": "1965bf0bf045f6d8f471613c8b50851ab052f98a6338413853536c89f61dcba7",
+        "untracked_package_paths": [
+          "lib/core/experiment-recipes.d.ts",
+          "lib/core/experiment-recipes.d.ts.map",
+          "lib/core/experiment-recipes.js",
+          "lib/core/experiment-recipes.js.map",
+          "lib/experiments.d.ts",
+          "lib/experiments.d.ts.map",
+          "lib/experiments.js",
+          "lib/experiments.js.map",
+          "lib/task-memory-store.d.ts",
+          "lib/task-memory-store.d.ts.map",
+          "lib/task-memory-store.js",
+          "lib/task-memory-store.js.map"
+        ]
+      },
+      "harness": {
+        "git_head": "c291e7961a515f6d7af9304e7fd1d257929aef26",
+        "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+      },
+      "artifacts": {
+        "tarball_sha256": "2e2104209812ae13c701480e5e0ba38bf6d09ee7b6546ebd909bab60b80d83e6",
+        "cordis_patch_sha256": "d8f8e14602aeb4dfafeb6aff3916cccb934c2c88d1d84b222a7c6d3040ca7434",
+        "preset_sha256": "43edc7f7b6dc9fcea423290e48f7b1d245220f10b15a06d8defa5f34685032e9",
+        "packed_files": 71,
+        "packed_bytes": 83113,
+        "unpacked_bytes": 306269
+      },
+      "created_at": "2026-09-19T13:30:54.126Z"
+    },
+    "model": {
+      "display_name": "deepseek-v4.1-flash",
+      "reasoning_effort": "high",
+      "max_tokens": 384000
+    },
+    "elapsed_ms": 165817,
+    "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+  },
+  "metrics": {
+    "schema": 2,
+    "accounting": {
+      "observed_requests": 40,
+      "requests_with_usage": 40,
+      "unknown_usage_requests": 0,
+      "cost_complete": false,
+      "actual_cost": null,
+      "reason": "Observed log usage only; request inventory and billing reconciliation required",
+      "ledger": [
+        {
+          "id": "1/1/0",
+          "usage": {
+            "inputTokens": 1953,
+            "outputTokens": 180,
+            "totalTokens": 7509,
+            "cacheReadTokens": 5376
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 14,
+          "time": 1789867209390
+        },
+        {
+          "id": "1/2/0",
+          "usage": {
+            "inputTokens": 339,
+            "outputTokens": 264,
+            "totalTokens": 8027,
+            "cacheReadTokens": 7424
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 22,
+          "time": 1789867211152
+        },
+        {
+          "id": "1/3/0",
+          "usage": {
+            "inputTokens": 325,
+            "outputTokens": 269,
+            "totalTokens": 8530,
+            "cacheReadTokens": 7936
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 29,
+          "time": 1789867219872
+        },
+        {
+          "id": "1/4/0",
+          "usage": {
+            "inputTokens": 1539,
+            "outputTokens": 412,
+            "totalTokens": 10399,
+            "cacheReadTokens": 8448
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 36,
+          "time": 1789867222772
+        },
+        {
+          "id": "1/5/0",
+          "usage": {
+            "inputTokens": 460,
+            "outputTokens": 230,
+            "totalTokens": 11058,
+            "cacheReadTokens": 10368
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 43,
+          "time": 1789867230743
+        },
+        {
+          "id": "1/6/0",
+          "usage": {
+            "inputTokens": 1232,
+            "outputTokens": 473,
+            "totalTokens": 12713,
+            "cacheReadTokens": 11008
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 50,
+          "time": 1789867233608
+        },
+        {
+          "id": "1/7/0",
+          "usage": {
+            "inputTokens": 1720,
+            "outputTokens": 1697,
+            "totalTokens": 16089,
+            "cacheReadTokens": 12672
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 57,
+          "time": 1789867241343
+        },
+        {
+          "id": "1/8/0",
+          "usage": {
+            "inputTokens": 1482,
+            "outputTokens": 992,
+            "totalTokens": 18474,
+            "cacheReadTokens": 16000
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 64,
+          "time": 1789867246366
+        },
+        {
+          "id": "1/9/0",
+          "usage": {
+            "inputTokens": 1240,
+            "outputTokens": 314,
+            "totalTokens": 19986,
+            "cacheReadTokens": 18432
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 71,
+          "time": 1789867248988
+        },
+        {
+          "id": "1/10/0",
+          "usage": {
+            "inputTokens": 873,
+            "outputTokens": 1202,
+            "totalTokens": 22043,
+            "cacheReadTokens": 19968
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 78,
+          "time": 1789867254735
+        },
+        {
+          "id": "1/11/0",
+          "usage": {
+            "inputTokens": 829,
+            "outputTokens": 443,
+            "totalTokens": 23288,
+            "cacheReadTokens": 22016
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 85,
+          "time": 1789867257647
+        },
+        {
+          "id": "1/12/0",
+          "usage": {
+            "inputTokens": 148,
+            "outputTokens": 343,
+            "totalTokens": 23659,
+            "cacheReadTokens": 23168
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 90,
+          "time": 1789867260061
+        },
+        {
+          "id": "1/13/0",
+          "usage": {
+            "inputTokens": 1213,
+            "outputTokens": 375,
+            "totalTokens": 25140,
+            "cacheReadTokens": 23552
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 97,
+          "time": 1789867263397
+        },
+        {
+          "id": "1/14/0",
+          "usage": {
+            "inputTokens": 227,
+            "outputTokens": 318,
+            "totalTokens": 25505,
+            "cacheReadTokens": 24960
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 104,
+          "time": 1789867266234
+        },
+        {
+          "id": "1/15/0",
+          "usage": {
+            "inputTokens": 203,
+            "outputTokens": 568,
+            "totalTokens": 26115,
+            "cacheReadTokens": 25344
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 109,
+          "time": 1789867270124
+        },
+        {
+          "id": "1/16/0",
+          "usage": {
+            "inputTokens": 349,
+            "outputTokens": 356,
+            "totalTokens": 26817,
+            "cacheReadTokens": 26112
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 114,
+          "time": 1789867272163
+        },
+        {
+          "id": "1/17/0",
+          "usage": {
+            "inputTokens": 161,
+            "outputTokens": 122,
+            "totalTokens": 27035,
+            "cacheReadTokens": 26752
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 119,
+          "time": 1789867273940
+        },
+        {
+          "id": "1/18/0",
+          "usage": {
+            "inputTokens": 195,
+            "outputTokens": 187,
+            "totalTokens": 27390,
+            "cacheReadTokens": 27008
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 124,
+          "time": 1789867275551
+        },
+        {
+          "id": "1/19/0",
+          "usage": {
+            "inputTokens": 962,
+            "outputTokens": 304,
+            "totalTokens": 28530,
+            "cacheReadTokens": 27264
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 131,
+          "time": 1789867278183
+        },
+        {
+          "id": "1/20/0",
+          "usage": {
+            "inputTokens": 675,
+            "outputTokens": 475,
+            "totalTokens": 29566,
+            "cacheReadTokens": 28416
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 136,
+          "time": 1789867280820
+        },
+        {
+          "id": "1/21/0",
+          "usage": {
+            "inputTokens": 222,
+            "outputTokens": 622,
+            "totalTokens": 30284,
+            "cacheReadTokens": 29440
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 141,
+          "time": 1789867283855
+        },
+        {
+          "id": "1/22/0",
+          "usage": {
+            "inputTokens": 172,
+            "outputTokens": 133,
+            "totalTokens": 30513,
+            "cacheReadTokens": 30208
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 146,
+          "time": 1789867285438
+        },
+        {
+          "id": "1/23/0",
+          "usage": {
+            "inputTokens": 153,
+            "outputTokens": 105,
+            "totalTokens": 30722,
+            "cacheReadTokens": 30464
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 151,
+          "time": 1789867288983
+        },
+        {
+          "id": "1/24/0",
+          "usage": {
+            "inputTokens": 1179,
+            "outputTokens": 353,
+            "totalTokens": 32252,
+            "cacheReadTokens": 30720
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 156,
+          "time": 1789867291452
+        },
+        {
+          "id": "1/25/0",
+          "usage": {
+            "inputTokens": 202,
+            "outputTokens": 426,
+            "totalTokens": 32756,
+            "cacheReadTokens": 32128
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 163,
+          "time": 1789867298002
+        },
+        {
+          "id": "1/26/0",
+          "usage": {
+            "inputTokens": 432,
+            "outputTokens": 172,
+            "totalTokens": 33244,
+            "cacheReadTokens": 32640
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 170,
+          "time": 1789867302230
+        },
+        {
+          "id": "1/27/0",
+          "usage": {
+            "inputTokens": 251,
+            "outputTokens": 135,
+            "totalTokens": 33410,
+            "cacheReadTokens": 33024
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 175,
+          "time": 1789867304098
+        },
+        {
+          "id": "1/28/0",
+          "usage": {
+            "inputTokens": 163,
+            "outputTokens": 127,
+            "totalTokens": 33570,
+            "cacheReadTokens": 33280
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 180,
+          "time": 1789867305904
+        },
+        {
+          "id": "1/29/0",
+          "usage": {
+            "inputTokens": 177,
+            "outputTokens": 150,
+            "totalTokens": 33735,
+            "cacheReadTokens": 33408
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 185,
+          "time": 1789867308791
+        },
+        {
+          "id": "1/30/0",
+          "usage": {
+            "inputTokens": 365,
+            "outputTokens": 1332,
+            "totalTokens": 35361,
+            "cacheReadTokens": 33664
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 190,
+          "time": 1789867320704
+        },
+        {
+          "id": "1/31/0",
+          "usage": {
+            "inputTokens": 142,
+            "outputTokens": 146,
+            "totalTokens": 35616,
+            "cacheReadTokens": 35328
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 195,
+          "time": 1789867322191
+        },
+        {
+          "id": "1/32/0",
+          "usage": {
+            "inputTokens": 295,
+            "outputTokens": 875,
+            "totalTokens": 36754,
+            "cacheReadTokens": 35584
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 200,
+          "time": 1789867332279
+        },
+        {
+          "id": "1/33/0",
+          "usage": {
+            "inputTokens": 193,
+            "outputTokens": 229,
+            "totalTokens": 37030,
+            "cacheReadTokens": 36608
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 205,
+          "time": 1789867334344
+        },
+        {
+          "id": "1/34/0",
+          "usage": {
+            "inputTokens": 184,
+            "outputTokens": 2314,
+            "totalTokens": 39362,
+            "cacheReadTokens": 36864
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 210,
+          "time": 1789867344901
+        },
+        {
+          "id": "1/35/0",
+          "usage": {
+            "inputTokens": 175,
+            "outputTokens": 114,
+            "totalTokens": 39585,
+            "cacheReadTokens": 39296
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 215,
+          "time": 1789867346566
+        },
+        {
+          "id": "1/36/0",
+          "usage": {
+            "inputTokens": 363,
+            "outputTokens": 174,
+            "totalTokens": 40089,
+            "cacheReadTokens": 39552
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 220,
+          "time": 1789867348652
+        },
+        {
+          "id": "1/37/0",
+          "usage": {
+            "inputTokens": 248,
+            "outputTokens": 115,
+            "totalTokens": 40299,
+            "cacheReadTokens": 39936
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 225,
+          "time": 1789867350037
+        },
+        {
+          "id": "1/38/0",
+          "usage": {
+            "inputTokens": 252,
+            "outputTokens": 300,
+            "totalTokens": 40616,
+            "cacheReadTokens": 40064
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 230,
+          "time": 1789867352557
+        },
+        {
+          "id": "1/39/0",
+          "usage": {
+            "inputTokens": 140,
+            "outputTokens": 210,
+            "totalTokens": 40926,
+            "cacheReadTokens": 40576
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 235,
+          "time": 1789867361267
+        },
+        {
+          "id": "1/40/0",
+          "usage": {
+            "inputTokens": 199,
+            "outputTokens": 1078,
+            "totalTokens": 42109,
+            "cacheReadTokens": 40832
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 240,
+          "time": 1789867367082
+        }
+      ]
+    },
+    "usage": {
+      "model_calls": 40,
+      "requests": 40,
+      "input_tokens": {
+        "count": 40,
+        "total": 1097472,
+        "average": 27436.8,
+        "minimum": 7329,
+        "maximum": 41031
+      },
+      "uncached_input_tokens": {
+        "count": 40,
+        "total": 21632,
+        "average": 540.8,
+        "minimum": 140,
+        "maximum": 1953
+      },
+      "cached_input_tokens": {
+        "count": 40,
+        "total": 1075840,
+        "average": 26896,
+        "minimum": 5376,
+        "maximum": 40832
+      },
+      "output_tokens": {
+        "count": 40,
+        "total": 18634,
+        "average": 465.85,
+        "minimum": 105,
+        "maximum": 2314
+      },
+      "total_tokens": 1116106,
+      "cache_hit_rate": 0.9802892465593656
+    },
+    "timing_ms": {
+      "first_token": {
+        "count": 40,
+        "total": 42068,
+        "average": 1051.7,
+        "minimum": 621,
+        "maximum": 1501
+      },
+      "input_wait": {
+        "count": 40,
+        "total": 42068,
+        "average": 1051.7,
+        "minimum": 621,
+        "maximum": 1501
+      },
+      "output": {
+        "count": 40,
+        "total": 70232,
+        "average": 1755.8,
+        "minimum": 347,
+        "maximum": 8297
+      },
+      "llm": {
+        "count": 40,
+        "total": 112300,
+        "average": 2807.5,
+        "minimum": 1360,
+        "maximum": 9599
+      },
+      "tools": {
+        "count": 54,
+        "total": 46683,
+        "average": 864.5,
+        "minimum": 0,
+        "maximum": 6893
+      },
+      "output_tokens_per_second": 265.3206515548468
+    },
+    "session": {
+      "steps": 40,
+      "turns": 1,
+      "model_calls": 40,
+      "tool_calls": 54
+    }
+  },
+  "patch": {
+    "sha256": "ac973f5810f1c2cae1a9e5a6fc29d9ee06890b2ef0db3b167dc57920dc973e23",
+    "bytes": 3588,
+    "changed_paths": [
+      "src/database/mongo/sorted.js",
+      "src/database/postgres/sorted.js",
+      "src/database/redis/sorted.js"
+    ],
+    "excluded_generated_paths": [
+      "appendonlydir/appendonly.aof.1.base.rdb",
+      "appendonlydir/appendonly.aof.1.incr.aof",
+      "appendonlydir/appendonly.aof.manifest",
+      "dump.rdb"
+    ]
+  },
+  "official_result": {
+    "passed": true,
+    "failure_kind": null,
+    "evaluator_exit_code": 0,
+    "parsed": {
+      "tests": [
+        {
+          "name": "test/database.js | Test database should work",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database info should return info about database",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database info should not error and return info if client is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database checkCompatibility should not throw",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database checkCompatibility should return error with a too low version",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/keys.js::Key methods should set a key without error",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/keys.js::Key methods should get a key without error",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/keys.js::Key methods should return null if key does not exist",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/keys.js::Key methods should return true if key exist",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/keys.js::Key methods should return false if key does not exist",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/keys.js::Key methods should work for an array of keys",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/keys.js::Key methods should delete a key without error",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/keys.js::Key methods should return false if key was deleted",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/keys.js::Key methods should delete all keys passed in",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/keys.js::Key methods should delete all sorted set elements",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/keys.js::Key methods test/database/keys.js::scan should scan keys for pattern",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/keys.js::Key methods test/database/keys.js::increment should initialize key to 1",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/keys.js::Key methods test/database/keys.js::increment should increment key to 2",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/keys.js::Key methods test/database/keys.js::increment should set then increment a key",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/keys.js::Key methods test/database/keys.js::increment should return the correct value",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/keys.js::Key methods test/database/keys.js::rename should rename key to new name",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/keys.js::Key methods test/database/keys.js::rename should rename multiple keys",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/keys.js::Key methods test/database/keys.js::rename should not error if old key does not exist",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/keys.js::Key methods test/database/keys.js::type should return null if key does not exist",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/keys.js::Key methods test/database/keys.js::type should return hash as type",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/keys.js::Key methods test/database/keys.js::type should return zset as type",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/keys.js::Key methods test/database/keys.js::type should return set as type",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/keys.js::Key methods test/database/keys.js::type should return list as type",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/keys.js::Key methods test/database/keys.js::type should return string as type",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/keys.js::Key methods test/database/keys.js::type should expire a key using seconds",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/keys.js::Key methods test/database/keys.js::type should expire a key using milliseconds",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/list.js::List methods test/database/list.js::listAppend() should append to a list",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/list.js::List methods test/database/list.js::listAppend() should not add anyhing if key is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/list.js::List methods test/database/list.js::listAppend() should append each element to list",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/list.js::List methods test/database/list.js::listPrepend() should prepend to a list",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/list.js::List methods test/database/list.js::listPrepend() should prepend 2 more elements to a list",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/list.js::List methods test/database/list.js::listPrepend() should not add anyhing if key is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/list.js::List methods test/database/list.js::listPrepend() should prepend each element to list",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/list.js::List methods test/database/list.js::getListRange() should return an empty list",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/list.js::List methods test/database/list.js::getListRange() should return a list with one element",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/list.js::List methods test/database/list.js::getListRange() should return a list with 2 elements 3, 7",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/list.js::List methods test/database/list.js::getListRange() should not get anything if key is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/list.js::List methods test/database/list.js::listRemoveLast() should remove the last element of list and return it",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/list.js::List methods test/database/list.js::listRemoveLast() should not remove anyhing if key is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/list.js::List methods test/database/list.js::listRemoveAll() should remove all the matching elements of list",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/list.js::List methods test/database/list.js::listRemoveAll() should not remove anyhing if key is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/list.js::List methods test/database/list.js::listRemoveAll() should remove multiple elements from list",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/list.js::List methods test/database/list.js::listTrim() should trim list to a certain range",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/list.js::List methods test/database/list.js::listTrim() should not add anyhing if key is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/list.js::List methods test/database/list.js::listLength should get the length of a list",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/list.js::List methods test/database/list.js::listLength should return 0 if list does not have any elements",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sets.js::Set methods test/database/sets.js::setAdd() should add to a set",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sets.js::Set methods test/database/sets.js::setAdd() should add an array to a set",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sets.js::Set methods test/database/sets.js::setAdd() should not do anything if values array is empty",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sets.js::Set methods test/database/sets.js::getSetMembers() should return an empty set",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sets.js::Set methods test/database/sets.js::getSetMembers() should return a set with all elements",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sets.js::Set methods test/database/sets.js::setsAdd() should add to multiple sets",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sets.js::Set methods test/database/sets.js::setsAdd() should not error if keys is empty array",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sets.js::Set methods test/database/sets.js::getSetsMembers() should return members of two sets",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sets.js::Set methods test/database/sets.js::isSetMember() should return false if element is not member of set",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sets.js::Set methods test/database/sets.js::isSetMember() should return true if element is a member of set",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sets.js::Set methods test/database/sets.js::isSetMembers() should return an array of booleans",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sets.js::Set methods test/database/sets.js::isMemberOfSets() should return an array of booleans",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sets.js::Set methods test/database/sets.js::setCount() should return the element count of set",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sets.js::Set methods test/database/sets.js::setCount() should return 0 if set does not exist",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sets.js::Set methods test/database/sets.js::setsCount() should return the element count of sets",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sets.js::Set methods test/database/sets.js::setRemove() should remove a element from set",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sets.js::Set methods test/database/sets.js::setRemove() should remove multiple elements from set",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sets.js::Set methods test/database/sets.js::setRemove() should remove multiple values from multiple keys",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sets.js::Set methods test/database/sets.js::setsRemove() should remove a element from multiple sets",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sets.js::Set methods test/database/sets.js::setRemoveRandom() should remove a random element from set",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::setObject() should create a object",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::setObject() should set two objects to same data",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::setObject() should do nothing if key is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::setObject() should do nothing if data is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::setObject() should not error if a key is empty string",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::setObject() should work for field names with \".\" in them",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::setObject() should set multiple keys to different objects",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::setObject() should not error if object is empty",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::setObject() should update existing object on second call",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::setObject() should not error if object is empty",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::setObject() should not error if object is empty",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::setObject() should not error if object is empty",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::setObjectField() should create a new object with field",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::setObjectField() should add a new field to an object",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::setObjectField() should set two objects fields to same data",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::setObjectField() should work for field names with \".\" in them",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::setObjectField() should work for field names with \".\" in them when they are cached",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::getObject() should return falsy if object does not exist",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::getObject() should retrieve an object",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::getObject() should return null if key is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::getObject() should return fields if given",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::getObjects() should return 3 objects with correct data",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::getObjects() should return fields if given",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::getObjectField() should return falsy if object does not exist",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::getObjectField() should return falsy if field does not exist",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::getObjectField() should get an objects field",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::getObjectField() should return null if key is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::getObjectField() should return null and not error",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::getObjectFields() should return an object with falsy values",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::getObjectFields() should return an object with correct fields",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::getObjectFields() should return null if key is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::getObjectsFields() should return an array of objects with correct values",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::getObjectsFields() should return undefined for all fields if object does not exist",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::getObjectsFields() should return all fields if fields is empty array",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::getObjectsFields() should return objects if fields is not an array",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::getObjectKeys() should return an empty array for a object that does not exist",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::getObjectKeys() should return an array of keys for the object's fields",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::getObjectValues() should return an empty array for a object that does not exist",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::getObjectValues() should return an array of values for the object's fields",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::isObjectField() should return false if object does not exist",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::isObjectField() should return false if field does not exist",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::isObjectField() should return true if field exists",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::isObjectField() should not error if field is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::isObjectFields() should return an array of false if object does not exist",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::isObjectFields() should return false if field does not exist",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::isObjectFields() should not error if one field is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::deleteObjectField() should delete an objects field",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::deleteObjectField() should delete multiple fields of the object",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::deleteObjectField() should delete multiple fields of multiple objects",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::deleteObjectField() should not error if fields is empty array",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::deleteObjectField() should not error if key is undefined",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::deleteObjectField() should not error if key is null",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::deleteObjectField() should not error if field is undefined",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::deleteObjectField() should not error if one of the fields is undefined",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::deleteObjectField() should not error if field is null",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::incrObjectField() should set an objects field to 1 if object does not exist",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::incrObjectField() should increment an object fields by 1 and return it",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::decrObjectField() should set an objects field to -1 if object does not exist",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::decrObjectField() should decrement an object fields by 1 and return it",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::decrObjectField() should decrement multiple objects field by 1 and return an array of new values",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::incrObjectFieldBy() should set an objects field to 5 if object does not exist",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::incrObjectFieldBy() should increment an object fields by passed in value and return it",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::incrObjectFieldBy() should increment an object fields by passed in value and return it",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::incrObjectFieldBy() should return null if value is NaN",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/hash.js::Hash methods test/database/hash.js::incrObjectFieldByBulk should increment multiple object fields",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetScan should find matches in sorted set containing substring",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetScan should find matches in sorted set with scores",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetScan should find matches in sorted set with a limit",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetScan should work for special characters",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetScan should find everything starting with string",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetScan should find everything ending with string",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetAdd() should add an element to a sorted set",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetAdd() should add two elements to a sorted set",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetAdd() should gracefully handle adding the same element twice",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetAdd() should error if score is null",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetAdd() should error if any score is undefined",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetAdd() should add null value as `null` string",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetsAdd() should add an element to two sorted sets",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetsAdd() should add an element to two sorted sets with different scores",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetsAdd() should error if keys.length is different than scores.length",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetsAdd() should error if score is null",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetsAdd() should error if scores has null",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetAddMulti() should add elements into multiple sorted sets with different scores",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetAddMulti() should not error if data is undefined",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetAddMulti() should error if score is null",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should return the lowest scored element",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should return elements sorted by score lowest to highest",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should return empty array if set does not exist",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should handle negative start/stop",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should handle negative start/stop",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should handle negative start/stop",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should handle negative start/stop",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should handle negative start/stop",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should return empty array if keys is empty array",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should return duplicates if two sets have same elements",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should return correct number of elements",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should work with big arrays (length > 100) ",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRevRange() should return the highest scored element",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRevRange() should return elements sorted by score highest to lowest",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRangeWithScores() should return array of elements sorted by score lowest to highest with scores",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRevRangeWithScores() should return array of elements sorted by score highest to lowest with scores",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRangeByScore() should get count elements with score between min max sorted by score lowest to highest",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRangeByScore() should return empty array if set does not exist",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRangeByScore() should return empty array if count is 0",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRangeByScore() should return elements from 1 to end",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRangeByScore() should return elements from 3 to last",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRangeByScore() should return elements if min/max are numeric strings",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRevRangeByScore() should get count elements with score between max min sorted by score highest to lowest",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRangeByScoreWithScores() should get count elements with score between min max sorted by score lowest to highest with scores",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRevRangeByScoreWithScores() should get count elements with score between max min sorted by score highest to lowest",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRevRangeByScoreWithScores() should work with an array of keys",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetCount() should return 0 for a sorted set that does not exist",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetCount() should return number of elements between scores min max inclusive",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetCount() should return number of elements between scores -inf +inf inclusive",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetCard() should return 0 for a sorted set that does not exist",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetCard() should return number of elements in a sorted set",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetsCard() should return the number of elements in sorted sets",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetsCard() should return empty array if keys is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetsCard() should return empty array if keys is empty array",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetsCardSum() should return the total number of elements in sorted sets",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetsCardSum() should return 0 if keys is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetsCardSum() should return 0 if keys is empty array",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetsCardSum() should return the total number of elements in sorted set",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetRank() should return falsy if sorted set does not exist",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetRank() should return falsy if element isnt in sorted set",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetRank() should return the rank of the element in the sorted set sorted by lowest to highest score",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetRank() should return the rank sorted by the score and then the value (a)",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetRank() should return the rank sorted by the score and then the value (b)",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetRank() should return the rank sorted by the score and then the value (c)",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetRevRank() should return falsy if sorted set doesnot exist",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetRevRank() should return falsy if element isnt in sorted set",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetRevRank() should return the rank of the element in the sorted set sorted by highest to lowest score",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetsRanks() should return the ranks of values in sorted sets",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetRanks() should return the ranks of values in a sorted set",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetRanks() should return the ranks of values in a sorted set in reverse",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetScore() should return falsy if sorted set does not exist",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetScore() should return falsy if element is not in sorted set",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetScore() should return the score of an element",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetScore() should not error if key is undefined",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetScore() should not error if value is undefined",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetsScore() should return the scores of value in sorted sets",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetsScore() should return scores even if some keys are undefined",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetsScore() should return empty array if keys is empty array",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetScores() should return 0 if score is 0",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetScores() should return the scores of value in sorted sets",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetScores() should return scores even if some values are undefined",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetScores() should return empty array if values is an empty array",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetScores() should return scores properly",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::isSortedSetMember() should return false if sorted set does not exist",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::isSortedSetMember() should return false if element is not in sorted set",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::isSortedSetMember() should return true if element is in sorted set",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::isSortedSetMember() should return true if element is in sorted set with score 0",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::isSortedSetMembers() should return an array of booleans indicating membership",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::isSortedSetMembers() should return true if element is in sorted set with score 0",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::isMemberOfSortedSets should return true for members false for non members",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::isMemberOfSortedSets should return empty array if keys is empty array",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetsMembers should return members of a sorted set",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetsMembers should return members of multiple sorted sets",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetsMembers should return members of sorted set with scores",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetsMembers should return members of multiple sorted sets with scores",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetUnionCard should return the number of elements in the union",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetUnion() should return an array of values from both sorted sets sorted by scores lowest to highest",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetUnion() should return an array of values and scores from both sorted sets sorted by scores lowest to highest",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRevUnion() should return an array of values from both sorted sets sorted by scores highest to lowest",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRevUnion() should return empty array if sets is empty",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetIncrBy() should create a sorted set with a field set to 1",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetIncrBy() should increment a field of a sorted set by 5",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetIncrBy() should increment fields of sorted sets with a single call",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetIncrBy() should increment the same field",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetRemove() should remove an element from a sorted set",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetRemove() should not think the sorted set exists if the last element is removed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetRemove() should remove multiple values from multiple keys",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetRemove() should remove value from multiple keys",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetRemove() should remove multiple values from multiple keys",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetRemove() should not remove anything if values is empty array",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetRemove() should do a bulk remove",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetRemove() should not remove wrong elements in bulk remove",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetsRemove() should remove element from multiple sorted sets",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetsRemoveRangeByScore() should remove elements with scores between min max inclusive",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetsRemoveRangeByScore() should remove elements with if strin score is passed in",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetIntersect should return the intersection of two sets",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetIntersect should return the intersection of two sets with scores",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetIntersect should return the reverse intersection of two sets",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetIntersect should return the intersection of two sets with scores aggregate MIN",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetIntersect should return the intersection of two sets with scores aggregate MAX",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetIntersect should return the intersection with scores modified by weights",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetIntersect should return empty array if sets do not exist",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetIntersect should return empty array if one set does not exist",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetIntersect should return correct results if sorting by different zset",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetIntersect should return correct results when intersecting big zsets",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetIntersectCard should return # of elements in intersection",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetIntersectCard should return 0 if intersection is empty",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRangeByLex should return an array of all values",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRangeByLex should return an array with an inclusive range by default",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRangeByLex should return an array with an inclusive range",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRangeByLex should return an array with an exclusive range",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRangeByLex should return an array limited to the first two values",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRangeByLex should return correct result",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRevRangeByLex should return an array of all values reversed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRevRangeByLex should return an array with an inclusive range by default reversed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRevRangeByLex should return an array with an inclusive range reversed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRevRangeByLex should return an array with an exclusive range reversed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRevRangeByLex should return an array limited to the first two values reversed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetLexCount should return the count of all values",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetLexCount should return the count with an inclusive range by default",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetLexCount should return the count with an inclusive range",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetLexCount should return the count with an exclusive range",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetRemoveRangeByLex should remove an inclusive range by default",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetRemoveRangeByLex should remove an inclusive range",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetRemoveRangeByLex should remove an exclusive range",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::sortedSetRemoveRangeByLex should remove all values",
+          "status": "PASSED"
+        }
+      ]
+    }
+  },
+  "cleanup": {
+    "task_container_removed": true,
+    "task_workspace_removed": true,
+    "shared_image_retained": true
+  },
+  "public_export": {
+    "model_name_kind": "display_name",
+    "omitted": [
+      "development provider and route",
+      "local environment and paths",
+      "raw tool diagnostics"
+    ],
+    "note": "Redacted report, not runtime configuration. Scores and numeric usage are preserved; original evidence is retained locally."
+  }
+}

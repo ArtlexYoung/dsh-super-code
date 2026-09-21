@@ -1,0 +1,1245 @@
+{
+  "schema": 1,
+  "run_id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-066-attempt-1",
+  "started_at": "2026-09-19T16:12:23.539Z",
+  "completed_at": "2026-09-19T16:24:17.900Z",
+  "preset": "super-code",
+  "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
+  "isolation": {
+    "schema": 1,
+    "policy": "swebench-pro-isolation-v3",
+    "passed": true,
+    "audited_sessions": 1,
+    "blocked_calls_count": 1,
+    "violations_count": 0
+  },
+  "candidate": {
+    "schema": 1,
+    "identity": "local-0.0.9-candidate",
+    "package": {
+      "name": "dsh-super-code",
+      "version": "0.0.9",
+      "tarball": "dsh-super-code-0.0.9.tgz"
+    },
+    "source": {
+      "git_head": "259f081658d20230d392da418955f190067ddc0f",
+      "tracked_diff_sha256": "1965bf0bf045f6d8f471613c8b50851ab052f98a6338413853536c89f61dcba7",
+      "untracked_package_paths": [
+        "lib/core/experiment-recipes.d.ts",
+        "lib/core/experiment-recipes.d.ts.map",
+        "lib/core/experiment-recipes.js",
+        "lib/core/experiment-recipes.js.map",
+        "lib/experiments.d.ts",
+        "lib/experiments.d.ts.map",
+        "lib/experiments.js",
+        "lib/experiments.js.map",
+        "lib/task-memory-store.d.ts",
+        "lib/task-memory-store.d.ts.map",
+        "lib/task-memory-store.js",
+        "lib/task-memory-store.js.map"
+      ]
+    },
+    "harness": {
+      "git_head": "c291e7961a515f6d7af9304e7fd1d257929aef26",
+      "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+    },
+    "artifacts": {
+      "tarball_sha256": "2e2104209812ae13c701480e5e0ba38bf6d09ee7b6546ebd909bab60b80d83e6",
+      "cordis_patch_sha256": "d8f8e14602aeb4dfafeb6aff3916cccb934c2c88d1d84b222a7c6d3040ca7434",
+      "preset_sha256": "43edc7f7b6dc9fcea423290e48f7b1d245220f10b15a06d8defa5f34685032e9",
+      "packed_files": 71,
+      "packed_bytes": 83113,
+      "unpacked_bytes": 306269
+    },
+    "created_at": "2026-09-19T13:30:54.126Z"
+  },
+  "task_index": 66,
+  "instance_id": "instance_element-hq__element-web-a692fe21811f88d92e8f7047fc615e4f1f986b0f-vnan",
+  "repo": "element-hq/element-web",
+  "base_commit": "9d9c55d92e98f5302a316ee5cd8170de052c13da",
+  "official_evaluator": {
+    "repository": "scaleapi/SWE-bench_Pro-os",
+    "commit": "ca10a60a5fcae51e6948ffe1485d4153d421e6c5",
+    "evaluator_sha256": "bb5d4c5486be296e464e695df3747064aaa3bb197394bc6d39980634afec2034",
+    "dataset_sha256": "b5b2462bfbf5aeb2cb7ba7d215778a1768b85f9d7ad7f748546c7f80a0ad1510",
+    "image_policy": "local-cache-only"
+  },
+  "image": {
+    "reference": "jefzda/sweap-images:element-hq.element-element-hq__element-web-a692fe21811f88d92e8f7047fc615e4f1f986b0f",
+    "acquisition_reference": "docker.1ms.run/jefzda/sweap-images:element-hq.element-element-hq__element-web-a692fe21811f88d92e8f7047fc615e4f1f986b0f",
+    "platform": "linux/amd64",
+    "id": "sha256:91a668b5405dd934889b868f07111b16ef731fba9b3aff01c7e360320fa8614e",
+    "repo_digests": [
+      "docker.1ms.run/jefzda/sweap-images@sha256:91a668b5405dd934889b868f07111b16ef731fba9b3aff01c7e360320fa8614e",
+      "jefzda/sweap-images@sha256:91a668b5405dd934889b868f07111b16ef731fba9b3aff01c7e360320fa8614e"
+    ]
+  },
+  "page_runtime": {
+    "schema": 2,
+    "runtime": "deepseek-harness-web-rpc",
+    "mode": "agent-run",
+    "session_id": "session-a4ee1065-8fde-4058-a7fc-42bf55cb2f1f",
+    "web_rpc": {
+      "authenticated": true,
+      "calls": [
+        "session/create",
+        "session/list",
+        "session/selectModel",
+        "session/prompt",
+        "session/list"
+      ],
+      "prompt_submitted": true
+    },
+    "preset": "super-code",
+    "isolation": {
+      "policy": "swebench-pro-isolation-v3",
+      "permission_preset": "workspace-write",
+      "tool_guard": "workspace-files-and-assigned-offline-container"
+    },
+    "candidate": {
+      "schema": 1,
+      "identity": "local-0.0.9-candidate",
+      "package": {
+        "name": "dsh-super-code",
+        "version": "0.0.9",
+        "tarball": "dsh-super-code-0.0.9.tgz"
+      },
+      "source": {
+        "git_head": "259f081658d20230d392da418955f190067ddc0f",
+        "tracked_diff_sha256": "1965bf0bf045f6d8f471613c8b50851ab052f98a6338413853536c89f61dcba7",
+        "untracked_package_paths": [
+          "lib/core/experiment-recipes.d.ts",
+          "lib/core/experiment-recipes.d.ts.map",
+          "lib/core/experiment-recipes.js",
+          "lib/core/experiment-recipes.js.map",
+          "lib/experiments.d.ts",
+          "lib/experiments.d.ts.map",
+          "lib/experiments.js",
+          "lib/experiments.js.map",
+          "lib/task-memory-store.d.ts",
+          "lib/task-memory-store.d.ts.map",
+          "lib/task-memory-store.js",
+          "lib/task-memory-store.js.map"
+        ]
+      },
+      "harness": {
+        "git_head": "c291e7961a515f6d7af9304e7fd1d257929aef26",
+        "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+      },
+      "artifacts": {
+        "tarball_sha256": "2e2104209812ae13c701480e5e0ba38bf6d09ee7b6546ebd909bab60b80d83e6",
+        "cordis_patch_sha256": "d8f8e14602aeb4dfafeb6aff3916cccb934c2c88d1d84b222a7c6d3040ca7434",
+        "preset_sha256": "43edc7f7b6dc9fcea423290e48f7b1d245220f10b15a06d8defa5f34685032e9",
+        "packed_files": 71,
+        "packed_bytes": 83113,
+        "unpacked_bytes": 306269
+      },
+      "created_at": "2026-09-19T13:30:54.126Z"
+    },
+    "model": {
+      "display_name": "deepseek-v4.1-flash",
+      "reasoning_effort": "high",
+      "max_tokens": 384000
+    },
+    "elapsed_ms": 485777,
+    "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+  },
+  "metrics": {
+    "schema": 2,
+    "accounting": {
+      "observed_requests": 38,
+      "requests_with_usage": 38,
+      "unknown_usage_requests": 0,
+      "cost_complete": false,
+      "actual_cost": null,
+      "reason": "Observed log usage only; request inventory and billing reconciliation required",
+      "ledger": [
+        {
+          "id": "1/1/0",
+          "usage": {
+            "inputTokens": 2125,
+            "outputTokens": 259,
+            "totalTokens": 7760,
+            "cacheReadTokens": 5376
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 14,
+          "time": 1789834379220
+        },
+        {
+          "id": "1/2/0",
+          "usage": {
+            "inputTokens": 338,
+            "outputTokens": 321,
+            "totalTokens": 8339,
+            "cacheReadTokens": 7680
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 22,
+          "time": 1789834382469
+        },
+        {
+          "id": "1/3/0",
+          "usage": {
+            "inputTokens": 419,
+            "outputTokens": 309,
+            "totalTokens": 9048,
+            "cacheReadTokens": 8320
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 29,
+          "time": 1789834384607
+        },
+        {
+          "id": "1/4/0",
+          "usage": {
+            "inputTokens": 1972,
+            "outputTokens": 328,
+            "totalTokens": 11260,
+            "cacheReadTokens": 8960
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 36,
+          "time": 1789834387201
+        },
+        {
+          "id": "1/5/0",
+          "usage": {
+            "inputTokens": 1535,
+            "outputTokens": 275,
+            "totalTokens": 12946,
+            "cacheReadTokens": 11136
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 43,
+          "time": 1789834389474
+        },
+        {
+          "id": "1/6/0",
+          "usage": {
+            "inputTokens": 1928,
+            "outputTokens": 998,
+            "totalTokens": 15854,
+            "cacheReadTokens": 12928
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 50,
+          "time": 1789834394040
+        },
+        {
+          "id": "1/7/0",
+          "usage": {
+            "inputTokens": 1143,
+            "outputTokens": 129,
+            "totalTokens": 17016,
+            "cacheReadTokens": 15744
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 55,
+          "time": 1789834395432
+        },
+        {
+          "id": "1/8/0",
+          "usage": {
+            "inputTokens": 859,
+            "outputTokens": 3936,
+            "totalTokens": 21691,
+            "cacheReadTokens": 16896
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 60,
+          "time": 1789834410772
+        },
+        {
+          "id": "1/9/0",
+          "usage": {
+            "inputTokens": 1427,
+            "outputTokens": 222,
+            "totalTokens": 23281,
+            "cacheReadTokens": 21632
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 67,
+          "time": 1789834413417
+        },
+        {
+          "id": "1/10/0",
+          "usage": {
+            "inputTokens": 1295,
+            "outputTokens": 1248,
+            "totalTokens": 25711,
+            "cacheReadTokens": 23168
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 72,
+          "time": 1789834419044
+        },
+        {
+          "id": "1/11/0",
+          "usage": {
+            "inputTokens": 213,
+            "outputTokens": 219,
+            "totalTokens": 26032,
+            "cacheReadTokens": 25600
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 77,
+          "time": 1789834421149
+        },
+        {
+          "id": "1/12/0",
+          "usage": {
+            "inputTokens": 1104,
+            "outputTokens": 927,
+            "totalTokens": 28015,
+            "cacheReadTokens": 25984
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 82,
+          "time": 1789834426007
+        },
+        {
+          "id": "1/13/0",
+          "usage": {
+            "inputTokens": 226,
+            "outputTokens": 3118,
+            "totalTokens": 31248,
+            "cacheReadTokens": 27904
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 87,
+          "time": 1789834439023
+        },
+        {
+          "id": "1/14/0",
+          "usage": {
+            "inputTokens": 1590,
+            "outputTokens": 200,
+            "totalTokens": 33022,
+            "cacheReadTokens": 31232
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 94,
+          "time": 1789834442086
+        },
+        {
+          "id": "1/15/0",
+          "usage": {
+            "inputTokens": 917,
+            "outputTokens": 262,
+            "totalTokens": 34075,
+            "cacheReadTokens": 32896
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 101,
+          "time": 1789834444278
+        },
+        {
+          "id": "1/16/0",
+          "usage": {
+            "inputTokens": 250,
+            "outputTokens": 446,
+            "totalTokens": 34616,
+            "cacheReadTokens": 33920
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 106,
+          "time": 1789834446752
+        },
+        {
+          "id": "1/17/0",
+          "usage": {
+            "inputTokens": 170,
+            "outputTokens": 281,
+            "totalTokens": 35011,
+            "cacheReadTokens": 34560
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 111,
+          "time": 1789834448783
+        },
+        {
+          "id": "1/18/0",
+          "usage": {
+            "inputTokens": 167,
+            "outputTokens": 303,
+            "totalTokens": 35414,
+            "cacheReadTokens": 34944
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 116,
+          "time": 1789834450810
+        },
+        {
+          "id": "1/19/0",
+          "usage": {
+            "inputTokens": 179,
+            "outputTokens": 100,
+            "totalTokens": 35607,
+            "cacheReadTokens": 35328
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 121,
+          "time": 1789834452220
+        },
+        {
+          "id": "1/20/0",
+          "usage": {
+            "inputTokens": 1098,
+            "outputTokens": 1092,
+            "totalTokens": 37774,
+            "cacheReadTokens": 35584
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 126,
+          "time": 1789834456794
+        },
+        {
+          "id": "1/21/0",
+          "usage": {
+            "inputTokens": 234,
+            "outputTokens": 534,
+            "totalTokens": 38400,
+            "cacheReadTokens": 37632
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 131,
+          "time": 1789834459556
+        },
+        {
+          "id": "1/22/0",
+          "usage": {
+            "inputTokens": 220,
+            "outputTokens": 93,
+            "totalTokens": 38585,
+            "cacheReadTokens": 38272
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 136,
+          "time": 1789834461413
+        },
+        {
+          "id": "1/23/0",
+          "usage": {
+            "inputTokens": 925,
+            "outputTokens": 903,
+            "totalTokens": 40356,
+            "cacheReadTokens": 38528
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 141,
+          "time": 1789834465697
+        },
+        {
+          "id": "1/24/0",
+          "usage": {
+            "inputTokens": 137,
+            "outputTokens": 319,
+            "totalTokens": 40776,
+            "cacheReadTokens": 40320
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 146,
+          "time": 1789834467934
+        },
+        {
+          "id": "1/25/0",
+          "usage": {
+            "inputTokens": 173,
+            "outputTokens": 182,
+            "totalTokens": 41059,
+            "cacheReadTokens": 40704
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 151,
+          "time": 1789834469640
+        },
+        {
+          "id": "1/26/0",
+          "usage": {
+            "inputTokens": 200,
+            "outputTokens": 634,
+            "totalTokens": 41794,
+            "cacheReadTokens": 40960
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 156,
+          "time": 1789834473668
+        },
+        {
+          "id": "1/27/0",
+          "usage": {
+            "inputTokens": 203,
+            "outputTokens": 412,
+            "totalTokens": 42343,
+            "cacheReadTokens": 41728
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 161,
+          "time": 1789834477247
+        },
+        {
+          "id": "1/28/0",
+          "usage": {
+            "inputTokens": 322,
+            "outputTokens": 456,
+            "totalTokens": 43018,
+            "cacheReadTokens": 42240
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 166,
+          "time": 1789834480258
+        },
+        {
+          "id": "1/29/0",
+          "usage": {
+            "inputTokens": 484,
+            "outputTokens": 332,
+            "totalTokens": 43824,
+            "cacheReadTokens": 43008
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 173,
+          "time": 1789834548827
+        },
+        {
+          "id": "1/30/0",
+          "usage": {
+            "inputTokens": 251,
+            "outputTokens": 279,
+            "totalTokens": 44178,
+            "cacheReadTokens": 43648
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 178,
+          "time": 1789834627901
+        },
+        {
+          "id": "1/31/0",
+          "usage": {
+            "inputTokens": 226,
+            "outputTokens": 2026,
+            "totalTokens": 46284,
+            "cacheReadTokens": 44032
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 183,
+          "time": 1789834715436
+        },
+        {
+          "id": "1/32/0",
+          "usage": {
+            "inputTokens": 186,
+            "outputTokens": 145,
+            "totalTokens": 46539,
+            "cacheReadTokens": 46208
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 188,
+          "time": 1789834717379
+        },
+        {
+          "id": "1/33/0",
+          "usage": {
+            "inputTokens": 908,
+            "outputTokens": 1247,
+            "totalTokens": 48619,
+            "cacheReadTokens": 46464
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 193,
+          "time": 1789834760700
+        },
+        {
+          "id": "1/34/0",
+          "usage": {
+            "inputTokens": 138,
+            "outputTokens": 1244,
+            "totalTokens": 49894,
+            "cacheReadTokens": 48512
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 198,
+          "time": 1789834791150
+        },
+        {
+          "id": "1/35/0",
+          "usage": {
+            "inputTokens": 2153,
+            "outputTokens": 1201,
+            "totalTokens": 53146,
+            "cacheReadTokens": 49792
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 203,
+          "time": 1789834797945
+        },
+        {
+          "id": "1/36/0",
+          "usage": {
+            "inputTokens": 450,
+            "outputTokens": 1388,
+            "totalTokens": 54958,
+            "cacheReadTokens": 53120
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 208,
+          "time": 1789834848473
+        },
+        {
+          "id": "1/37/0",
+          "usage": {
+            "inputTokens": 327,
+            "outputTokens": 277,
+            "totalTokens": 55516,
+            "cacheReadTokens": 54912
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 213,
+          "time": 1789834851280
+        },
+        {
+          "id": "1/38/0",
+          "usage": {
+            "inputTokens": 640,
+            "outputTokens": 981,
+            "totalTokens": 57045,
+            "cacheReadTokens": 55424
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 218,
+          "time": 1789834856069
+        }
+      ]
+    },
+    "usage": {
+      "model_calls": 38,
+      "requests": 38,
+      "input_tokens": {
+        "count": 38,
+        "total": 1282428,
+        "average": 33748.10526315789,
+        "minimum": 7501,
+        "maximum": 56064
+      },
+      "uncached_input_tokens": {
+        "count": 38,
+        "total": 27132,
+        "average": 714,
+        "minimum": 137,
+        "maximum": 2153
+      },
+      "cached_input_tokens": {
+        "count": 38,
+        "total": 1255296,
+        "average": 33034.10526315789,
+        "minimum": 5376,
+        "maximum": 55424
+      },
+      "output_tokens": {
+        "count": 38,
+        "total": 27626,
+        "average": 727,
+        "minimum": 93,
+        "maximum": 3936
+      },
+      "total_tokens": 1310054,
+      "cache_hit_rate": 0.978843256697452
+    },
+    "timing_ms": {
+      "first_token": {
+        "count": 38,
+        "total": 42528,
+        "average": 1119.157894736842,
+        "minimum": 698,
+        "maximum": 1764
+      },
+      "input_wait": {
+        "count": 38,
+        "total": 42528,
+        "average": 1119.157894736842,
+        "minimum": 698,
+        "maximum": 1764
+      },
+      "output": {
+        "count": 38,
+        "total": 101388,
+        "average": 2668.1052631578946,
+        "minimum": 407,
+        "maximum": 14177
+      },
+      "llm": {
+        "count": 38,
+        "total": 143916,
+        "average": 3787.2631578947367,
+        "minimum": 1218,
+        "maximum": 15195
+      },
+      "tools": {
+        "count": 46,
+        "total": 334608,
+        "average": 7274.086956521739,
+        "minimum": 0,
+        "maximum": 80043
+      },
+      "output_tokens_per_second": 272.4780052866217
+    },
+    "session": {
+      "steps": 38,
+      "turns": 1,
+      "model_calls": 38,
+      "tool_calls": 46
+    }
+  },
+  "patch": {
+    "sha256": "4ab8a7cac31361a9891c8e9d0ba4b1d0095b793d3ab6967d1287e53983c7b28c",
+    "bytes": 8301,
+    "changed_paths": [
+      "src/components/views/dialogs/CreateRoomDialog.tsx",
+      "src/createRoom.ts",
+      "src/utils/WellKnownUtils.ts",
+      "src/utils/room/shouldForceDisableEncryption.ts",
+      "src/utils/rooms.ts"
+    ],
+    "excluded_generated_paths": []
+  },
+  "official_result": {
+    "passed": false,
+    "failure_kind": "official_test_failure",
+    "evaluator_exit_code": 0,
+    "parsed": {
+      "tests": [
+        {
+          "name": "test/settings/watchers/ThemeWatcher-test.tsx | ThemeWatcher | should choose a light theme by default",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/settings/watchers/ThemeWatcher-test.tsx | ThemeWatcher | should choose default theme if system settings are inconclusive",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/settings/watchers/ThemeWatcher-test.tsx | ThemeWatcher | should choose a dark theme if that is selected",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/settings/watchers/ThemeWatcher-test.tsx | ThemeWatcher | should choose a light theme if that is selected",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/settings/watchers/ThemeWatcher-test.tsx | ThemeWatcher | should choose a light-high-contrast theme if that is selected",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/settings/watchers/ThemeWatcher-test.tsx | ThemeWatcher | should choose a light theme if system prefers it",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/settings/watchers/ThemeWatcher-test.tsx | ThemeWatcher | should choose a dark theme if system prefers it",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/settings/watchers/ThemeWatcher-test.tsx | ThemeWatcher | should choose a light theme if system prefers it",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/settings/watchers/ThemeWatcher-test.tsx | ThemeWatcher | should choose a dark theme if system prefers it",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/settings/watchers/ThemeWatcher-test.tsx | ThemeWatcher | should choose a high-contrast theme if system prefers it",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/settings/watchers/ThemeWatcher-test.tsx | ThemeWatcher | should not choose a high-contrast theme if not available",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/LruCache-test.ts | LruCache | when creating a cache with negative capacity it should raise an error",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/LruCache-test.ts | LruCache | when creating a cache with 0 capacity it should raise an error",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/LruCache-test.ts | when there is a cache with a capacity of 3 | has",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/LruCache-test.ts | when there is a cache with a capacity of 3 | get",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/LruCache-test.ts | when there is a cache with a capacity of 3 | values",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/LruCache-test.ts | when there is a cache with a capacity of 3 | delete",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/LruCache-test.ts | when the cache contains 2 items | has",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/LruCache-test.ts | when the cache contains 2 items | get",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/LruCache-test.ts | when the cache contains 2 items | values",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/LruCache-test.ts | when the cache contains 2 items | clear",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/LruCache-test.ts | when the cache contains 2 items | when an error occurs while setting an item the cache should be cleard",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/LruCache-test.ts | and adding another item | deleting an unkonwn item should not raise an error",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/LruCache-test.ts | and adding another item | deleting the first item should work",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/LruCache-test.ts | and adding another item | deleting the item in the middle should work",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/LruCache-test.ts | and adding another item | deleting the last item should work",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/LruCache-test.ts | and adding another item | deleting all items should work",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/LruCache-test.ts | and adding another item | deleting and adding some items should work",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/LruCache-test.ts | and accesing the first added item and adding another item | should contain the last recently accessed items",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/LruCache-test.ts | and accesing the first added item and adding another item | should not contain the least recently accessed items",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/LruCache-test.ts | and adding 2 additional items | has",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/LruCache-test.ts | and adding 2 additional items | has",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/LruCache-test.ts | and adding 2 additional items | get",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/LruCache-test.ts | and adding 2 additional items | get",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/LruCache-test.ts | and adding 2 additional items | values",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/LruCache-test.ts | when the cache contains some items where one of them is a replacement | should contain the last recently set items",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/room/shouldForceDisableEncryption-test.ts | shouldForceDisableEncryption() | should return false when there is no e2ee well known",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/room/shouldForceDisableEncryption-test.ts | shouldForceDisableEncryption() | should return false when there is no force_disable property",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/room/shouldForceDisableEncryption-test.ts | shouldForceDisableEncryption() | should return false when force_disable property is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/room/shouldForceDisableEncryption-test.ts | shouldForceDisableEncryption() | should return false when force_disable property is not equal to true",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/room/shouldForceDisableEncryption-test.ts | shouldForceDisableEncryption() | should return true when force_disable property is true",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/rooms-test.ts | privateShouldBeEncrypted() | should return true when there is no e2ee well known",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/rooms-test.ts | privateShouldBeEncrypted() | should return true when default is not set to false",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/rooms-test.ts | privateShouldBeEncrypted() | should return true when there is no default property",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/rooms-test.ts | privateShouldBeEncrypted() | should return false when encryption is force disabled",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/rooms-test.ts | privateShouldBeEncrypted() | should return false when default encryption setting is false",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/rooms-test.ts | privateShouldBeEncrypted() | should return true when default encryption setting is set to something other than false",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/permalinks/Permalinks-test.ts | Permalinks | should pick no candidate servers when the room has no members",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/permalinks/Permalinks-test.ts | Permalinks | should gracefully handle invalid MXIDs",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/permalinks/Permalinks-test.ts | Permalinks | should pick a candidate server for the highest power level user in the room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/permalinks/Permalinks-test.ts | Permalinks | should change candidate server when highest power level user leaves the room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/permalinks/Permalinks-test.ts | Permalinks | should pick candidate servers based on user population",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/permalinks/Permalinks-test.ts | Permalinks | should pick prefer candidate servers with higher power levels",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/permalinks/Permalinks-test.ts | Permalinks | should pick a maximum of 3 candidate servers",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/permalinks/Permalinks-test.ts | Permalinks | should not consider IPv4 hosts",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/permalinks/Permalinks-test.ts | Permalinks | should not consider IPv6 hosts",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/permalinks/Permalinks-test.ts | Permalinks | should not consider IPv4 hostnames with ports",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/permalinks/Permalinks-test.ts | Permalinks | should not consider IPv6 hostnames with ports",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/permalinks/Permalinks-test.ts | Permalinks | should work with hostnames with ports",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/permalinks/Permalinks-test.ts | Permalinks | should not consider servers explicitly denied by ACLs",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/permalinks/Permalinks-test.ts | Permalinks | should not consider servers not allowed by ACLs",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/permalinks/Permalinks-test.ts | Permalinks | should consider servers not explicitly banned by ACLs",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/permalinks/Permalinks-test.ts | Permalinks | should consider servers not disallowed by ACLs",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/permalinks/Permalinks-test.ts | Permalinks | should generate an event permalink for room IDs with no candidate servers",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/permalinks/Permalinks-test.ts | Permalinks | should generate an event permalink for room IDs with some candidate servers",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/permalinks/Permalinks-test.ts | Permalinks | should generate a room permalink for room IDs with some candidate servers",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/permalinks/Permalinks-test.ts | Permalinks | should generate a room permalink for room aliases with no candidate servers",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/permalinks/Permalinks-test.ts | Permalinks | should generate a room permalink for room aliases without candidate servers",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/permalinks/Permalinks-test.ts | Permalinks | should generate a user permalink",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/permalinks/Permalinks-test.ts | parsePermalink | should correctly parse room permalinks with a via argument",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/permalinks/Permalinks-test.ts | parsePermalink | should correctly parse room permalink via arguments",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/permalinks/Permalinks-test.ts | parsePermalink | should correctly parse event permalink via arguments",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/permalinks/Permalinks-test.ts | parsePermalink | should correctly parse permalinks with http protocol",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/permalinks/Permalinks-test.ts | parsePermalink | should correctly parse permalinks without protocol",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/CreateRoomDialog-test.tsx | <CreateRoomDialog /> | should default to private room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/CreateRoomDialog-test.tsx | <CreateRoomDialog /> | should use defaultName from props",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/CreateRoomDialog-test.tsx | for a private room | should use server .well-known default for encryption setting",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/CreateRoomDialog-test.tsx | for a private room | should use server .well-known force_disable for encryption setting",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/CreateRoomDialog-test.tsx | for a private room | should use defaultEncrypted prop",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/CreateRoomDialog-test.tsx | for a private room | should use defaultEncrypted prop when it is false",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/CreateRoomDialog-test.tsx | for a private room | should override defaultEncrypted when server .well-known forces disabled encryption",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/CreateRoomDialog-test.tsx | for a private room | should override defaultEncrypted when server forces enabled encryption",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/CreateRoomDialog-test.tsx | for a private room | should enable encryption toggle and disable field when server forces encryption",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/CreateRoomDialog-test.tsx | for a private room | should warn when trying to create a room with an invalid form",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/CreateRoomDialog-test.tsx | for a private room | should create a private room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/CreateRoomDialog-test.tsx | for a public room | should set join rule to public defaultPublic is truthy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/CreateRoomDialog-test.tsx | for a public room | should not create a public room without an alias",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/CreateRoomDialog-test.tsx | for a public room | should create a public room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/SendWysiwygComposer-test.tsx | SendWysiwygComposer | Should render WysiwygComposer when isRichTextEnabled is at true",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/SendWysiwygComposer-test.tsx | SendWysiwygComposer | Should render PlainTextComposer when isRichTextEnabled is at false",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/SendWysiwygComposer-test.tsx | Should focus when receiving an Action.FocusSendMessageComposer action | Should focus when receiving an Action.FocusSendMessageComposer action",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/SendWysiwygComposer-test.tsx | Should focus when receiving an Action.FocusSendMessageComposer action | Should focus and clear when receiving an Action.ClearAndFocusSendMessageComposer",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/SendWysiwygComposer-test.tsx | Should focus when receiving an Action.FocusSendMessageComposer action | Should focus when receiving a reply_to_event action",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/SendWysiwygComposer-test.tsx | Should focus when receiving an Action.FocusSendMessageComposer action | Should not focus when disabled",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/SendWysiwygComposer-test.tsx | Should focus when receiving an Action.FocusSendMessageComposer action | Should focus when receiving an Action.FocusSendMessageComposer action",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/SendWysiwygComposer-test.tsx | Should focus when receiving an Action.FocusSendMessageComposer action | Should focus and clear when receiving an Action.ClearAndFocusSendMessageComposer",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/SendWysiwygComposer-test.tsx | Should focus when receiving an Action.FocusSendMessageComposer action | Should focus when receiving a reply_to_event action",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/SendWysiwygComposer-test.tsx | Should focus when receiving an Action.FocusSendMessageComposer action | Should not focus when disabled",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/SendWysiwygComposer-test.tsx | Placeholder when { isRichTextEnabled: true } | Should not has placeholder",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/SendWysiwygComposer-test.tsx | Placeholder when { isRichTextEnabled: true } | Should has placeholder",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/SendWysiwygComposer-test.tsx | Placeholder when { isRichTextEnabled: true } | Should display or not placeholder when editor content change",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/SendWysiwygComposer-test.tsx | Placeholder when { isRichTextEnabled: false } | Should not has placeholder",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/SendWysiwygComposer-test.tsx | Placeholder when { isRichTextEnabled: false } | Should has placeholder",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/SendWysiwygComposer-test.tsx | Placeholder when { isRichTextEnabled: false } | Should display or not placeholder when editor content change",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/SendWysiwygComposer-test.tsx | Emoji when { isRichTextEnabled: true } | Should add an emoji in an empty composer",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/SendWysiwygComposer-test.tsx | Emoji when { isRichTextEnabled: true } | Should add an emoji in the middle of a word",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/SendWysiwygComposer-test.tsx | Emoji when { isRichTextEnabled: true } | Should add an emoji when a word is selected",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/SendWysiwygComposer-test.tsx | Emoji when { isRichTextEnabled: false } | Should add an emoji in an empty composer",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/SendWysiwygComposer-test.tsx | Emoji when { isRichTextEnabled: false } | Should add an emoji in the middle of a word",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/SendWysiwygComposer-test.tsx | Emoji when { isRichTextEnabled: false } | Should add an emoji when a word is selected",
+          "status": "PASSED"
+        }
+      ]
+    }
+  },
+  "cleanup": {
+    "task_container_removed": true,
+    "task_workspace_removed": true,
+    "shared_image_retained": true
+  },
+  "public_export": {
+    "model_name_kind": "display_name",
+    "omitted": [
+      "development provider and route",
+      "local environment and paths",
+      "raw tool diagnostics"
+    ],
+    "note": "Redacted report, not runtime configuration. Scores and numeric usage are preserved; original evidence is retained locally."
+  }
+}

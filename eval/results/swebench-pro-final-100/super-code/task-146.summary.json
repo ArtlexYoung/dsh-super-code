@@ -1,0 +1,1143 @@
+{
+  "schema": 1,
+  "run_id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-146-attempt-1",
+  "started_at": "2026-09-20T05:08:55.965Z",
+  "completed_at": "2026-09-20T05:08:55.966Z",
+  "preset": "super-code",
+  "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
+  "isolation": {
+    "schema": 1,
+    "policy": "swebench-pro-isolation-v3",
+    "policy_revision": 3,
+    "passed": true,
+    "repository_isolation": {
+      "base_only_git": true,
+      "commit_count": 1,
+      "remotes": [],
+      "target_commit_unavailable": true,
+      "test_container_network": "none",
+      "prepared_cache_hit": false
+    },
+    "audited_sessions": 1,
+    "blocked_calls_count": 2,
+    "observations_count": 0,
+    "violations_count": 0
+  },
+  "candidate": {
+    "schema": 1,
+    "identity": "local-0.0.9-candidate",
+    "package": {
+      "name": "dsh-super-code",
+      "version": "0.0.9",
+      "tarball": "dsh-super-code-0.0.9.tgz"
+    },
+    "source": {
+      "git_head": "259f081658d20230d392da418955f190067ddc0f",
+      "tracked_diff_sha256": "1965bf0bf045f6d8f471613c8b50851ab052f98a6338413853536c89f61dcba7",
+      "untracked_package_paths": [
+        "lib/core/experiment-recipes.d.ts",
+        "lib/core/experiment-recipes.d.ts.map",
+        "lib/core/experiment-recipes.js",
+        "lib/core/experiment-recipes.js.map",
+        "lib/experiments.d.ts",
+        "lib/experiments.d.ts.map",
+        "lib/experiments.js",
+        "lib/experiments.js.map",
+        "lib/task-memory-store.d.ts",
+        "lib/task-memory-store.d.ts.map",
+        "lib/task-memory-store.js",
+        "lib/task-memory-store.js.map"
+      ]
+    },
+    "harness": {
+      "git_head": "c291e7961a515f6d7af9304e7fd1d257929aef26",
+      "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+    },
+    "artifacts": {
+      "tarball_sha256": "2e2104209812ae13c701480e5e0ba38bf6d09ee7b6546ebd909bab60b80d83e6",
+      "cordis_patch_sha256": "d8f8e14602aeb4dfafeb6aff3916cccb934c2c88d1d84b222a7c6d3040ca7434",
+      "preset_sha256": "43edc7f7b6dc9fcea423290e48f7b1d245220f10b15a06d8defa5f34685032e9",
+      "packed_files": 71,
+      "packed_bytes": 83113,
+      "unpacked_bytes": 306269
+    },
+    "created_at": "2026-09-19T13:30:54.126Z"
+  },
+  "task_index": 146,
+  "instance_id": "instance_future-architect__vuls-999529a05b202b0fd29c6fca5039a4c47a3766bb",
+  "repo": "future-architect/vuls",
+  "base_commit": "847d820af7fb48131086afe43f79ce79f61122c7",
+  "official_evaluator": {
+    "repository": "scaleapi/SWE-bench_Pro-os",
+    "commit": "ca10a60a5fcae51e6948ffe1485d4153d421e6c5",
+    "evaluator_sha256": "bb5d4c5486be296e464e695df3747064aaa3bb197394bc6d39980634afec2034",
+    "dataset_sha256": "b5b2462bfbf5aeb2cb7ba7d215778a1768b85f9d7ad7f748546c7f80a0ad1510",
+    "image_policy": "local-cache-only",
+    "rescore_attempt": 1
+  },
+  "image": {
+    "reference": "jefzda/sweap-images:future-architect.vuls-future-architect__vuls-999529a05b202b0fd29c6fca5039a4c47a3766bb",
+    "acquisition_reference": "jefzda/sweap-images:future-architect.vuls-future-architect__vuls-999529a05b202b0fd29c6fca5039a4c47a3766bb",
+    "platform": "linux/amd64",
+    "id": "sha256:4b9592426c6a2c3e03aa663b9d987de2f20c3d6f02772b1a1616ae3c78d078c3",
+    "repo_digests": [
+      "docker.1ms.run/jefzda/sweap-images@sha256:4b9592426c6a2c3e03aa663b9d987de2f20c3d6f02772b1a1616ae3c78d078c3",
+      "jefzda/sweap-images@sha256:4b9592426c6a2c3e03aa663b9d987de2f20c3d6f02772b1a1616ae3c78d078c3"
+    ]
+  },
+  "page_runtime": {
+    "schema": 2,
+    "runtime": "deepseek-harness-web-rpc",
+    "mode": "agent-run",
+    "session_id": "session-ccc9262b-50cd-436c-820a-6900b8414c35",
+    "web_rpc": {
+      "authenticated": true,
+      "calls": [
+        "session/create",
+        "session/list",
+        "session/selectModel",
+        "session/prompt",
+        "session/list"
+      ],
+      "prompt_submitted": true
+    },
+    "preset": "super-code",
+    "isolation": {
+      "policy": "swebench-pro-isolation-v3",
+      "permission_preset": "workspace-write",
+      "tool_guard": "workspace-files-and-assigned-offline-container"
+    },
+    "candidate": {
+      "schema": 1,
+      "identity": "local-0.0.9-candidate",
+      "package": {
+        "name": "dsh-super-code",
+        "version": "0.0.9",
+        "tarball": "dsh-super-code-0.0.9.tgz"
+      },
+      "source": {
+        "git_head": "259f081658d20230d392da418955f190067ddc0f",
+        "tracked_diff_sha256": "1965bf0bf045f6d8f471613c8b50851ab052f98a6338413853536c89f61dcba7",
+        "untracked_package_paths": [
+          "lib/core/experiment-recipes.d.ts",
+          "lib/core/experiment-recipes.d.ts.map",
+          "lib/core/experiment-recipes.js",
+          "lib/core/experiment-recipes.js.map",
+          "lib/experiments.d.ts",
+          "lib/experiments.d.ts.map",
+          "lib/experiments.js",
+          "lib/experiments.js.map",
+          "lib/task-memory-store.d.ts",
+          "lib/task-memory-store.d.ts.map",
+          "lib/task-memory-store.js",
+          "lib/task-memory-store.js.map"
+        ]
+      },
+      "harness": {
+        "git_head": "c291e7961a515f6d7af9304e7fd1d257929aef26",
+        "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+      },
+      "artifacts": {
+        "tarball_sha256": "2e2104209812ae13c701480e5e0ba38bf6d09ee7b6546ebd909bab60b80d83e6",
+        "cordis_patch_sha256": "d8f8e14602aeb4dfafeb6aff3916cccb934c2c88d1d84b222a7c6d3040ca7434",
+        "preset_sha256": "43edc7f7b6dc9fcea423290e48f7b1d245220f10b15a06d8defa5f34685032e9",
+        "packed_files": 71,
+        "packed_bytes": 83113,
+        "unpacked_bytes": 306269
+      },
+      "created_at": "2026-09-19T13:30:54.126Z"
+    },
+    "model": {
+      "display_name": "deepseek-v4.1-flash",
+      "reasoning_effort": "high",
+      "max_tokens": 384000
+    },
+    "elapsed_ms": 715832,
+    "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+  },
+  "metrics": {
+    "schema": 2,
+    "accounting": {
+      "observed_requests": 39,
+      "requests_with_usage": 39,
+      "unknown_usage_requests": 0,
+      "cost_complete": false,
+      "actual_cost": null,
+      "reason": "Observed log usage only; request inventory and billing reconciliation required",
+      "ledger": [
+        {
+          "id": "1/1/0",
+          "usage": {
+            "inputTokens": 1814,
+            "outputTokens": 334,
+            "totalTokens": 7524,
+            "cacheReadTokens": 5376
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 14,
+          "time": 1789858576966
+        },
+        {
+          "id": "1/2/0",
+          "usage": {
+            "inputTokens": 392,
+            "outputTokens": 167,
+            "totalTokens": 7983,
+            "cacheReadTokens": 7424
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 20,
+          "time": 1789858578777
+        },
+        {
+          "id": "1/3/0",
+          "usage": {
+            "inputTokens": 701,
+            "outputTokens": 118,
+            "totalTokens": 8755,
+            "cacheReadTokens": 7936
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 25,
+          "time": 1789858580310
+        },
+        {
+          "id": "1/4/0",
+          "usage": {
+            "inputTokens": 1696,
+            "outputTokens": 316,
+            "totalTokens": 10716,
+            "cacheReadTokens": 8704
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 30,
+          "time": 1789858582539
+        },
+        {
+          "id": "1/5/0",
+          "usage": {
+            "inputTokens": 711,
+            "outputTokens": 3730,
+            "totalTokens": 15065,
+            "cacheReadTokens": 10624
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 35,
+          "time": 1789858596829
+        },
+        {
+          "id": "1/6/0",
+          "usage": {
+            "inputTokens": 1007,
+            "outputTokens": 182,
+            "totalTokens": 16165,
+            "cacheReadTokens": 14976
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 40,
+          "time": 1789858598432
+        },
+        {
+          "id": "1/7/0",
+          "usage": {
+            "inputTokens": 196,
+            "outputTokens": 325,
+            "totalTokens": 16521,
+            "cacheReadTokens": 16000
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 45,
+          "time": 1789858600636
+        },
+        {
+          "id": "1/8/0",
+          "usage": {
+            "inputTokens": 191,
+            "outputTokens": 193,
+            "totalTokens": 16768,
+            "cacheReadTokens": 16384
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 50,
+          "time": 1789858602381
+        },
+        {
+          "id": "1/9/0",
+          "usage": {
+            "inputTokens": 174,
+            "outputTokens": 227,
+            "totalTokens": 17041,
+            "cacheReadTokens": 16640
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 55,
+          "time": 1789858604389
+        },
+        {
+          "id": "1/10/0",
+          "usage": {
+            "inputTokens": 134,
+            "outputTokens": 170,
+            "totalTokens": 17328,
+            "cacheReadTokens": 17024
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 60,
+          "time": 1789858606234
+        },
+        {
+          "id": "1/11/0",
+          "usage": {
+            "inputTokens": 198,
+            "outputTokens": 1973,
+            "totalTokens": 19323,
+            "cacheReadTokens": 17152
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 65,
+          "time": 1789858614623
+        },
+        {
+          "id": "1/12/0",
+          "usage": {
+            "inputTokens": 866,
+            "outputTokens": 3010,
+            "totalTokens": 23076,
+            "cacheReadTokens": 19200
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 70,
+          "time": 1789858627460
+        },
+        {
+          "id": "1/13/0",
+          "usage": {
+            "inputTokens": 237,
+            "outputTokens": 156,
+            "totalTokens": 23305,
+            "cacheReadTokens": 22912
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 75,
+          "time": 1789858629227
+        },
+        {
+          "id": "1/14/0",
+          "usage": {
+            "inputTokens": 188,
+            "outputTokens": 5825,
+            "totalTokens": 29309,
+            "cacheReadTokens": 23296
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 80,
+          "time": 1789858651772
+        },
+        {
+          "id": "1/15/0",
+          "usage": {
+            "inputTokens": 639,
+            "outputTokens": 823,
+            "totalTokens": 30646,
+            "cacheReadTokens": 29184
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 85,
+          "time": 1789858656272
+        },
+        {
+          "id": "1/16/0",
+          "usage": {
+            "inputTokens": 714,
+            "outputTokens": 219,
+            "totalTokens": 31525,
+            "cacheReadTokens": 30592
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 90,
+          "time": 1789858658432
+        },
+        {
+          "id": "1/17/0",
+          "usage": {
+            "inputTokens": 1863,
+            "outputTokens": 2584,
+            "totalTokens": 35935,
+            "cacheReadTokens": 31488
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 95,
+          "time": 1789858669151
+        },
+        {
+          "id": "1/18/0",
+          "usage": {
+            "inputTokens": 240,
+            "outputTokens": 413,
+            "totalTokens": 36365,
+            "cacheReadTokens": 35712
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 100,
+          "time": 1789858672228
+        },
+        {
+          "id": "1/19/0",
+          "usage": {
+            "inputTokens": 249,
+            "outputTokens": 113,
+            "totalTokens": 36586,
+            "cacheReadTokens": 36224
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 105,
+          "time": 1789858673805
+        },
+        {
+          "id": "1/20/0",
+          "usage": {
+            "inputTokens": 249,
+            "outputTokens": 4709,
+            "totalTokens": 41310,
+            "cacheReadTokens": 36352
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 110,
+          "time": 1789858688744
+        },
+        {
+          "id": "1/21/0",
+          "usage": {
+            "inputTokens": 201,
+            "outputTokens": 136,
+            "totalTokens": 41553,
+            "cacheReadTokens": 41216
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 115,
+          "time": 1789858690357
+        },
+        {
+          "id": "1/22/0",
+          "usage": {
+            "inputTokens": 1611,
+            "outputTokens": 3344,
+            "totalTokens": 46427,
+            "cacheReadTokens": 41472
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 120,
+          "time": 1789858700822
+        },
+        {
+          "id": "1/23/0",
+          "usage": {
+            "inputTokens": 184,
+            "outputTokens": 215,
+            "totalTokens": 46735,
+            "cacheReadTokens": 46336
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 125,
+          "time": 1789858702460
+        },
+        {
+          "id": "1/24/0",
+          "usage": {
+            "inputTokens": 168,
+            "outputTokens": 326,
+            "totalTokens": 47086,
+            "cacheReadTokens": 46592
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 130,
+          "time": 1789858764953
+        },
+        {
+          "id": "1/25/0",
+          "usage": {
+            "inputTokens": 136,
+            "outputTokens": 227,
+            "totalTokens": 47339,
+            "cacheReadTokens": 46976
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 135,
+          "time": 1789858766938
+        },
+        {
+          "id": "1/26/0",
+          "usage": {
+            "inputTokens": 154,
+            "outputTokens": 1366,
+            "totalTokens": 48752,
+            "cacheReadTokens": 47232
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 140,
+          "time": 1789858882036
+        },
+        {
+          "id": "1/27/0",
+          "usage": {
+            "inputTokens": 226,
+            "outputTokens": 189,
+            "totalTokens": 49055,
+            "cacheReadTokens": 48640
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 145,
+          "time": 1789858883653
+        },
+        {
+          "id": "1/28/0",
+          "usage": {
+            "inputTokens": 162,
+            "outputTokens": 244,
+            "totalTokens": 49430,
+            "cacheReadTokens": 49024
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 150,
+          "time": 1789858942103
+        },
+        {
+          "id": "1/29/0",
+          "usage": {
+            "inputTokens": 182,
+            "outputTokens": 274,
+            "totalTokens": 49736,
+            "cacheReadTokens": 49280
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 155,
+          "time": 1789858994351
+        },
+        {
+          "id": "1/30/0",
+          "usage": {
+            "inputTokens": 1981,
+            "outputTokens": 1181,
+            "totalTokens": 52826,
+            "cacheReadTokens": 49664
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 160,
+          "time": 1789859000408
+        },
+        {
+          "id": "1/31/0",
+          "usage": {
+            "inputTokens": 152,
+            "outputTokens": 424,
+            "totalTokens": 53312,
+            "cacheReadTokens": 52736
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 165,
+          "time": 1789859199504
+        },
+        {
+          "id": "1/32/0",
+          "usage": {
+            "inputTokens": 253,
+            "outputTokens": 1523,
+            "totalTokens": 54896,
+            "cacheReadTokens": 53120
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 170,
+          "time": 1789859207093
+        },
+        {
+          "id": "1/33/0",
+          "usage": {
+            "inputTokens": 318,
+            "outputTokens": 1774,
+            "totalTokens": 56876,
+            "cacheReadTokens": 54784
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 175,
+          "time": 1789859214023
+        },
+        {
+          "id": "1/34/0",
+          "usage": {
+            "inputTokens": 137,
+            "outputTokens": 426,
+            "totalTokens": 57395,
+            "cacheReadTokens": 56832
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 180,
+          "time": 1789859216936
+        },
+        {
+          "id": "1/35/0",
+          "usage": {
+            "inputTokens": 217,
+            "outputTokens": 1318,
+            "totalTokens": 58751,
+            "cacheReadTokens": 57216
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 185,
+          "time": 1789859254622
+        },
+        {
+          "id": "1/36/0",
+          "usage": {
+            "inputTokens": 240,
+            "outputTokens": 1275,
+            "totalTokens": 60139,
+            "cacheReadTokens": 58624
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 190,
+          "time": 1789859259373
+        },
+        {
+          "id": "1/37/0",
+          "usage": {
+            "inputTokens": 220,
+            "outputTokens": 200,
+            "totalTokens": 60452,
+            "cacheReadTokens": 60032
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 195,
+          "time": 1789859261441
+        },
+        {
+          "id": "1/38/0",
+          "usage": {
+            "inputTokens": 193,
+            "outputTokens": 136,
+            "totalTokens": 60745,
+            "cacheReadTokens": 60416
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 200,
+          "time": 1789859271145
+        },
+        {
+          "id": "1/39/0",
+          "usage": {
+            "inputTokens": 2942,
+            "outputTokens": 1690,
+            "totalTokens": 65304,
+            "cacheReadTokens": 60672
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 205,
+          "time": 1789859279930
+        }
+      ]
+    },
+    "usage": {
+      "model_calls": 39,
+      "requests": 39,
+      "input_tokens": {
+        "count": 39,
+        "total": 1406200,
+        "average": 36056.41025641026,
+        "minimum": 7190,
+        "maximum": 63614
+      },
+      "uncached_input_tokens": {
+        "count": 39,
+        "total": 22136,
+        "average": 567.5897435897435,
+        "minimum": 134,
+        "maximum": 2942
+      },
+      "cached_input_tokens": {
+        "count": 39,
+        "total": 1384064,
+        "average": 35488.820512820515,
+        "minimum": 5376,
+        "maximum": 60672
+      },
+      "output_tokens": {
+        "count": 39,
+        "total": 41855,
+        "average": 1073.2051282051282,
+        "minimum": 113,
+        "maximum": 5825
+      },
+      "total_tokens": 1448055,
+      "cache_hit_rate": 0.9842582847390129
+    },
+    "timing_ms": {
+      "first_token": {
+        "count": 39,
+        "total": 39013,
+        "average": 1000.3333333333334,
+        "minimum": 614,
+        "maximum": 1409
+      },
+      "input_wait": {
+        "count": 39,
+        "total": 39013,
+        "average": 1000.3333333333334,
+        "minimum": 614,
+        "maximum": 1409
+      },
+      "output": {
+        "count": 39,
+        "total": 147568,
+        "average": 3783.7948717948716,
+        "minimum": 355,
+        "maximum": 21515
+      },
+      "llm": {
+        "count": 39,
+        "total": 186581,
+        "average": 4784.128205128205,
+        "minimum": 1293,
+        "maximum": 22371
+      },
+      "tools": {
+        "count": 38,
+        "total": 517733,
+        "average": 13624.552631578947,
+        "minimum": 1,
+        "maximum": 196235
+      },
+      "output_tokens_per_second": 283.6319527268784
+    },
+    "session": {
+      "steps": 39,
+      "turns": 1,
+      "model_calls": 39,
+      "tool_calls": 38
+    }
+  },
+  "patch": {
+    "sha256": "9f0e0b9d0bf5e2a7da8907c58206bfdfcb6f1299a29ae468eda83c1d9640a1d5",
+    "bytes": 9275,
+    "changed_paths": [
+      "scanner/scanner.go"
+    ],
+    "excluded_generated_paths": [],
+    "recovered_from_persisted_session": false
+  },
+  "official_result": {
+    "passed": true,
+    "failure_kind": null,
+    "evaluator_exit_code": 0,
+    "parsed": {
+      "tests": [
+        {
+          "name": "TestParseApkInfo",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestParseApkVersion",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestParseDockerPs",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestParseLxdPs",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestParseIp",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestIsAwsInstanceID",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestParseSystemctlStatus",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_base_parseLsProcExe",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_base_parseLsProcExe/systemd",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_base_parseGrepProcMap",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_base_parseGrepProcMap/systemd",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_base_parseLsOf",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_base_parseLsOf/lsof",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_base_parseLsOf/lsof-duplicate-port",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_detectScanDest",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_detectScanDest/empty",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_detectScanDest/single-addr",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_detectScanDest/dup-addr-port",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_detectScanDest/multi-addr",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_detectScanDest/asterisk",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_updatePortStatus",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_updatePortStatus/nil_affected_procs",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_updatePortStatus/nil_listen_ports",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_updatePortStatus/update_match_single_address",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_updatePortStatus/update_match_multi_address",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_updatePortStatus/update_match_asterisk",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_updatePortStatus/update_multi_packages",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_findPortScanSuccessOn",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_findPortScanSuccessOn/open_empty",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_findPortScanSuccessOn/port_empty",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_findPortScanSuccessOn/single_match",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_findPortScanSuccessOn/no_match_address",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_findPortScanSuccessOn/no_match_port",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_findPortScanSuccessOn/asterisk_match",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestGetCveIDsFromChangelog",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestGetUpdatablePackNames",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestGetChangelogCache",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestSplitAptCachePolicy",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestParseAptCachePolicy",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestParseCheckRestart",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_debian_parseGetPkgName",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_debian_parseGetPkgName/success",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestParseChangelog",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestParseChangelog/vlc",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestParseChangelog/realvnc-vnc-server",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestDecorateCmd",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestParseIfconfig",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestParsePkgVersion",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestSplitIntoBlocks",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestParseBlock",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestParsePkgInfo",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestParseInstalledPackagesLinesRedhat",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestParseInstalledPackagesLine",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestParseYumCheckUpdateLine",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestParseYumCheckUpdateLines",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestParseYumCheckUpdateLinesAmazon",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestParseNeedsRestarting",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_redhatBase_parseDnfModuleList",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_redhatBase_parseDnfModuleList/Success",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_redhatBase_parseRpmQfLine",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_redhatBase_parseRpmQfLine/permission_denied_will_be_ignored",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_redhatBase_parseRpmQfLine/is_not_owned_by_any_package",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_redhatBase_parseRpmQfLine/No_such_file_or_directory_will_be_ignored",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_redhatBase_parseRpmQfLine/valid_line",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_redhatBase_parseRpmQfLine/err",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_redhatBase_rebootRequired",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_redhatBase_rebootRequired/uek_kernel_no-reboot",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_redhatBase_rebootRequired/uek_kernel_needs-reboot",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_redhatBase_rebootRequired/kerne_needs-reboot",
+          "status": "PASSED"
+        },
+        {
+          "name": "Test_redhatBase_rebootRequired/kerne_no-reboot",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestViaHTTP",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestParseSSHConfiguration",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestParseSSHScan",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestParseSSHKeygen",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestScanUpdatablePackages",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestScanUpdatablePackage",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestParseOSRelease",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestIsRunningKernelSUSE",
+          "status": "PASSED"
+        },
+        {
+          "name": "TestIsRunningKernelRedHatLikeLinux",
+          "status": "PASSED"
+        }
+      ]
+    }
+  },
+  "cleanup": {
+    "task_container_removed": true,
+    "task_workspace_removed": true,
+    "shared_image_retained": true
+  },
+  "public_export": {
+    "model_name_kind": "display_name",
+    "omitted": [
+      "development provider and route",
+      "local environment and paths",
+      "raw tool diagnostics"
+    ],
+    "note": "Redacted report, not runtime configuration. Scores and numeric usage are preserved; original evidence is retained locally."
+  }
+}

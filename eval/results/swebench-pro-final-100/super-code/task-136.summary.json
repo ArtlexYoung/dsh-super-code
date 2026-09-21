@@ -1,0 +1,2298 @@
+{
+  "schema": 1,
+  "run_id": "super-code-0.0.9-pro-hard100-v2-high-isolation-v3-20260919-super-code-task-136-attempt-1",
+  "started_at": "2026-09-20T05:04:06.053Z",
+  "completed_at": "2026-09-20T05:04:06.053Z",
+  "preset": "super-code",
+  "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
+  "isolation": {
+    "schema": 1,
+    "policy": "swebench-pro-isolation-v3",
+    "policy_revision": 3,
+    "passed": true,
+    "repository_isolation": {
+      "base_only_git": true,
+      "commit_count": 1,
+      "remotes": [],
+      "target_commit_unavailable": true,
+      "test_container_network": "none",
+      "prepared_cache_hit": false
+    },
+    "audited_sessions": 1,
+    "blocked_calls_count": 7,
+    "observations_count": 1,
+    "violations_count": 0
+  },
+  "candidate": {
+    "schema": 1,
+    "identity": "local-0.0.9-candidate",
+    "package": {
+      "name": "dsh-super-code",
+      "version": "0.0.9",
+      "tarball": "dsh-super-code-0.0.9.tgz"
+    },
+    "source": {
+      "git_head": "259f081658d20230d392da418955f190067ddc0f",
+      "tracked_diff_sha256": "1965bf0bf045f6d8f471613c8b50851ab052f98a6338413853536c89f61dcba7",
+      "untracked_package_paths": [
+        "lib/core/experiment-recipes.d.ts",
+        "lib/core/experiment-recipes.d.ts.map",
+        "lib/core/experiment-recipes.js",
+        "lib/core/experiment-recipes.js.map",
+        "lib/experiments.d.ts",
+        "lib/experiments.d.ts.map",
+        "lib/experiments.js",
+        "lib/experiments.js.map",
+        "lib/task-memory-store.d.ts",
+        "lib/task-memory-store.d.ts.map",
+        "lib/task-memory-store.js",
+        "lib/task-memory-store.js.map"
+      ]
+    },
+    "harness": {
+      "git_head": "c291e7961a515f6d7af9304e7fd1d257929aef26",
+      "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+    },
+    "artifacts": {
+      "tarball_sha256": "2e2104209812ae13c701480e5e0ba38bf6d09ee7b6546ebd909bab60b80d83e6",
+      "cordis_patch_sha256": "d8f8e14602aeb4dfafeb6aff3916cccb934c2c88d1d84b222a7c6d3040ca7434",
+      "preset_sha256": "43edc7f7b6dc9fcea423290e48f7b1d245220f10b15a06d8defa5f34685032e9",
+      "packed_files": 71,
+      "packed_bytes": 83113,
+      "unpacked_bytes": 306269
+    },
+    "created_at": "2026-09-19T13:30:54.126Z"
+  },
+  "task_index": 136,
+  "instance_id": "instance_qutebrowser__qutebrowser-3d01c201b8aa54dd71d4f801b1dd12feb4c0a08a-v5fc38aaf22415ab0b70567368332beee7955b367",
+  "repo": "qutebrowser/qutebrowser",
+  "base_commit": "6d9c28ce10832aa727de1a326d9459a035ff3aba",
+  "official_evaluator": {
+    "repository": "scaleapi/SWE-bench_Pro-os",
+    "commit": "ca10a60a5fcae51e6948ffe1485d4153d421e6c5",
+    "evaluator_sha256": "bb5d4c5486be296e464e695df3747064aaa3bb197394bc6d39980634afec2034",
+    "dataset_sha256": "b5b2462bfbf5aeb2cb7ba7d215778a1768b85f9d7ad7f748546c7f80a0ad1510",
+    "image_policy": "local-cache-only",
+    "rescore_attempt": 1
+  },
+  "image": {
+    "reference": "jefzda/sweap-images:qutebrowser.qutebrowser-qutebrowser__qutebrowser-3d01c201b8aa54dd71d4f801b1dd12feb4c0a08a-v5fc38aaf22415ab0b70567368332beee7955b",
+    "acquisition_reference": "jefzda/sweap-images:qutebrowser.qutebrowser-qutebrowser__qutebrowser-3d01c201b8aa54dd71d4f801b1dd12feb4c0a08a-v5fc38aaf22415ab0b70567368332beee7955b",
+    "platform": "linux/amd64",
+    "id": "sha256:3c35d7747e3abd70ba2fa0c106377874333982177eac576228ce46b39d810c57",
+    "repo_digests": [
+      "docker.1ms.run/jefzda/sweap-images@sha256:3c35d7747e3abd70ba2fa0c106377874333982177eac576228ce46b39d810c57",
+      "jefzda/sweap-images@sha256:3c35d7747e3abd70ba2fa0c106377874333982177eac576228ce46b39d810c57"
+    ]
+  },
+  "page_runtime": {
+    "schema": 2,
+    "runtime": "deepseek-harness-web-rpc",
+    "mode": "agent-run",
+    "session_id": "session-cc17d8cb-7daf-45f5-932e-2d0f581a857b",
+    "web_rpc": {
+      "authenticated": true,
+      "calls": [
+        "session/create",
+        "session/list",
+        "session/selectModel",
+        "session/prompt",
+        "session/list"
+      ],
+      "prompt_submitted": true
+    },
+    "preset": "super-code",
+    "isolation": {
+      "policy": "swebench-pro-isolation-v3",
+      "permission_preset": "workspace-write",
+      "tool_guard": "workspace-files-and-assigned-offline-container"
+    },
+    "candidate": {
+      "schema": 1,
+      "identity": "local-0.0.9-candidate",
+      "package": {
+        "name": "dsh-super-code",
+        "version": "0.0.9",
+        "tarball": "dsh-super-code-0.0.9.tgz"
+      },
+      "source": {
+        "git_head": "259f081658d20230d392da418955f190067ddc0f",
+        "tracked_diff_sha256": "1965bf0bf045f6d8f471613c8b50851ab052f98a6338413853536c89f61dcba7",
+        "untracked_package_paths": [
+          "lib/core/experiment-recipes.d.ts",
+          "lib/core/experiment-recipes.d.ts.map",
+          "lib/core/experiment-recipes.js",
+          "lib/core/experiment-recipes.js.map",
+          "lib/experiments.d.ts",
+          "lib/experiments.d.ts.map",
+          "lib/experiments.js",
+          "lib/experiments.js.map",
+          "lib/task-memory-store.d.ts",
+          "lib/task-memory-store.d.ts.map",
+          "lib/task-memory-store.js",
+          "lib/task-memory-store.js.map"
+        ]
+      },
+      "harness": {
+        "git_head": "c291e7961a515f6d7af9304e7fd1d257929aef26",
+        "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+      },
+      "artifacts": {
+        "tarball_sha256": "2e2104209812ae13c701480e5e0ba38bf6d09ee7b6546ebd909bab60b80d83e6",
+        "cordis_patch_sha256": "d8f8e14602aeb4dfafeb6aff3916cccb934c2c88d1d84b222a7c6d3040ca7434",
+        "preset_sha256": "43edc7f7b6dc9fcea423290e48f7b1d245220f10b15a06d8defa5f34685032e9",
+        "packed_files": 71,
+        "packed_bytes": 83113,
+        "unpacked_bytes": 306269
+      },
+      "created_at": "2026-09-19T13:30:54.126Z"
+    },
+    "model": {
+      "display_name": "deepseek-v4.1-flash",
+      "reasoning_effort": "high",
+      "max_tokens": 384000
+    },
+    "elapsed_ms": 1339418,
+    "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+  },
+  "metrics": {
+    "schema": 2,
+    "accounting": {
+      "observed_requests": 35,
+      "requests_with_usage": 34,
+      "unknown_usage_requests": 1,
+      "cost_complete": false,
+      "actual_cost": null,
+      "reason": "Observed log usage only; request inventory and billing reconciliation required",
+      "ledger": [
+        {
+          "id": "1/1/0",
+          "usage": {
+            "inputTokens": 1626,
+            "outputTokens": 272,
+            "totalTokens": 7274,
+            "cacheReadTokens": 5376
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 14,
+          "time": 1789851139823
+        },
+        {
+          "id": "1/2/0",
+          "usage": {
+            "inputTokens": 1490,
+            "outputTokens": 1079,
+            "totalTokens": 9737,
+            "cacheReadTokens": 7168
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 22,
+          "time": 1789851145128
+        },
+        {
+          "id": "1/3/0",
+          "usage": {
+            "inputTokens": 1342,
+            "outputTokens": 2018,
+            "totalTokens": 13088,
+            "cacheReadTokens": 9728
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 29,
+          "time": 1789851153546
+        },
+        {
+          "id": "1/4/0",
+          "sources": [
+            "assistant/attempt"
+          ],
+          "seq": 36,
+          "time": 1789852089531
+        },
+        {
+          "id": "1/4/1",
+          "usage": {
+            "inputTokens": 251,
+            "outputTokens": 319,
+            "totalTokens": 14266,
+            "cacheReadTokens": 13696
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 39,
+          "time": 1789852092066
+        },
+        {
+          "id": "1/5/0",
+          "usage": {
+            "inputTokens": 1515,
+            "outputTokens": 5759,
+            "totalTokens": 21482,
+            "cacheReadTokens": 14208
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 44,
+          "time": 1789852113921
+        },
+        {
+          "id": "1/6/0",
+          "usage": {
+            "inputTokens": 246,
+            "outputTokens": 599,
+            "totalTokens": 22221,
+            "cacheReadTokens": 21376
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 51,
+          "time": 1789852117905
+        },
+        {
+          "id": "1/7/0",
+          "usage": {
+            "inputTokens": 188,
+            "outputTokens": 3608,
+            "totalTokens": 25940,
+            "cacheReadTokens": 22144
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 56,
+          "time": 1789852160099
+        },
+        {
+          "id": "1/8/0",
+          "usage": {
+            "inputTokens": 706,
+            "outputTokens": 274,
+            "totalTokens": 26836,
+            "cacheReadTokens": 25856
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 63,
+          "time": 1789852164838
+        },
+        {
+          "id": "1/9/0",
+          "usage": {
+            "inputTokens": 540,
+            "outputTokens": 901,
+            "totalTokens": 28193,
+            "cacheReadTokens": 26752
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 68,
+          "time": 1789852169657
+        },
+        {
+          "id": "1/10/0",
+          "usage": {
+            "inputTokens": 134,
+            "outputTokens": 1090,
+            "totalTokens": 29384,
+            "cacheReadTokens": 28160
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 75,
+          "time": 1789852175358
+        },
+        {
+          "id": "1/11/0",
+          "usage": {
+            "inputTokens": 258,
+            "outputTokens": 474,
+            "totalTokens": 29916,
+            "cacheReadTokens": 29184
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 82,
+          "time": 1789852178102
+        },
+        {
+          "id": "1/12/0",
+          "usage": {
+            "inputTokens": 1220,
+            "outputTokens": 5932,
+            "totalTokens": 36976,
+            "cacheReadTokens": 29824
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 89,
+          "time": 1789852203056
+        },
+        {
+          "id": "1/13/0",
+          "usage": {
+            "inputTokens": 179,
+            "outputTokens": 449,
+            "totalTokens": 37492,
+            "cacheReadTokens": 36864
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 96,
+          "time": 1789852206825
+        },
+        {
+          "id": "1/14/0",
+          "usage": {
+            "inputTokens": 30270,
+            "outputTokens": 4302,
+            "totalTokens": 71948,
+            "cacheReadTokens": 37376
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 101,
+          "time": 1789852225896
+        },
+        {
+          "id": "1/15/0",
+          "usage": {
+            "inputTokens": 198,
+            "outputTokens": 619,
+            "totalTokens": 72625,
+            "cacheReadTokens": 71808
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 108,
+          "time": 1789852229475
+        },
+        {
+          "id": "1/16/0",
+          "usage": {
+            "inputTokens": 221,
+            "outputTokens": 4436,
+            "totalTokens": 77105,
+            "cacheReadTokens": 72448
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 113,
+          "time": 1789852248002
+        },
+        {
+          "id": "1/17/0",
+          "usage": {
+            "inputTokens": 208,
+            "outputTokens": 9693,
+            "totalTokens": 86829,
+            "cacheReadTokens": 76928
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 118,
+          "time": 1789852285844
+        },
+        {
+          "id": "1/18/0",
+          "usage": {
+            "inputTokens": 230,
+            "outputTokens": 126,
+            "totalTokens": 87012,
+            "cacheReadTokens": 86656
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 123,
+          "time": 1789852287824
+        },
+        {
+          "id": "1/19/0",
+          "usage": {
+            "inputTokens": 1385,
+            "outputTokens": 2781,
+            "totalTokens": 91078,
+            "cacheReadTokens": 86912
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 128,
+          "time": 1789852298861
+        },
+        {
+          "id": "1/20/0",
+          "usage": {
+            "inputTokens": 301,
+            "outputTokens": 343,
+            "totalTokens": 91652,
+            "cacheReadTokens": 91008
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 133,
+          "time": 1789852301414
+        },
+        {
+          "id": "1/21/0",
+          "usage": {
+            "inputTokens": 716,
+            "outputTokens": 2714,
+            "totalTokens": 95078,
+            "cacheReadTokens": 91648
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 140,
+          "time": 1789852314149
+        },
+        {
+          "id": "1/22/0",
+          "usage": {
+            "inputTokens": 248,
+            "outputTokens": 1462,
+            "totalTokens": 96686,
+            "cacheReadTokens": 94976
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 149,
+          "time": 1789852322979
+        },
+        {
+          "id": "1/23/0",
+          "usage": {
+            "inputTokens": 270,
+            "outputTokens": 713,
+            "totalTokens": 97623,
+            "cacheReadTokens": 96640
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 156,
+          "time": 1789852330198
+        },
+        {
+          "id": "1/24/0",
+          "usage": {
+            "inputTokens": 162,
+            "outputTokens": 495,
+            "totalTokens": 98193,
+            "cacheReadTokens": 97536
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 165,
+          "time": 1789852340873
+        },
+        {
+          "id": "1/25/0",
+          "usage": {
+            "inputTokens": 191,
+            "outputTokens": 613,
+            "totalTokens": 98852,
+            "cacheReadTokens": 98048
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 170,
+          "time": 1789852346920
+        },
+        {
+          "id": "1/26/0",
+          "usage": {
+            "inputTokens": 203,
+            "outputTokens": 961,
+            "totalTokens": 99980,
+            "cacheReadTokens": 98816
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 175,
+          "time": 1789852354284
+        },
+        {
+          "id": "1/27/0",
+          "usage": {
+            "inputTokens": 194,
+            "outputTokens": 408,
+            "totalTokens": 100442,
+            "cacheReadTokens": 99840
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 182,
+          "time": 1789852369665
+        },
+        {
+          "id": "1/28/0",
+          "usage": {
+            "inputTokens": 453,
+            "outputTokens": 903,
+            "totalTokens": 101708,
+            "cacheReadTokens": 100352
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 189,
+          "time": 1789852384902
+        },
+        {
+          "id": "1/29/0",
+          "usage": {
+            "inputTokens": 247,
+            "outputTokens": 2297,
+            "totalTokens": 104176,
+            "cacheReadTokens": 101632
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 194,
+          "time": 1789852407023
+        },
+        {
+          "id": "1/30/0",
+          "usage": {
+            "inputTokens": 212,
+            "outputTokens": 1405,
+            "totalTokens": 105681,
+            "cacheReadTokens": 104064
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 201,
+          "time": 1789852427365
+        },
+        {
+          "id": "1/31/0",
+          "usage": {
+            "inputTokens": 1360,
+            "outputTokens": 1375,
+            "totalTokens": 108335,
+            "cacheReadTokens": 105600
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 208,
+          "time": 1789852434497
+        },
+        {
+          "id": "1/32/0",
+          "usage": {
+            "inputTokens": 144,
+            "outputTokens": 443,
+            "totalTokens": 108875,
+            "cacheReadTokens": 108288
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 213,
+          "time": 1789852437882
+        },
+        {
+          "id": "1/33/0",
+          "usage": {
+            "inputTokens": 1485,
+            "outputTokens": 310,
+            "totalTokens": 110595,
+            "cacheReadTokens": 108800
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 220,
+          "time": 1789852453422
+        },
+        {
+          "id": "1/34/0",
+          "usage": {
+            "inputTokens": 197,
+            "outputTokens": 899,
+            "totalTokens": 111560,
+            "cacheReadTokens": 110464
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 225,
+          "time": 1789852470929
+        }
+      ]
+    },
+    "usage": {
+      "model_calls": 35,
+      "requests": 35,
+      "input_tokens": {
+        "count": 34,
+        "total": 2258766,
+        "average": 66434.29411764706,
+        "minimum": 7002,
+        "maximum": 110661
+      },
+      "uncached_input_tokens": {
+        "count": 34,
+        "total": 48590,
+        "average": 1429.1176470588234,
+        "minimum": 134,
+        "maximum": 30270
+      },
+      "cached_input_tokens": {
+        "count": 34,
+        "total": 2210176,
+        "average": 65005.17647058824,
+        "minimum": 5376,
+        "maximum": 110464
+      },
+      "output_tokens": {
+        "count": 34,
+        "total": 60072,
+        "average": 1766.8235294117646,
+        "minimum": 126,
+        "maximum": 9693
+      },
+      "total_tokens": 2318838,
+      "cache_hit_rate": 0.9784882542060577
+    },
+    "timing_ms": {
+      "first_token": {
+        "count": 35,
+        "total": 41018,
+        "average": 1171.942857142857,
+        "minimum": 754,
+        "maximum": 2112
+      },
+      "input_wait": {
+        "count": 35,
+        "total": 41018,
+        "average": 1171.942857142857,
+        "minimum": 754,
+        "maximum": 2112
+      },
+      "output": {
+        "count": 35,
+        "total": 1161906,
+        "average": 33197.31428571429,
+        "minimum": 509,
+        "maximum": 934837
+      },
+      "llm": {
+        "count": 35,
+        "total": 1202924,
+        "average": 34369.25714285715,
+        "minimum": 1711,
+        "maximum": 935671
+      },
+      "tools": {
+        "count": 54,
+        "total": 129149,
+        "average": 2391.6481481481483,
+        "minimum": 0,
+        "maximum": 27957
+      },
+      "output_tokens_per_second": 51.701256383907136
+    },
+    "session": {
+      "steps": 34,
+      "turns": 1,
+      "model_calls": 35,
+      "tool_calls": 54
+    }
+  },
+  "patch": {
+    "sha256": "75b757e5d11bbec897bd267d437ef51ff0fc053361d59ee6bb0ef2cad5913b1f",
+    "bytes": 4997,
+    "changed_paths": [
+      "qutebrowser/app.py",
+      "qutebrowser/utils/resources.py"
+    ],
+    "excluded_generated_paths": [],
+    "recovered_from_persisted_session": false
+  },
+  "official_result": {
+    "passed": true,
+    "failure_kind": null,
+    "evaluator_exit_code": 0,
+    "parsed": {
+      "tests": [
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_tested_no_branches",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_tested_with_branches",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_untested",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_untested_floats",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_untested_branches",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_tested_unlisted",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_skipped_args[args0-because -k is given.]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_skipped_args[args1-because -m is given.]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_skipped_args[args2-because --lf is given.]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_skipped_args[args3-because -m is given.]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_skipped_args[args4-because there is nothing to check.]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_skipped_non_linux",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename0]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename1]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename2]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename3]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename4]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename5]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename6]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename7]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename8]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename9]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename10]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename11]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename12]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename13]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename14]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename15]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename16]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename17]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename18]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename19]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename20]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename21]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename22]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename23]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename24]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename25]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename26]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename27]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename28]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename29]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename30]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename31]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename32]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename33]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename34]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename35]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename36]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename37]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename38]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename39]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename40]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename41]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename42]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename43]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename44]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename45]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename46]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename47]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename48]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename49]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename50]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename51]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename52]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename53]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename54]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename55]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename56]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename57]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename58]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename59]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename60]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename61]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename62]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename63]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename64]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename65]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename66]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename67]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename68]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename69]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename70]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename71]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename72]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename73]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename74]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename75]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename76]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename77]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename78]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename79]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename80]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename81]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename82]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename83]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename84]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename85]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename86]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename87]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename88]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename89]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename90]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename91]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename92]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename93]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename94]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename95]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename96]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename97]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename98]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename99]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename100]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename101]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename102]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename103]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename104]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename105]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename106]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename107]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename108]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename109]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename110]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename111]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename112]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename113]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename114]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename115]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename116]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename117]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename118]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename119]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename120]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename121]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename122]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename123]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename124]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename125]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename126]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename127]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename128]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename129]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename130]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename131]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename132]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename133]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename134]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename135]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename136]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/scripts/test_check_coverage.py::test_files_exist[filename137]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_resources.py::TestReadFile::test_glob_resources[True-pathlib]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_resources.py::TestReadFile::test_glob_resources[True-zipfile]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_resources.py::TestReadFile::test_glob_resources[False-pathlib]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_resources.py::TestReadFile::test_glob_resources[False-zipfile]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_resources.py::TestReadFile::test_glob_resources_subdir[True-pathlib]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_resources.py::TestReadFile::test_glob_resources_subdir[True-zipfile]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_resources.py::TestReadFile::test_glob_resources_subdir[False-pathlib]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_resources.py::TestReadFile::test_glob_resources_subdir[False-zipfile]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_resources.py::TestReadFile::test_readfile[True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_resources.py::TestReadFile::test_readfile[False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_resources.py::TestReadFile::test_read_cached_file[True-javascript/scroll.js]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_resources.py::TestReadFile::test_read_cached_file[True-html/error.html]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_resources.py::TestReadFile::test_read_cached_file[False-javascript/scroll.js]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_resources.py::TestReadFile::test_read_cached_file[False-html/error.html]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_resources.py::TestReadFile::test_readfile_binary[True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_resources.py::TestReadFile::test_readfile_binary[False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_resources.py::TestReadFile::test_not_found[True-KeyError-read_file]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_resources.py::TestReadFile::test_not_found[True-KeyError-read_file_binary]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_resources.py::TestReadFile::test_not_found[True-FileNotFoundError-read_file]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_resources.py::TestReadFile::test_not_found[True-FileNotFoundError-read_file_binary]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_resources.py::TestReadFile::test_not_found[True-None-read_file]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_resources.py::TestReadFile::test_not_found[True-None-read_file_binary]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_resources.py::TestReadFile::test_not_found[False-KeyError-read_file]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_resources.py::TestReadFile::test_not_found[False-KeyError-read_file_binary]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_resources.py::TestReadFile::test_not_found[False-FileNotFoundError-read_file]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_resources.py::TestReadFile::test_not_found[False-FileNotFoundError-read_file_binary]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_resources.py::TestReadFile::test_not_found[False-None-read_file]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_resources.py::TestReadFile::test_not_found[False-None-read_file_binary]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestVersionNumber::test_repr[args0-VersionNumber(5, 15, 2)]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestVersionNumber::test_repr[args1-VersionNumber(5, 15)]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestVersionNumber::test_repr[args2-VersionNumber(5)]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestVersionNumber::test_not_normalized",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestCompactText::test_compact_text['foo\\\\nbar'-'foobar']",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestCompactText::test_compact_text['  foo  \\\\n  bar  '-'foobar']",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestCompactText::test_compact_text['\\\\nfoo\\\\n'-'foo']",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestCompactText::test_eliding[None-'xxxxxxxxxxxxxxxxxxx-'xxxxxxxxxxxxxxxxxxx]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestCompactText::test_eliding[6-'foobar'-'foobar']",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestCompactText::test_eliding[5-'foobar'-'foob\\u2026']",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestCompactText::test_eliding[5-'foo\\\\nbar'-'foob\\u2026']",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestCompactText::test_eliding[7-'foo\\\\nbar'-'foobar']",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestEliding::test_too_small",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestEliding::test_elided[foo-1-\\u2026]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestEliding::test_elided[foo-3-foo]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestEliding::test_elided[foobar-3-fo\\u2026]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestElidingFilenames::test_too_small",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestElidingFilenames::test_elided[foobar-3-...]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestElidingFilenames::test_elided[foobar.txt-50-foobar.txt]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestElidingFilenames::test_elided[foobarbazqux.py-10-foo...x.py]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_format_seconds[-1--0:01]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_format_seconds[0-0:00]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_format_seconds[59-0:59]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_format_seconds[60-1:00]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_format_seconds[60.4-1:00]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_format_seconds[61-1:01]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_format_seconds[-61--1:01]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_format_seconds[3599-59:59]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_format_seconds[3600-1:00:00]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_format_seconds[3601-1:00:01]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_format_seconds[36000-10:00:00]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_format_size[-1024--1.00k]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_format_size[-1--1.00]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_format_size[0-0.00]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_format_size[1023-1023.00]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_format_size[1024-1.00k]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_format_size[1034.24-1.01k]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_format_size[2097152-2.00M]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_format_size[1267650600228229401496703205376-1024.00Y]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_format_size[None-?.??]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_suffix[-1024--1.00k]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_suffix[-1--1.00]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_suffix[0-0.00]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_suffix[1023-1023.00]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_suffix[1024-1.00k]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_suffix[1034.24-1.01k]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_suffix[2097152-2.00M]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_suffix[1267650600228229401496703205376-1024.00Y]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_suffix[None-?.??]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_base[999-999.00]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_base[1000-1.00k]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFormatSize::test_base[1010-1.01k]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFakeIOStream::test_flush",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFakeIOStream::test_isatty",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFakeIOStream::test_write",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFakeIO::test_normal",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFakeIO::test_stdout_replaced",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestFakeIO::test_stderr_replaced",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestDisabledExcepthook::test_normal",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestDisabledExcepthook::test_changed",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestPreventExceptions::test_raising",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestPreventExceptions::test_not_raising",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestPreventExceptions::test_predicate_true",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestPreventExceptions::test_predicate_false",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_get_repr[False-attrs0-<test_utils.Obj>]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_get_repr[False-attrs1-<test_utils.Obj foo=None>]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_get_repr[False-attrs2-<test_utils.Obj baz=2 foo=\"b'ar\">]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_get_repr[True-attrs3-test_utils.Obj()]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_get_repr[True-attrs4-test_utils.Obj(foo=None)]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_get_repr[True-attrs5-test_utils.Obj(bar=2, foo=\"te'st\")]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_qualname[instance]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_qualname[class]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_qualname[unbound-method]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_qualname[bound-method]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_qualname[function]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_qualname[partial]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_qualname[module]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_qualname[submodule]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_qualname[from-import]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestIsEnum::test_enum",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestIsEnum::test_class",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestIsEnum::test_object",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestRaises::test_raises_int[ValueError-a-True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestRaises::test_raises_int[exception1-a-True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestRaises::test_raises_int[exception2-None-True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestRaises::test_raises_int[ValueError-1-False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestRaises::test_raises_int[exception4-1-False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestRaises::test_no_args_true",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestRaises::test_no_args_false",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestRaises::test_unrelated_exception",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_force_encoding[hello world-ascii-hello world]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_force_encoding[hell\\xf6 w\\xf6rld-utf-8-hell\\xf6 w\\xf6rld]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_force_encoding[hell\\xf6 w\\xf6rld-ascii-hell? w?rld]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestSanitizeFilename::test_special_chars[normal.txt-normal.txt]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestSanitizeFilename::test_special_chars[user/repo issues.mht-user_repo issues.mht]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestSanitizeFilename::test_special_chars[<Test\\\\File> - \"*?:|-_Test_File_ - _____]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestSanitizeFilename::test_special_chars[<Test\\\\File> - \"*?:|-<Test\\\\File> - \"*?_|]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestSanitizeFilename::test_special_chars[<Test\\\\File> - \"*?:|-<Test\\\\File> - \"*?:|]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestSanitizeFilename::test_special_chars[this is a very long filename which is probably longer than 255 bytes if I continue typing some more nonsense I will find out that a lot of nonsense actually fits in those 255 bytes still not finished wow okay only about 50 to go and 30 now finally enough.txt-this is a very long filename which is probably longer than 255 bytes if I continue typing some more nonsense I will find out that a lot of nonsense actually fits in those 255 bytes still not finished wow okay only about 50 to go and 30 now finally enough.txt]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestSanitizeFilename::test_shorten[this is a very long filename which is probably longer than 255 bytes if I continue typing some more nonsense I will find out that a lot of nonsense actually fits in those 255 bytes still not finished wow okay only about 50 to go and 30 now finally enough.txt-this is a very long filename which is probably longer than 255 bytes if I continue typing some more nonsense I will find out that a lot of nonsense actually fits in those 255 bytes still not finished wow okay only about 50 to go and 30 n.txt]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestSanitizeFilename::test_shorten[this is a very long .extension which is probably longer than 255 bytes if I continue typing some more nonsense I will find out that a lot of nonsense actually fits in those 255 bytes still not finished wow okay only about 50 to go and 30 now finally enough-this .extension which is probably longer than 255 bytes if I continue typing some more nonsense I will find out that a lot of nonsense actually fits in those 255 bytes still not finished wow okay only about 50 to go and 30 now finally enough]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestSanitizeFilename::test_empty_replacement",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestSanitizeFilename::test_invariants",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestGetSetClipboard::test_set",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestGetSetClipboard::test_set_unsupported_selection",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestGetSetClipboard::test_set_logging[True-primary selection-fake text-fake text]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestGetSetClipboard::test_set_logging[False-clipboard-fake text-fake text]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestGetSetClipboard::test_set_logging[False-clipboard-f\\xfcb-f\\\\u00fcb]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestGetSetClipboard::test_get",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestGetSetClipboard::test_get_empty[True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestGetSetClipboard::test_get_empty[False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestGetSetClipboard::test_get_unsupported_selection",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestGetSetClipboard::test_get_unsupported_selection_fallback",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestGetSetClipboard::test_get_fake_clipboard[True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestGetSetClipboard::test_get_fake_clipboard[False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestGetSetClipboard::test_supports_selection[True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestGetSetClipboard::test_supports_selection[False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestGetSetClipboard::test_fallback_without_selection",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestOpenFile::test_cmdline_without_argument",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestOpenFile::test_cmdline_with_argument",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestOpenFile::test_setting_override",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestOpenFile::test_system_default_application",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestOpenFile::test_cmdline_sandboxed",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestOpenFile::test_setting_override_sandboxed",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestOpenFile::test_system_default_sandboxed",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_unused",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_expand_windows_drive[E:-E:\\\\]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_expand_windows_drive[e:-e:\\\\]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_expand_windows_drive[E:foo-E:foo]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_expand_windows_drive[E:\\\\-E:\\\\]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_expand_windows_drive[E:\\\\foo-E:\\\\foo]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_expand_windows_drive[foo:-foo:]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_expand_windows_drive[foo:bar-foo:bar]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestYaml::test_load",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestYaml::test_load_float_bug",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestYaml::test_load_file",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestYaml::test_dump",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestYaml::test_dump_file",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_chunk[elems0-1-expected0]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_chunk[elems1-1-expected1]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_chunk[elems2-2-expected2]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_chunk[elems3-2-expected3]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_chunk_invalid[-1]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_chunk_invalid[0]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_guess_mimetype[test.jpg-image/jpeg]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_guess_mimetype[test.blabla-application/octet-stream]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_guess_mimetype_no_fallback",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_ceil_log_hypothesis",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_ceil_log_invalid[64-0]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_ceil_log_invalid[0-64]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_ceil_log_invalid[64--1]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_ceil_log_invalid[-1-64]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_ceil_log_invalid[1-1]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_libgl_workaround[True]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_libgl_workaround[False]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[0-0]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[0s-0]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[0.5s-500]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[59s-59000]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[60-60]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[60.4s-60400]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[1m1s-61000]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[1.5m-90000]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[1m-60000]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[1h-3600000]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[0.5h-1800000]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[1h1s-3601000]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[1h 1s-3601000]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[1h1m-3660000]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[1h1m1s-3661000]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[1h1m10s-3670000]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration[10h1m10s-36070000]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration_invalid[-1s]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration_invalid[-1]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration_invalid[34ss]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration_invalid[]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration_invalid[h]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration_invalid[1.s]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration_invalid[1.1.1s]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration_invalid[.1s]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration_invalid[.s]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration_invalid[10e5s]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration_invalid[5s10m]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_parse_duration_hypothesis",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_mimetype_extension[application/pdf-.pdf]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_mimetype_extension[text/plain-.txt]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_mimetype_extension[application/manifest+json-.webmanifest]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_mimetype_extension[text/xul-.xul]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::test_mimetype_extension[doesnot/exist-None]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestCleanupFileContext::test_no_file",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestCleanupFileContext::test_no_error",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestCleanupFileContext::test_error",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestCleanupFileContext::test_directory",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestParseRect::test_valid[1x1+0+0-expected0]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestParseRect::test_valid[123x789+12+34-expected1]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestParseRect::test_invalid[0x0+1+1-Invalid rectangle]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestParseRect::test_invalid[1x1-1+1-String 1x1-1+1 does not match WxH+X+Y]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestParseRect::test_invalid[1x1+1-1-String 1x1+1-1 does not match WxH+X+Y]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestParseRect::test_invalid[1x1-String 1x1 does not match WxH+X+Y]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestParseRect::test_invalid[+1+2-String +1+2 does not match WxH+X+Y]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestParseRect::test_invalid[1e0x1+0+0-String 1e0x1+0+0 does not match WxH+X+Y]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestParseRect::test_invalid[\\xb9x1+0+0-String \\xb9x1+0+0 does not match WxH+X+Y]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestParseRect::test_hypothesis_text",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestParseRect::test_hypothesis_sophisticated",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/utils/test_utils.py::TestParseRect::test_hypothesis_regex",
+          "status": "PASSED"
+        }
+      ]
+    }
+  },
+  "cleanup": {
+    "task_container_removed": true,
+    "task_workspace_removed": true,
+    "shared_image_retained": true
+  },
+  "public_export": {
+    "model_name_kind": "display_name",
+    "omitted": [
+      "development provider and route",
+      "local environment and paths",
+      "raw tool diagnostics"
+    ],
+    "note": "Redacted report, not runtime configuration. Scores and numeric usage are preserved; original evidence is retained locally."
+  }
+}

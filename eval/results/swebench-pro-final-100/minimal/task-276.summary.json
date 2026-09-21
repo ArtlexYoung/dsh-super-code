@@ -1,0 +1,1642 @@
+{
+  "schema": 1,
+  "run_id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-276-attempt-1",
+  "started_at": "2026-09-19T06:30:56.055Z",
+  "completed_at": "2026-09-19T06:39:50.646Z",
+  "preset": "minimal",
+  "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
+  "isolation": {
+    "schema": 1,
+    "policy": "swebench-pro-isolation-v3",
+    "passed": true,
+    "audited_sessions": 1,
+    "blocked_calls_count": 6,
+    "violations_count": 0
+  },
+  "candidate": null,
+  "task_index": 276,
+  "instance_id": "instance_qutebrowser__qutebrowser-ef5ba1a0360b39f9eff027fbdc57f363597c3c3b-v363c8a7e5ccdf6968fc7ab84a2053ac78036691d",
+  "repo": "qutebrowser/qutebrowser",
+  "base_commit": "9c056f288aefebbb95734fa3dc46a2405862405b",
+  "official_evaluator": {
+    "repository": "scaleapi/SWE-bench_Pro-os",
+    "commit": "ca10a60a5fcae51e6948ffe1485d4153d421e6c5",
+    "evaluator_sha256": "bb5d4c5486be296e464e695df3747064aaa3bb197394bc6d39980634afec2034",
+    "dataset_sha256": "b5b2462bfbf5aeb2cb7ba7d215778a1768b85f9d7ad7f748546c7f80a0ad1510",
+    "image_policy": "local-cache-only"
+  },
+  "image": {
+    "reference": "jefzda/sweap-images:qutebrowser.qutebrowser-qutebrowser__qutebrowser-ef5ba1a0360b39f9eff027fbdc57f363597c3c3b-v363c8a7e5ccdf6968fc7ab84a2053ac780366",
+    "acquisition_reference": "docker.1ms.run/jefzda/sweap-images:qutebrowser.qutebrowser-qutebrowser__qutebrowser-ef5ba1a0360b39f9eff027fbdc57f363597c3c3b-v363c8a7e5ccdf6968fc7ab84a2053ac780366",
+    "platform": "linux/amd64",
+    "id": "sha256:12f0f3f9f86df61f3cc265b3b24b99d6956418a107f1b9b73bcb83e595acf6d1",
+    "repo_digests": [
+      "docker.1ms.run/jefzda/sweap-images@sha256:12f0f3f9f86df61f3cc265b3b24b99d6956418a107f1b9b73bcb83e595acf6d1",
+      "jefzda/sweap-images@sha256:12f0f3f9f86df61f3cc265b3b24b99d6956418a107f1b9b73bcb83e595acf6d1"
+    ]
+  },
+  "page_runtime": {
+    "schema": 2,
+    "runtime": "deepseek-harness-web-rpc",
+    "mode": "agent-run",
+    "session_id": "session-cc5a03de-339f-4bf3-acda-f00d17b1be3c",
+    "web_rpc": {
+      "authenticated": true,
+      "calls": [
+        "session/create",
+        "session/list",
+        "session/selectModel",
+        "session/prompt",
+        "session/list"
+      ],
+      "prompt_submitted": true
+    },
+    "preset": "minimal",
+    "isolation": {
+      "policy": "swebench-pro-isolation-v3",
+      "permission_preset": "workspace-write",
+      "tool_guard": "workspace-files-and-assigned-offline-container"
+    },
+    "candidate": null,
+    "model": {
+      "display_name": "deepseek-v4.1-flash",
+      "reasoning_effort": "high",
+      "max_tokens": 384000
+    },
+    "elapsed_ms": 509371,
+    "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+  },
+  "metrics": {
+    "schema": 1,
+    "usage": {
+      "model_calls": 94,
+      "requests": 94,
+      "input_tokens": {
+        "count": 94,
+        "total": 3746936,
+        "average": 39861.02127659575,
+        "minimum": 1350,
+        "maximum": 80445
+      },
+      "uncached_input_tokens": {
+        "count": 94,
+        "total": 36600,
+        "average": 389.36170212765956,
+        "minimum": 136,
+        "maximum": 3489
+      },
+      "cached_input_tokens": {
+        "count": 94,
+        "total": 3710336,
+        "average": 39471.65957446808,
+        "minimum": 256,
+        "maximum": 80256
+      },
+      "output_tokens": {
+        "count": 94,
+        "total": 53792,
+        "average": 572.2553191489362,
+        "minimum": 86,
+        "maximum": 3304
+      },
+      "total_tokens": 3800728,
+      "cache_hit_rate": 0.9902320189082493
+    },
+    "timing_ms": {
+      "first_token": {
+        "count": 94,
+        "total": 98714,
+        "average": 1050.1489361702127,
+        "minimum": 445,
+        "maximum": 1702
+      },
+      "input_wait": {
+        "count": 94,
+        "total": 98714,
+        "average": 1050.1489361702127,
+        "minimum": 445,
+        "maximum": 1702
+      },
+      "output": {
+        "count": 94,
+        "total": 208018,
+        "average": 2212.9574468085107,
+        "minimum": 279,
+        "maximum": 12396
+      },
+      "llm": {
+        "count": 94,
+        "total": 306732,
+        "average": 3263.1063829787236,
+        "minimum": 821,
+        "maximum": 13351
+      },
+      "tools": {
+        "count": 93,
+        "total": 192109,
+        "average": 2065.6881720430106,
+        "minimum": 0,
+        "maximum": 44479
+      },
+      "output_tokens_per_second": 258.59300637444835
+    },
+    "session": {
+      "steps": 94,
+      "turns": 1,
+      "model_calls": 94,
+      "tool_calls": 93
+    }
+  },
+  "patch": {
+    "sha256": "bfbef7434cddfc4c87d598b884edda1e69d1e3beb8be8e0f23f9ae7f12180e60",
+    "bytes": 3140,
+    "changed_paths": [
+      "qutebrowser/config/configdata.yml",
+      "qutebrowser/config/qtargs.py"
+    ],
+    "excluded_generated_paths": []
+  },
+  "official_result": {
+    "passed": true,
+    "failure_kind": null,
+    "evaluator_exit_code": 0,
+    "parsed": {
+      "tests": [
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[POSIX.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[aa_DJ.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[aa_ER.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[aa_ER@saaho.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[aa_ET.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[af_ZA.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[agr_PE.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ak_GH.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[am_ET.UTF-8-am]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[an_ES.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[anp_IN.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_AE.UTF-8-ar]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_BH.UTF-8-ar]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_DZ.UTF-8-ar]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_EG.UTF-8-ar]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_IN.UTF-8-ar]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_IQ.UTF-8-ar]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_JO.UTF-8-ar]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_KW.UTF-8-ar]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_LB.UTF-8-ar]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_LY.UTF-8-ar]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_MA.UTF-8-ar]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_OM.UTF-8-ar]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_QA.UTF-8-ar]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_SA.UTF-8-ar]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_SD.UTF-8-ar]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_SS.UTF-8-ar]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_SY.UTF-8-ar]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_TN.UTF-8-ar]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ar_YE.UTF-8-ar]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[as_IN.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ast_ES.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ayc_PE.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[az_AZ.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[az_IR.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[be_BY.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[be_BY@latin.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[bem_ZM.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ber_DZ.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ber_MA.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[bg_BG.UTF-8-bg]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[bhb_IN.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[bho_IN.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[bho_NP.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[bi_VU.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[bn_BD.UTF-8-bn]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[bn_IN.UTF-8-bn]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[bo_CN.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[bo_IN.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[br_FR.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[br_FR@euro.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[brx_IN.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[bs_BA.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[byn_ER.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ca_AD.UTF-8-ca]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ca_ES.UTF-8-ca]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ca_ES@euro.UTF-8-ca]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ca_ES@valencia.UTF-8-ca]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ca_FR.UTF-8-ca]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ca_IT.UTF-8-ca]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ce_RU.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[chr_US.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ckb_IQ.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[cmn_TW.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[cns11643_stroke.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[crh_UA.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[cs_CZ.UTF-8-cs]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[csb_PL.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[cv_RU.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[cy_GB.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[da_DK.UTF-8-da]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[de_AT.UTF-8-de]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[de_AT@euro.UTF-8-de]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[de_BE.UTF-8-de]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[de_BE@euro.UTF-8-de]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[de_CH.UTF-8-de]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[de_DE.UTF-8-de]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[de_DE@euro.UTF-8-de]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[de_IT.UTF-8-de]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[de_LI.UTF-8-de]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[de_LU.UTF-8-de]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[de_LU@euro.UTF-8-de]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[doi_IN.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[dsb_DE.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[dv_MV.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[dz_BT.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[el_CY.UTF-8-el]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[el_GR.UTF-8-el]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[el_GR@euro.UTF-8-el]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_AG.UTF-8-en-GB]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_AU.UTF-8-en-GB]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_BW.UTF-8-en-GB]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_CA.UTF-8-en-GB]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_DK.UTF-8-en-GB]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_GB.UTF-8-en-GB]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_HK.UTF-8-en-GB]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_IE.UTF-8-en-GB]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_IE@euro.UTF-8-en-GB]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_IL.UTF-8-en-GB]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_IN.UTF-8-en-GB]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_LR.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_NG.UTF-8-en-GB]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_NZ.UTF-8-en-GB]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_PH.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_SC.UTF-8-en-GB]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_SG.UTF-8-en-GB]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_US.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_ZA.UTF-8-en-GB]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_ZM.UTF-8-en-GB]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[en_ZW.UTF-8-en-GB]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[eo.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_AR.UTF-8-es-419]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_BO.UTF-8-es-419]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_CL.UTF-8-es-419]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_CO.UTF-8-es-419]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_CR.UTF-8-es-419]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_CU.UTF-8-es-419]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_DO.UTF-8-es-419]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_EC.UTF-8-es-419]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_ES.UTF-8-es]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_ES@euro.UTF-8-es]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_GT.UTF-8-es-419]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_HN.UTF-8-es-419]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_MX.UTF-8-es-419]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_NI.UTF-8-es-419]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_PA.UTF-8-es-419]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_PE.UTF-8-es-419]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_PR.UTF-8-es-419]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_PY.UTF-8-es-419]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_SV.UTF-8-es-419]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_US.UTF-8-es-419]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_UY.UTF-8-es-419]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[es_VE.UTF-8-es-419]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[et_EE.UTF-8-et]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[eu_ES.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[eu_ES@euro.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fa_IR.UTF-8-fa]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ff_SN.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fi_FI.UTF-8-fi]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fi_FI@euro.UTF-8-fi]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fil_PH.UTF-8-fil]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fo_FO.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fr_BE.UTF-8-fr]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fr_BE@euro.UTF-8-fr]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fr_CA.UTF-8-fr]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fr_CH.UTF-8-fr]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fr_FR.UTF-8-fr]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fr_FR@euro.UTF-8-fr]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fr_LU.UTF-8-fr]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fr_LU@euro.UTF-8-fr]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fur_IT.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fy_DE.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[fy_NL.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ga_IE.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ga_IE@euro.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[gd_GB.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[gez_ER.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[gez_ER@abegede.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[gez_ET.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[gez_ET@abegede.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[gl_ES.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[gl_ES@euro.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[gu_IN.UTF-8-gu]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[gv_GB.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ha_NG.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[hak_TW.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[he_IL.UTF-8-he]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[hi_IN.UTF-8-hi]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[hif_FJ.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[hne_IN.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[hr_HR.UTF-8-hr]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[hsb_DE.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ht_HT.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[hu_HU.UTF-8-hu]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[hy_AM.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[i18n.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[i18n_ctype.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ia_FR.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[id_ID.UTF-8-id]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ig_NG.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ik_CA.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[is_IS.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[iso14651_t1.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[iso14651_t1_common.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[iso14651_t1_pinyin.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[it_CH.UTF-8-it]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[it_IT.UTF-8-it]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[it_IT@euro.UTF-8-it]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[iu_CA.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ja_JP.UTF-8-ja]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ka_GE.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[kab_DZ.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[kk_KZ.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[kl_GL.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[km_KH.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[kn_IN.UTF-8-kn]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ko_KR.UTF-8-ko]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[kok_IN.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ks_IN.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ks_IN@devanagari.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ku_TR.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[kw_GB.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ky_KG.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[lb_LU.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[lg_UG.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[li_BE.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[li_NL.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[lij_IT.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ln_CD.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[lo_LA.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[lt_LT.UTF-8-lt]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[lv_LV.UTF-8-lv]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[lzh_TW.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[mag_IN.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[mai_IN.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[mai_NP.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[mfe_MU.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[mg_MG.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[mhr_RU.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[mi_NZ.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[miq_NI.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[mjw_IN.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[mk_MK.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ml_IN.UTF-8-ml]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[mn_MN.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[mni_IN.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[mnw_MM.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[mr_IN.UTF-8-mr]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ms_MY.UTF-8-ms]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[mt_MT.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[my_MM.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[nan_TW.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[nan_TW@latin.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[nb_NO.UTF-8-nb]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[nds_DE.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[nds_NL.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ne_NP.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[nhn_MX.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[niu_NU.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[niu_NZ.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[nl_AW.UTF-8-nl]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[nl_BE.UTF-8-nl]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[nl_BE@euro.UTF-8-nl]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[nl_NL.UTF-8-nl]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[nl_NL@euro.UTF-8-nl]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[nn_NO.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[nr_ZA.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[nso_ZA.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[oc_FR.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[om_ET.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[om_KE.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[or_IN.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[os_RU.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[pa_IN.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[pa_PK.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[pap_AW.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[pap_CW.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[pl_PL.UTF-8-pl]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ps_AF.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[pt_BR.UTF-8-pt-BR]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[pt_PT.UTF-8-pt-PT]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[pt_PT@euro.UTF-8-pt-PT]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[pt_XX.UTF-8-pt-PT]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[quz_PE.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[raj_IN.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ro_RO.UTF-8-ro]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ru_RU.UTF-8-ru]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ru_UA.UTF-8-ru]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[rw_RW.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sa_IN.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sah_RU.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sat_IN.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sc_IT.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sd_IN.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sd_IN@devanagari.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[se_NO.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sgs_LT.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[shn_MM.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[shs_CA.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[si_LK.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sid_ET.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sk_SK.UTF-8-sk]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sl_SI.UTF-8-sl]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sm_WS.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[so_DJ.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[so_ET.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[so_KE.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[so_SO.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sq_AL.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sq_MK.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sr_ME.UTF-8-sr]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sr_RS.UTF-8-sr]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sr_RS@latin.UTF-8-sr]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ss_ZA.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[st_ZA.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sv_FI.UTF-8-sv]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sv_FI@euro.UTF-8-sv]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sv_SE.UTF-8-sv]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sw_KE.UTF-8-sw]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[sw_TZ.UTF-8-sw]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[szl_PL.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ta_IN.UTF-8-ta]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ta_LK.UTF-8-ta]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[tcy_IN.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[te_IN.UTF-8-te]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[tg_TJ.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[th_TH.UTF-8-th]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[the_NP.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ti_ER.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ti_ET.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[tig_ER.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[tk_TM.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[tl_PH.UTF-8-fil]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[tn_ZA.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[to_TO.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[tpi_PG.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[tr_CY.UTF-8-tr]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[tr_TR.UTF-8-tr]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[translit_circle.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[translit_cjk_compat.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[translit_cjk_variants.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[translit_combining.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[translit_compat.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[translit_font.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[translit_fraction.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[translit_hangul.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[translit_narrow.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[translit_neutral.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[translit_small.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[translit_wide.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ts_ZA.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[tt_RU.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[tt_RU@iqtelif.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ug_CN.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[uk_UA.UTF-8-uk]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[unm_US.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ur_IN.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ur_PK.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[uz_UZ.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[uz_UZ@cyrillic.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[ve_ZA.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[vi_VN.UTF-8-vi]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[wa_BE.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[wa_BE@euro.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[wae_CH.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[wal_ET.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[wo_SN.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[xh_ZA.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[yi_US.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[yo_NG.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[yue_HK.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[yuw_PG.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[zh_CN.UTF-8-zh-CN]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[zh_HK.UTF-8-zh-TW]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[zh_SG.UTF-8-zh-CN]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[zh_TW.UTF-8-zh-TW]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[zh_MO.UTF-8-zh-TW]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[zh_XX.UTF-8-zh-CN]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_lang_workaround_all_locales[zu_ZA.UTF-8-en-US]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_different_qt_version[version0]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_different_qt_version[version1]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_different_qt_version[version2]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_different_qt_version[version3]",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_non_linux",
+          "status": "PASSED"
+        },
+        {
+          "name": "tests/unit/config/test_qtargs_locale_workaround.py::test_disabled",
+          "status": "PASSED"
+        }
+      ]
+    }
+  },
+  "cleanup": {
+    "task_container_removed": true,
+    "task_workspace_removed": true,
+    "shared_image_retained": true
+  },
+  "public_export": {
+    "model_name_kind": "display_name",
+    "omitted": [
+      "development provider and route",
+      "local environment and paths",
+      "raw tool diagnostics"
+    ],
+    "note": "Redacted report, not runtime configuration. Scores and numeric usage are preserved; original evidence is retained locally."
+  }
+}

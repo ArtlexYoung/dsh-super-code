@@ -1,0 +1,189 @@
+{
+  "schema": 1,
+  "run_id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-008-attempt-1",
+  "started_at": "2026-09-18T08:37:18.417Z",
+  "completed_at": "2026-09-18T08:37:18.418Z",
+  "preset": "minimal",
+  "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
+  "isolation": {
+    "schema": 1,
+    "policy": "swebench-pro-isolation-v3",
+    "passed": true,
+    "audited_sessions": 1,
+    "blocked_calls_count": 4,
+    "violations_count": 0
+  },
+  "candidate": null,
+  "task_index": 8,
+  "instance_id": "instance_gravitational__teleport-3fa6904377c006497169945428e8197158667910-v626ec2a48416b10a88641359a169d99e935ff037",
+  "repo": "gravitational/teleport",
+  "base_commit": "481158d6310e36e3c1115e25ab3fdf1c1ed45e60",
+  "official_evaluator": {
+    "repository": "scaleapi/SWE-bench_Pro-os",
+    "commit": "ca10a60a5fcae51e6948ffe1485d4153d421e6c5",
+    "evaluator_sha256": "bb5d4c5486be296e464e695df3747064aaa3bb197394bc6d39980634afec2034",
+    "dataset_sha256": "b5b2462bfbf5aeb2cb7ba7d215778a1768b85f9d7ad7f748546c7f80a0ad1510",
+    "image_policy": "local-cache-only",
+    "rescore_attempt": 1
+  },
+  "image": {
+    "reference": "jefzda/sweap-images:gravitational.teleport-gravitational__teleport-3fa6904377c006497169945428e8197158667910-v626ec2a48416b10a88641359a169d99e935ff03",
+    "acquisition_reference": "jefzda/sweap-images:gravitational.teleport-gravitational__teleport-3fa6904377c006497169945428e8197158667910-v626ec2a48416b10a88641359a169d99e935ff03",
+    "platform": "linux/amd64",
+    "id": "sha256:9c5f6e734430379709f93f53e5549b4174a3f3d66969b0e74077e812ad457843",
+    "repo_digests": [
+      "jefzda/sweap-images@sha256:9c5f6e734430379709f93f53e5549b4174a3f3d66969b0e74077e812ad457843",
+      "hub.rat.dev/jefzda/sweap-images@sha256:9c5f6e734430379709f93f53e5549b4174a3f3d66969b0e74077e812ad457843"
+    ]
+  },
+  "page_runtime": {
+    "schema": 2,
+    "runtime": "deepseek-harness-web-rpc",
+    "mode": "agent-run",
+    "session_id": "session-523c2397-5ddd-4919-9e44-bbac47c73504",
+    "web_rpc": {
+      "authenticated": true,
+      "calls": [
+        "session/create",
+        "session/selectModel",
+        "session/prompt",
+        "session/list"
+      ],
+      "prompt_submitted": true
+    },
+    "preset": "minimal",
+    "isolation": {
+      "policy": "swebench-pro-isolation-v3",
+      "permission_preset": "workspace-write",
+      "tool_guard": "workspace-files-and-assigned-offline-container"
+    },
+    "candidate": null,
+    "model": {
+      "display_name": "deepseek-v4.1-flash",
+      "reasoning_effort": "high",
+      "max_tokens": 384000
+    },
+    "elapsed_ms": 2413743,
+    "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+  },
+  "metrics": {
+    "schema": 1,
+    "usage": {
+      "model_calls": 201,
+      "requests": 201,
+      "input_tokens": {
+        "count": 201,
+        "total": 25836108,
+        "average": 128537.85074626865,
+        "minimum": 1691,
+        "maximum": 221346
+      },
+      "uncached_input_tokens": {
+        "count": 201,
+        "total": 113740,
+        "average": 565.8706467661691,
+        "minimum": 134,
+        "maximum": 4764
+      },
+      "cached_input_tokens": {
+        "count": 201,
+        "total": 25722368,
+        "average": 127971.98009950249,
+        "minimum": 1408,
+        "maximum": 221184
+      },
+      "output_tokens": {
+        "count": 201,
+        "total": 129515,
+        "average": 644.3532338308457,
+        "minimum": 90,
+        "maximum": 13730
+      },
+      "total_tokens": 25965623,
+      "cache_hit_rate": 0.9955976341328191
+    },
+    "timing_ms": {
+      "first_token": {
+        "count": 201,
+        "total": 376334,
+        "average": 1872.3084577114428,
+        "minimum": 574,
+        "maximum": 11770
+      },
+      "input_wait": {
+        "count": 201,
+        "total": 376334,
+        "average": 1872.3084577114428,
+        "minimum": 574,
+        "maximum": 11770
+      },
+      "output": {
+        "count": 201,
+        "total": 546401,
+        "average": 2718.412935323383,
+        "minimum": 232,
+        "maximum": 55181
+      },
+      "llm": {
+        "count": 201,
+        "total": 922735,
+        "average": 4590.721393034826,
+        "minimum": 902,
+        "maximum": 56491
+      },
+      "tools": {
+        "count": 200,
+        "total": 1479324,
+        "average": 7396.62,
+        "minimum": 0,
+        "maximum": 303314
+      },
+      "output_tokens_per_second": 237.03287512284936
+    },
+    "session": {
+      "steps": 201,
+      "turns": 1,
+      "model_calls": 201,
+      "tool_calls": 200
+    }
+  },
+  "patch": {
+    "sha256": "6bd4604e2bcd1b866da6b61871fe5e0801664b1b207341b777c0dc7ba6336ff7",
+    "bytes": 39225,
+    "changed_paths": [
+      "lib/kube/proxy/forwarder.go",
+      "lib/kube/proxy/server.go",
+      "lib/service/kubernetes.go",
+      "lib/service/service.go"
+    ],
+    "excluded_generated_paths": [],
+    "recovered_from_persisted_session": true
+  },
+  "official_result": {
+    "passed": false,
+    "failure_kind": "official_test_failure",
+    "evaluator_exit_code": 0,
+    "parsed": {
+      "tests": [
+        {
+          "name": "NO_TESTS_FOUND_OR_PARSING_ERROR",
+          "status": "ERROR"
+        }
+      ]
+    }
+  },
+  "cleanup": {
+    "task_container_removed": true,
+    "task_workspace_removed": true,
+    "shared_image_retained": true
+  },
+  "public_export": {
+    "model_name_kind": "display_name",
+    "omitted": [
+      "development provider and route",
+      "local environment and paths",
+      "raw tool diagnostics"
+    ],
+    "note": "Redacted report, not runtime configuration. Scores and numeric usage are preserved; original evidence is retained locally."
+  }
+}

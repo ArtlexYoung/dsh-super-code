@@ -1,0 +1,2872 @@
+{
+  "schema": 1,
+  "run_id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-085-attempt-1",
+  "started_at": "2026-09-20T07:43:30.464Z",
+  "completed_at": "2026-09-20T07:43:30.465Z",
+  "preset": "minimal",
+  "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
+  "isolation": {
+    "schema": 1,
+    "policy": "swebench-pro-isolation-v3",
+    "policy_revision": 3,
+    "passed": true,
+    "repository_isolation": {
+      "base_only_git": true,
+      "commit_count": 1,
+      "remotes": [],
+      "target_commit_unavailable": true,
+      "test_container_network": "none"
+    },
+    "audited_sessions": 1,
+    "blocked_calls_count": 2,
+    "observations_count": 0,
+    "violations_count": 0
+  },
+  "candidate": null,
+  "task_index": 85,
+  "instance_id": "instance_element-hq__element-web-71fe08ea0f159ccb707904d87f0a4aef205a167c-vnan",
+  "repo": "element-hq/element-web",
+  "base_commit": "c153a4d3885b6359f8bfe2b056f56db23ab4c9d8",
+  "official_evaluator": {
+    "repository": "scaleapi/SWE-bench_Pro-os",
+    "commit": "ca10a60a5fcae51e6948ffe1485d4153d421e6c5",
+    "evaluator_sha256": "bb5d4c5486be296e464e695df3747064aaa3bb197394bc6d39980634afec2034",
+    "dataset_sha256": "b5b2462bfbf5aeb2cb7ba7d215778a1768b85f9d7ad7f748546c7f80a0ad1510",
+    "image_policy": "local-cache-only",
+    "rescore_attempt": 2
+  },
+  "image": {
+    "reference": "jefzda/sweap-images:element-hq.element-element-hq__element-web-71fe08ea0f159ccb707904d87f0a4aef205a167c",
+    "acquisition_reference": "jefzda/sweap-images:element-hq.element-element-hq__element-web-71fe08ea0f159ccb707904d87f0a4aef205a167c",
+    "platform": "linux/amd64",
+    "id": "sha256:1366e516a73d561dcfeaeb88ca90ae88b46e80e557153482b621ef56058f46a0",
+    "repo_digests": [
+      "docker.1ms.run/jefzda/sweap-images@sha256:1366e516a73d561dcfeaeb88ca90ae88b46e80e557153482b621ef56058f46a0",
+      "jefzda/sweap-images@sha256:1366e516a73d561dcfeaeb88ca90ae88b46e80e557153482b621ef56058f46a0"
+    ]
+  },
+  "page_runtime": {
+    "schema": 2,
+    "runtime": "deepseek-harness-web-rpc",
+    "mode": "agent-run",
+    "session_id": "session-edbcd7d1-48bc-408e-975e-a43380763749",
+    "web_rpc": {
+      "authenticated": true,
+      "calls": [
+        "session/create",
+        "session/list",
+        "session/selectModel",
+        "session/prompt",
+        "session/list"
+      ],
+      "prompt_submitted": true
+    },
+    "preset": "minimal",
+    "isolation": {
+      "policy": "swebench-pro-isolation-v3",
+      "permission_preset": "workspace-write",
+      "tool_guard": "workspace-files-and-assigned-offline-container"
+    },
+    "candidate": null,
+    "model": {
+      "display_name": "deepseek-v4.1-flash",
+      "reasoning_effort": "high",
+      "max_tokens": 384000
+    },
+    "elapsed_ms": 833919,
+    "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+  },
+  "metrics": {
+    "schema": 2,
+    "accounting": {
+      "observed_requests": 109,
+      "requests_with_usage": 109,
+      "unknown_usage_requests": 0,
+      "cost_complete": false,
+      "actual_cost": null,
+      "reason": "Observed log usage only; request inventory and billing reconciliation required",
+      "ledger": [
+        {
+          "id": "1/1/0",
+          "usage": {
+            "inputTokens": 1124,
+            "outputTokens": 136,
+            "totalTokens": 1516,
+            "cacheReadTokens": 256
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 13,
+          "time": 1789798137190
+        },
+        {
+          "id": "1/2/0",
+          "usage": {
+            "inputTokens": 219,
+            "outputTokens": 106,
+            "totalTokens": 1733,
+            "cacheReadTokens": 1408
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 18,
+          "time": 1789798139790
+        },
+        {
+          "id": "1/3/0",
+          "usage": {
+            "inputTokens": 248,
+            "outputTokens": 101,
+            "totalTokens": 1885,
+            "cacheReadTokens": 1536
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 23,
+          "time": 1789798141232
+        },
+        {
+          "id": "1/4/0",
+          "usage": {
+            "inputTokens": 1831,
+            "outputTokens": 393,
+            "totalTokens": 4016,
+            "cacheReadTokens": 1792
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 28,
+          "time": 1789798143719
+        },
+        {
+          "id": "1/5/0",
+          "usage": {
+            "inputTokens": 1541,
+            "outputTokens": 369,
+            "totalTokens": 5878,
+            "cacheReadTokens": 3968
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 37,
+          "time": 1789798147423
+        },
+        {
+          "id": "1/6/0",
+          "usage": {
+            "inputTokens": 7054,
+            "outputTokens": 316,
+            "totalTokens": 13130,
+            "cacheReadTokens": 5760
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 46,
+          "time": 1789798150103
+        },
+        {
+          "id": "1/7/0",
+          "usage": {
+            "inputTokens": 3635,
+            "outputTokens": 380,
+            "totalTokens": 17071,
+            "cacheReadTokens": 13056
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 55,
+          "time": 1789798152969
+        },
+        {
+          "id": "1/8/0",
+          "usage": {
+            "inputTokens": 5700,
+            "outputTokens": 145,
+            "totalTokens": 22869,
+            "cacheReadTokens": 17024
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 64,
+          "time": 1789798155621
+        },
+        {
+          "id": "1/9/0",
+          "usage": {
+            "inputTokens": 919,
+            "outputTokens": 482,
+            "totalTokens": 24185,
+            "cacheReadTokens": 22784
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 69,
+          "time": 1789798158502
+        },
+        {
+          "id": "1/10/0",
+          "usage": {
+            "inputTokens": 232,
+            "outputTokens": 209,
+            "totalTokens": 24505,
+            "cacheReadTokens": 24064
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 78,
+          "time": 1789798160670
+        },
+        {
+          "id": "1/11/0",
+          "usage": {
+            "inputTokens": 402,
+            "outputTokens": 115,
+            "totalTokens": 24965,
+            "cacheReadTokens": 24448
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 83,
+          "time": 1789798162592
+        },
+        {
+          "id": "1/12/0",
+          "usage": {
+            "inputTokens": 580,
+            "outputTokens": 126,
+            "totalTokens": 25666,
+            "cacheReadTokens": 24960
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 88,
+          "time": 1789798164441
+        },
+        {
+          "id": "1/13/0",
+          "usage": {
+            "inputTokens": 499,
+            "outputTokens": 367,
+            "totalTokens": 26466,
+            "cacheReadTokens": 25600
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 93,
+          "time": 1789798167428
+        },
+        {
+          "id": "1/14/0",
+          "usage": {
+            "inputTokens": 197,
+            "outputTokens": 103,
+            "totalTokens": 26668,
+            "cacheReadTokens": 26368
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 98,
+          "time": 1789798169390
+        },
+        {
+          "id": "1/15/0",
+          "usage": {
+            "inputTokens": 1232,
+            "outputTokens": 694,
+            "totalTokens": 28550,
+            "cacheReadTokens": 26624
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 103,
+          "time": 1789798173614
+        },
+        {
+          "id": "1/16/0",
+          "usage": {
+            "inputTokens": 1424,
+            "outputTokens": 787,
+            "totalTokens": 30755,
+            "cacheReadTokens": 28544
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 108,
+          "time": 1789798178347
+        },
+        {
+          "id": "1/17/0",
+          "usage": {
+            "inputTokens": 1423,
+            "outputTokens": 176,
+            "totalTokens": 32319,
+            "cacheReadTokens": 30720
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 115,
+          "time": 1789798181141
+        },
+        {
+          "id": "1/18/0",
+          "usage": {
+            "inputTokens": 1113,
+            "outputTokens": 216,
+            "totalTokens": 33585,
+            "cacheReadTokens": 32256
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 120,
+          "time": 1789798183161
+        },
+        {
+          "id": "1/19/0",
+          "usage": {
+            "inputTokens": 1314,
+            "outputTokens": 112,
+            "totalTokens": 34962,
+            "cacheReadTokens": 33536
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 127,
+          "time": 1789798185041
+        },
+        {
+          "id": "1/20/0",
+          "usage": {
+            "inputTokens": 284,
+            "outputTokens": 128,
+            "totalTokens": 35356,
+            "cacheReadTokens": 34944
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 132,
+          "time": 1789798186990
+        },
+        {
+          "id": "1/21/0",
+          "usage": {
+            "inputTokens": 836,
+            "outputTokens": 106,
+            "totalTokens": 36270,
+            "cacheReadTokens": 35328
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 137,
+          "time": 1789798188595
+        },
+        {
+          "id": "1/22/0",
+          "usage": {
+            "inputTokens": 194,
+            "outputTokens": 123,
+            "totalTokens": 36413,
+            "cacheReadTokens": 36096
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 142,
+          "time": 1789798190181
+        },
+        {
+          "id": "1/23/0",
+          "usage": {
+            "inputTokens": 444,
+            "outputTokens": 217,
+            "totalTokens": 37013,
+            "cacheReadTokens": 36352
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 147,
+          "time": 1789798192209
+        },
+        {
+          "id": "1/24/0",
+          "usage": {
+            "inputTokens": 440,
+            "outputTokens": 243,
+            "totalTokens": 37675,
+            "cacheReadTokens": 36992
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 152,
+          "time": 1789798194486
+        },
+        {
+          "id": "1/25/0",
+          "usage": {
+            "inputTokens": 5353,
+            "outputTokens": 231,
+            "totalTokens": 43216,
+            "cacheReadTokens": 37632
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 157,
+          "time": 1789798196780
+        },
+        {
+          "id": "1/26/0",
+          "usage": {
+            "inputTokens": 4397,
+            "outputTokens": 361,
+            "totalTokens": 47894,
+            "cacheReadTokens": 43136
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 162,
+          "time": 1789798200116
+        },
+        {
+          "id": "1/27/0",
+          "usage": {
+            "inputTokens": 1155,
+            "outputTokens": 215,
+            "totalTokens": 49242,
+            "cacheReadTokens": 47872
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 167,
+          "time": 1789798202580
+        },
+        {
+          "id": "1/28/0",
+          "usage": {
+            "inputTokens": 517,
+            "outputTokens": 730,
+            "totalTokens": 50399,
+            "cacheReadTokens": 49152
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 172,
+          "time": 1789798206942
+        },
+        {
+          "id": "1/29/0",
+          "usage": {
+            "inputTokens": 243,
+            "outputTokens": 140,
+            "totalTokens": 50559,
+            "cacheReadTokens": 50176
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 177,
+          "time": 1789798211513
+        },
+        {
+          "id": "1/30/0",
+          "usage": {
+            "inputTokens": 650,
+            "outputTokens": 1214,
+            "totalTokens": 52296,
+            "cacheReadTokens": 50432
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 182,
+          "time": 1789798218257
+        },
+        {
+          "id": "1/31/0",
+          "usage": {
+            "inputTokens": 2673,
+            "outputTokens": 524,
+            "totalTokens": 55421,
+            "cacheReadTokens": 52224
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 187,
+          "time": 1789798222086
+        },
+        {
+          "id": "1/32/0",
+          "usage": {
+            "inputTokens": 1301,
+            "outputTokens": 557,
+            "totalTokens": 57154,
+            "cacheReadTokens": 55296
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 192,
+          "time": 1789798226121
+        },
+        {
+          "id": "1/33/0",
+          "usage": {
+            "inputTokens": 1842,
+            "outputTokens": 710,
+            "totalTokens": 59640,
+            "cacheReadTokens": 57088
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 197,
+          "time": 1789798230784
+        },
+        {
+          "id": "1/34/0",
+          "usage": {
+            "inputTokens": 140,
+            "outputTokens": 373,
+            "totalTokens": 60033,
+            "cacheReadTokens": 59520
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 202,
+          "time": 1789798234517
+        },
+        {
+          "id": "1/35/0",
+          "usage": {
+            "inputTokens": 2881,
+            "outputTokens": 387,
+            "totalTokens": 63300,
+            "cacheReadTokens": 60032
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 207,
+          "time": 1789798238357
+        },
+        {
+          "id": "1/36/0",
+          "usage": {
+            "inputTokens": 568,
+            "outputTokens": 3319,
+            "totalTokens": 67119,
+            "cacheReadTokens": 63232
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 212,
+          "time": 1789798254045
+        },
+        {
+          "id": "1/37/0",
+          "usage": {
+            "inputTokens": 333,
+            "outputTokens": 4517,
+            "totalTokens": 71922,
+            "cacheReadTokens": 67072
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 217,
+          "time": 1789798275363
+        },
+        {
+          "id": "1/38/0",
+          "usage": {
+            "inputTokens": 157,
+            "outputTokens": 252,
+            "totalTokens": 72217,
+            "cacheReadTokens": 71808
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 222,
+          "time": 1789798278091
+        },
+        {
+          "id": "1/39/0",
+          "usage": {
+            "inputTokens": 431,
+            "outputTokens": 109,
+            "totalTokens": 72732,
+            "cacheReadTokens": 72192
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 227,
+          "time": 1789798294455
+        },
+        {
+          "id": "1/40/0",
+          "usage": {
+            "inputTokens": 176,
+            "outputTokens": 480,
+            "totalTokens": 73232,
+            "cacheReadTokens": 72576
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 232,
+          "time": 1789798298054
+        },
+        {
+          "id": "1/41/0",
+          "usage": {
+            "inputTokens": 200,
+            "outputTokens": 335,
+            "totalTokens": 73623,
+            "cacheReadTokens": 73088
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 237,
+          "time": 1789798300617
+        },
+        {
+          "id": "1/42/0",
+          "usage": {
+            "inputTokens": 171,
+            "outputTokens": 124,
+            "totalTokens": 73767,
+            "cacheReadTokens": 73472
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 242,
+          "time": 1789798302890
+        },
+        {
+          "id": "1/43/0",
+          "usage": {
+            "inputTokens": 563,
+            "outputTokens": 125,
+            "totalTokens": 74416,
+            "cacheReadTokens": 73728
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 247,
+          "time": 1789798305134
+        },
+        {
+          "id": "1/44/0",
+          "usage": {
+            "inputTokens": 310,
+            "outputTokens": 238,
+            "totalTokens": 74916,
+            "cacheReadTokens": 74368
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 252,
+          "time": 1789798307590
+        },
+        {
+          "id": "1/45/0",
+          "usage": {
+            "inputTokens": 184,
+            "outputTokens": 360,
+            "totalTokens": 75296,
+            "cacheReadTokens": 74752
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 257,
+          "time": 1789798310306
+        },
+        {
+          "id": "1/46/0",
+          "usage": {
+            "inputTokens": 180,
+            "outputTokens": 94,
+            "totalTokens": 75410,
+            "cacheReadTokens": 75136
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 262,
+          "time": 1789798312711
+        },
+        {
+          "id": "1/47/0",
+          "usage": {
+            "inputTokens": 316,
+            "outputTokens": 243,
+            "totalTokens": 75951,
+            "cacheReadTokens": 75392
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 267,
+          "time": 1789798315208
+        },
+        {
+          "id": "1/48/0",
+          "usage": {
+            "inputTokens": 195,
+            "outputTokens": 167,
+            "totalTokens": 76138,
+            "cacheReadTokens": 75776
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 272,
+          "time": 1789798317460
+        },
+        {
+          "id": "1/49/0",
+          "usage": {
+            "inputTokens": 254,
+            "outputTokens": 267,
+            "totalTokens": 76425,
+            "cacheReadTokens": 75904
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 277,
+          "time": 1789798320261
+        },
+        {
+          "id": "1/50/0",
+          "usage": {
+            "inputTokens": 216,
+            "outputTokens": 181,
+            "totalTokens": 76685,
+            "cacheReadTokens": 76288
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 282,
+          "time": 1789798322425
+        },
+        {
+          "id": "1/51/0",
+          "usage": {
+            "inputTokens": 205,
+            "outputTokens": 229,
+            "totalTokens": 76978,
+            "cacheReadTokens": 76544
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 287,
+          "time": 1789798325054
+        },
+        {
+          "id": "1/52/0",
+          "usage": {
+            "inputTokens": 254,
+            "outputTokens": 273,
+            "totalTokens": 77327,
+            "cacheReadTokens": 76800
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 292,
+          "time": 1789798327811
+        },
+        {
+          "id": "1/53/0",
+          "usage": {
+            "inputTokens": 404,
+            "outputTokens": 126,
+            "totalTokens": 77842,
+            "cacheReadTokens": 77312
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 297,
+          "time": 1789798343097
+        },
+        {
+          "id": "1/54/0",
+          "usage": {
+            "inputTokens": 1544,
+            "outputTokens": 253,
+            "totalTokens": 79621,
+            "cacheReadTokens": 77824
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 302,
+          "time": 1789798346363
+        },
+        {
+          "id": "1/55/0",
+          "usage": {
+            "inputTokens": 469,
+            "outputTokens": 394,
+            "totalTokens": 80479,
+            "cacheReadTokens": 79616
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 307,
+          "time": 1789798349732
+        },
+        {
+          "id": "1/56/0",
+          "usage": {
+            "inputTokens": 243,
+            "outputTokens": 120,
+            "totalTokens": 80619,
+            "cacheReadTokens": 80256
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 312,
+          "time": 1789798353248
+        },
+        {
+          "id": "1/57/0",
+          "usage": {
+            "inputTokens": 465,
+            "outputTokens": 479,
+            "totalTokens": 81456,
+            "cacheReadTokens": 80512
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 317,
+          "time": 1789798357295
+        },
+        {
+          "id": "1/58/0",
+          "usage": {
+            "inputTokens": 334,
+            "outputTokens": 110,
+            "totalTokens": 81852,
+            "cacheReadTokens": 81408
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 322,
+          "time": 1789798359498
+        },
+        {
+          "id": "1/59/0",
+          "usage": {
+            "inputTokens": 811,
+            "outputTokens": 390,
+            "totalTokens": 82993,
+            "cacheReadTokens": 81792
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 327,
+          "time": 1789798362827
+        },
+        {
+          "id": "1/60/0",
+          "usage": {
+            "inputTokens": 202,
+            "outputTokens": 137,
+            "totalTokens": 83155,
+            "cacheReadTokens": 82816
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 332,
+          "time": 1789798364990
+        },
+        {
+          "id": "1/61/0",
+          "usage": {
+            "inputTokens": 236,
+            "outputTokens": 594,
+            "totalTokens": 83774,
+            "cacheReadTokens": 82944
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 337,
+          "time": 1789798369403
+        },
+        {
+          "id": "1/62/0",
+          "usage": {
+            "inputTokens": 167,
+            "outputTokens": 338,
+            "totalTokens": 84217,
+            "cacheReadTokens": 83712
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 342,
+          "time": 1789798373176
+        },
+        {
+          "id": "1/63/0",
+          "usage": {
+            "inputTokens": 208,
+            "outputTokens": 139,
+            "totalTokens": 84443,
+            "cacheReadTokens": 84096
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 347,
+          "time": 1789798375524
+        },
+        {
+          "id": "1/64/0",
+          "usage": {
+            "inputTokens": 464,
+            "outputTokens": 400,
+            "totalTokens": 85216,
+            "cacheReadTokens": 84352
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 352,
+          "time": 1789798379052
+        },
+        {
+          "id": "1/65/0",
+          "usage": {
+            "inputTokens": 182,
+            "outputTokens": 241,
+            "totalTokens": 85543,
+            "cacheReadTokens": 85120
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 357,
+          "time": 1789798382330
+        },
+        {
+          "id": "1/66/0",
+          "usage": {
+            "inputTokens": 1636,
+            "outputTokens": 543,
+            "totalTokens": 87683,
+            "cacheReadTokens": 85504
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 362,
+          "time": 1789798386746
+        },
+        {
+          "id": "1/67/0",
+          "usage": {
+            "inputTokens": 974,
+            "outputTokens": 120,
+            "totalTokens": 88774,
+            "cacheReadTokens": 87680
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 367,
+          "time": 1789798388946
+        },
+        {
+          "id": "1/68/0",
+          "usage": {
+            "inputTokens": 902,
+            "outputTokens": 131,
+            "totalTokens": 89737,
+            "cacheReadTokens": 88704
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 372,
+          "time": 1789798391074
+        },
+        {
+          "id": "1/69/0",
+          "usage": {
+            "inputTokens": 539,
+            "outputTokens": 482,
+            "totalTokens": 90749,
+            "cacheReadTokens": 89728
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 377,
+          "time": 1789798395090
+        },
+        {
+          "id": "1/70/0",
+          "usage": {
+            "inputTokens": 216,
+            "outputTokens": 1112,
+            "totalTokens": 91952,
+            "cacheReadTokens": 90624
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 382,
+          "time": 1789798401793
+        },
+        {
+          "id": "1/71/0",
+          "usage": {
+            "inputTokens": 196,
+            "outputTokens": 104,
+            "totalTokens": 92076,
+            "cacheReadTokens": 91776
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 387,
+          "time": 1789798404147
+        },
+        {
+          "id": "1/72/0",
+          "usage": {
+            "inputTokens": 529,
+            "outputTokens": 335,
+            "totalTokens": 92896,
+            "cacheReadTokens": 92032
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 392,
+          "time": 1789798407498
+        },
+        {
+          "id": "1/73/0",
+          "usage": {
+            "inputTokens": 891,
+            "outputTokens": 406,
+            "totalTokens": 94097,
+            "cacheReadTokens": 92800
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 397,
+          "time": 1789798470239
+        },
+        {
+          "id": "1/74/0",
+          "usage": {
+            "inputTokens": 228,
+            "outputTokens": 404,
+            "totalTokens": 94584,
+            "cacheReadTokens": 93952
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 402,
+          "time": 1789798473963
+        },
+        {
+          "id": "1/75/0",
+          "usage": {
+            "inputTokens": 251,
+            "outputTokens": 1048,
+            "totalTokens": 95763,
+            "cacheReadTokens": 94464
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 407,
+          "time": 1789798480215
+        },
+        {
+          "id": "1/76/0",
+          "usage": {
+            "inputTokens": 167,
+            "outputTokens": 810,
+            "totalTokens": 96593,
+            "cacheReadTokens": 95616
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 412,
+          "time": 1789798493222
+        },
+        {
+          "id": "1/77/0",
+          "usage": {
+            "inputTokens": 2177,
+            "outputTokens": 300,
+            "totalTokens": 98989,
+            "cacheReadTokens": 96512
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 417,
+          "time": 1789798496623
+        },
+        {
+          "id": "1/78/0",
+          "usage": {
+            "inputTokens": 193,
+            "outputTokens": 130,
+            "totalTokens": 99139,
+            "cacheReadTokens": 98816
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 422,
+          "time": 1789798499228
+        },
+        {
+          "id": "1/79/0",
+          "usage": {
+            "inputTokens": 571,
+            "outputTokens": 107,
+            "totalTokens": 99750,
+            "cacheReadTokens": 99072
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 427,
+          "time": 1789798502038
+        },
+        {
+          "id": "1/80/0",
+          "usage": {
+            "inputTokens": 1232,
+            "outputTokens": 242,
+            "totalTokens": 101186,
+            "cacheReadTokens": 99712
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 432,
+          "time": 1789798592436
+        },
+        {
+          "id": "1/81/0",
+          "usage": {
+            "inputTokens": 254,
+            "outputTokens": 178,
+            "totalTokens": 101424,
+            "cacheReadTokens": 100992
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 437,
+          "time": 1789798596371
+        },
+        {
+          "id": "1/82/0",
+          "usage": {
+            "inputTokens": 331,
+            "outputTokens": 178,
+            "totalTokens": 101885,
+            "cacheReadTokens": 101376
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 442,
+          "time": 1789798599677
+        },
+        {
+          "id": "1/83/0",
+          "usage": {
+            "inputTokens": 159,
+            "outputTokens": 322,
+            "totalTokens": 102241,
+            "cacheReadTokens": 101760
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 447,
+          "time": 1789798604208
+        },
+        {
+          "id": "1/84/0",
+          "usage": {
+            "inputTokens": 215,
+            "outputTokens": 1210,
+            "totalTokens": 103569,
+            "cacheReadTokens": 102144
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 452,
+          "time": 1789798625635
+        },
+        {
+          "id": "1/85/0",
+          "usage": {
+            "inputTokens": 165,
+            "outputTokens": 2854,
+            "totalTokens": 106443,
+            "cacheReadTokens": 103424
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 457,
+          "time": 1789798659892
+        },
+        {
+          "id": "1/86/0",
+          "usage": {
+            "inputTokens": 5037,
+            "outputTokens": 582,
+            "totalTokens": 111987,
+            "cacheReadTokens": 106368
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 462,
+          "time": 1789798683914
+        },
+        {
+          "id": "1/87/0",
+          "usage": {
+            "inputTokens": 173,
+            "outputTokens": 1272,
+            "totalTokens": 113317,
+            "cacheReadTokens": 111872
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 467,
+          "time": 1789798691018
+        },
+        {
+          "id": "1/88/0",
+          "usage": {
+            "inputTokens": 1592,
+            "outputTokens": 1255,
+            "totalTokens": 116127,
+            "cacheReadTokens": 113280
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 472,
+          "time": 1789798699278
+        },
+        {
+          "id": "1/89/0",
+          "usage": {
+            "inputTokens": 149,
+            "outputTokens": 265,
+            "totalTokens": 116510,
+            "cacheReadTokens": 116096
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 477,
+          "time": 1789798703196
+        },
+        {
+          "id": "1/90/0",
+          "usage": {
+            "inputTokens": 232,
+            "outputTokens": 1543,
+            "totalTokens": 118127,
+            "cacheReadTokens": 116352
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 482,
+          "time": 1789798711984
+        },
+        {
+          "id": "1/91/0",
+          "usage": {
+            "inputTokens": 766,
+            "outputTokens": 644,
+            "totalTokens": 119426,
+            "cacheReadTokens": 118016
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 487,
+          "time": 1789798717156
+        },
+        {
+          "id": "1/92/0",
+          "usage": {
+            "inputTokens": 594,
+            "outputTokens": 2692,
+            "totalTokens": 122710,
+            "cacheReadTokens": 119424
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 492,
+          "time": 1789798748790
+        },
+        {
+          "id": "1/93/0",
+          "usage": {
+            "inputTokens": 870,
+            "outputTokens": 4321,
+            "totalTokens": 127815,
+            "cacheReadTokens": 122624
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 497,
+          "time": 1789798770046
+        },
+        {
+          "id": "1/94/0",
+          "usage": {
+            "inputTokens": 219,
+            "outputTokens": 186,
+            "totalTokens": 128021,
+            "cacheReadTokens": 127616
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 502,
+          "time": 1789798772616
+        },
+        {
+          "id": "1/95/0",
+          "usage": {
+            "inputTokens": 175,
+            "outputTokens": 271,
+            "totalTokens": 128318,
+            "cacheReadTokens": 127872
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 507,
+          "time": 1789798796349
+        },
+        {
+          "id": "1/96/0",
+          "usage": {
+            "inputTokens": 328,
+            "outputTokens": 210,
+            "totalTokens": 128794,
+            "cacheReadTokens": 128256
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 512,
+          "time": 1789798829474
+        },
+        {
+          "id": "1/97/0",
+          "usage": {
+            "inputTokens": 144,
+            "outputTokens": 1196,
+            "totalTokens": 130108,
+            "cacheReadTokens": 128768
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 517,
+          "time": 1789798836891
+        },
+        {
+          "id": "1/98/0",
+          "usage": {
+            "inputTokens": 197,
+            "outputTokens": 956,
+            "totalTokens": 131201,
+            "cacheReadTokens": 130048
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 522,
+          "time": 1789798896074
+        },
+        {
+          "id": "1/99/0",
+          "usage": {
+            "inputTokens": 2123,
+            "outputTokens": 274,
+            "totalTokens": 133597,
+            "cacheReadTokens": 131200
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 527,
+          "time": 1789798899520
+        },
+        {
+          "id": "1/100/0",
+          "usage": {
+            "inputTokens": 952,
+            "outputTokens": 427,
+            "totalTokens": 134883,
+            "cacheReadTokens": 133504
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 532,
+          "time": 1789798903718
+        },
+        {
+          "id": "1/101/0",
+          "usage": {
+            "inputTokens": 978,
+            "outputTokens": 391,
+            "totalTokens": 136153,
+            "cacheReadTokens": 134784
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 537,
+          "time": 1789798907491
+        },
+        {
+          "id": "1/102/0",
+          "usage": {
+            "inputTokens": 252,
+            "outputTokens": 2886,
+            "totalTokens": 139074,
+            "cacheReadTokens": 135936
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 542,
+          "time": 1789798926603
+        },
+        {
+          "id": "1/103/0",
+          "usage": {
+            "inputTokens": 197,
+            "outputTokens": 1060,
+            "totalTokens": 140265,
+            "cacheReadTokens": 139008
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 547,
+          "time": 1789798933285
+        },
+        {
+          "id": "1/104/0",
+          "usage": {
+            "inputTokens": 375,
+            "outputTokens": 260,
+            "totalTokens": 140795,
+            "cacheReadTokens": 140160
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 552,
+          "time": 1789798937073
+        },
+        {
+          "id": "1/105/0",
+          "usage": {
+            "inputTokens": 2140,
+            "outputTokens": 324,
+            "totalTokens": 143136,
+            "cacheReadTokens": 140672
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 557,
+          "time": 1789798940215
+        },
+        {
+          "id": "1/106/0",
+          "usage": {
+            "inputTokens": 173,
+            "outputTokens": 140,
+            "totalTokens": 143417,
+            "cacheReadTokens": 143104
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 562,
+          "time": 1789798942969
+        },
+        {
+          "id": "1/107/0",
+          "usage": {
+            "inputTokens": 264,
+            "outputTokens": 1611,
+            "totalTokens": 145235,
+            "cacheReadTokens": 143360
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 567,
+          "time": 1789798952205
+        },
+        {
+          "id": "1/108/0",
+          "usage": {
+            "inputTokens": 231,
+            "outputTokens": 393,
+            "totalTokens": 145648,
+            "cacheReadTokens": 145024
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 572,
+          "time": 1789798955908
+        },
+        {
+          "id": "1/109/0",
+          "usage": {
+            "inputTokens": 678,
+            "outputTokens": 510,
+            "totalTokens": 146724,
+            "cacheReadTokens": 145536
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 577,
+          "time": 1789798960550
+        }
+      ]
+    },
+    "usage": {
+      "model_calls": 109,
+      "requests": 109,
+      "input_tokens": {
+        "count": 109,
+        "total": 8497576,
+        "average": 77959.41284403669,
+        "minimum": 1380,
+        "maximum": 146214
+      },
+      "uncached_input_tokens": {
+        "count": 109,
+        "total": 95144,
+        "average": 872.8807339449542,
+        "minimum": 140,
+        "maximum": 7054
+      },
+      "cached_input_tokens": {
+        "count": 109,
+        "total": 8402432,
+        "average": 77086.53211009175,
+        "minimum": 256,
+        "maximum": 145536
+      },
+      "output_tokens": {
+        "count": 109,
+        "total": 61311,
+        "average": 562.4862385321101,
+        "minimum": 94,
+        "maximum": 4517
+      },
+      "total_tokens": 8558887,
+      "cache_hit_rate": 0.9888033952270624
+    },
+    "timing_ms": {
+      "first_token": {
+        "count": 109,
+        "total": 147363,
+        "average": 1351.954128440367,
+        "minimum": 467,
+        "maximum": 2566
+      },
+      "input_wait": {
+        "count": 109,
+        "total": 147363,
+        "average": 1351.954128440367,
+        "minimum": 467,
+        "maximum": 2566
+      },
+      "output": {
+        "count": 109,
+        "total": 263111,
+        "average": 2413.862385321101,
+        "minimum": 343,
+        "maximum": 18997
+      },
+      "llm": {
+        "count": 109,
+        "total": 410474,
+        "average": 3765.816513761468,
+        "minimum": 872,
+        "maximum": 20685
+      },
+      "tools": {
+        "count": 120,
+        "total": 413240,
+        "average": 3443.6666666666665,
+        "minimum": 0,
+        "maximum": 87870
+      },
+      "output_tokens_per_second": 233.02332475647162
+    },
+    "session": {
+      "steps": 109,
+      "turns": 1,
+      "model_calls": 109,
+      "tool_calls": 120
+    }
+  },
+  "patch": {
+    "sha256": "32a2884343dd32c5a721130266762c2eaa4ddfc87fef0d0126fe8ab01ce0dfcc",
+    "bytes": 14418,
+    "changed_paths": [
+      "src/SlashCommands.tsx",
+      "src/components/views/avatars/BaseAvatar.tsx",
+      "src/components/views/avatars/MemberAvatar.tsx",
+      "src/components/views/elements/AppPermission.tsx",
+      "src/components/views/elements/EventListSummary.tsx",
+      "src/components/views/messages/EncryptionEvent.tsx",
+      "src/i18n/strings/en_EN.json",
+      "src/settings/Settings.tsx"
+    ],
+    "excluded_generated_paths": [],
+    "official_overwritten_paths": [],
+    "recovered_from_persisted_session": false
+  },
+  "official_result": {
+    "passed": false,
+    "failure_kind": "official_test_failure",
+    "evaluator_exit_code": 0,
+    "parsed": {
+      "tests": [
+        {
+          "name": "test/ContentMessages-test.ts | sendStickerContentToRoom | should forward the call to doMaybeLocalRoomAction",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/ContentMessages-test.ts | sendContentToRoom | should use m.image for image files",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/ContentMessages-test.ts | sendContentToRoom | should use m.image for PNG files which cannot be parsed but successfully thumbnail",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/ContentMessages-test.ts | sendContentToRoom | should fall back to m.file for invalid image files",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/ContentMessages-test.ts | sendContentToRoom | should use m.video for video files",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/ContentMessages-test.ts | sendContentToRoom | should use m.audio for audio files",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/ContentMessages-test.ts | sendContentToRoom | should default to name 'Attachment' if file doesn't have a name",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/ContentMessages-test.ts | sendContentToRoom | should keep RoomUpload's total and loaded values up to date",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/ContentMessages-test.ts | sendContentToRoom | properly handles replies",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/ContentMessages-test.ts | getCurrentUploads | should return only uploads for the given relation",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/ContentMessages-test.ts | getCurrentUploads | should return only uploads for no relation when not passed one",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/ContentMessages-test.ts | cancelUpload | should cancel in-flight upload",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/ContentMessages-test.ts | uploadFile | should not encrypt the file if the room isn't encrypted",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/ContentMessages-test.ts | uploadFile | should encrypt the file if the room is encrypted",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/ContentMessages-test.ts | uploadFile | should throw UploadCanceledError upon aborting the upload",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | <FilteredDeviceList /> | renders devices in correct order",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | <FilteredDeviceList /> | updates list order when devices change",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | <FilteredDeviceList /> | displays no results message when there are no devices",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | does not display filter description when filter is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | updates filter when prop changes",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | calls onFilterChange handler",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | calls onFilterChange handler correctly when setting filter to All",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | filters correctly for Verified",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | filters correctly for Unverified",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | filters correctly for Inactive",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | renders no results correctly for Verified",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | renders no results correctly for Unverified",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | renders no results correctly for Inactive",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | filtering | clears filter from no results message",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | device details | renders expanded devices with device details",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/FilteredDeviceList-test.tsx | device details | clicking toggle calls onDeviceExpandToggle",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | RoomViewStore | can be used to view a room by ID and join",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | RoomViewStore | can auto-join a room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | RoomViewStore | emits ActiveRoomChanged when the viewed room changes",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | RoomViewStore | invokes room activity listeners when the viewed room changes",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | RoomViewStore | can be used to view a room by alias and join",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | RoomViewStore | emits ViewRoomError if the alias lookup fails",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | RoomViewStore | emits JoinRoomError if joining the room fails",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | RoomViewStore | remembers the event being replied to when swapping rooms",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | RoomViewStore | swaps to the replied event room if it is not the current room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | RoomViewStore | should ignore reply_to_event for Thread panels",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | RoomViewStore | Should respect reply_to_event for Room rendering context",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | RoomViewStore | Should respect reply_to_event for File rendering context",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | RoomViewStore | Should respect reply_to_event for Notification rendering context",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | RoomViewStore | removes the roomId on ViewHomePage",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | RoomViewStore | when viewing a call without a broadcast, it should not raise an error",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | RoomViewStore | should display an error message when the room is unreachable via the roomId",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | RoomViewStore | should display the generic error message when the roomId doesnt match",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | when listening to a voice broadcast | and viewing a call it should pause the current broadcast",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | when recording a voice broadcast | and trying to view a call, it should not actually view it and show the info dialog",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | and viewing a room with a broadcast | should continue recording",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | and stopping the recording | should view the broadcast",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | Sliding Sync | subscribes to the room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | Sliding Sync | doesn't get stuck in a loop if you view rooms quickly",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | <RoomPreviewBar /> | renders joining message",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | <RoomPreviewBar /> | renders rejecting message",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | <RoomPreviewBar /> | renders loading message",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | <RoomPreviewBar /> | renders not logged in message",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | <RoomPreviewBar /> | should send room oob data to start login",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | <RoomPreviewBar /> | renders kicked message",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | <RoomPreviewBar /> | renders banned message",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | <RoomPreviewBar /> | renders viewing room message when room an be previewed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | <RoomPreviewBar /> | renders viewing room message when room can not be previewed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | with an error | renders room not found error",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | with an error | renders other errors",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | ✕ renders invite message (111 ms) | renders join and reject action buttons correctly",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | ✕ renders invite message (111 ms) | renders reject and ignore action buttons when handler is provided",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | ✕ renders invite message (111 ms) | renders join and reject action buttons in reverse order when room can previewed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | ✕ renders invite message (111 ms) | joins room on primary button click",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | ✕ renders invite message (111 ms) | rejects invite on secondary button click",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | ✕ renders invite message (31 ms) | renders join and reject action buttons with correct labels",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | when client fails to get 3PIDs | renders error message",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | when client fails to get 3PIDs | renders join button",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | when invitedEmail is not associated with current account | renders invite message with invited email",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | when invitedEmail is not associated with current account | renders join button",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | when client has no identity server connected | renders invite message with invited email",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | when client has no identity server connected | renders join button",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/stores/RoomViewStore-test.ts | when client has an identity server connected | renders email mismatch message when invite email mxid doesnt match",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/components/molecules/VoiceBroadcastPlaybackBody-test.tsx | VoiceBroadcastPlaybackBody | when there is a broadcast without sender, it should raise an error",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/components/molecules/VoiceBroadcastPlaybackBody-test.tsx | when rendering a buffering voice broadcast | should render as expected",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/components/molecules/VoiceBroadcastPlaybackBody-test.tsx | when rendering a playing broadcast | should render as expected",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/components/molecules/VoiceBroadcastPlaybackBody-test.tsx | and clicking 30s backward | should seek 30s backward",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/components/molecules/VoiceBroadcastPlaybackBody-test.tsx | and clicking 30s forward | should seek 30s forward",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/components/molecules/VoiceBroadcastPlaybackBody-test.tsx | and clicking the room name | should not view the room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/components/molecules/VoiceBroadcastPlaybackBody-test.tsx | when rendering a playing broadcast in pip mode | should render as expected",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/components/molecules/VoiceBroadcastPlaybackBody-test.tsx | and clicking the room name | should view the room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/components/molecules/VoiceBroadcastPlaybackBody-test.tsx | when rendering a stopped broadcast | should render as expected",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/components/molecules/VoiceBroadcastPlaybackBody-test.tsx | and clicking the play button | should toggle the recording",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/components/molecules/VoiceBroadcastPlaybackBody-test.tsx | and the times update | should render the times",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/components/molecules/VoiceBroadcastPlaybackBody-test.tsx | when rendering an error broadcast | should render as expected",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/components/molecules/VoiceBroadcastPlaybackBody-test.tsx | when rendering a pause/not-live broadcast | should render as expected",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/components/molecules/VoiceBroadcastPlaybackBody-test.tsx | when rendering a playing/live broadcast | should render as expected",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | when meta space is active | does not render add room button when UIComponent customisation disables CreateRooms and ExploreRooms",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | when meta space is active | renders add room button with menu when UIComponent customisation allows CreateRooms or ExploreRooms",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | when meta space is active | renders add room button and clicks explore public rooms",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | when room space is active | does not render add room button when UIComponent customisation disables CreateRooms and ExploreRooms",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | when room space is active | renders add room button with menu when UIComponent customisation allows CreateRooms or ExploreRooms",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | when room space is active | renders add room button and clicks explore rooms",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <UserInfo /> | closes on close button click",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | without a room | does not render space header",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | without a room | renders user info",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | without a room | renders encryption info panel without pending verification",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | without a room | renders encryption verification panel with pending verification",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | without a room | should show error modal when the verification request is cancelled with a mismatch",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | without a room | should not show error modal when the verification request is changed for some other reason",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | without a room | renders close button correctly when encryption panel with a pending verification request",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | with a room | renders user info",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | with a room | does not render space header when room is not a space room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | with a room | renders space header when room is a space room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | with a room | renders encryption info panel without pending verification",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | with a room | renders encryption verification panel with pending verification",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | with crypto enabled | renders a device list which can be expanded",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | with an encrypted room | renders unverified user info",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | with an encrypted room | renders verified user info",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <UserInfoHeader /> | does not render an e2e icon in the header if e2eStatus prop is undefined",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <UserInfoHeader /> | renders an e2e icon in the header if e2eStatus prop is defined",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <UserInfoHeader /> | renders custom user identifiers in the header",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <DeviceItem /> | with unverified user and device, displays button without a label",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <DeviceItem /> | with verified user only, displays button with a 'Not trusted' label",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <DeviceItem /> | with verified device only, displays no button without a label",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <DeviceItem /> | when userId is the same as userId from client, uses isCrossSigningVerified to determine if button is shown",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <DeviceItem /> | with verified user and device, displays no button and a 'Trusted' label",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <DeviceItem /> | does not call verifyDevice if client.getUser returns null",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <DeviceItem /> | calls verifyDevice if client.getUser returns an object",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <DeviceItem /> | with display name",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <DeviceItem /> | without display name",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <DeviceItem /> | ambiguous display name",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <UserOptionsSection /> | always shows share user button",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <UserOptionsSection /> | does not show ignore or direct message buttons when member userId matches client userId",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <UserOptionsSection /> | shows ignore, direct message and mention buttons when member userId does not match client userId",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <UserOptionsSection /> | when call to client.getRoom is null, does not show read receipt button",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <UserOptionsSection /> | when call to client.getRoom is non-null and room.getEventReadUpTo is null, does not show read receipt button",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <UserOptionsSection /> | when calls to client.getRoom and room.getEventReadUpTo are non-null, shows read receipt button",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <UserOptionsSection /> | clicking the read receipt button calls dispatch with correct event_id",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <UserOptionsSection /> | firing the read receipt event handler with a null event_id calls dispatch with undefined not null",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <UserOptionsSection /> | does not show the invite button when canInvite is false",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <UserOptionsSection /> | shows the invite button when canInvite is true",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <UserOptionsSection /> | clicking the invite button will call MultiInviter.invite",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <UserOptionsSection /> | if calling .invite throws something strange, show default error message",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <UserOptionsSection /> | shows a modal before ignoring the user",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <UserOptionsSection /> | cancels ignoring the user",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <UserOptionsSection /> | unignores the user",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <UserOptionsSection /> | clicking »message« for a RoomMember should start a DM",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <UserOptionsSection /> | clicking »message« for a User should start a DM",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <PowerLevelEditor /> | renders a power level combobox",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <PowerLevelEditor /> | renders a combobox and attempts to change power level on change of the combobox",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <RoomKickButton /> | renders nothing if member.membership is undefined",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <RoomKickButton /> | renders something if member.membership is 'invite' or 'join'",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <RoomKickButton /> | renders the correct label",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <RoomKickButton /> | clicking the kick button calls Modal.createDialog with the correct arguments",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <BanToggleButton /> | renders the correct labels for banned and unbanned members",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <BanToggleButton /> | clicking the ban or unban button calls Modal.createDialog with the correct arguments if user is not banned",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <BanToggleButton /> | clicking the ban or unban button calls Modal.createDialog with the correct arguments if user _is_ banned",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <RoomAdminToolsContainer /> | returns a single empty div if room.getMember is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <RoomAdminToolsContainer /> | can return a single empty div in case where room.getMember is not falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <RoomAdminToolsContainer /> | returns kick, redact messages, ban buttons if conditions met",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | <RoomAdminToolsContainer /> | returns mute toggle button if conditions met",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | disambiguateDevices | does not add ambiguous key to unique names",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | disambiguateDevices | adds ambiguous key to all ids with non-unique names",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | isMuted | returns false if either argument is falsy",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | isMuted | when powerLevelContent.events and .events_default are undefined, returns false",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | isMuted | when powerLevelContent.events is undefined, uses .events_default",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | isMuted | when powerLevelContent.events is defined but '.m.room.message' isn't, uses .events_default",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | isMuted | when powerLevelContent.events and '.m.room.message' are defined, uses the value",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/RoomList-test.tsx | getPowerLevels | returns an empty object when room.currentState.getStateEvents return null",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/voip/CallView-test.tsx | with an existing call | calls clean on mount",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/voip/CallView-test.tsx | with an existing call | shows lobby and keeps widget loaded when disconnected",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/voip/CallView-test.tsx | with an existing call | only shows widget when connected",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/voip/CallView-test.tsx | with an existing call | tracks participants",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/voip/CallView-test.tsx | with an existing call | connects to the call when the join button is pressed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/voip/CallView-test.tsx | with an existing call | disables join button when the participant limit has been exceeded",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/voip/CallView-test.tsx | without an existing call | creates and connects to a new call when the join button is pressed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/voip/CallView-test.tsx | device buttons | hide when no devices are available",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/voip/CallView-test.tsx | device buttons | hide when no access to device list",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/voip/CallView-test.tsx | device buttons | hide when unknown error with device list",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/voip/CallView-test.tsx | device buttons | show without dropdown when only one device is available",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/voip/CallView-test.tsx | device buttons | show with dropdown when multiple devices are available",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/voip/CallView-test.tsx | device buttons | sets video device when selected",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/voip/CallView-test.tsx | device buttons | sets audio device when selected",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/voip/CallView-test.tsx | device buttons | set media muted if no access to audio device",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/voip/CallView-test.tsx | device buttons | set media muted if no access to video device",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/DMRoomMap-test.ts | when m.direct has valid content | getRoomIds should return the room Ids",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/DMRoomMap-test.ts | and there is an update with valid data | getRoomIds should return the new room Ids",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/DMRoomMap-test.ts | and there is an update with invalid data | getRoomIds should return the valid room Ids",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/DMRoomMap-test.ts | and there is an update with invalid data | should log the invalid content",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/DMRoomMap-test.ts | when m.direct content contains the entire event | should log the invalid content",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/DMRoomMap-test.ts | when m.direct content contains the entire event | getRoomIds should return an empty list",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/DMRoomMap-test.ts | when partially crap m.direct content appears | should log the invalid content",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/DMRoomMap-test.ts | when partially crap m.direct content appears | getRoomIds should only return the valid items",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/DMRoomMap-test.ts | getUniqueRoomsWithIndividuals() | returns an empty object when room map has not been populated",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/DMRoomMap-test.ts | getUniqueRoomsWithIndividuals() | returns map of users to rooms with 2 members",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/DMRoomMap-test.ts | getUniqueRoomsWithIndividuals() | excludes rooms that are not found by matrixClient",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/BeaconListItem-test.tsx | <BeaconListItem /> | renders null when beacon is not live",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/BeaconListItem-test.tsx | <BeaconListItem /> | renders null when beacon has no location",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/BeaconListItem-test.tsx | when a beacon is live and has locations | renders beacon info",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/BeaconListItem-test.tsx | non-self beacons | uses beacon description as beacon name",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/BeaconListItem-test.tsx | non-self beacons | uses beacon owner mxid as beacon name for a beacon without description",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/BeaconListItem-test.tsx | non-self beacons | renders location icon",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/BeaconListItem-test.tsx | self locations | renders beacon owner avatar",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/BeaconListItem-test.tsx | self locations | uses beacon owner name as beacon name",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/BeaconListItem-test.tsx | on location updates | updates last updated time on location updated",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/BeaconListItem-test.tsx | interactions | does not call onClick handler when clicking share button",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/beacon/BeaconListItem-test.tsx | interactions | calls onClick handler when clicking outside of share buttons",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/InteractiveAuthDialog-test.tsx | InteractiveAuthDialog | Should successfully complete a password flow",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/InteractiveAuthDialog-test.tsx | SSO flow | should close on cancel",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/dialogs/InteractiveAuthDialog-test.tsx | SSO flow | should complete an sso flow",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/right_panel/RoomHeaderButtons-test.tsx | RoomHeaderButtons-test.tsx | should render",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/right_panel/RoomHeaderButtons-test.tsx | RoomHeaderButtons-test.tsx | shows the thread button",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/right_panel/RoomHeaderButtons-test.tsx | RoomHeaderButtons-test.tsx | room wide notification does not change the thread button",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/right_panel/RoomHeaderButtons-test.tsx | RoomHeaderButtons-test.tsx | thread notification does change the thread button",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/right_panel/RoomHeaderButtons-test.tsx | RoomHeaderButtons-test.tsx | thread activity does change the thread button",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/dm/createDmLocalRoom-test.ts | when rooms should be encrypted | should create an encrytped room for 3PID targets",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/dm/createDmLocalRoom-test.ts | for MXID targets with encryption available | should create an encrypted room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/dm/createDmLocalRoom-test.ts | for MXID targets with encryption unavailable | should create an unencrypted room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/utils/dm/createDmLocalRoom-test.ts | if rooms should not be encrypted | should create an unencrypted room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/messages/EncryptionEvent-test.tsx | for an encrypted room | should show the expected texts",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/messages/EncryptionEvent-test.tsx | with same previous algorithm | should show the expected texts",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/messages/EncryptionEvent-test.tsx | with unknown algorithm | should show the expected texts",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/messages/EncryptionEvent-test.tsx | for an unencrypted room | should show the expected texts",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/messages/EncryptionEvent-test.tsx | for an encrypted local room | should show the expected texts",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/deleteDevices-test.tsx | deleteDevices() | deletes devices and calls onFinished when interactive auth is not required",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/deleteDevices-test.tsx | deleteDevices() | throws without opening auth dialog when delete fails with a non-401 status code",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/deleteDevices-test.tsx | deleteDevices() | throws without opening auth dialog when delete fails without data.flows",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/devices/deleteDevices-test.tsx | deleteDevices() | opens interactive auth dialog when delete fails with 401",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/emojipicker/EmojiPicker-test.tsx | EmojiPicker | should not mangle default order after filtering",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/emojipicker/EmojiPicker-test.tsx | EmojiPicker | sort emojis by shortcode and size",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/emojipicker/EmojiPicker-test.tsx | EmojiPicker | should allow keyboard navigation using arrow keys",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/useTopic-test.tsx | useTopic | should display the room topic",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/context_menus/RoomGeneralContextMenu-test.tsx | RoomGeneralContextMenu | renders an empty context menu for archived rooms",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/context_menus/RoomGeneralContextMenu-test.tsx | RoomGeneralContextMenu | renders the default context menu",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/context_menus/RoomGeneralContextMenu-test.tsx | RoomGeneralContextMenu | does not render invite menu item when UIComponent customisations disable room invite",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/context_menus/RoomGeneralContextMenu-test.tsx | RoomGeneralContextMenu | renders invite menu item when UIComponent customisations enables room invite",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/context_menus/RoomGeneralContextMenu-test.tsx | RoomGeneralContextMenu | marks the room as read",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/context_menus/RoomGeneralContextMenu-test.tsx | RoomGeneralContextMenu | when developer mode is disabled, it should not render the developer tools option",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/context_menus/RoomGeneralContextMenu-test.tsx | when developer mode is enabled | should render the developer tools option",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/components/atoms/VoiceBroadcastHeader-test.tsx | when rendering a live broadcast header with broadcast info | should render the header with a red live badge",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/components/atoms/VoiceBroadcastHeader-test.tsx | when rendering a buffering live broadcast header with broadcast info | should render the header with a red live badge",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/components/atoms/VoiceBroadcastHeader-test.tsx | when rendering a live (grey) broadcast header with broadcast info | should render the header with a grey live badge",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/voice-broadcast/components/atoms/VoiceBroadcastHeader-test.tsx | when rendering a non-live broadcast header | should render the header without a live badge",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/PreferencesUserSettingsTab-test.tsx | PreferencesUserSettingsTab | should render",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/PreferencesUserSettingsTab-test.tsx | with server support | can be enabled",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/PreferencesUserSettingsTab-test.tsx | with server support | can be disabled",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/PreferencesUserSettingsTab-test.tsx | without server support | is forcibly enabled",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/settings/tabs/user/PreferencesUserSettingsTab-test.tsx | without server support | cannot be disabled",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/structures/ThreadView-test.tsx | ThreadView | sends a message with the correct fallback",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/structures/ThreadView-test.tsx | ThreadView | sends a thread message with the correct fallback",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/structures/ThreadView-test.tsx | ThreadView | sets the correct thread in the room view store",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/structures/ThreadView-test.tsx | ThreadView | clears highlight message in the room view store",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/structures/RightPanel-test.tsx | RightPanel | navigates from room summary to member list",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/structures/RightPanel-test.tsx | RightPanel | renders info from only one room during room changes",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | WysiwygComposer | Should have contentEditable at false when disabled",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Standard behavior | Should have contentEditable at true",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Standard behavior | Should have focus",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Standard behavior | Should call onChange handler",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Standard behavior | Should call onSend when Enter is pressed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Standard behavior | Should not call onSend when Shift+Enter is pressed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Standard behavior | Should not call onSend when ctrl+Enter is pressed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Standard behavior | Should not call onSend when alt+Enter is pressed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Standard behavior | Should not call onSend when meta+Enter is pressed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Mentions and commands | shows the autocomplete when text has @ prefix and autoselects the first item",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Mentions and commands | pressing up and down arrows allows us to change the autocomplete selection",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Mentions and commands | pressing enter selects the mention and inserts it into the composer as a link",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Mentions and commands | pressing escape closes the autocomplete",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Mentions and commands | typing with the autocomplete open still works as expected",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Mentions and commands | clicking on a mention in the composer dispatches the correct action",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Mentions and commands | selecting a mention without a href closes the autocomplete but does not insert a mention",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Mentions and commands | selecting a room mention with a completionId uses client.getRoom",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Mentions and commands | selecting a room mention without a completionId uses client.getRooms",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Mentions and commands | selecting a command inserts the command",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Mentions and commands | selecting an at-room completion inserts @room",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Mentions and commands | allows a community completion to pass through",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | When settings require Ctrl+Enter to send | Should not call onSend when Enter is pressed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | When settings require Ctrl+Enter to send | Should send a message when Ctrl+Enter is pressed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | In message creation | Should not moving when the composer is filled",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | In message creation | Should moving when the composer is empty",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Moving up | Should not moving when caret is not at beginning of the text",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Moving up | Should not moving when the content has changed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Moving up | Should moving up",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Moving up | Should moving up in list",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Moving down | Should not moving when caret is not at the end of the text",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Moving down | Should not moving when the content has changed",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Moving down | Should moving down",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Moving down | Should moving down in list",
+          "status": "PASSED"
+        },
+        {
+          "name": "test/components/views/rooms/wysiwyg_composer/components/WysiwygComposer-test.tsx | Moving down | Should close editing",
+          "status": "PASSED"
+        }
+      ]
+    }
+  },
+  "cleanup": {
+    "task_container_removed": true,
+    "task_workspace_removed": false,
+    "shared_image_retained": true
+  },
+  "public_export": {
+    "model_name_kind": "display_name",
+    "omitted": [
+      "development provider and route",
+      "local environment and paths",
+      "raw tool diagnostics"
+    ],
+    "note": "Redacted report, not runtime configuration. Scores and numeric usage are preserved; original evidence is retained locally."
+  }
+}

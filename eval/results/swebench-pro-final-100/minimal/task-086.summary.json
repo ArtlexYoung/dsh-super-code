@@ -1,0 +1,191 @@
+{
+  "schema": 1,
+  "run_id": "minimal-pro-hard100-v2-high-isolation-v3-20260918-minimal-task-086-attempt-1",
+  "started_at": "2026-09-19T01:50:08.545Z",
+  "completed_at": "2026-09-19T03:24:27.783Z",
+  "preset": "minimal",
+  "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
+  "isolation": {
+    "schema": 1,
+    "policy": "swebench-pro-isolation-v3",
+    "passed": true,
+    "audited_sessions": 1,
+    "blocked_calls_count": 5,
+    "violations_count": 0
+  },
+  "candidate": null,
+  "task_index": 86,
+  "instance_id": "instance_tutao__tutanota-09c2776c0fce3db5c6e18da92b5a45dce9f013aa-vbc0d9ba8f0071fbe982809910959a6ff8884dbbf",
+  "repo": "tutao/tutanota",
+  "base_commit": "70c37c09d61793fb8a34df626c6b9687b115ecb9",
+  "official_evaluator": {
+    "repository": "scaleapi/SWE-bench_Pro-os",
+    "commit": "ca10a60a5fcae51e6948ffe1485d4153d421e6c5",
+    "evaluator_sha256": "bb5d4c5486be296e464e695df3747064aaa3bb197394bc6d39980634afec2034",
+    "dataset_sha256": "b5b2462bfbf5aeb2cb7ba7d215778a1768b85f9d7ad7f748546c7f80a0ad1510",
+    "image_policy": "local-cache-only"
+  },
+  "image": {
+    "reference": "jefzda/sweap-images:tutao.tutanota-tutao__tutanota-09c2776c0fce3db5c6e18da92b5a45dce9f013aa-vbc0d9ba8f0071fbe982809910959a6ff8884dbbf",
+    "acquisition_reference": "docker.1ms.run/jefzda/sweap-images:tutao.tutanota-tutao__tutanota-09c2776c0fce3db5c6e18da92b5a45dce9f013aa-vbc0d9ba8f0071fbe982809910959a6ff8884dbbf",
+    "platform": "linux/amd64",
+    "id": "sha256:526a22a82597f1876abfc41f1e1313b3813916e116ce9f3e62a60f45bad3d66f",
+    "repo_digests": [
+      "docker.1ms.run/jefzda/sweap-images@sha256:526a22a82597f1876abfc41f1e1313b3813916e116ce9f3e62a60f45bad3d66f",
+      "jefzda/sweap-images@sha256:526a22a82597f1876abfc41f1e1313b3813916e116ce9f3e62a60f45bad3d66f"
+    ]
+  },
+  "page_runtime": {
+    "schema": 2,
+    "runtime": "deepseek-harness-web-rpc",
+    "mode": "agent-run",
+    "session_id": "session-ed02111f-aa7a-4884-b716-fb85b7e4a607",
+    "web_rpc": {
+      "authenticated": true,
+      "calls": [
+        "session/create",
+        "session/list",
+        "session/selectModel",
+        "session/prompt",
+        "session/list"
+      ],
+      "prompt_submitted": true
+    },
+    "preset": "minimal",
+    "isolation": {
+      "policy": "swebench-pro-isolation-v3",
+      "permission_preset": "workspace-write",
+      "tool_guard": "workspace-files-and-assigned-offline-container"
+    },
+    "candidate": null,
+    "model": {
+      "display_name": "deepseek-v4.1-flash",
+      "reasoning_effort": "high",
+      "max_tokens": 384000
+    },
+    "elapsed_ms": 2447245,
+    "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+  },
+  "metrics": {
+    "schema": 1,
+    "usage": {
+      "model_calls": 123,
+      "requests": 123,
+      "input_tokens": {
+        "count": 123,
+        "total": 9964125,
+        "average": 81009.14634146342,
+        "minimum": 1274,
+        "maximum": 150663
+      },
+      "uncached_input_tokens": {
+        "count": 123,
+        "total": 82653,
+        "average": 671.9756097560976,
+        "minimum": 135,
+        "maximum": 4719
+      },
+      "cached_input_tokens": {
+        "count": 123,
+        "total": 9881472,
+        "average": 80337.17073170732,
+        "minimum": 256,
+        "maximum": 150528
+      },
+      "output_tokens": {
+        "count": 123,
+        "total": 81066,
+        "average": 659.0731707317074,
+        "minimum": 89,
+        "maximum": 8932
+      },
+      "total_tokens": 10045191,
+      "cache_hit_rate": 0.9917049414775507
+    },
+    "timing_ms": {
+      "first_token": {
+        "count": 123,
+        "total": 170862,
+        "average": 1389.121951219512,
+        "minimum": 570,
+        "maximum": 2239
+      },
+      "input_wait": {
+        "count": 123,
+        "total": 170862,
+        "average": 1389.121951219512,
+        "minimum": 570,
+        "maximum": 2239
+      },
+      "output": {
+        "count": 123,
+        "total": 355353,
+        "average": 2889.048780487805,
+        "minimum": 330,
+        "maximum": 39095
+      },
+      "llm": {
+        "count": 123,
+        "total": 526215,
+        "average": 4278.170731707317,
+        "minimum": 1474,
+        "maximum": 40475
+      },
+      "tools": {
+        "count": 122,
+        "total": 1911350,
+        "average": 15666.803278688525,
+        "minimum": 1,
+        "maximum": 303302
+      },
+      "output_tokens_per_second": 228.12808671940294
+    },
+    "session": {
+      "steps": 123,
+      "turns": 1,
+      "model_calls": 123,
+      "tool_calls": 122
+    }
+  },
+  "patch": {
+    "sha256": "a00853f0797b12eba64ac4fbcb4d7fb3d73377caf7ae19475021eb4ff431b503",
+    "bytes": 11971,
+    "changed_paths": [
+      "src/api/main/MainLocator.ts",
+      "src/api/main/OperationProgressTracker.ts",
+      "src/api/main/WorkerClient.ts",
+      "src/api/worker/WorkerImpl.ts",
+      "src/api/worker/WorkerLocator.ts",
+      "src/api/worker/facades/CalendarFacade.ts",
+      "src/calendar/export/CalendarImporterDialog.ts"
+    ],
+    "excluded_generated_paths": []
+  },
+  "official_result": {
+    "passed": false,
+    "failure_kind": "official_test_failure",
+    "evaluator_exit_code": 0,
+    "parsed": {
+      "tests": [
+        {
+          "name": "Build/Runtime Error: Error while initializing offline cache storage Error: oh no!!!",
+          "status": "ERROR"
+        }
+      ]
+    }
+  },
+  "cleanup": {
+    "task_container_removed": true,
+    "task_workspace_removed": true,
+    "shared_image_retained": true
+  },
+  "public_export": {
+    "model_name_kind": "display_name",
+    "omitted": [
+      "development provider and route",
+      "local environment and paths",
+      "raw tool diagnostics"
+    ],
+    "note": "Redacted report, not runtime configuration. Scores and numeric usage are preserved; original evidence is retained locally."
+  }
+}

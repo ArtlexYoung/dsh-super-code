@@ -1,0 +1,1075 @@
+{
+  "schema": 1,
+  "run_id": "super-code-complete100-high-v009-20260920-r1-super-code-task-715-attempt-1",
+  "started_at": "2026-09-20T07:23:01.383Z",
+  "completed_at": "2026-09-20T07:31:02.052Z",
+  "preset": "super-code",
+  "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
+  "isolation": {
+    "schema": 1,
+    "policy": "swebench-pro-isolation-v3",
+    "policy_revision": 3,
+    "passed": true,
+    "repository_isolation": {
+      "base_only_git": true,
+      "commit_count": 1,
+      "remotes": [],
+      "target_commit_unavailable": true,
+      "test_container_network": "none",
+      "prepared_cache_hit": false
+    },
+    "audited_sessions": 1,
+    "blocked_calls_count": 5,
+    "observations_count": 1,
+    "violations_count": 0
+  },
+  "candidate": {
+    "schema": 1,
+    "identity": "local-0.0.9-candidate",
+    "package": {
+      "name": "dsh-super-code",
+      "version": "0.0.9",
+      "tarball": "dsh-super-code-0.0.9.tgz"
+    },
+    "source": {
+      "git_head": "259f081658d20230d392da418955f190067ddc0f",
+      "tracked_diff_sha256": "1965bf0bf045f6d8f471613c8b50851ab052f98a6338413853536c89f61dcba7",
+      "untracked_package_paths": [
+        "lib/core/experiment-recipes.d.ts",
+        "lib/core/experiment-recipes.d.ts.map",
+        "lib/core/experiment-recipes.js",
+        "lib/core/experiment-recipes.js.map",
+        "lib/experiments.d.ts",
+        "lib/experiments.d.ts.map",
+        "lib/experiments.js",
+        "lib/experiments.js.map",
+        "lib/task-memory-store.d.ts",
+        "lib/task-memory-store.d.ts.map",
+        "lib/task-memory-store.js",
+        "lib/task-memory-store.js.map"
+      ]
+    },
+    "harness": {
+      "git_head": "c291e7961a515f6d7af9304e7fd1d257929aef26",
+      "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+    },
+    "artifacts": {
+      "tarball_sha256": "2e2104209812ae13c701480e5e0ba38bf6d09ee7b6546ebd909bab60b80d83e6",
+      "cordis_patch_sha256": "d8f8e14602aeb4dfafeb6aff3916cccb934c2c88d1d84b222a7c6d3040ca7434",
+      "preset_sha256": "43edc7f7b6dc9fcea423290e48f7b1d245220f10b15a06d8defa5f34685032e9",
+      "packed_files": 71,
+      "packed_bytes": 83113,
+      "unpacked_bytes": 306269
+    },
+    "created_at": "2026-09-19T13:30:54.126Z"
+  },
+  "task_index": 715,
+  "instance_id": "instance_internetarchive__openlibrary-09865f5fb549694d969f0a8e49b9d204ef1853ca-ve8c8d62a2b60610a3c4631f5f23ed866bada9818",
+  "repo": "internetarchive/openlibrary",
+  "base_commit": "50350d0432e2edf3429552bd9b50e78e662df8eb",
+  "official_evaluator": {
+    "repository": "scaleapi/SWE-bench_Pro-os",
+    "commit": "ca10a60a5fcae51e6948ffe1485d4153d421e6c5",
+    "evaluator_sha256": "bb5d4c5486be296e464e695df3747064aaa3bb197394bc6d39980634afec2034",
+    "dataset_sha256": "b5b2462bfbf5aeb2cb7ba7d215778a1768b85f9d7ad7f748546c7f80a0ad1510",
+    "image_policy": "local-cache-only"
+  },
+  "image": {
+    "reference": "jefzda/sweap-images:internetarchive.openlibrary-internetarchive__openlibrary-09865f5fb549694d969f0a8e49b9d204ef1853ca-ve8c8d62a2b60610a3c4631f5f23ed",
+    "acquisition_reference": "docker.1ms.run/jefzda/sweap-images:internetarchive.openlibrary-internetarchive__openlibrary-09865f5fb549694d969f0a8e49b9d204ef1853ca-ve8c8d62a2b60610a3c4631f5f23ed",
+    "platform": "linux/amd64",
+    "id": "sha256:3e38f0cedf50f8d699929f14ee574ff9354ff0881ff32b0c00caf12d91ba4af3",
+    "repo_digests": [
+      "docker.1panel.live/jefzda/sweap-images@sha256:3e38f0cedf50f8d699929f14ee574ff9354ff0881ff32b0c00caf12d91ba4af3",
+      "jefzda/sweap-images@sha256:3e38f0cedf50f8d699929f14ee574ff9354ff0881ff32b0c00caf12d91ba4af3"
+    ]
+  },
+  "page_runtime": {
+    "schema": 2,
+    "runtime": "deepseek-harness-web-rpc",
+    "mode": "agent-run",
+    "session_id": "session-14d8c2c3-35ba-429b-bfa4-41b5b2bff15f",
+    "web_rpc": {
+      "authenticated": true,
+      "calls": [
+        "session/create",
+        "session/list",
+        "session/selectModel",
+        "session/prompt",
+        "session/list"
+      ],
+      "prompt_submitted": true
+    },
+    "preset": "super-code",
+    "isolation": {
+      "policy": "swebench-pro-isolation-v3",
+      "permission_preset": "workspace-write",
+      "tool_guard": "workspace-files-and-assigned-offline-container"
+    },
+    "candidate": {
+      "schema": 1,
+      "identity": "local-0.0.9-candidate",
+      "package": {
+        "name": "dsh-super-code",
+        "version": "0.0.9",
+        "tarball": "dsh-super-code-0.0.9.tgz"
+      },
+      "source": {
+        "git_head": "259f081658d20230d392da418955f190067ddc0f",
+        "tracked_diff_sha256": "1965bf0bf045f6d8f471613c8b50851ab052f98a6338413853536c89f61dcba7",
+        "untracked_package_paths": [
+          "lib/core/experiment-recipes.d.ts",
+          "lib/core/experiment-recipes.d.ts.map",
+          "lib/core/experiment-recipes.js",
+          "lib/core/experiment-recipes.js.map",
+          "lib/experiments.d.ts",
+          "lib/experiments.d.ts.map",
+          "lib/experiments.js",
+          "lib/experiments.js.map",
+          "lib/task-memory-store.d.ts",
+          "lib/task-memory-store.d.ts.map",
+          "lib/task-memory-store.js",
+          "lib/task-memory-store.js.map"
+        ]
+      },
+      "harness": {
+        "git_head": "c291e7961a515f6d7af9304e7fd1d257929aef26",
+        "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+      },
+      "artifacts": {
+        "tarball_sha256": "2e2104209812ae13c701480e5e0ba38bf6d09ee7b6546ebd909bab60b80d83e6",
+        "cordis_patch_sha256": "d8f8e14602aeb4dfafeb6aff3916cccb934c2c88d1d84b222a7c6d3040ca7434",
+        "preset_sha256": "43edc7f7b6dc9fcea423290e48f7b1d245220f10b15a06d8defa5f34685032e9",
+        "packed_files": 71,
+        "packed_bytes": 83113,
+        "unpacked_bytes": 306269
+      },
+      "created_at": "2026-09-19T13:30:54.126Z"
+    },
+    "model": {
+      "display_name": "deepseek-v4.1-flash",
+      "reasoning_effort": "high",
+      "max_tokens": 384000
+    },
+    "elapsed_ms": 452999,
+    "time_budget_exhausted": false,
+    "web_bundle_sha256": "15c30330c51c5db02315278d6a15d7e4aec9f6c1a6564e5c437dfeb641e86d24"
+  },
+  "metrics": {
+    "schema": 2,
+    "accounting": {
+      "observed_requests": 53,
+      "requests_with_usage": 53,
+      "unknown_usage_requests": 0,
+      "cost_complete": false,
+      "actual_cost": null,
+      "reason": "Observed log usage only; request inventory and billing reconciliation required",
+      "ledger": [
+        {
+          "id": "1/1/0",
+          "usage": {
+            "inputTokens": 2403,
+            "outputTokens": 236,
+            "totalTokens": 8015,
+            "cacheReadTokens": 5376
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 14,
+          "time": 1789888997841
+        },
+        {
+          "id": "1/2/0",
+          "usage": {
+            "inputTokens": 1312,
+            "outputTokens": 256,
+            "totalTokens": 9504,
+            "cacheReadTokens": 7936
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 22,
+          "time": 1789889001347
+        },
+        {
+          "id": "1/3/0",
+          "usage": {
+            "inputTokens": 583,
+            "outputTokens": 246,
+            "totalTokens": 10301,
+            "cacheReadTokens": 9472
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 29,
+          "time": 1789889003986
+        },
+        {
+          "id": "1/4/0",
+          "usage": {
+            "inputTokens": 1689,
+            "outputTokens": 256,
+            "totalTokens": 12185,
+            "cacheReadTokens": 10240
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 36,
+          "time": 1789889007919
+        },
+        {
+          "id": "1/5/0",
+          "usage": {
+            "inputTokens": 511,
+            "outputTokens": 8376,
+            "totalTokens": 21047,
+            "cacheReadTokens": 12160
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 43,
+          "time": 1789889038988
+        },
+        {
+          "id": "1/6/0",
+          "usage": {
+            "inputTokens": 241,
+            "outputTokens": 266,
+            "totalTokens": 21371,
+            "cacheReadTokens": 20864
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 50,
+          "time": 1789889041478
+        },
+        {
+          "id": "1/7/0",
+          "usage": {
+            "inputTokens": 154,
+            "outputTokens": 357,
+            "totalTokens": 21759,
+            "cacheReadTokens": 21248
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 55,
+          "time": 1789889043986
+        },
+        {
+          "id": "1/8/0",
+          "usage": {
+            "inputTokens": 845,
+            "outputTokens": 133,
+            "totalTokens": 22610,
+            "cacheReadTokens": 21632
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 60,
+          "time": 1789889045931
+        },
+        {
+          "id": "1/9/0",
+          "usage": {
+            "inputTokens": 235,
+            "outputTokens": 118,
+            "totalTokens": 22753,
+            "cacheReadTokens": 22400
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 65,
+          "time": 1789889047992
+        },
+        {
+          "id": "1/10/0",
+          "usage": {
+            "inputTokens": 1224,
+            "outputTokens": 11861,
+            "totalTokens": 35741,
+            "cacheReadTokens": 22656
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 70,
+          "time": 1789889096102
+        },
+        {
+          "id": "1/11/0",
+          "usage": {
+            "inputTokens": 950,
+            "outputTokens": 266,
+            "totalTokens": 36928,
+            "cacheReadTokens": 35712
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 77,
+          "time": 1789889100859
+        },
+        {
+          "id": "1/12/0",
+          "usage": {
+            "inputTokens": 705,
+            "outputTokens": 8414,
+            "totalTokens": 45983,
+            "cacheReadTokens": 36864
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 84,
+          "time": 1789889134613
+        },
+        {
+          "id": "1/13/0",
+          "usage": {
+            "inputTokens": 187,
+            "outputTokens": 497,
+            "totalTokens": 46508,
+            "cacheReadTokens": 45824
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 89,
+          "time": 1789889138400
+        },
+        {
+          "id": "1/14/0",
+          "usage": {
+            "inputTokens": 223,
+            "outputTokens": 823,
+            "totalTokens": 47382,
+            "cacheReadTokens": 46336
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 96,
+          "time": 1789889143752
+        },
+        {
+          "id": "1/15/0",
+          "usage": {
+            "inputTokens": 1595,
+            "outputTokens": 4499,
+            "totalTokens": 53454,
+            "cacheReadTokens": 47360
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 103,
+          "time": 1789889159408
+        },
+        {
+          "id": "1/16/0",
+          "usage": {
+            "inputTokens": 184,
+            "outputTokens": 166,
+            "totalTokens": 53726,
+            "cacheReadTokens": 53376
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 108,
+          "time": 1789889161718
+        },
+        {
+          "id": "1/17/0",
+          "usage": {
+            "inputTokens": 619,
+            "outputTokens": 3321,
+            "totalTokens": 57572,
+            "cacheReadTokens": 53632
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 113,
+          "time": 1789889182906
+        },
+        {
+          "id": "1/18/0",
+          "usage": {
+            "inputTokens": 201,
+            "outputTokens": 102,
+            "totalTokens": 57775,
+            "cacheReadTokens": 57472
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 118,
+          "time": 1789889184815
+        },
+        {
+          "id": "1/19/0",
+          "usage": {
+            "inputTokens": 211,
+            "outputTokens": 1713,
+            "totalTokens": 59524,
+            "cacheReadTokens": 57600
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 123,
+          "time": 1789889193811
+        },
+        {
+          "id": "1/20/0",
+          "usage": {
+            "inputTokens": 536,
+            "outputTokens": 535,
+            "totalTokens": 60591,
+            "cacheReadTokens": 59520
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 130,
+          "time": 1789889200856
+        },
+        {
+          "id": "1/21/0",
+          "usage": {
+            "inputTokens": 139,
+            "outputTokens": 144,
+            "totalTokens": 60827,
+            "cacheReadTokens": 60544
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 135,
+          "time": 1789889203361
+        },
+        {
+          "id": "1/22/0",
+          "usage": {
+            "inputTokens": 199,
+            "outputTokens": 1517,
+            "totalTokens": 62516,
+            "cacheReadTokens": 60800
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 140,
+          "time": 1789889212773
+        },
+        {
+          "id": "1/23/0",
+          "usage": {
+            "inputTokens": 440,
+            "outputTokens": 391,
+            "totalTokens": 63295,
+            "cacheReadTokens": 62464
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 147,
+          "time": 1789889216833
+        },
+        {
+          "id": "1/24/0",
+          "usage": {
+            "inputTokens": 1580,
+            "outputTokens": 678,
+            "totalTokens": 65490,
+            "cacheReadTokens": 63232
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 154,
+          "time": 1789889221283
+        },
+        {
+          "id": "1/25/0",
+          "usage": {
+            "inputTokens": 880,
+            "outputTokens": 1577,
+            "totalTokens": 67865,
+            "cacheReadTokens": 65408
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 161,
+          "time": 1789889230975
+        },
+        {
+          "id": "1/26/0",
+          "usage": {
+            "inputTokens": 160,
+            "outputTokens": 1493,
+            "totalTokens": 69493,
+            "cacheReadTokens": 67840
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 166,
+          "time": 1789889238924
+        },
+        {
+          "id": "1/27/0",
+          "usage": {
+            "inputTokens": 1221,
+            "outputTokens": 1602,
+            "totalTokens": 72199,
+            "cacheReadTokens": 69376
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 173,
+          "time": 1789889247697
+        },
+        {
+          "id": "1/28/0",
+          "usage": {
+            "inputTokens": 207,
+            "outputTokens": 2812,
+            "totalTokens": 75083,
+            "cacheReadTokens": 72064
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 180,
+          "time": 1789889261367
+        },
+        {
+          "id": "1/29/0",
+          "usage": {
+            "inputTokens": 1531,
+            "outputTokens": 287,
+            "totalTokens": 76826,
+            "cacheReadTokens": 75008
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 187,
+          "time": 1789889264908
+        },
+        {
+          "id": "1/30/0",
+          "usage": {
+            "inputTokens": 817,
+            "outputTokens": 2050,
+            "totalTokens": 79667,
+            "cacheReadTokens": 76800
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 194,
+          "time": 1789889276100
+        },
+        {
+          "id": "1/31/0",
+          "usage": {
+            "inputTokens": 151,
+            "outputTokens": 262,
+            "totalTokens": 80029,
+            "cacheReadTokens": 79616
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 199,
+          "time": 1789889279488
+        },
+        {
+          "id": "1/32/0",
+          "usage": {
+            "inputTokens": 254,
+            "outputTokens": 6665,
+            "totalTokens": 86791,
+            "cacheReadTokens": 79872
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 204,
+          "time": 1789889311079
+        },
+        {
+          "id": "1/33/0",
+          "usage": {
+            "inputTokens": 681,
+            "outputTokens": 1215,
+            "totalTokens": 88680,
+            "cacheReadTokens": 86784
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 211,
+          "time": 1789889317815
+        },
+        {
+          "id": "1/34/0",
+          "usage": {
+            "inputTokens": 196,
+            "outputTokens": 511,
+            "totalTokens": 89283,
+            "cacheReadTokens": 88576
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 216,
+          "time": 1789889320650
+        },
+        {
+          "id": "1/35/0",
+          "usage": {
+            "inputTokens": 154,
+            "outputTokens": 152,
+            "totalTokens": 89522,
+            "cacheReadTokens": 89216
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 221,
+          "time": 1789889322865
+        },
+        {
+          "id": "1/36/0",
+          "usage": {
+            "inputTokens": 257,
+            "outputTokens": 603,
+            "totalTokens": 90332,
+            "cacheReadTokens": 89472
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 226,
+          "time": 1789889328726
+        },
+        {
+          "id": "1/37/0",
+          "usage": {
+            "inputTokens": 2587,
+            "outputTokens": 1935,
+            "totalTokens": 94762,
+            "cacheReadTokens": 90240
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 231,
+          "time": 1789889338392
+        },
+        {
+          "id": "1/38/0",
+          "usage": {
+            "inputTokens": 134,
+            "outputTokens": 266,
+            "totalTokens": 95120,
+            "cacheReadTokens": 94720
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 236,
+          "time": 1789889340808
+        },
+        {
+          "id": "1/39/0",
+          "usage": {
+            "inputTokens": 231,
+            "outputTokens": 193,
+            "totalTokens": 95400,
+            "cacheReadTokens": 94976
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 241,
+          "time": 1789889342775
+        },
+        {
+          "id": "1/40/0",
+          "usage": {
+            "inputTokens": 205,
+            "outputTokens": 1892,
+            "totalTokens": 97457,
+            "cacheReadTokens": 95360
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 246,
+          "time": 1789889355608
+        },
+        {
+          "id": "1/41/0",
+          "usage": {
+            "inputTokens": 1928,
+            "outputTokens": 1131,
+            "totalTokens": 100467,
+            "cacheReadTokens": 97408
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 251,
+          "time": 1789889361972
+        },
+        {
+          "id": "1/42/0",
+          "usage": {
+            "inputTokens": 181,
+            "outputTokens": 501,
+            "totalTokens": 101034,
+            "cacheReadTokens": 100352
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 258,
+          "time": 1789889365773
+        },
+        {
+          "id": "1/43/0",
+          "usage": {
+            "inputTokens": 148,
+            "outputTokens": 351,
+            "totalTokens": 101491,
+            "cacheReadTokens": 100992
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 265,
+          "time": 1789889370359
+        },
+        {
+          "id": "1/44/0",
+          "usage": {
+            "inputTokens": 390,
+            "outputTokens": 2984,
+            "totalTokens": 104750,
+            "cacheReadTokens": 101376
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 270,
+          "time": 1789889384456
+        },
+        {
+          "id": "1/45/0",
+          "usage": {
+            "inputTokens": 138,
+            "outputTokens": 2005,
+            "totalTokens": 106847,
+            "cacheReadTokens": 104704
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 275,
+          "time": 1789889391862
+        },
+        {
+          "id": "1/46/0",
+          "usage": {
+            "inputTokens": 195,
+            "outputTokens": 1930,
+            "totalTokens": 108877,
+            "cacheReadTokens": 106752
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 280,
+          "time": 1789889398106
+        },
+        {
+          "id": "1/47/0",
+          "usage": {
+            "inputTokens": 179,
+            "outputTokens": 213,
+            "totalTokens": 109192,
+            "cacheReadTokens": 108800
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 285,
+          "time": 1789889400806
+        },
+        {
+          "id": "1/48/0",
+          "usage": {
+            "inputTokens": 185,
+            "outputTokens": 367,
+            "totalTokens": 109736,
+            "cacheReadTokens": 109184
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 290,
+          "time": 1789889407363
+        },
+        {
+          "id": "1/49/0",
+          "usage": {
+            "inputTokens": 234,
+            "outputTokens": 1855,
+            "totalTokens": 111657,
+            "cacheReadTokens": 109568
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 295,
+          "time": 1789889417349
+        },
+        {
+          "id": "1/50/0",
+          "usage": {
+            "inputTokens": 261,
+            "outputTokens": 1961,
+            "totalTokens": 113710,
+            "cacheReadTokens": 111488
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 300,
+          "time": 1789889424251
+        },
+        {
+          "id": "1/51/0",
+          "usage": {
+            "inputTokens": 146,
+            "outputTokens": 232,
+            "totalTokens": 114042,
+            "cacheReadTokens": 113664
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 305,
+          "time": 1789889426526
+        },
+        {
+          "id": "1/52/0",
+          "usage": {
+            "inputTokens": 295,
+            "outputTokens": 351,
+            "totalTokens": 114566,
+            "cacheReadTokens": 113920
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 310,
+          "time": 1789889435622
+        },
+        {
+          "id": "1/53/0",
+          "usage": {
+            "inputTokens": 705,
+            "outputTokens": 1026,
+            "totalTokens": 116291,
+            "cacheReadTokens": 114560
+          },
+          "sources": [
+            "assistant/message"
+          ],
+          "seq": 315,
+          "time": 1789889441195
+        }
+      ]
+    },
+    "usage": {
+      "model_calls": 53,
+      "requests": 53,
+      "input_tokens": {
+        "count": 53,
+        "total": 3634433,
+        "average": 68574.2075471698,
+        "minimum": 7779,
+        "maximum": 115265
+      },
+      "uncached_input_tokens": {
+        "count": 53,
+        "total": 31617,
+        "average": 596.5471698113207,
+        "minimum": 134,
+        "maximum": 2587
+      },
+      "cached_input_tokens": {
+        "count": 53,
+        "total": 3602816,
+        "average": 67977.6603773585,
+        "minimum": 5376,
+        "maximum": 114560
+      },
+      "output_tokens": {
+        "count": 53,
+        "total": 83593,
+        "average": 1577.2264150943397,
+        "minimum": 102,
+        "maximum": 11861
+      },
+      "total_tokens": 3718026,
+      "cache_hit_rate": 0.9913007063275069
+    },
+    "timing_ms": {
+      "first_token": {
+        "count": 53,
+        "total": 75478,
+        "average": 1424.1132075471698,
+        "minimum": 846,
+        "maximum": 2139
+      },
+      "input_wait": {
+        "count": 53,
+        "total": 75478,
+        "average": 1424.1132075471698,
+        "minimum": 846,
+        "maximum": 2139
+      },
+      "output": {
+        "count": 53,
+        "total": 320185,
+        "average": 6041.226415094339,
+        "minimum": 372,
+        "maximum": 46789
+      },
+      "llm": {
+        "count": 53,
+        "total": 395663,
+        "average": 7465.33962264151,
+        "minimum": 1542,
+        "maximum": 47775
+      },
+      "tools": {
+        "count": 72,
+        "total": 48483,
+        "average": 673.375,
+        "minimum": 0,
+        "maximum": 8324
+      },
+      "output_tokens_per_second": 261.077189749676
+    },
+    "session": {
+      "steps": 53,
+      "turns": 1,
+      "model_calls": 53,
+      "tool_calls": 72
+    }
+  },
+  "patch": {
+    "sha256": "aadd95eaace0c1cc259cb192e141f0ea67fcc09d0632619740f2e603886ddb10",
+    "bytes": 7124,
+    "changed_paths": [
+      "openlibrary/plugins/upstream/table_of_contents.py"
+    ],
+    "excluded_generated_paths": [],
+    "official_overwritten_paths": []
+  },
+  "official_result": {
+    "passed": true,
+    "failure_kind": null,
+    "evaluator_exit_code": 0,
+    "parsed": {
+      "tests": [
+        {
+          "name": "openlibrary/plugins/upstream/tests/test_table_of_contents.py::TestTableOfContents::test_from_db_well_formatted",
+          "status": "PASSED"
+        },
+        {
+          "name": "openlibrary/plugins/upstream/tests/test_table_of_contents.py::TestTableOfContents::test_from_db_empty",
+          "status": "PASSED"
+        },
+        {
+          "name": "openlibrary/plugins/upstream/tests/test_table_of_contents.py::TestTableOfContents::test_from_db_string_rows",
+          "status": "PASSED"
+        },
+        {
+          "name": "openlibrary/plugins/upstream/tests/test_table_of_contents.py::TestTableOfContents::test_to_db",
+          "status": "PASSED"
+        },
+        {
+          "name": "openlibrary/plugins/upstream/tests/test_table_of_contents.py::TestTableOfContents::test_from_db_complex",
+          "status": "PASSED"
+        },
+        {
+          "name": "openlibrary/plugins/upstream/tests/test_table_of_contents.py::TestTableOfContents::test_from_markdown",
+          "status": "PASSED"
+        },
+        {
+          "name": "openlibrary/plugins/upstream/tests/test_table_of_contents.py::TestTableOfContents::test_from_markdown_empty_lines",
+          "status": "PASSED"
+        },
+        {
+          "name": "openlibrary/plugins/upstream/tests/test_table_of_contents.py::TestTocEntry::test_from_dict",
+          "status": "PASSED"
+        },
+        {
+          "name": "openlibrary/plugins/upstream/tests/test_table_of_contents.py::TestTocEntry::test_from_dict_missing_fields",
+          "status": "PASSED"
+        },
+        {
+          "name": "openlibrary/plugins/upstream/tests/test_table_of_contents.py::TestTocEntry::test_to_dict",
+          "status": "PASSED"
+        },
+        {
+          "name": "openlibrary/plugins/upstream/tests/test_table_of_contents.py::TestTocEntry::test_to_dict_missing_fields",
+          "status": "PASSED"
+        },
+        {
+          "name": "openlibrary/plugins/upstream/tests/test_table_of_contents.py::TestTocEntry::test_from_markdown",
+          "status": "PASSED"
+        },
+        {
+          "name": "openlibrary/plugins/upstream/tests/test_table_of_contents.py::TestTocEntry::test_to_markdown",
+          "status": "PASSED"
+        }
+      ]
+    }
+  },
+  "cleanup": {
+    "task_container_removed": true,
+    "task_workspace_removed": true,
+    "shared_image_retained": true
+  },
+  "public_export": {
+    "model_name_kind": "display_name",
+    "omitted": [
+      "development provider and route",
+      "local environment and paths",
+      "raw tool diagnostics"
+    ],
+    "note": "Redacted report, not runtime configuration. Scores and numeric usage are preserved; original evidence is retained locally."
+  }
+}

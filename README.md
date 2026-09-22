@@ -20,9 +20,9 @@ It selects research, design, development, verification, and optimization methods
 
 ## 在 DeepSeek Harness 中安装 · Installation
 
-要求 DeepSeek Harness 0.1.5-rc.1 或更高版本。
+要求 DeepSeek Harness 0.1.5-alpha.1 或更高版本。
 
-Requires DeepSeek Harness 0.1.5-rc.1 or later.
+Requires DeepSeek Harness 0.1.5-alpha.1 or later.
 
 ```bash
 dsh plugin --profile web add dsh-super-code

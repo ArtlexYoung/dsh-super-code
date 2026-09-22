@@ -25,13 +25,13 @@ interface Client {
   createAgentInspector(create: (address: object, callbacks: any) => any, address: string, readPage: (request: any, signal: AbortSignal) => Promise<any>, initial?: object): any
 }
 
-function client(): Client {
+function client(modules: Record<string, object> = {}): Client {
   let loaded: Client | undefined
   runInNewContext(readFileSync(new URL('../client/index.js', import.meta.url), 'utf8'), {
     URL,
     __ModuleLoader__: { load: ({ id, factory }: { id: string; factory: (require: (id: string) => object) => Client }) => {
       assert.equal(id, 'dsh-super-code')
-      loaded = factory(() => ({}))
+      loaded = factory(id => modules[id] ?? {})
     } },
   })
   assert.ok(loaded)
@@ -159,6 +159,69 @@ test('browser loader resolves a plugin that retains its dependency declarations'
   assert.ok('inject' in resolved)
   assert.ok(resolved.inject?.includes('slots'))
   assert.ok(resolved.inject?.includes('sidebarRightTabs'))
+})
+
+test('plugin settings use the same collapsed disclosure behavior as host cards', async () => {
+  type Element = { type: unknown; props: Record<string, any>; children: unknown[] }
+  const state: unknown[] = [], refs: { current: unknown }[] = []
+  let cursor = 0, refCursor = 0
+  const React = {
+    Fragment: Symbol('Fragment'),
+    createElement: (type: unknown, props: Record<string, any> | null, ...children: unknown[]): Element => ({ type, props: props ?? {}, children }),
+    useState: (initial: unknown) => {
+      const index = cursor++
+      if (!(index in state)) state[index] = initial
+      return [state[index], (value: unknown) => { state[index] = typeof value === 'function' ? (value as (old: unknown) => unknown)(state[index]) : value }]
+    },
+    useRef: (initial: unknown) => {
+      const index = refCursor++
+      return refs[index] ?? (refs[index] = { current: initial })
+    },
+    useEffect: () => {}, useLayoutEffect: () => {}, useMemo: (factory: () => unknown) => factory(), useSyncExternalStore: () => ({}),
+  }
+  const localPlugin = client({ react: React, '@deepseek-ai/dsh-client-ui-primitives': {
+    IconChevronDownOutline14: 'chevron', IconRefreshOutline16: 'refresh',
+  } })
+  const pending: Promise<unknown>[] = []
+  let Settings: ((props: object) => Element) | undefined
+  const ctx: any = {
+    effect(callback: () => unknown) {
+      if (callback.constructor.name === 'AsyncFunction') pending.push(Promise.resolve(callback()))
+    },
+    locale: { register: () => () => {}, bind: () => (key: string) => key },
+    remote: { $mount: async () => {} },
+    inject: (_dependencies: string[], callback: (ready: any) => void) => callback(ctx),
+    slots: {
+      inject: (_name: string, callback: () => void) => callback(),
+      register: (config: { name: string }, component: (props: object) => Element) => {
+        if (config.name === 'settings.plugin.item') Settings = component
+        return () => {}
+      },
+    },
+    sidebarRightTabs: { register: () => () => {} },
+    sessions: { refreshSubagents: () => {}, setSubagentCatalogOpen: () => {}, list: { getSnapshot: () => ({}) } },
+    sidebarRight: { openResource: () => {} },
+  }
+  localPlugin.apply(ctx)
+  await Promise.all(pending)
+  assert.ok(Settings)
+  const t = (key: string) => ({ 'preset.expand': 'Show settings', 'preset.collapse': 'Hide settings' }[key] ?? key)
+  const render = () => { cursor = 0; refCursor = 0; return Settings!({ api: {}, t }) }
+  const find = (node: unknown, predicate: (element: Element) => boolean): Element[] => {
+    if (!node || typeof node !== 'object' || !('type' in node)) return []
+    const element = node as Element
+    return [...predicate(element) ? [element] : [], ...element.children.flatMap(child => find(child, predicate))]
+  }
+  let card = render()
+  assert.equal(card.type, 'li')
+  let disclosure = find(card, element => element.type === 'button' && 'aria-expanded' in element.props)[0]
+  assert.equal(disclosure?.props['aria-expanded'], false)
+  assert.equal(find(card, element => element.type === 'form').length, 0)
+  disclosure?.props.onClick()
+  card = render()
+  disclosure = find(card, element => element.type === 'button' && 'aria-expanded' in element.props)[0]
+  assert.equal(disclosure?.props['aria-expanded'], true)
+  assert.equal(find(card, element => element.props.className === 'dsh-super-code-settings-body').length, 1)
 })
 
 test('agent view isolates the current tree and merges navigation metadata into existing summaries', () => {
@@ -367,7 +430,7 @@ test('detail history failures can retry and late pages cannot revive a closed in
   callbacks.publish({ type: 'replace', entries: [], hasMore: true, page: {} })
   await inspector.older()
   assert.equal(inspector.getSnapshot().status, 'error')
-  assert.equal(inspector.getSnapshot().error, '历史记录读取失败')
+  assert.equal(inspector.getSnapshot().error, 'detail.historyError')
   const pending = inspector.older()
   await inspector.older()
   assert.equal(reads, 2, 'concurrent pagination is deduplicated')

@@ -20,9 +20,9 @@ It selects research, design, development, verification, and optimization methods
 
 ## 在 DeepSeek Harness 中安装 · Installation
 
-要求 DeepSeek Harness 0.1.5-rc.2 或更高版本。
+要求 DeepSeek Harness 0.1.5-rc.1 或更高版本。
 
-Requires DeepSeek Harness 0.1.5-rc.2 or later.
+Requires DeepSeek Harness 0.1.5-rc.1 or later.
 
 ```bash
 dsh plugin --profile web add dsh-super-code
@@ -31,6 +31,12 @@ dsh plugin --profile web add dsh-super-code
 安装后在 Harness 的 “设置”-“Agent 预设” 中选择 `super-code`，模型、权限和工具继续使用 Harness 的配置。
 
 After installation, select `super-code` in "Settings" - "Agent Presets" in Harness; models, permissions, and tools use the Harness configuration.
+
+若安装后找不到预设，插件会在首次加载时尝试安装一份用户预设。也可打开“设置”→“插件”→“插件配置”中的 **Super Code** 查看状态并手动安装；名称冲突时换个名称即可，已有预设不会被覆盖。用户副本不会自动更新，删除后也不会在重启时自动重装。
+
+If the preset is missing, the plugin attempts a one-time user-preset installation on first load. Open **Super Code** under “Settings” → “Plugins” → “Plugin configuration” to check its status or install manually. Choose another name if it is taken. Existing presets are preserved; user copies are not automatically updated or reinstalled after deletion.
+
+[版本记录 · Changelog](docs/CHANGELOG.md)
 
 [![Super Code 配置入口 · Super Code settings](docs/images/preset-settings-preview.png)](docs/images/preset-settings.png)
 

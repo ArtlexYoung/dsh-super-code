@@ -9,11 +9,26 @@
 ;(globalThis.window || globalThis).__ModuleLoader__.load({ id: 'dsh-super-code', factory: (require) => {
 const React = require('react')
 const { useEffect, useLayoutEffect, useRef, useMemo, useState, useSyncExternalStore } = React
-const { IconRefreshOutline16 } = require('@deepseek-ai/dsh-client-ui-primitives')
+const { IconChevronDownOutline14, IconRefreshOutline16 } = require('@deepseek-ai/dsh-client-ui-primitives')
 const { SessionEventStream } = require('@deepseek-ai/dsh-api-session-controller')
 
 const LOCALE_NS = 'dshSuperCode'
 const zh = {
+  'preset.title': 'Super Code 模式', 'usage.cacheUnknown': '缓存 —',
+  'preset.description': '更快、更省、更聪明的编码模式。', 'preset.refresh': '刷新状态', 'preset.expand': '展开设置', 'preset.collapse': '收起设置',
+  'preset.state.available': '预设可用', 'preset.state.installed': '用户预设已安装', 'preset.state.conflict': '已有同名预设',
+  'preset.state.missing': '尚未安装', 'preset.state.broken': '预设不可用',
+  'preset.availableHint': '可在新对话中选择此预设。用户副本不会自动覆盖或更新。',
+  'preset.installHint': '安装一份用户预设；已有内容会保留，重名时请换个名称。',
+  'preset.userConflict': '用户目录中已有同名预设，已保留。可换名安装独立副本。',
+  'preset.readonly': '此宿主未提供用户预设目录，无法安装副本。',
+  'preset.name': '预设名称', 'preset.nameHint': '使用小写字母、数字和连字符，最多 64 个字符。安装后在新对话中选择。',
+  'preset.install': '安装用户预设', 'preset.working': '处理中…',
+  'preset.error.invalid-name': '名称格式不正确，请使用小写字母、数字和连字符。',
+  'preset.error.name-taken': '该名称已被占用，原预设未改动。请换个名称。',
+  'preset.error.no-user-root': '此宿主没有可写的用户预设目录。',
+  'preset.error.install-failed': '安装未完成，请检查预设目录的写入权限后重试。',
+  'preset.error.connection': '暂时无法读取预设状态，请刷新重试。',
   'task.memory': '任务档案', 'task.other': '其他任务', 'task.history': '任务记录',
   'status.active': '进行中', 'status.paused': '已暂停', 'status.completed': '已完成', 'status.cancelled': '已取消',
   'next': '下一步：', 'tree.title': '协作执行', 'tree.count': '显示 {shown} / {total} · 运行中 {running}',
@@ -28,6 +43,21 @@ const zh = {
   'detail.path': 'Agent 路径', 'detail.title': 'Agent 详情', 'detail.refresh': '刷新对话详情', 'detail.task': '任务', 'detail.agent': 'Agent', 'detail.interrupted': 'Agent · 已中断', 'detail.error': '执行错误', 'detail.incomplete': '执行未完成，请稍后重试。', 'detail.input': '输入', 'detail.output': '输出', 'detail.cacheRead': '缓存读取', 'detail.cacheWrite': '缓存写入', 'detail.total': 'Token 总量', 'detail.hitRate': '缓存命中率', 'detail.moreUsage': '用量详情', 'detail.unavailable': '未提供', 'detail.reading': '正在读取对话…', 'detail.read': '读取中…', 'detail.older': '加载更早记录', 'detail.latest': '回到最新', 'detail.empty': '暂无执行内容', 'detail.new': '有新内容 · 查看最新', 'detail.loadError': '对话详情读取失败', 'detail.connection': '连接中断，正在重连', 'detail.historyError': '历史记录读取失败', 'detail.open': '展开全文', 'detail.noAccess': '无法打开详情，请重试', 'tree.loadError': '部分执行记录读取失败，请刷新重试', 'detail.unknown': '用量未知', 'main.agent': '主 Agent', 'tree.open': '点击查看详情', 'tree.expand': '展开', 'tree.collapse': '收起', 'image': '[图片]'
 }
 const en = {
+  'preset.title': 'Super Code', 'usage.cacheUnknown': 'Cache —',
+  'preset.description': 'A faster, more efficient, smarter coding mode.', 'preset.refresh': 'Refresh status', 'preset.expand': 'Show settings', 'preset.collapse': 'Hide settings',
+  'preset.state.available': 'Preset available', 'preset.state.installed': 'User preset installed', 'preset.state.conflict': 'Preset name already exists',
+  'preset.state.missing': 'Not installed', 'preset.state.broken': 'Preset unavailable',
+  'preset.availableHint': 'Select this preset in a new conversation. User copies are never overwritten or updated automatically.',
+  'preset.installHint': 'Install a user copy. Existing content is preserved; choose another name if it is taken.',
+  'preset.userConflict': 'A user preset with this name already exists and was preserved. Choose another name for a separate copy.',
+  'preset.readonly': 'This host does not provide a user preset directory.',
+  'preset.name': 'Preset name', 'preset.nameHint': 'Lowercase letters, digits and hyphens, up to 64 characters. Select it in a new conversation after installing.',
+  'preset.install': 'Install user preset', 'preset.working': 'Working…',
+  'preset.error.invalid-name': 'Use lowercase letters, digits and hyphens for the name.',
+  'preset.error.name-taken': 'This name is taken. The existing preset was preserved. Choose another name.',
+  'preset.error.no-user-root': 'This host has no writable user preset directory.',
+  'preset.error.install-failed': 'Installation failed. Check directory write permissions and retry.',
+  'preset.error.connection': 'Preset status is unavailable. Refresh to try again.',
   'task.memory': 'Task memory', 'task.other': 'Other tasks', 'task.history': 'Task history',
   'status.active': 'Active', 'status.paused': 'Paused', 'status.completed': 'Completed', 'status.cancelled': 'Cancelled', 'next': 'Next: ',
   'tree.title': 'Collaborative execution', 'tree.count': 'Showing {shown} / {total} · Running {running}', 'tree.refresh': 'Refresh execution records', 'tree.legend.active': 'Running', 'tree.legend.idle': 'Idle', 'tree.legend.stopped': 'Stopped', 'tree.legend.unavailable': 'Unavailable', 'tree.empty': 'No sessions', 'tree.zoom.out': 'Zoom out', 'tree.zoom.in': 'Zoom in', 'tree.fit': 'Fit to window', 'tree.organize': 'Organize automatically', 'tree.collapsed': '{count} collapsed', 'tree.more': 'Show more', 'tree.canvas': 'Drag to pan, scroll to zoom, double-click empty space to fit', 'tree.aria': 'Agent execution tree', 'tree.status': 'Status colors', 'tree.usage': 'This node and all known descendants. {partial}Tokens {tokens}; cache reads {cache}; {agents} agents', 'usage.unknown': 'Usage —', 'usage.cache': 'Cache {value}%', 'usage.partial': 'partial', 'usage.incomplete': 'Some records or usage are unavailable; showing known values only.',
@@ -176,7 +206,6 @@ function agentTreeTotals(view, catalogs = {}) {
 }
 
 const historyRowHeight = 56
-const historyCollator = new Intl.Collator('zh-CN', { numeric: true, sensitivity: 'base' })
 
 function agentHistoryRange(range, from = '', to = '', now = Date.now()) {
   const today = new Date(now)
@@ -200,6 +229,7 @@ function agentHistoryRange(range, from = '', to = '', now = Date.now()) {
 }
 
 function agentHistoryRows(view, hidden, totals, options = {}) {
+  const historyCollator = new Intl.Collator(localeCode(options.t || (key => zh[key] || key)), { numeric: true, sensitivity: 'base' })
   const query = (options.query || '').trim().toLocaleLowerCase()
   const range = agentHistoryRange(options.range || 'all', options.from, options.to, options.now)
   if (!range.valid) return []
@@ -238,7 +268,8 @@ function AgentHistory({ view, hidden, totals, open, t = key => zh[key] || key })
   const [scroll, setScroll] = useState({ top: 0, height: 168 })
   const viewport = useRef(null), focusTarget = useRef('')
   const records = useMemo(() => agentHistoryRows(view, hidden, totals, { ...filters, t }), [view, hidden, totals, filters, t])
-  const dateFormat = useMemo(() => new Intl.DateTimeFormat(localeCode(t), { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }), [t])
+  const language = localeCode(t)
+  const dateFormat = useMemo(() => new Intl.DateTimeFormat(language, { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }), [language])
   const window = agentHistoryWindow(records.length, scroll.top, scroll.height)
   const range = agentHistoryRange(filters.range, filters.from, filters.to)
   const change = (key, value) => setFilters(previous => ({ ...previous, [key]: value }))
@@ -292,7 +323,7 @@ function AgentHistory({ view, hidden, totals, open, t = key => zh[key] || key })
         return React.createElement('div', { key: record.id, role: 'listitem', 'aria-posinset': index + 1, 'aria-setsize': records.length,
           style: { position: 'absolute', top: index * historyRowHeight, height: historyRowHeight, width: '100%' } },
           React.createElement('button', { type: 'button', 'data-history-id': record.id, onClick: () => open(record.node), onKeyDown: event => keyDown(event, index),
-            title: `${record.title} · ${record.parent} · ${record.time < 0 ? date : new Date(record.time).toLocaleString()} · ${record.tokens < 0 ? text(t, 'history.unknownUsage') : record.tokens + ' Token' + (record.partial ? ' (' + text(t, 'usage.partial') + ')' : '')}`,
+            title: `${record.title} · ${record.parent} · ${record.time < 0 ? date : new Date(record.time).toLocaleString(localeCode(t))} · ${record.tokens < 0 ? text(t, 'history.unknownUsage') : record.tokens + ' Token' + (record.partial ? ' (' + text(t, 'usage.partial') + ')' : '')}`,
             'aria-label': text(t, 'history.view', { title: record.title }) },
             React.createElement('i', { className: 'dsh-super-code-circle ' + status.tone, 'aria-hidden': true }),
             React.createElement('span', null, React.createElement('strong', null, record.title), React.createElement('small', null, `${status.label} · ${date} · ${record.parent}`)),
@@ -428,12 +459,12 @@ function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog, 
     ...Object.keys(catalogs).filter(id => view.nodes.has(id))])]
   const open = node => {
     setError('')
-    Promise.resolve().then(() => openDetail(node)).catch(() => setError(text(t, 'detail.noAccess')))
+    Promise.resolve().then(() => openDetail(node)).catch(() => setError('detail.noAccess'))
   }
   const reload = async () => {
     setBusy(true); setError('')
     try { await Promise.all([...new Set([view.root, ...watched])].filter(Boolean).map(id => refresh(id))) }
-    catch { setError(text(t, 'tree.loadError')) }
+    catch { setError('tree.loadError') }
     finally { setBusy(false) }
   }
   const keyDown = (event, row) => {
@@ -467,7 +498,7 @@ function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog, 
         React.createElement('strong', null, text(t, 'tree.title')),
         React.createElement('span', { className: 'dsh-super-code-tree-count' }, text(t, 'tree.count', { shown: rows.length, total: view.nodes.size, running }))),
       React.createElement('button', { type: 'button', className: 'dsh-super-code-icon-button', disabled: busy || !view.root, onClick: reload, title: text(t, 'tree.refresh'), 'aria-label': text(t, 'tree.refresh') }, React.createElement(IconRefreshOutline16))),
-    (error || catalogError) && React.createElement('p', { role: 'alert', className: 'dsh-super-code-tree-error' }, error || text(t, 'tree.loadError')),
+    (error || catalogError) && React.createElement('p', { role: 'alert', className: 'dsh-super-code-tree-error' }, text(t, error || 'tree.loadError')),
     React.createElement('div', { className: 'dsh-super-code-graph-legend', 'aria-label': text(t, 'tree.status') },
       ['tree.legend.active', 'tree.legend.idle', 'tree.legend.stopped', 'tree.legend.unavailable'].map((key, index) => React.createElement('span', { key },
         React.createElement('i', { className: 'dsh-super-code-circle ' + ['active', 'idle', 'stopped', 'unavailable'][index], 'aria-hidden': true }), text(t, key)))),
@@ -530,9 +561,9 @@ function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog, 
         React.createElement('span', { className: 'dsh-super-code-circle ' + tone, 'aria-hidden': true }, row.id === view.root ? text(t, 'main.agent').slice(0, 1) : String(rows.findIndex(item => item.id === row.id))),
         React.createElement('span', { className: 'dsh-super-code-tree-content' },
           React.createElement('span', { className: 'dsh-super-code-tree-title' }, title),
-          React.createElement('span', { className: 'dsh-super-code-tree-usage', title: text(t, 'tree.usage', { partial: partial ? text(t, 'usage.incomplete') : '', tokens: usage.tokens.toLocaleString(), cache: usage.cache.toLocaleString(), agents: usage.agents }) },
+          React.createElement('span', { className: 'dsh-super-code-tree-usage', title: text(t, 'tree.usage', { partial: partial ? text(t, 'usage.incomplete') : '', tokens: usage.tokens.toLocaleString(localeCode(t)), cache: usage.cache.toLocaleString(localeCode(t)), agents: usage.agents }) },
             React.createElement('span', null, usage.known ? `${number(usage.tokens)} token` : text(t, 'usage.unknown')),
-            React.createElement('span', null, usage.known ? text(t, 'usage.cache', { value: usage.input ? Math.round(usage.cache / usage.input * 100) : 0 }) + (partial ? ` · ${text(t, 'usage.partial')}` : '') : 'Cache —')))),
+            React.createElement('span', null, usage.known ? text(t, 'usage.cache', { value: usage.input ? Math.round(usage.cache / usage.input * 100) : 0 }) + (partial ? ` · ${text(t, 'usage.partial')}` : '') : text(t, 'usage.cacheUnknown'))))),
         hasChildren && React.createElement('button', { type: 'button', className: 'dsh-super-code-branch-toggle',
           style: { left: row.x + 21, top: row.y + 25 }, 'aria-label': `${collapsed.has(row.id) || !isExpanded ? text(t, 'tree.expand') : text(t, 'tree.collapse')} ${title}`,
           title: text(t, 'tree.organize'), onClick: () => toggleBranch(row.id) },
@@ -572,10 +603,10 @@ function agentPath(view, id) {
   return path
 }
 
-function contentText(blocks) {
+function contentText(blocks, t) {
   return (blocks || []).map(block => {
     if (block.type === 'text' && typeof block.text === 'string') return block.text
-    if (block.type === 'image') return '[图片]'
+    if (block.type === 'image') return text(t, 'image')
     return ''
   }).filter(Boolean).join('\n\n')
 }
@@ -583,12 +614,12 @@ function contentText(blocks) {
 function detailRecord(entry, t = key => zh[key] || key) {
   const event = entry.event, data = event?.data
   if (!data) return { kind: 'skip' }
-  const base = { seq: event.seq, time: event.time }
+  const base = { seq: event.seq, time: event.time, entry }
   if (event.type === 'user/message') {
     if (data.source?.kind !== 'user') return { kind: 'skip' }
-    return { ...base, kind: 'message', label: text(t, 'detail.task'), text: contentText(data.content) }
+    return { ...base, kind: 'message', label: text(t, 'detail.task'), text: contentText(data.content, t) }
   }
-  if (event.type === 'assistant/message') return { ...base, kind: 'message', label: data.interrupted ? text(t, 'detail.interrupted') : text(t, 'detail.agent'), text: contentText(data.message?.content) }
+  if (event.type === 'assistant/message') return { ...base, kind: 'message', label: data.interrupted ? text(t, 'detail.interrupted') : text(t, 'detail.agent'), text: contentText(data.message?.content, t) }
   if (event.type === 'turn/error') return { ...base, kind: 'error', label: text(t, 'detail.error'), text: data.message || text(t, 'detail.incomplete') }
   return { kind: 'skip' }
 }
@@ -626,7 +657,7 @@ function createAgentInspector(createStream, address, readPage, initial, t = key 
           cursor: change.entries.at(-1)?.event.seq ?? -1,
           projections: change.page.projections?.values || {}, error: '' })
       } else if (change.type === 'append' && !snapshot.earlier) {
-        const item = detailRecord(change.entry)
+        const item = detailRecord(change.entry, t)
         cursor = change.entry.event.seq
         if (item.kind !== 'skip' && item.text) {
           const items = [...snapshot.items, item]
@@ -635,13 +666,13 @@ function createAgentInspector(createStream, address, readPage, initial, t = key 
         }
       }
     },
-    carrierFailed: () => publish({ error: text(t, 'detail.connection') }),
-    failed: () => publish({ status: 'error', error: text(t, 'detail.loadError') }),
+    carrierFailed: () => publish({ error: 'detail.connection' }),
+    failed: () => publish({ status: 'error', error: 'detail.loadError' }),
   })
   return {
     getSnapshot: () => snapshot,
     subscribe: listener => { listeners.add(listener); return () => listeners.delete(listener) },
-    start: () => { stream.open({ maxMessages: 40 }).catch(() => publish({ status: 'error', error: text(t, 'detail.loadError') })) },
+    start: () => { stream.open({ maxMessages: 40 }).catch(() => publish({ status: 'error', error: 'detail.loadError' })) },
     older: async () => {
       if (snapshot.status === 'paging' || !snapshot.hasMore) return
       publish({ status: 'paging', error: '' })
@@ -654,7 +685,7 @@ function createAgentInspector(createStream, address, readPage, initial, t = key 
           firstSeq: items.length > 200 ? visible[0].seq : result.value.records[0]?.event.seq ?? 0,
           hasMore: result.value.hasMore || items.length > 200 })
       }
-      catch { publish({ status: 'error', error: text(t, 'detail.historyError') }) }
+      catch { publish({ status: 'error', error: 'detail.historyError' }) }
     },
     dispose: () => { disposed = true; listeners.clear(); void stream.dispose() },
   }
@@ -743,22 +774,88 @@ function AgentDetail({ useTabInfo, useSessions, createInspector, detailStates, t
       saved.following = !snapshot.earlier && element.scrollHeight - element.clientHeight - element.scrollTop < 32
       if (saved.following) markUnread(false)
     } },
-      snapshot.error && React.createElement('p', { role: 'alert' }, snapshot.error),
+      snapshot.error && React.createElement('p', { role: 'alert' }, text(t, snapshot.error)),
       snapshot.status === 'loading' && React.createElement('p', { role: 'status' }, text(t, 'detail.reading')),
       snapshot.hasMore && React.createElement('button', { type: 'button', disabled: snapshot.status === 'paging', onClick: inspector.older }, snapshot.status === 'paging' ? text(t, 'detail.read') : text(t, 'detail.older')),
       (snapshot.earlier || snapshot.truncated) && React.createElement('button', { type: 'button', onClick: latest }, text(t, 'detail.latest')),
       snapshot.status === 'ready' && !snapshot.items.length && React.createElement('p', null, text(t, 'detail.empty')),
-      snapshot.items.map(item => React.createElement('article', { key: item.seq, className: 'dsh-super-code-detail-entry ' + item.kind },
+      snapshot.items.map(record => {
+        const item = record.entry ? detailRecord(record.entry, t) : record
+        return React.createElement('article', { key: item.seq, className: 'dsh-super-code-detail-entry ' + item.kind },
         item.collapsed ? React.createElement('details', { open: saved.open.has(item.seq), onToggle: event => { if (event.currentTarget.open) saved.open.add(item.seq); else saved.open.delete(item.seq) } },
           React.createElement('summary', null, item.label),
             React.createElement(DetailText, { text: item.text, t }))
           : React.createElement(React.Fragment, null,
             React.createElement('div', { className: 'dsh-super-code-detail-entry-label' }, item.label,
               React.createElement('time', null, new Date(item.time).toLocaleTimeString(localeCode(t), { hour12: false }))),
-            React.createElement(DetailText, { text: item.text, t })))) ),
+            React.createElement(DetailText, { text: item.text, t })))
+      }) ),
     unread && React.createElement('button', { type: 'button', className: 'dsh-super-code-new-content', onClick: () => {
       saved.following = true; log.current.scrollTop = log.current.scrollHeight; markUnread(false)
     } }, text(t, 'detail.new')))
+}
+
+// Explicit public Remote contribution; no model tools or private transport hooks.
+const presetRemoteContribution = {
+  package: 'dsh-super-code',
+  descriptors: ['status', 'installPreset'].map(method => ({
+    id: `dsh-super-code:superCodePresets/${method}`, service: 'superCodePresets',
+    namespace: 'superCodePresets', method, invocation: { kind: 'direct' },
+    parameters: method === 'installPreset' ? [{ name: 'id', wire: 'id', source: 'json', codec: { mode: 'strict', typeSymbol: 'dsh-super-code#PresetId', schema: { parse(value) {
+      if (typeof value !== 'string' || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(value)) throw new Error('Invalid preset name')
+      return value
+    } } } }] : [],
+    result: { mode: 'src-json' },
+  })),
+}
+
+function PresetSettings({ api, t }) {
+  const [status, setStatus] = useState(null), [name, setName] = useState('super-code')
+  const [busy, setBusy] = useState(true), [error, setError] = useState(''), [open, setOpen] = useState(false)
+  const alive = useRef(false), pending = useRef(false)
+  const run = async install => {
+    if (pending.current) return
+    pending.current = true; setBusy(true); setError('')
+    try {
+      const response = install ? await api.installPreset(name.trim()) : await api.status()
+      if (!response.ok) throw new Error('Remote unavailable')
+      if (!alive.current) return
+      const value = response.value
+      setStatus(install ? value.status : value)
+      if (install && !value.ok) setError(`preset.error.${value.error}`)
+    } catch {
+      if (alive.current) setError('preset.error.connection')
+    } finally {
+      pending.current = false
+      if (alive.current) setBusy(false)
+    }
+  }
+  useEffect(() => { alive.current = true; run(false); return () => { alive.current = false } }, [api])
+  const available = status && ['available', 'installed'].includes(status.state)
+  return React.createElement('li', { className: `dsh-super-code-settings${open ? ' dsh-super-code-settings-open' : ''}` },
+    React.createElement('button', { type: 'button', className: 'dsh-super-code-settings-header', 'aria-expanded': open,
+      'aria-label': `${t(open ? 'preset.collapse' : 'preset.expand')}: ${t('preset.title')}`, onClick: () => setOpen(!open) },
+      React.createElement('span', { className: 'dsh-super-code-settings-head-text' },
+        React.createElement('span', { className: 'dsh-super-code-settings-name' }, t('preset.title')),
+        React.createElement('span', { className: 'dsh-super-code-settings-description' }, t('preset.description'))),
+      React.createElement(IconChevronDownOutline14, { className: `dsh-super-code-settings-chevron${open ? ' dsh-super-code-settings-chevron-open' : ''}`, 'aria-hidden': true })),
+    open && React.createElement('div', { className: 'dsh-super-code-settings-body' },
+      React.createElement('div', { className: 'dsh-super-code-settings-actions' },
+        React.createElement('button', { type: 'button', disabled: busy, onClick: () => run(false), 'aria-label': t('preset.refresh') }, t('preset.refresh'))),
+      status && React.createElement('p', { className: 'dsh-super-code-preset-status', role: 'status', 'data-available': available },
+        React.createElement('span', { 'aria-hidden': true }, '●'), ' ', t(`preset.state.${status.state}`), ' · ', status.id),
+      status && React.createElement('p', null, t(available ? 'preset.availableHint' : 'preset.installHint')),
+      status?.userConflict && status.state !== 'conflict' && React.createElement('p', null, t('preset.userConflict')),
+      status && !status.authorable && React.createElement('p', { role: 'note' }, t('preset.readonly')),
+      status?.authorable && React.createElement('form', { onSubmit: event => { event.preventDefault(); run(true) } },
+        React.createElement('label', { htmlFor: 'super-code-preset-name' }, t('preset.name')),
+        React.createElement('div', { className: 'dsh-super-code-install-row' },
+          React.createElement('input', { id: 'super-code-preset-name', value: name, maxLength: 64, disabled: busy,
+            pattern: '[a-z0-9][a-z0-9\\-]{0,63}', required: true, autoComplete: 'off', spellCheck: false,
+            'aria-describedby': 'super-code-preset-name-hint', onChange: event => setName(event.target.value) }),
+          React.createElement('button', { type: 'submit', disabled: busy || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(name.trim()) }, t(busy ? 'preset.working' : 'preset.install'))),
+        React.createElement('small', { id: 'super-code-preset-name-hint' }, t('preset.nameHint'))),
+      error && React.createElement('p', { role: 'alert' }, t(error))))
 }
 
 const inject = [
@@ -770,10 +867,33 @@ function apply(ctx) {
   const locale = ctx.locale || { register: () => () => {}, bind: () => key => zh[key] || key }
   ctx.effect(() => locale.register(LOCALE_NS, { zh, en }), 'dsh-super-code: dictionaries')
   const t = locale.bind(LOCALE_NS)
+  ctx.effect(async () => {
+    const owner = ctx
+    await owner.remote.$mount(presetRemoteContribution)
+    owner.inject(['remote.superCodePresets'], ready => ready.slots.inject('settings.plugin.item', () => ready.slots.register({
+      name: 'settings.plugin.item', key: 'super-code', locale: LOCALE_NS,
+      inject: () => ({ api: ready.remote.superCodePresets }),
+    }, PresetSettings)))
+  })
   ctx.effect(() => {
     const style = document.createElement('style')
     style.dataset.dshSuperCode = 'true'
     style.textContent = `
+.dsh-super-code-settings{list-style:none;border:.5px solid var(--dsw-alias-border-l4,#dedfe3);border-radius:16px;background:var(--dsw-alias-bg-layer-3,transparent);line-height:1.6;font-size:13px;transition:border-color .16s,background .16s}
+.dsh-super-code-settings:hover{border-color:var(--dsw-alias-label-dimmed,#a8abb2)}.dsh-super-code-settings-open{background:var(--dsw-alias-bg-layer-2,transparent);border-color:var(--dsw-alias-label-dimmed,#a8abb2)}
+.dsh-super-code-settings-header{width:100%;appearance:none;border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer;display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:12px}
+.dsh-super-code-settings-head-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}.dsh-super-code-settings-name{font-size:15px;font-weight:600;line-height:1.4;color:var(--dsw-alias-label-primary,inherit)}
+.dsh-super-code-settings-description{font-size:13px;line-height:1.5;color:var(--dsw-alias-label-tertiary,#70757d)}.dsh-super-code-settings-chevron{flex:none;color:var(--dsw-alias-label-tertiary,#70757d);transition:transform .16s}.dsh-super-code-settings-chevron-open{transform:rotate(180deg)}
+.dsh-super-code-settings-body{border-top:.5px solid var(--dsw-alias-border-l2,#dedfe3);margin:0 16px;padding:12px 0 14px}.dsh-super-code-settings-actions{display:flex;justify-content:flex-end}
+.dsh-super-code-settings p{margin:8px 0;color:var(--dsw-alias-label-secondary,#70757d)}
+.dsh-super-code-settings-body button,.dsh-super-code-settings input{font:inherit;color:inherit;border:1px solid var(--dsw-alias-border-l1,#dedfe3);border-radius:7px;background:transparent;padding:7px 10px;min-height:34px}
+.dsh-super-code-settings button{cursor:pointer;white-space:nowrap}.dsh-super-code-settings button:disabled{opacity:.45;cursor:default}
+.dsh-super-code-settings form{margin-top:16px}.dsh-super-code-settings label{display:block;margin-bottom:6px}
+.dsh-super-code-install-row{display:flex;gap:8px;flex-wrap:wrap}.dsh-super-code-install-row input{flex:1;min-width:140px}
+.dsh-super-code-settings small{display:block;margin-top:6px;color:var(--dsw-alias-label-secondary,#70757d)}
+.dsh-super-code-settings .dsh-super-code-preset-status{color:inherit}.dsh-super-code-preset-status span{color:#b87716}.dsh-super-code-preset-status[data-available=true] span{color:#008b78}
+.dsh-super-code-settings [role=alert]{color:var(--dsw-color-text-error,#bd423b)}.dsh-super-code-settings :focus-visible{outline:2px solid var(--dsw-color-primary,#3276dc);outline-offset:2px}
+
 .dsh-super-code-tree{--agent-muted:var(--dsw-alias-label-secondary,#70757d);--agent-line:var(--dsw-alias-border-l1,#dedfe3);height:100%;min-width:0;min-height:0;display:flex;flex-direction:column;overflow:auto;font-size:13px;letter-spacing:0;color:inherit}
 .dsh-super-code-tree>header,.dsh-super-code-tree>.dsh-super-code-graph-controls,.dsh-super-code-tree>.dsh-super-code-graph-legend,.dsh-super-code-tree>.dsh-super-code-history-controls{flex-shrink:0}
 .dsh-super-code-tree-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 18px 16px}
@@ -933,13 +1053,13 @@ function apply(ctx) {
     (target, options) => new SessionEventStream(ctx.remote, target, options), address,
     (request, signal) => ctx.remote.session.page(request, signal), initial, t) }
   ctx.slots.inject('sidebar.right.pane.tab', () => ctx.slots.register({
-    name: 'sidebar.right.pane.tab', key: 'dsh-super-code-detail', inject: () => ({ ...detailActions, t }),
+    name: 'sidebar.right.pane.tab', key: 'dsh-super-code-detail', locale: LOCALE_NS, inject: () => ({ ...detailActions }),
   }, AgentDetail))
   ctx.slots.inject('sidebar.right.pane.tab', () => ctx.slots.register({
     // Keyed tab bodies dispatch by the definition id, while `kind` is the
     // page/content discriminator used by the Sidebar controller.
-    name: 'sidebar.right.pane.tab', key: treeId,
-    inject: () => ({ ...treeActions, t }),
+    name: 'sidebar.right.pane.tab', key: treeId, locale: LOCALE_NS,
+    inject: () => ({ ...treeActions }),
   }, AgentTree))
   ctx.effect(() => disposeTreeType, 'super-code: Agent tree tab')
   ctx.effect(() => disposeDetailType, 'super-code: Agent detail tab')

@@ -1,6 +1,6 @@
 {
   "name": "dsh-super-code",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "One super-code preset with specialist teams and durable task memory for DeepSeek Harness.",
   "license": "Apache-2.0",
   "type": "module",

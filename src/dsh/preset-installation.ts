@@ -1,29 +1,36 @@
 /** Host-only preset discovery repair; never part of a model's tool surface. */
-import { cp, lstat, mkdir, mkdtemp, readdir, rm } from 'node:fs/promises'
+import { cp, lstat, mkdir, mkdtemp, readdir, rm, readFile, writeFile, rename, realpath } from 'node:fs/promises'
+import { randomUUID } from 'node:crypto'
 import { join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import type { Context } from '@deepseek-ai/cordis'
 import s from '@deepseek-ai/schemastery'
 import { copyComposition, discoverPresets, writableRoot, type AgentPresets } from '@deepseek-ai/dsh-agent-presets'
+import { displayCopy, migrateMetadata, type DisplayBaseline } from './preset-metadata.js'
 import type { SettingsScope } from '@deepseek-ai/dsh-settings'
 import { Remote, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
 
 interface InstallationSettings {
   checked: boolean
   installedId: string
+  installation?: { id: string; path: string; token: string; dev: number; ino: number }
+  display?: Record<string, DisplayBaseline>
+  pendingDisplay?: Record<string, DisplayBaseline>
 }
 export interface PresetInstallationStatus {
   state: 'available' | 'installed' | 'conflict' | 'missing' | 'broken'
   id: string
+  name?: string
   authorable: boolean
   userConflict: boolean
 }
 export interface PresetInstallationResult {
   ok: boolean
   status: PresetInstallationStatus
-  error?: 'invalid-name' | 'name-taken' | 'no-user-root' | 'install-failed'
+  error?: 'ownership-unverified' | 'invalid-name' | 'invalid-display-name' | 'name-taken' | 'no-user-root' | 'install-failed'
 }
 const sourceRoot = fileURLToPath(new URL('../../presets/', import.meta.url))
+const ownershipFile = '.super-code-installation.json'
 const validId = /^[a-z0-9][a-z0-9-]{0,63}$/
 
 async function exists(path: string): Promise<boolean> {
@@ -53,7 +60,7 @@ export class PresetInstaller {
     const userConflict = occupied && this.settings.get().installedId !== id
     if (preset) {
       const owned = preset.trust === 'system' && resolve(preset.path) === join(this.bundledRoot, 'super-code', 'agent.cordis.yml')
-      return { id, authorable, userConflict, state: preset.broken ? 'broken' : owned ? 'available'
+      return { id, name: preset.name, authorable, userConflict, state: preset.broken ? 'broken' : owned ? 'available'
         : preset.trust === 'user' && this.settings.get().installedId === id ? 'installed' : 'conflict' }
     }
     return { id, authorable, userConflict, state: occupied ? 'conflict' : 'missing' }
@@ -70,8 +77,98 @@ export class PresetInstaller {
     })
   }
 
-  async install(id: unknown): Promise<PresetInstallationResult> {
-    return await this.enqueue(() => this.installNow(id))
+  async synchronize(language: string): Promise<{ changed: boolean }> {
+    if (!/^[a-z]{2,8}(?:-[a-z0-9]{1,8})*$/i.test(language)) throw new Error('Invalid language')
+    return await this.enqueue(async () => {
+      const stored = this.settings.get()
+      const display = { ...stored.display }
+      const pendingDisplay = { ...stored.pendingDisplay }
+      let changed = false
+      for (const preset of await this.roster.list()) {
+        const bundled = preset.trust === 'system' && resolve(preset.path) === join(this.bundledRoot, 'super-code', 'agent.cordis.yml')
+        const owned = preset.trust === 'user' && (preset.id === stored.installedId || Object.hasOwn(display, preset.path))
+        if (!bundled && !owned) continue
+        if ((await lstat(join(preset.path, '..'))).isSymbolicLink()) continue
+        const metadata = join(preset.path, '..', 'preset.yml')
+        let previous = display[preset.path]
+        const pending = pendingDisplay[preset.path]
+        if (previous && pending) {
+          previous = { ...previous }
+          for (const field of ['name', 'description'] as const) {
+            if (pending[field] !== undefined && preset[field] === pending[field]) previous[field] = pending[field]
+          }
+        }
+        const result = await migrateMetadata(metadata, preset.id, preset, previous, displayCopy(language), async baseline => {
+          pendingDisplay[preset.path] = baseline
+          await this.settings.update({ pendingDisplay: { ...pendingDisplay } })
+        })
+        changed ||= result.changed
+        display[preset.path] = result.baseline
+        delete pendingDisplay[preset.path]
+      }
+      if (JSON.stringify(display) !== JSON.stringify(stored.display ?? {}) || JSON.stringify(pendingDisplay) !== JSON.stringify(this.settings.get().pendingDisplay ?? {})) {
+        await this.settings.update({ display, pendingDisplay })
+      }
+      return { changed }
+    })
+  }
+
+  async install(id: unknown, name?: string): Promise<PresetInstallationResult> {
+    return await this.enqueue(() => this.installNow(id, name))
+  }
+
+  async reinstall(previousId: string, id: unknown, name?: string): Promise<PresetInstallationResult> {
+    return await this.enqueue(async () => {
+      const reject = async (error: NonNullable<PresetInstallationResult['error']>): Promise<PresetInstallationResult> =>
+        ({ ok: false, error, status: await this.status() })
+      if (typeof id !== 'string' || !validId.test(id)) return reject('invalid-name')
+      if (name !== undefined && (typeof name !== 'string' || !name.trim() || name.length > 120)) return reject('invalid-display-name')
+      const stored = this.settings.get(), installation = stored.installation
+      if (!installation || previousId !== stored.installedId || installation.id !== previousId) return reject('ownership-unverified')
+      const roots = this.roster.roots.filter(root => root.trust === 'user')
+      const expected = await Promise.all(roots
+        .map(async root => {
+          try { return join(await realpath(writableRoot([root], previousId)), previousId) }
+          catch { return '' }
+        }))
+      if (!expected.includes(installation.path)) return reject('ownership-unverified')
+      const originalPath = join(writableRoot([roots[expected.indexOf(installation.path)]!], previousId), previousId)
+      let backup = ''
+      try {
+        const directory = await lstat(installation.path)
+        const markerPath = join(installation.path, ownershipFile)
+        const markerStat = await lstat(markerPath)
+        if (!directory.isDirectory() || directory.isSymbolicLink() || !markerStat.isFile() || markerStat.isSymbolicLink()
+          || await realpath(installation.path) !== installation.path
+          || directory.dev !== installation.dev || directory.ino !== installation.ino) return reject('ownership-unverified')
+        const marker = JSON.parse(await readFile(markerPath, 'utf8'))
+        if (marker.plugin !== 'dsh-super-code' || marker.token !== installation.token || marker.id !== previousId) return reject('ownership-unverified')
+        if (id !== previousId && ((await this.roster.list()).some(row => row.id === id) || await this.occupied(id))) return reject('name-taken')
+        // A container without agent.cordis.yml is not a discoverable preset.
+        // Retain it after success as a recovery copy of the removed preset.
+        backup = await mkdtemp(join(installation.path, '..', '.super-code-backup-'))
+        await rename(installation.path, join(backup, previousId))
+        const moved = await lstat(join(backup, previousId))
+        if (!moved.isDirectory() || moved.dev !== installation.dev || moved.ino !== installation.ino) {
+          if (!await exists(installation.path)) await rename(join(backup, previousId), installation.path)
+          return reject('ownership-unverified')
+        }
+      } catch {
+        return reject('ownership-unverified')
+      }
+      try {
+        const result = await this.installNow(id, name, originalPath)
+        if (result.ok) return result
+        if (await exists(installation.path)) return reject('install-failed')
+        await rename(join(backup, previousId), installation.path)
+        await rm(backup, { recursive: true, force: true })
+        return { ...result, status: await this.status() }
+      } catch {
+        // Never overwrite a directory created by another actor during repair.
+        if (!await exists(installation.path)) await rename(join(backup, previousId), installation.path)
+        return reject('install-failed')
+      }
+    })
   }
 
   private async occupied(id: string): Promise<boolean> {
@@ -81,11 +178,12 @@ export class PresetInstaller {
     return false
   }
 
-  private async installNow(value: unknown): Promise<PresetInstallationResult> {
+  private async installNow(value: unknown, name?: string, replacedPath?: string): Promise<PresetInstallationResult> {
     const reject = async (error: NonNullable<PresetInstallationResult['error']>): Promise<PresetInstallationResult> =>
       ({ ok: false, error, status: await this.status() })
     if (typeof value !== 'string' || !validId.test(value)) return reject('invalid-name')
     const id = value
+    if (name !== undefined && (typeof name !== 'string' || !name.trim() || name.length > 120)) return reject('invalid-display-name')
     if (!this.roster.roots.some(root => root.trust === 'user')) return reject('no-user-root')
     if ((await this.roster.list()).some(row => row.id === id) || await this.occupied(id)) return reject('name-taken')
     let staging = ''
@@ -100,15 +198,31 @@ export class PresetInstaller {
       staging = await mkdtemp(join(root, '.super-code-install-'))
       // The host copy helper can clean up its destination on failure. Isolate
       // it from user-owned paths, then exclusively claim the final directory.
-      const prepared = await copyComposition([{ path: staging, trust: 'user' }], source, id, id)
+      const prepared = await copyComposition([{ path: staging, trust: 'user' }], source, id, name?.trim() ?? 'Super Code')
       await mkdir(target, { mode: 0o700 })
       claimed = true
       for (const entry of await readdir(prepared)) {
         await cp(join(prepared, entry), join(target, entry), { recursive: true, force: false, errorOnExist: true })
       }
-      await this.settings.update({ checked: true, installedId: id })
+      const token = randomUUID()
+      await writeFile(join(target, ownershipFile), JSON.stringify({ plugin: 'dsh-super-code', id, token }), { flag: 'wx', mode: 0o600 })
+      const directory = await lstat(target)
+      const installation = { id, path: await realpath(target), token, dev: directory.dev, ino: directory.ino }
+      const display = { ...this.settings.get().display }, pendingDisplay = { ...this.settings.get().pendingDisplay }
+      if (replacedPath) {
+        delete display[join(replacedPath, 'agent.cordis.yml')]
+        delete pendingDisplay[join(replacedPath, 'agent.cordis.yml')]
+      }
+      const status: PresetInstallationStatus = { id, authorable: true, userConflict: false, state: 'installed' }
+      await this.settings.update({ checked: true, installedId: id, installation, pendingDisplay, display: {
+        ...display,
+        [join(target, 'agent.cordis.yml')]: {
+          ...(name === undefined ? { name: 'Super Code' } : {}),
+          ...(source.description === undefined ? {} : { description: source.description }),
+        },
+      } })
       claimed = false
-      return { ok: true, status: await this.status() }
+      return { ok: true, status }
     } catch (error) {
       if (claimed) await rm(target, { recursive: true, force: true })
       return reject((error as NodeJS.ErrnoException).code === 'EEXIST' ? 'name-taken' : 'install-failed')
@@ -133,7 +247,11 @@ export class SuperCodePresets extends TypertRemoteService {
   @Remote
   status(): Promise<PresetInstallationStatus> { return this.installer.status() }
   @Remote
-  installPreset(id: unknown): Promise<PresetInstallationResult> { return this.installer.install(id) }
+  installPreset(id: unknown, name?: string): Promise<PresetInstallationResult> { return this.installer.install(id, name === '' ? undefined : name) }
+  @Remote
+  reinstallPreset(previousId: string, id: unknown, name?: string): Promise<PresetInstallationResult> { return this.installer.reinstall(previousId, id, name === '' ? undefined : name) }
+  @Remote
+  synchronize(language: string): Promise<{ changed: boolean }> { return this.installer.synchronize(language) }
 }
 
 export function applyPresetInstallation(ctx: Context): void {
@@ -141,10 +259,17 @@ export function applyPresetInstallation(ctx: Context): void {
     const settings = owner.settings.register('super-code', s.object({
       checked: s.boolean().default(false),
       installedId: s.string().default(''),
+      installation: s.object({ id: s.string(), path: s.string(), token: s.string(), dev: s.number(), ino: s.number() }).required(false),
+      pendingDisplay: s.dict(s.object({ name: s.string().required(false), description: s.string().required(false) })).default({}),
+      display: s.dict(s.object({ name: s.string().required(false), description: s.string().required(false) })).default({}),
     }))
     const installer = new PresetInstaller(owner.agentPresets, settings, sourceRoot, owner.baseUrl)
     new SuperCodePresets(owner, installer)
-    try { await installer.initialize() } catch {
+    try {
+      await installer.initialize()
+      const language = owner.settings.get('locale') as { preference?: string } | undefined
+      if (language?.preference) await installer.synchronize(language.preference)
+    } catch {
       owner.logger.warn('Super Code preset installation unavailable; retry in plugin settings.')
     }
   })

@@ -1,110 +1,66 @@
 # dsh-super-code
 
-一个更快、更节省、更准确的 DeepSeek Harness 编码插件。
+一个更快、更节省、更聪明的 DeepSeek Harness 编码插件。它会根据任务选择调研、设计、开发、验证和优化方法：简单任务直接完成，复杂任务按需组织工作。
 
-在选定的 SWE-bench Pro hard-100 评测中，平均耗时减少约 36%，每题输入 token 减少约 17%，正确率提高 5 个百分点。
+A faster, more efficient, smarter coding plugin for DeepSeek Harness. It selects research, design, development, verification, and optimization methods to fit the task: straightforward work stays simple, while complex work is coordinated as needed.
 
-A faster, more accurate, and more cost-effective DeepSeek Harness plug-in component.
+在选定的 SWE-bench Pro hard-100 评测中，`0.1.2` 相比 DSH minimal 平均回答耗时减少约 38%，每题输入 token 减少约 14%，正确率提高 8 个百分点。[评测方法与完整结果](docs/EvaluationResults.md)
 
-On the selected SWE-bench Pro hard-100 evaluation, average elapsed time decreased by about 36%, input tokens per task by about 17%, and accuracy increased by 5 percentage points.
+On the selected SWE-bench Pro hard-100 tasks, `0.1.2` reduced average response time by about 38% and input tokens per task by about 14% versus DSH minimal, while accuracy increased by 8 percentage points. [Methods and full results](docs/EvaluationResults.md)
 
-## 介绍 · Introduction
+## 开始使用 · Get Started
 
-`dsh-super-code` 是 DeepSeek Harness 的编码插件，提供一个可直接使用的 `super-code` Agent 预设。
+需要 DeepSeek Harness 0.1.5-alpha.1 或更高版本。三步就能开始：
 
-`dsh-super-code` is a coding plugin for DeepSeek Harness with one ready-to-use `super-code` Agent preset.
+You'll need DeepSeek Harness 0.1.5-alpha.1 or later. To get started:
 
-它会根据任务选择调研、设计、开发、验证和优化方法，简单任务直接完成，复杂任务按需组织工作。
+1. **安装插件：** 在 `dsh-market` 搜索 `dsh-super-code`，或运行下面的命令。
 
-It selects research, design, development, verification, and optimization methods as needed for each task.
+   **Install the plugin:** Search for `dsh-super-code` in `dsh-market`, or run:
 
-## 在 DeepSeek Harness 中安装 · Installation
+   ```bash
+   dsh plugin --profile web add dsh-super-code
+   ```
 
-要求 DeepSeek Harness 0.1.5-alpha.1 或更高版本。
+2. **选中预设：** 打开 Harness“设置”→“Agent 预设”，选择 `super-code`。
 
-Requires DeepSeek Harness 0.1.5-alpha.1 or later.
+   **Select the preset:** In Harness, open “Settings” → “Agent Presets” and select `super-code`.
 
-```bash
-dsh plugin --profile web add dsh-super-code
-```
+3. **开始对话：** 新建会话，直接描述你要完成的编码任务。
 
-安装后在 Harness 的 “设置”-“Agent 预设” 中选择 `super-code`，模型、权限和工具继续使用 Harness 的配置。
+   **Start a conversation:** Open a new conversation and describe the coding task you want done.
 
-After installation, select `super-code` in "Settings" - "Agent Presets" in Harness; models, permissions, and tools use the Harness configuration.
+没看到 `super-code`？打开“设置”→“插件”→“插件配置”→ **Super Code** 查看状态并手动安装。标识符已被占用时可换一个，不会覆盖已有预设。[排查与预设管理](docs/UsageGuide.md)
 
-若安装后找不到预设，插件会在首次加载时尝试安装一份用户预设。也可打开“设置”→“插件”→“插件配置”中的 **Super Code** 查看状态并手动安装；名称冲突时换个名称即可，已有预设不会被覆盖。用户副本不会自动更新，删除后也不会在重启时自动重装。
-
-If the preset is missing, the plugin attempts a one-time user-preset installation on first load. Open **Super Code** under “Settings” → “Plugins” → “Plugin configuration” to check its status or install manually. Choose another name if it is taken. Existing presets are preserved; user copies are not automatically updated or reinstalled after deletion.
-
-[版本记录 · Changelog](docs/CHANGELOG.md)
+Can't find `super-code`? Open “Settings” → “Plugins” → “Plugin configuration” → **Super Code** to check its status and install it manually. If the identifier is taken, choose another; existing presets are left untouched. [Troubleshooting and preset management](docs/UsageGuide.md)
 
 [![Super Code 配置入口 · Super Code settings](docs/images/preset-settings-preview.png)](docs/images/preset-settings.png)
 
-当前版本不使用三模型池，也不需要单独配置插件模型。在 Harness“设置”→“模型”中配置提供方，再从对话输入框下方选择模型和推理等级；已有可用配置时直接沿用。插件跟随当前会话的模型，子 Agent 在未单独覆盖时继承父 Agent 的选择。
+模型、推理等级、权限和工具沿用 Harness 的设置；子 Agent 默认继承父 Agent 的模型选择，不用再配置一套。
 
-The current version has no three-pool model configuration. Configure a provider under Harness “Settings” → “Models”, then select the model and reasoning effort below the message input. Existing working settings can be reused. The plugin follows the current session model, and child Agents inherit their parent's selection unless explicitly overridden.
+Models, reasoning effort, permissions, and tools come from Harness. Child Agents inherit the parent Agent's model choice by default, so there's no second set of settings to manage.
 
-## 效果 · Results
+任务开始后，可以在右侧 Agent 执行树查看每个 Agent 的状态与用量。拖动空白处平移，滚轮或按钮缩放；点一个节点，就能在侧栏标签中查看详情。[界面说明](docs/UsageGuide.md)
 
-SWE-bench Pro hard-100，使用 `deepseek-v4.1-flash`、reasoning `high`、原生 DSH Web RPC 和官方评分器。
-
-SWE-bench Pro hard-100 with `deepseek-v4.1-flash`, reasoning `high`, native DSH Web RPC, and the official grader.
-
-> 提示：
-> SWE-bench Pro 是面向真实软件工程任务的高难度评测集。每道题都来自真实开源仓库，通常需要理解现有代码、修改多个文件、运行测试并根据失败结果继续修复，评测结果以官方测试是否通过为准。这里选取其中难度最高的 100 道题，重点观察长任务中的正确率、调用次数、token 和耗时。
->
-> SWE-bench Pro is a challenging benchmark for real-world software engineering tasks. Each task comes from a real open-source repository and typically requires understanding existing code, editing multiple files, running tests, and iterating on failures. The official test result is the pass criterion. This evaluation uses the 100 hardest selected tasks to measure accuracy, model calls, token usage, and elapsed time on long-running tasks.
->
-> 经过预评测，`DSH minimal` 预设和 `deepseek-v4.1-flash` 的 `high` 思考强度取得了最高正确率，因此将它们作为统一比较基准。
->
-> In preliminary runs, the `DSH minimal` preset with `deepseek-v4.1-flash` at `high` reasoning achieved the highest accuracy, so it is used as the common baseline.
-
-这批结果来自 `0.0.9` 候选；`0.1.0` 沿用该历史基准，未重新执行完整 100 题评测。
-
-These results are from the `0.0.9` candidate. Version `0.1.0` retains this historical benchmark; the full 100-task evaluation has not been rerun for this release.
-
-| 指标 / Metric | DSH minimal | super-code 0.0.9 | 优化幅度 / Change |
-|---|---:|---:|---:|
-| 有效评分 / Valid scores | 100/100 | 100/100 | **持平 / 0%** |
-| 通过题数 / Passed | 41 | 46 | **+12.2%** |
-| 正确率 / Accuracy | 41% | 46% | **+5 个百分点 / +5 pp** |
-| 平均模型调用/题 / Model calls per task | 124.85 | 92.78 | **-25.7%** |
-| 平均工具调用/题 / Tool calls per task | 126.54 | 115.41 | **-8.9%** |
-| 每题平均总输入 token / Average total input tokens per task | 11,477,170 | 9,525,316 | **-17.0%** |
-| 每题平均总输出 token / Average total output tokens per task | 100,877 | 97,901 | **-3.0%** |
-| 缓存命中率 / Cache hit rate | 99.360% | 99.329% | **-0.031%** |
-| 平均测试时长 / Average test time | 25.49 分钟 / min | 16.27 分钟 / min | **-36.2%** |
-
-> 因为输入和输出 token 均有减少，因此缓存命中率略微下降是可以接受的，属于正常波动范围。
->
-> Since both input and output token usage decrease, the slight drop in cache hit rate is acceptable and within normal variation.
-
-> Token 指标按每道题的历史明细计算：先分别合计该题已记录模型调用的输入（含缓存）和输出 token，再对 100 道题取平均，包含多轮调用和上下文增长；未返回用量的请求不作估算，不代表完整账单费用。
->
-> Token metrics are calculated from task histories: input (including cached tokens) and output tokens are summed separately across recorded model calls for each task, then averaged over 100 tasks. This includes multi-turn calls and context growth. Requests without reported usage are not estimated; these figures do not represent complete billing costs.
-
-测试题号和每题明细见 [`eval/results/swebench-pro-final-100/`](eval/results/swebench-pro-final-100/)，详细文档见 [`docs/`](docs/)。
-
-Task IDs and per-task details are available in [`eval/results/swebench-pro-final-100/`](eval/results/swebench-pro-final-100); detailed documentation is in [`docs/`](docs/).
-
-## 使用 · Usage
-
-安装后，在 DeepSeek Harness 的“设置”→“Agent 预设”中选择 `super-code`。创建任务后，插件会按任务复杂度组织调研、实现和验证；复杂任务可在右侧 Agent 执行树中查看进度，点击节点查看对应的执行内容和用量。
-
-After installation, select `super-code` under “Settings” → “Agent Presets” in DeepSeek Harness. The plugin organizes research, implementation, and verification according to task complexity; for complex tasks, use the Agent execution tree on the right to inspect progress, execution details, and usage.
+Once a task is running, the Agent tree on the right shows each Agent's status and usage. Drag empty space to pan, zoom with the wheel or buttons, and click a node to see its details in a sidebar tab. [Interface guide](docs/UsageGuide.md)
 
 [![Agent 执行树 · Agent execution tree](docs/images/agent-tree-preview.png)](docs/images/agent-tree.png)
 
-截图来自全新隔离会话中的 DSH 网页版，展示 hard-100 难度排名第一题 `task-099`（`future-architect/vuls` 的 OS 生命周期预警）的初步调研：一个主 Agent 与三个子 Agent 分别核查 EOL/版本解析、告警链路和测试边界。图中保留了整个右侧栏，包括状态、用量、缓存率和缩放操作；这是协作展示，不代表该题已修复或通过评分。
+## 效果 · Results
 
-Captured from a fresh, isolated DSH web session, the full sidebar shows initial investigation of the highest-ranked hard-100 task, `task-099` (`future-architect/vuls`, OS lifecycle warnings). A lead Agent and three child Agents investigate EOL/version parsing, the warning pipeline, and test boundaries. Status, usage, cache hit rate, and zoom controls are all visible. This is a collaboration example, not a claim that the task was fixed or passed grading.
+这组成绩来自选定的 SWE-bench Pro hard-100，使用 `deepseek-v4.1-flash`、`high` 推理等级、原生 DSH Web RPC 和官方评分器。两组都完成了 100/100 题评分。
 
-拖动空白处平移，滚轮或按钮缩放，点击节点在侧边栏新标签中查看详情。插件界面跟随 Harness 的中英文语言设置。
+These results come from the selected SWE-bench Pro hard-100 tasks, using `deepseek-v4.1-flash`, `high` reasoning, native DSH Web RPC, and the official grader. Both runs received scores for all 100 tasks.
 
-Drag empty space to pan, use the wheel or buttons to zoom, and click a node to open its details in a sidebar tab. The plugin follows the Harness Chinese/English language setting.
+| 指标 / Metric | DSH minimal | super-code 0.1.2 | 变化 / Change |
+|---|---:|---:|---:|
+| 正确率 / Accuracy | 41% | **49%** | **+8 个百分点 / +8 pp** |
+| 平均模型调用/题 / Model calls per task | 124.85 | 99.78 | -20.1% |
+| 平均输入 token/题 / Input tokens per task | 11,477,170 | 9,840,383 | -14.3% |
+| 平均回答耗时 / Response time | 25.69 分钟 / min | 16.01 分钟 / min | -37.7% |
 
-## 感谢 · Thanks
+两次运行使用不同的 Harness 提交，不能将全部差异归因于插件。完整指标、回退题目、统计口径和逐题证据见[评测文档](docs/EvaluationResults.md)。
 
-感谢 DeepSeek Harness、SWE-bench Pro 及所有开源项目维护者。
+The runs used different Harness commits, so not every difference can be attributed to the plugin. See the [evaluation details](docs/EvaluationResults.md) for all metrics, regressions, calculation methods, and per-task evidence.
 
-Thanks to the DeepSeek Harness team, SWE-bench Pro contributors, and all open-source maintainers.
+[使用说明 · Usage guide](docs/UsageGuide.md) · [评测详情 · Evaluation details](docs/EvaluationResults.md) · [版本记录 · Changelog](docs/Changelog.md)

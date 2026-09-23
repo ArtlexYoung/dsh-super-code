@@ -18,14 +18,20 @@ const zh = {
   'preset.description': '更快、更省、更聪明的编码模式。', 'preset.refresh': '刷新状态', 'preset.expand': '展开设置', 'preset.collapse': '收起设置',
   'preset.state.available': '预设可用', 'preset.state.installed': '用户预设已安装', 'preset.state.conflict': '已有同名预设',
   'preset.state.missing': '尚未安装', 'preset.state.broken': '预设不可用',
-  'preset.availableHint': '可在新对话中选择此预设。用户副本不会自动覆盖或更新。',
-  'preset.installHint': '安装一份用户预设；已有内容会保留，重名时请换个名称。',
-  'preset.userConflict': '用户目录中已有同名预设，已保留。可换名安装独立副本。',
+  'preset.availableHint': '可在新对话中选择此预设。升级仅更新未修改的默认名称和描述。',
+  'preset.installHint': '安装一份用户预设；已有内容会保留，标识符冲突时请换个标识符。',
+  'preset.userConflict': '用户目录中已有相同标识符的预设，已保留。可更换标识符安装独立副本。',
   'preset.readonly': '此宿主未提供用户预设目录，无法安装副本。',
-  'preset.name': '预设名称', 'preset.nameHint': '使用小写字母、数字和连字符，最多 64 个字符。安装后在新对话中选择。',
+  'preset.displayName': '显示名称', 'preset.displayNameHint': '支持中文和空格，最多 120 个字符，例如 Super Code 模式。', 'preset.name': '预设标识符', 'preset.nameHint': '用于安装目录，通常保留 super-code 即可。以小写字母或数字开头，仅含小写字母、数字和连字符，最多 64 个字符。',
+  'preset.confirmTitle': '确认重新安装预设',
+  'preset.confirmHint': '以下是通过本插件安装的预设，将会被移除并按照新名称重新安装，旧内容会保留恢复备份。对于需要保留的预设可以手动在列表中移除。',
+  'preset.confirmEmpty': '没有需要重装的预设。', 'preset.remove': '从列表移除', 'preset.cancel': '取消', 'preset.confirm': '确认重装',
+  'preset.reinstall': '重新安装预设', 'preset.reinstallHint': '使用下方名称和标识符重新安装，移除旧预设并保留恢复备份。',
+  'preset.error.ownership-unverified': '无法确认旧预设归属（可能来自旧版本或目录已被替换），未删除任何预设。',
   'preset.install': '安装用户预设', 'preset.working': '处理中…',
-  'preset.error.invalid-name': '名称格式不正确，请使用小写字母、数字和连字符。',
-  'preset.error.name-taken': '该名称已被占用，原预设未改动。请换个名称。',
+  'preset.error.invalid-name': '标识符须以小写字母或数字开头，仅含小写字母、数字和连字符，最多 64 个字符。',
+  'preset.error.invalid-display-name': '显示名称不能为空或全为空格，最多 120 个字符；支持中文和空格。',
+  'preset.error.name-taken': '该标识符已被占用，原预设未改动。请更换标识符。',
   'preset.error.no-user-root': '此宿主没有可写的用户预设目录。',
   'preset.error.install-failed': '安装未完成，请检查预设目录的写入权限后重试。',
   'preset.error.connection': '暂时无法读取预设状态，请刷新重试。',
@@ -47,14 +53,20 @@ const en = {
   'preset.description': 'A faster, more efficient, smarter coding mode.', 'preset.refresh': 'Refresh status', 'preset.expand': 'Show settings', 'preset.collapse': 'Hide settings',
   'preset.state.available': 'Preset available', 'preset.state.installed': 'User preset installed', 'preset.state.conflict': 'Preset name already exists',
   'preset.state.missing': 'Not installed', 'preset.state.broken': 'Preset unavailable',
-  'preset.availableHint': 'Select this preset in a new conversation. User copies are never overwritten or updated automatically.',
-  'preset.installHint': 'Install a user copy. Existing content is preserved; choose another name if it is taken.',
-  'preset.userConflict': 'A user preset with this name already exists and was preserved. Choose another name for a separate copy.',
+  'preset.availableHint': 'Select this preset in a new conversation. Upgrades update only unchanged default names and descriptions.',
+  'preset.installHint': 'Install a user copy. Existing content is preserved; choose another identifier if it is taken.',
+  'preset.userConflict': 'A user preset with this identifier already exists and was preserved. Choose another identifier for a separate copy.',
   'preset.readonly': 'This host does not provide a user preset directory.',
-  'preset.name': 'Preset name', 'preset.nameHint': 'Lowercase letters, digits and hyphens, up to 64 characters. Select it in a new conversation after installing.',
+  'preset.displayName': 'Display name', 'preset.displayNameHint': 'Supports Chinese characters and spaces, up to 120 characters, e.g. Super Code 模式.', 'preset.name': 'Preset identifier', 'preset.nameHint': 'Used for the installation directory; usually keep super-code. Start with a lowercase letter or digit; use only lowercase letters, digits and hyphens, up to 64 characters.',
+  'preset.confirmTitle': 'Confirm preset reinstallation',
+  'preset.confirmHint': 'These presets were installed by this plugin. They will be removed and reinstalled with the new names shown, and recovery backups will be kept. Remove any preset you want to keep from the list.',
+  'preset.confirmEmpty': 'No presets selected for reinstallation.', 'preset.remove': 'Remove from list', 'preset.cancel': 'Cancel', 'preset.confirm': 'Confirm reinstall',
+  'preset.reinstall': 'Reinstall preset', 'preset.reinstallHint': 'Reinstall with the name and identifier below, removing the old preset and keeping a recovery backup.',
+  'preset.error.ownership-unverified': 'Cannot verify ownership of the old preset (it may come from an older version or a replaced directory). No presets were deleted.',
   'preset.install': 'Install user preset', 'preset.working': 'Working…',
-  'preset.error.invalid-name': 'Use lowercase letters, digits and hyphens for the name.',
-  'preset.error.name-taken': 'This name is taken. The existing preset was preserved. Choose another name.',
+  'preset.error.invalid-name': 'The identifier must start with a lowercase letter or digit and contain only lowercase letters, digits and hyphens, up to 64 characters.',
+  'preset.error.invalid-display-name': 'The display name cannot be empty or whitespace-only and must be at most 120 characters. Chinese characters and spaces are supported.',
+  'preset.error.name-taken': 'This identifier is taken. The existing preset was preserved. Choose another identifier.',
   'preset.error.no-user-root': 'This host has no writable user preset directory.',
   'preset.error.install-failed': 'Installation failed. Check directory write permissions and retry.',
   'preset.error.connection': 'Preset status is unavailable. Refresh to try again.',
@@ -796,33 +808,85 @@ function AgentDetail({ useTabInfo, useSessions, createInspector, detailStates, t
 }
 
 // Explicit public Remote contribution; no model tools or private transport hooks.
+const remoteStringCodec = { mode: 'strict', typeSymbol: 'string', schema: {
+  parse(value) {
+    if (typeof value !== 'string') throw new TypeError('Expected a string')
+    return value
+  },
+} }
 const presetRemoteContribution = {
   package: 'dsh-super-code',
-  descriptors: ['status', 'installPreset'].map(method => ({
+  descriptors: ['status', 'installPreset', 'reinstallPreset', 'synchronize'].map(method => ({
     id: `dsh-super-code:superCodePresets/${method}`, service: 'superCodePresets',
     namespace: 'superCodePresets', method, invocation: { kind: 'direct' },
-    parameters: method === 'installPreset' ? [{ name: 'id', wire: 'id', source: 'json', codec: { mode: 'strict', typeSymbol: 'dsh-super-code#PresetId', schema: { parse(value) {
-      if (typeof value !== 'string' || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(value)) throw new Error('Invalid preset name')
-      return value
-    } } } }] : [],
+    parameters: (method === 'reinstallPreset' ? ['previousId', 'id', 'name'] : method === 'installPreset' ? ['id', 'name'] : method === 'synchronize' ? ['language'] : []).map(name => ({
+      name, wire: name, source: 'json', codec: remoteStringCodec,
+    })),
     result: { mode: 'src-json' },
   })),
 }
 
+// Old hosts render file metadata. Synchronize through our own Remote, then
+// reload their cached roster only when a managed field actually changed.
+function synchronizePresetDisplay(api, locale, reload, onError) {
+  let disposed = false, running = false, pending = '', last = '', needsReload = false
+  const changed = () => {
+    pending = locale.getSnapshot().active
+    if (running || pending === last) return
+    running = true
+    void (async () => {
+      try {
+        while (!disposed && pending !== last) {
+          const language = pending
+          const result = await api.synchronize(language)
+          if (!result.ok) throw new Error('Preset display synchronization failed')
+          last = language
+          needsReload ||= result.value.changed
+          if (!disposed && needsReload && pending === language) { reload(); return }
+        }
+      } catch (error) { if (!disposed) onError(error) }
+      finally { running = false }
+    })()
+  }
+  const unsubscribe = locale.subscribe(changed)
+  changed()
+  return () => { disposed = true; unsubscribe() }
+}
+
 function PresetSettings({ api, t }) {
-  const [status, setStatus] = useState(null), [name, setName] = useState('super-code')
+  const [status, setStatus] = useState(null), [customId, setCustomId] = useState(null)
+  const name = customId ?? (status?.state === 'installed' ? status.id : 'super-code')
+  const [customDisplayName, setCustomDisplayName] = useState(null)
+  const displayName = customDisplayName ?? (status?.state === 'installed' ? status.name || t('preset.title') : t('preset.title'))
   const [busy, setBusy] = useState(true), [error, setError] = useState(''), [open, setOpen] = useState(false)
+  const [confirmation, setConfirmation] = useState(null)
+  const dialog = useRef(null)
   const alive = useRef(false), pending = useRef(false)
-  const run = async install => {
+  useEffect(() => {
+    if (!confirmation || !dialog.current) return
+    const element = dialog.current
+    element.showModal()
+    element.querySelector('[data-super-code-cancel]')?.focus()
+    return () => { if (element.open) element.close() }
+  }, [confirmation !== null])
+  const run = async (install, confirmed = null) => {
     if (pending.current) return
     pending.current = true; setBusy(true); setError('')
     try {
-      const response = install ? await api.installPreset(name.trim()) : await api.status()
+      const installName = customDisplayName === null ? '' : displayName.trim()
+      const response = !install ? await api.status() : confirmed
+        ? await api.reinstallPreset(confirmed.previousId, confirmed.id, confirmed.name)
+        : await api.installPreset(name.trim(), installName)
       if (!response.ok) throw new Error('Remote unavailable')
       if (!alive.current) return
       const value = response.value
       setStatus(install ? value.status : value)
       if (install && !value.ok) setError(`preset.error.${value.error}`)
+      if (!install || value.ok) {
+        const synced = await api.synchronize(localeCode(t))
+        if (!synced.ok) throw new Error('Preset display synchronization failed')
+        if (install || synced.value.changed) window.location.reload()
+      }
     } catch {
       if (alive.current) setError('preset.error.connection')
     } finally {
@@ -831,6 +895,13 @@ function PresetSettings({ api, t }) {
     }
   }
   useEffect(() => { alive.current = true; run(false); return () => { alive.current = false } }, [api])
+  const submit = () => {
+    if (busy || pending.current || !displayName.trim() || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(name.trim())) return
+    if (status?.state === 'installed') {
+      setConfirmation([{ previousId: status.id, id: name.trim(),
+        name: customDisplayName === null && displayName === t('preset.title') ? '' : displayName.trim(), label: displayName.trim() }])
+    } else run(true)
+  }
   const available = status && ['available', 'installed'].includes(status.state)
   return React.createElement('li', { className: `dsh-super-code-settings${open ? ' dsh-super-code-settings-open' : ''}` },
     React.createElement('button', { type: 'button', className: 'dsh-super-code-settings-header', 'aria-expanded': open,
@@ -840,22 +911,47 @@ function PresetSettings({ api, t }) {
         React.createElement('span', { className: 'dsh-super-code-settings-description' }, t('preset.description'))),
       React.createElement(IconChevronDownOutline14, { className: `dsh-super-code-settings-chevron${open ? ' dsh-super-code-settings-chevron-open' : ''}`, 'aria-hidden': true })),
     open && React.createElement('div', { className: 'dsh-super-code-settings-body' },
-      React.createElement('div', { className: 'dsh-super-code-settings-actions' },
-        React.createElement('button', { type: 'button', disabled: busy, onClick: () => run(false), 'aria-label': t('preset.refresh') }, t('preset.refresh'))),
       status && React.createElement('p', { className: 'dsh-super-code-preset-status', role: 'status', 'data-available': available },
         React.createElement('span', { 'aria-hidden': true }, '●'), ' ', t(`preset.state.${status.state}`), ' · ', status.id),
+      React.createElement('div', { className: 'dsh-super-code-settings-actions' },
+        React.createElement('button', { type: 'button', disabled: busy, onClick: () => run(false), 'aria-label': t('preset.refresh') }, t('preset.refresh'))),
       status && React.createElement('p', null, t(available ? 'preset.availableHint' : 'preset.installHint')),
+      status?.state === 'installed' && React.createElement('p', null, t('preset.reinstallHint')),
       status?.userConflict && status.state !== 'conflict' && React.createElement('p', null, t('preset.userConflict')),
       status && !status.authorable && React.createElement('p', { role: 'note' }, t('preset.readonly')),
-      status?.authorable && React.createElement('form', { onSubmit: event => { event.preventDefault(); run(true) } },
+      status?.authorable && React.createElement('form', { onSubmit: event => { event.preventDefault(); submit() } },
+        React.createElement('label', { htmlFor: 'super-code-display-name' }, t('preset.displayName')),
+        React.createElement('input', { id: 'super-code-display-name', value: displayName, maxLength: 120, required: true, disabled: busy, 'aria-describedby': 'super-code-display-name-hint', onChange: event => setCustomDisplayName(event.target.value) }),
+        React.createElement('small', { id: 'super-code-display-name-hint' }, t('preset.displayNameHint')),
         React.createElement('label', { htmlFor: 'super-code-preset-name' }, t('preset.name')),
         React.createElement('div', { className: 'dsh-super-code-install-row' },
           React.createElement('input', { id: 'super-code-preset-name', value: name, maxLength: 64, disabled: busy,
             pattern: '[a-z0-9][a-z0-9\\-]{0,63}', required: true, autoComplete: 'off', spellCheck: false,
-            'aria-describedby': 'super-code-preset-name-hint', onChange: event => setName(event.target.value) }),
-          React.createElement('button', { type: 'submit', disabled: busy || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(name.trim()) }, t(busy ? 'preset.working' : 'preset.install'))),
+            'aria-describedby': 'super-code-preset-name-hint', onChange: event => setCustomId(event.target.value) }),
+          React.createElement('button', { type: 'submit', disabled: busy || !displayName.trim() || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(name.trim()) }, t(busy ? 'preset.working' : status?.state === 'installed' ? 'preset.reinstall' : 'preset.install'))),
         React.createElement('small', { id: 'super-code-preset-name-hint' }, t('preset.nameHint'))),
-      error && React.createElement('p', { role: 'alert' }, t(error))))
+      error && React.createElement('p', { role: 'alert' }, t(error))),
+    confirmation && React.createElement('dialog', { ref: dialog, className: 'dsh-super-code-confirm',
+      'aria-labelledby': 'super-code-confirm-title', 'aria-describedby': 'super-code-confirm-hint',
+      onKeyDown: event => { if (event.key === 'Escape') event.stopPropagation() },
+      onCancel: event => { event.preventDefault(); event.stopPropagation(); setConfirmation(null) } },
+      React.createElement('h3', { id: 'super-code-confirm-title' }, t('preset.confirmTitle')),
+      React.createElement('p', { id: 'super-code-confirm-hint' }, t('preset.confirmHint')),
+      confirmation.length ? React.createElement('ul', null, ...confirmation.map(item =>
+        React.createElement('li', { key: item.previousId },
+          React.createElement('span', null, `${item.previousId} → ${item.label} · ${item.id}`),
+          React.createElement('button', { type: 'button', 'aria-label': `${t('preset.remove')}: ${item.previousId}`,
+            onClick: () => setConfirmation(items => items.filter(row => row.previousId !== item.previousId)) }, t('preset.remove')))))
+        : React.createElement('p', { role: 'status' }, t('preset.confirmEmpty')),
+      React.createElement('div', { className: 'dsh-super-code-confirm-actions' },
+        React.createElement('button', { type: 'button', autoFocus: true, 'data-super-code-cancel': true, onClick: () => setConfirmation(null) }, t('preset.cancel')),
+        React.createElement('button', { type: 'button', disabled: busy || !confirmation.length,
+          onClick: () => {
+            if (busy || pending.current || !confirmation.length) return
+            const selected = confirmation[0]
+            setConfirmation(null)
+            run(true, selected)
+          } }, t('preset.confirm')))))
 }
 
 const inject = [
@@ -867,13 +963,16 @@ function apply(ctx) {
   const locale = ctx.locale || { register: () => () => {}, bind: () => key => zh[key] || key }
   ctx.effect(() => locale.register(LOCALE_NS, { zh, en }), 'dsh-super-code: dictionaries')
   const t = locale.bind(LOCALE_NS)
-  ctx.effect(async () => {
-    const owner = ctx
-    await owner.remote.$mount(presetRemoteContribution)
-    owner.inject(['remote.superCodePresets'], ready => ready.slots.inject('settings.plugin.item', () => ready.slots.register({
+  // $mount creates a lifecycle effect on this same fiber; awaiting it from
+  // another effect would stall the namespace and the settings contribution.
+  void ctx.remote.$mount(presetRemoteContribution).catch(error => console.warn('Super Code preset Remote:', error))
+  ctx.inject(['remote.superCodePresets'], ready => {
+      ready.effect(() => synchronizePresetDisplay(ready.remote.superCodePresets, locale,
+        () => window.location.reload(), error => console.warn('Super Code preset display:', error)), 'super-code: preset display')
+      return ready.slots.inject('settings.plugin.item', () => ready.slots.register({
       name: 'settings.plugin.item', key: 'super-code', locale: LOCALE_NS,
       inject: () => ({ api: ready.remote.superCodePresets }),
-    }, PresetSettings)))
+    }, PresetSettings))
   })
   ctx.effect(() => {
     const style = document.createElement('style')
@@ -884,6 +983,7 @@ function apply(ctx) {
 .dsh-super-code-settings-header{width:100%;appearance:none;border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer;display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:12px}
 .dsh-super-code-settings-head-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}.dsh-super-code-settings-name{font-size:15px;font-weight:600;line-height:1.4;color:var(--dsw-alias-label-primary,inherit)}
 .dsh-super-code-settings-description{font-size:13px;line-height:1.5;color:var(--dsw-alias-label-tertiary,#70757d)}.dsh-super-code-settings-chevron{flex:none;color:var(--dsw-alias-label-tertiary,#70757d);transition:transform .16s}.dsh-super-code-settings-chevron-open{transform:rotate(180deg)}
+.dsh-super-code-confirm{box-sizing:border-box;width:min(560px,calc(100vw - 48px));max-height:80vh;overflow:auto;border:1px solid var(--dsw-alias-border-l2,#dedfe3);border-radius:8px;padding:24px;color:var(--dsw-alias-label-primary,#202126);background:var(--dsw-alias-bg-layer-1,#fff);font-size:13px;line-height:1.6}.dsh-super-code-confirm::backdrop{background:#0006}.dsh-super-code-confirm h3{font-size:16px;margin:0 0 12px}.dsh-super-code-confirm p{margin:0 0 14px}.dsh-super-code-confirm ul{padding:0;margin:0 0 18px;list-style:none}.dsh-super-code-confirm li{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:12px 0;overflow-wrap:anywhere}.dsh-super-code-confirm-actions{display:flex;justify-content:flex-end;gap:8px}.dsh-super-code-confirm button{font:inherit;color:inherit;border:1px solid var(--dsw-alias-border-l1,#dedfe3);border-radius:6px;background:transparent;padding:7px 10px;min-height:34px;cursor:pointer}.dsh-super-code-confirm button:disabled{opacity:.45;cursor:default}.dsh-super-code-confirm button:focus-visible{outline:2px solid var(--dsw-color-primary,#3276dc);outline-offset:2px}
 .dsh-super-code-settings-body{border-top:.5px solid var(--dsw-alias-border-l2,#dedfe3);margin:0 16px;padding:12px 0 14px}.dsh-super-code-settings-actions{display:flex;justify-content:flex-end}
 .dsh-super-code-settings p{margin:8px 0;color:var(--dsw-alias-label-secondary,#70757d)}
 .dsh-super-code-settings-body button,.dsh-super-code-settings input{font:inherit;color:inherit;border:1px solid var(--dsw-alias-border-l1,#dedfe3);border-radius:7px;background:transparent;padding:7px 10px;min-height:34px}
@@ -1065,5 +1165,5 @@ function apply(ctx) {
   ctx.effect(() => disposeDetailType, 'super-code: Agent detail tab')
 }
 
-return { inject, apply, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector, agentHistoryRange, agentHistoryRows, agentHistoryWindow }
+return { inject, apply, synchronizePresetDisplay, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector, agentHistoryRange, agentHistoryRows, agentHistoryWindow }
 } })

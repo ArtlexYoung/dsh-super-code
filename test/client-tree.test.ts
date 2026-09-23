@@ -205,8 +205,15 @@ test('plugin settings use the same collapsed disclosure behavior as host cards',
   localPlugin.apply(ctx)
   await Promise.all(pending)
   assert.ok(Settings)
-  const t = (key: string) => ({ 'preset.expand': 'Show settings', 'preset.collapse': 'Hide settings' }[key] ?? key)
-  const render = () => { cursor = 0; refCursor = 0; return Settings!({ api: {}, t }) }
+  let language = 'zh'
+  const t = (key: string) => key === 'preset.title' ? (language === 'zh' ? 'Super Code 模式' : 'Super Code') : key
+  const submissions: string[][] = []
+  const reinstalls: string[][] = []
+  const api = { reinstallPreset: async (...args: string[]) => { reinstalls.push(args); return { ok: false } }, installPreset: async (...args: string[]) => {
+    submissions.push(args)
+    return { ok: true, value: { ok: false, error: 'name-taken', status: state[0] } }
+  } }
+  const render = () => { cursor = 0; refCursor = 0; return Settings!({ api, t }) }
   const find = (node: unknown, predicate: (element: Element) => boolean): Element[] => {
     if (!node || typeof node !== 'object' || !('type' in node)) return []
     const element = node as Element
@@ -222,6 +229,80 @@ test('plugin settings use the same collapsed disclosure behavior as host cards',
   disclosure = find(card, element => element.type === 'button' && 'aria-expanded' in element.props)[0]
   assert.equal(disclosure?.props['aria-expanded'], true)
   assert.equal(find(card, element => element.props.className === 'dsh-super-code-settings-body').length, 1)
+  state[0] = { authorable: true, state: 'missing' }
+  card = render()
+  const display = () => find(card, element => element.props.id === 'super-code-display-name')[0]!
+  assert.equal(display().props.value, 'Super Code 模式')
+  assert.equal(find(card, element => element.props.id === 'super-code-preset-name')[0]?.props.value, 'super-code')
+  language = 'en'; card = render()
+  assert.equal(display().props.value, 'Super Code')
+  display().props.onChange({ target: { value: 'My team' } })
+  language = 'zh'; card = render()
+  assert.equal(display().props.value, 'My team')
+  display().props.onChange({ target: { value: 'Super Code 模式' } })
+  state[3] = false // Status loading has completed.
+  card = render()
+  assert.equal(display().props.pattern, undefined)
+  assert.equal(find(card, element => element.props.type === 'submit')[0]?.props.disabled, false)
+  find(card, element => element.type === 'form')[0]!.props.onSubmit({ preventDefault() {} })
+  await Promise.resolve()
+  assert.deepEqual(submissions, [['super-code', 'Super Code 模式']])
+  await new Promise(resolve => setImmediate(resolve))
+  display().props.onChange({ target: { value: '   ' } })
+  state[3] = false
+  card = render()
+  assert.equal(find(card, element => element.props.type === 'submit')[0]?.props.disabled, true)
+  state[0] = { authorable: true, state: 'installed', id: 'old-code', name: '旧名称' }
+  state[1] = null; state[2] = null
+  state[3] = false
+  card = render()
+  assert.equal(display().props.value, '旧名称')
+  assert.equal(find(card, element => element.props.id === 'super-code-preset-name')[0]?.props.value, 'old-code')
+  display().props.onChange({ target: { value: '新模式' } })
+  find(card, element => element.props.id === 'super-code-preset-name')[0]!.props.onChange({ target: { value: 'new-code' } })
+  card = render()
+  const body = find(card, element => element.props.className === 'dsh-super-code-settings-body')[0]!
+  assert.equal((body.children[0] as Element).props.role, 'status')
+  assert.equal((body.children[1] as Element).props.className, 'dsh-super-code-settings-actions')
+  assert.equal(find(card, element => element.props.type === 'submit')[0]!.children[0], 'preset.reinstall')
+  find(card, element => element.type === 'form')[0]!.props.onSubmit({ preventDefault() {} })
+  await Promise.resolve()
+  assert.deepEqual(reinstalls, [], 'opening confirmation does not reinstall')
+  card = render()
+  const modal = () => find(card, element => element.type === 'dialog')[0]!
+  const action = (key: string) => find(modal(), element => element.type === 'button' && element.children[0] === key)[0]!
+  assert.ok(modal())
+  assert.equal(find(modal(), element => element.type === 'input').length, 0, 'list has no add or edit input')
+  assert.equal(find(modal(), element => element.type === 'span')[0]!.children[0], 'old-code → 新模式 · new-code')
+  action('preset.remove').props.onClick()
+  card = render()
+  assert.equal(action('preset.confirm').props.disabled, true)
+  action('preset.confirm').props.onClick()
+  assert.deepEqual(reinstalls, [], 'empty selection never reinstalls')
+  action('preset.cancel').props.onClick()
+  card = render()
+  assert.equal(modal(), undefined)
+  find(card, element => element.type === 'form')[0]!.props.onSubmit({ preventDefault() {} })
+  card = render()
+  let stopped = false
+  modal().props.onKeyDown({ key: 'Escape', stopPropagation() { stopped = true } })
+  assert.equal(stopped, true, 'Escape keydown stays inside the confirmation')
+  stopped = false
+  modal().props.onCancel({ preventDefault() {}, stopPropagation() { stopped = true } })
+  assert.equal(stopped, true, 'Escape must not close the parent settings dialog')
+  card = render()
+  assert.equal(modal(), undefined)
+  assert.deepEqual(reinstalls, [], 'Escape cancels without side effects')
+  find(card, element => element.type === 'form')[0]!.props.onSubmit({ preventDefault() {} })
+  card = render()
+  // Confirmation uses the reviewed snapshot even if the underlying form changes.
+  display().props.onChange({ target: { value: 'Later edit' } })
+  card = render()
+  const confirm = action('preset.confirm')
+  confirm.props.onClick()
+  confirm.props.onClick()
+  await Promise.resolve()
+  assert.deepEqual(reinstalls, [['old-code', 'new-code', '新模式']])
 })
 
 test('agent view isolates the current tree and merges navigation metadata into existing summaries', () => {
@@ -356,6 +437,8 @@ test('plugin opens read-only resource tabs without navigating the main conversat
   const opened: object[] = []
   plugin.apply({
     effect: () => {},
+    remote: { $mount: async () => () => {} },
+    inject: () => {},
     slots: { inject: (_name: string, register: () => void) => register(), register: (config: Record<string, unknown>, component: unknown) => slots.push({ config, component }) },
     sidebarRightTabs: { register: () => () => {} },
     sessions: { openSubagent: () => assert.fail('must not switch conversations'), open: () => assert.fail('must not switch conversations') },

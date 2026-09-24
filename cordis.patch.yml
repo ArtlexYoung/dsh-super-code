@@ -3,7 +3,11 @@
 - insert:
     - id: preset-super-code
       name: '@deepseek-ai/dsh-agent-preset'
-      disabled: !!js "!ctx.get('profileContext')"
+      disabled: !!js >-
+        (() => { try {
+          process.getBuiltinModule('node:module').createRequire(process.argv[1]).resolve('@deepseek-ai/dsh-agent-preset')
+          return false
+        } catch { return true } })()
       config:
         id: super-code
         name: Super Code

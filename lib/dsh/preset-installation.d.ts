@@ -47,9 +47,34 @@ export declare class PresetInstaller {
     private installNow;
     private enqueue;
 }
+interface InstallationController {
+    status(): Promise<PresetInstallationStatus>;
+    install(id: unknown, name?: string): Promise<PresetInstallationResult>;
+    reinstall(previousId: string, id: unknown, name?: string): Promise<PresetInstallationResult>;
+    synchronize(language: string): Promise<{
+        changed: boolean;
+    }>;
+}
+/** The 0.1.7 registry owns declarations; this package never writes its profile. */
+export declare class DeclaredPresetStatus implements InstallationController {
+    private readonly registry;
+    constructor(registry: {
+        list(): Promise<readonly {
+            id: string;
+            name?: string;
+            broken?: string;
+        }[]>;
+    });
+    status(): Promise<PresetInstallationStatus>;
+    install(_id: unknown, _name?: string): Promise<PresetInstallationResult>;
+    reinstall(_previousId: string, _id: unknown, _name?: string): Promise<PresetInstallationResult>;
+    synchronize(_language: string): Promise<{
+        changed: boolean;
+    }>;
+}
 export declare class SuperCodePresets extends TypertRemoteService {
     private readonly installer;
-    constructor(ctx: Context, installer: PresetInstaller);
+    constructor(ctx: Context, installer: InstallationController);
     status(): Promise<PresetInstallationStatus>;
     installPreset(id: unknown, name?: string): Promise<PresetInstallationResult>;
     reinstallPreset(previousId: string, id: unknown, name?: string): Promise<PresetInstallationResult>;

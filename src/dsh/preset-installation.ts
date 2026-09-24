@@ -238,9 +238,37 @@ export class PresetInstaller {
   }
 }
 
+interface InstallationController {
+  status(): Promise<PresetInstallationStatus>
+  install(id: unknown, name?: string): Promise<PresetInstallationResult>
+  reinstall(previousId: string, id: unknown, name?: string): Promise<PresetInstallationResult>
+  synchronize(language: string): Promise<{ changed: boolean }>
+}
+
+/** The 0.1.7 registry owns declarations; this package never writes its profile. */
+export class DeclaredPresetStatus implements InstallationController {
+  constructor(private readonly registry: { list(): Promise<readonly { id: string; name?: string; broken?: string }[]> }) {}
+
+  async status(): Promise<PresetInstallationStatus> {
+    const preset = (await this.registry.list()).find(row => row.id === 'super-code')
+    return { id: 'super-code', name: preset?.name, authorable: false, userConflict: false,
+      state: preset ? preset.broken ? 'broken' : 'available' : 'missing' }
+  }
+
+  async install(_id: unknown, _name?: string): Promise<PresetInstallationResult> {
+    return { ok: false, error: 'no-user-root', status: await this.status() }
+  }
+
+  async reinstall(_previousId: string, _id: unknown, _name?: string): Promise<PresetInstallationResult> {
+    return { ok: false, error: 'no-user-root', status: await this.status() }
+  }
+
+  async synchronize(_language: string): Promise<{ changed: boolean }> { return { changed: false } }
+}
+
 export class SuperCodePresets extends TypertRemoteService {
-  private readonly installer: PresetInstaller
-  constructor(ctx: Context, installer: PresetInstaller) {
+  private readonly installer: InstallationController
+  constructor(ctx: Context, installer: InstallationController) {
     super(ctx, 'superCodePresets')
     this.installer = installer
   }
@@ -256,6 +284,11 @@ export class SuperCodePresets extends TypertRemoteService {
 
 export function applyPresetInstallation(ctx: Context): void {
   ctx.inject(['agentPresets', 'settings'], async owner => {
+    const registry = owner.agentPresets as unknown as { roots?: unknown; list(): Promise<readonly { id: string; name?: string; broken?: string }[]> }
+    if (!Array.isArray(registry.roots)) {
+      new SuperCodePresets(owner, new DeclaredPresetStatus(registry))
+      return
+    }
     const settings = owner.settings.register('super-code', s.object({
       checked: s.boolean().default(false),
       installedId: s.string().default(''),

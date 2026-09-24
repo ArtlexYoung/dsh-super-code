@@ -1,5 +1,7 @@
 # 版本记录 · Changelog
 
+- **0.1.4**：适配 Harness 0.1.5 至 0.1.7 的预设机制：旧宿主继续使用目录安装，新宿主通过 bundle 声明 Super Code 预设，插件设置页按宿主能力显示状态。
+  Supports Harness preset mechanisms from 0.1.5 through 0.1.7: directory installation on older hosts and a bundle declaration on newer hosts, with host-specific status in plugin settings.
 - **0.1.3**：插件配置和预设的默认名称、描述跟随中英文语言设置；升级仅更新未被用户修改的字段。安装名称支持中文和空格。已安装副本可在确认清单后按新名称与标识符重装，旧目录保留恢复备份，并严格校验副本归属。[使用说明](UsageGuide.md)
   Plugin settings and default preset names and descriptions follow the Chinese/English interface language; upgrades update only untouched fields. Installation names support Chinese characters and spaces. Owned copies can be reinstalled with a new name and identifier after confirmation, while the old directory is retained as a recovery backup. [Usage guide](UsageGuide.md)
 - **0.1.2**：优化按需专业指导、故障诊断与状态恢复验证，保留预设安装修复，最低支持 Harness 0.1.5-alpha.1。

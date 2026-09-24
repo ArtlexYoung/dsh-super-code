@@ -5,7 +5,21 @@ import { pathToFileURL } from 'node:url'
 import { join, resolve } from 'node:path'
 import { tmpdir } from 'node:os'
 import { discoverPresets, type PresetRoot } from '@deepseek-ai/dsh-agent-presets'
-import { PresetInstaller } from '../src/dsh/preset-installation.js'
+import { DeclaredPresetStatus, PresetInstaller } from '../src/dsh/preset-installation.js'
+
+test('declarative host reports its own preset without editing the profile', async () => {
+  const available = new DeclaredPresetStatus({ list: async () => [{ id: 'super-code', name: 'Super Code' }] })
+  assert.deepEqual(await available.status(), { id: 'super-code', name: 'Super Code', authorable: false,
+    userConflict: false, state: 'available' })
+  assert.deepEqual(await available.synchronize('zh-CN'), { changed: false })
+  assert.equal((await available.install('copy')).error, 'no-user-root')
+  assert.equal((await available.reinstall('super-code', 'copy')).error, 'no-user-root')
+
+  const broken = new DeclaredPresetStatus({ list: async () => [{ id: 'super-code', broken: 'missing tool' }] })
+  assert.equal((await broken.status()).state, 'broken')
+  const missing = new DeclaredPresetStatus({ list: async () => [] })
+  assert.equal((await missing.status()).state, 'missing')
+})
 
 async function fixture(t: TestContext, options: { bundled?: boolean; writable?: boolean } = {}) {
   const root = await mkdtemp(join(tmpdir(), 'super-code-install-test-'))

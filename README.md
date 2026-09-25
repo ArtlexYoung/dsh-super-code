@@ -8,18 +8,32 @@ A faster, more efficient, smarter coding plugin for DeepSeek Harness. It selects
 
 On the selected SWE-bench Pro hard-100 tasks, `0.1.2` reduced average response time by about 38% and input tokens per task by about 14% versus DSH minimal, while accuracy increased by 8 percentage points. [Methods and full results](docs/EvaluationResults.md)
 
+## 0.1.4 更新 · What's New in 0.1.4
+
+适配 Harness 的两种预设机制：0.1.5/0.1.6 沿用目录安装，已验证的 0.1.7 版本通过插件 bundle 声明预设。设置页按宿主能力展示状态；新版不通过插件安装、重命名或重装用户目录副本。
+
+Supports both Harness preset mechanisms: directory installation on 0.1.5/0.1.6 and bundle declarations on the verified 0.1.7 versions. Settings reflect host capabilities; the newer path does not install, rename, or reinstall user-directory copies through this plugin.
+
+七个指定版本的隔离 Web/CLI 冒烟通过，覆盖 `0.1.5-rc.3`、`0.1.6-alpha.1`、`0.1.6-alpha.2`、`0.1.7-alpha.1`、`0.1.7-alpha.2`、`0.1.7-rc.1`、`0.1.7-rc.2`。验证固定宿主依赖并使用本地确定性模型，不代表原生 Desktop、真实模型或所有升级场景都已通过。[兼容矩阵与限制](docs/Compatibility.md) · [版本记录](docs/Changelog.md)
+
+Isolated Web/CLI smoke checks passed on seven specified versions: `0.1.5-rc.3`, `0.1.6-alpha.1`, `0.1.6-alpha.2`, `0.1.7-alpha.1`, `0.1.7-alpha.2`, `0.1.7-rc.1`, and `0.1.7-rc.2`. Checks pin host dependencies and use a local deterministic model; they do not establish native Desktop, live-model, or complete upgrade compatibility. [Matrix and limitations](docs/Compatibility.md) · [Changelog](docs/Changelog.md)
+
+下方性能数据仍属于 `0.1.2`，不是 `0.1.4` 的新一轮模型效果评测。
+
+The performance figures below remain results for `0.1.2`, not a new model-quality evaluation of `0.1.4`.
+
 ## 开始使用 · Get Started
 
-需要 DeepSeek Harness 0.1.5-alpha.1 或更高版本。三步就能开始：
+需要 Node.js 22 或更高版本，以及上述已验证的 DeepSeek Harness 版本。其他版本不能仅凭依赖范围视为已验证。三步就能开始：
 
-You'll need DeepSeek Harness 0.1.5-alpha.1 or later. To get started:
+Use Node.js 22 or later with one of the verified DeepSeek Harness versions above. A dependency range alone does not establish that another version has been tested. To get started:
 
 1. **安装插件：** 在 `dsh-market` 搜索 `dsh-super-code`，或运行下面的命令。
 
    **Install the plugin:** Search for `dsh-super-code` in `dsh-market`, or run:
 
    ```bash
-   dsh plugin --profile web add dsh-super-code
+   dsh plugin --profile web add dsh-super-code@0.1.4
    ```
 
 2. **选中预设：** 打开 Harness“设置”→“Agent 预设”，选择 `super-code`。
@@ -30,9 +44,9 @@ You'll need DeepSeek Harness 0.1.5-alpha.1 or later. To get started:
 
    **Start a conversation:** Open a new conversation and describe the coding task you want done.
 
-没看到 `super-code`？打开“设置”→“插件”→“插件配置”→ **Super Code** 查看状态并手动安装。标识符已被占用时可换一个，不会覆盖已有预设。[排查与预设管理](docs/UsageGuide.md)
+没看到 `super-code`？先确认插件已启用，再在“设置”→“插件”→“插件配置”→ **Super Code** 查看状态。0.1.5/0.1.6 的可写用户目录支持手动安装及更换标识符；0.1.7 使用宿主声明式预设，不提供此目录安装流程，应检查插件加载与预设依赖。[按宿主排查与预设管理](docs/UsageGuide.md)
 
-Can't find `super-code`? Open “Settings” → “Plugins” → “Plugin configuration” → **Super Code** to check its status and install it manually. If the identifier is taken, choose another; existing presets are left untouched. [Troubleshooting and preset management](docs/UsageGuide.md)
+Can't find `super-code`? Confirm the plugin is enabled, then check **Super Code** under “Settings” → “Plugins” → “Plugin configuration”. On 0.1.5/0.1.6, a writable user directory supports manual installation and a different identifier. On 0.1.7, presets are declared through the host; check plugin loading and preset dependencies rather than using the directory-installation workflow. [Host-specific troubleshooting and preset management](docs/UsageGuide.md)
 
 [![Super Code 配置入口 · Super Code settings](docs/images/preset-settings-preview.png)](docs/images/preset-settings.png)
 

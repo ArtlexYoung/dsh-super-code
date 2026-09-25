@@ -1,7 +1,9 @@
 # 版本记录 · Changelog
 
-- **0.1.4**：适配 Harness 0.1.5 至 0.1.7 的预设机制：旧宿主继续使用目录安装，新宿主通过 bundle 声明 Super Code 预设，插件设置页按宿主能力显示状态。
-  Supports Harness preset mechanisms from 0.1.5 through 0.1.7: directory installation on older hosts and a bundle declaration on newer hosts, with host-specific status in plugin settings.
+- **0.1.4**：适配 Harness 的目录与声明式预设机制：旧宿主保留目录安装，新宿主通过 bundle 声明 Super Code，设置页按宿主能力显示状态；声明式路径不提供目录副本安装、重命名、重装或名称语言同步。扩展 Harness peer 依赖范围，补齐中英文发布说明、使用指南及 npm 包内公开文档。`zod` 保留为运行时依赖，不内嵌其文件。
+  Adapts directory and declarative Harness presets: older hosts retain directory installation, while newer hosts use a Super Code bundle declaration and capability-specific status. The declarative path does not install, rename, reinstall, or synchronize localized names for directory copies. Expands Harness peer dependency ranges and includes bilingual release notes, usage guidance, and public documentation in the npm package. `zod` remains a runtime dependency without bundling its files.
+  已验证 `0.1.5-rc.3`、`0.1.6-alpha.1`、`0.1.6-alpha.2`、`0.1.7-alpha.1`、`0.1.7-alpha.2`、`0.1.7-rc.1`、`0.1.7-rc.2`；仅代表固定依赖的隔离 Web/CLI 与确定性模型冒烟，不代表原生 Desktop、外部模型、完整升级回归或新的 SWE-bench 成绩。[兼容范围与安装限制](Compatibility.md)
+  Verified `0.1.5-rc.3`, `0.1.6-alpha.1`, `0.1.6-alpha.2`, `0.1.7-alpha.1`, `0.1.7-alpha.2`, `0.1.7-rc.1`, and `0.1.7-rc.2` in pinned, isolated Web/CLI smoke checks using a deterministic model—not native Desktop, external models, complete upgrade regression, or new SWE-bench results. [Compatibility scope and installation limitations](Compatibility.md)
 - **0.1.3**：插件配置和预设的默认名称、描述跟随中英文语言设置；升级仅更新未被用户修改的字段。安装名称支持中文和空格。已安装副本可在确认清单后按新名称与标识符重装，旧目录保留恢复备份，并严格校验副本归属。[使用说明](UsageGuide.md)
   Plugin settings and default preset names and descriptions follow the Chinese/English interface language; upgrades update only untouched fields. Installation names support Chinese characters and spaces. Owned copies can be reinstalled with a new name and identifier after confirmation, while the old directory is retained as a recovery backup. [Usage guide](UsageGuide.md)
 - **0.1.2**：优化按需专业指导、故障诊断与状态恢复验证，保留预设安装修复，最低支持 Harness 0.1.5-alpha.1。

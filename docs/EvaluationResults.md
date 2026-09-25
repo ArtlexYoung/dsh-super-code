@@ -27,9 +27,9 @@ The frozen `0.1.2` candidate and DSH minimal both received official scores for a
 
 Relative to minimal, `0.1.2` passed 12 additional tasks, but regressed on 4 of minimal's 41 passes (task IDs 63, 368, 456, and 503), for a net gain of 8. The runs used different Harness commits, so not every difference can be attributed to the plugin.
 
-[`super-code-0.1.2.json`](../eval/results/swebench-pro-final-100/super-code-0.1.2.json) 包含脱敏的逐题评分和用量；[历史结果目录](../eval/results/swebench-pro-final-100/)提供基准题号、实例 ID 和明细。
+[`super-code-0.1.2.json`](https://github.com/ArtlexYoung/dsh-super-code/blob/7edc210c0f6deffaaf5600339f79f84c6f2281bb/eval/results/swebench-pro-final-100/super-code-0.1.2.json) 包含脱敏的逐题评分和用量；[历史结果目录](https://github.com/ArtlexYoung/dsh-super-code/tree/7edc210c0f6deffaaf5600339f79f84c6f2281bb/eval/results/swebench-pro-final-100/)提供基准题号、实例 ID 和明细。结果保留在公开仓库，不随 npm 包重复打包。
 
-The redacted [`super-code-0.1.2.json`](../eval/results/swebench-pro-final-100/super-code-0.1.2.json) contains per-task scores and usage. The [historical results directory](../eval/results/swebench-pro-final-100/) provides baseline task IDs, instance IDs, and details.
+The redacted [`super-code-0.1.2.json`](https://github.com/ArtlexYoung/dsh-super-code/blob/7edc210c0f6deffaaf5600339f79f84c6f2281bb/eval/results/swebench-pro-final-100/super-code-0.1.2.json) contains per-task scores and usage. The [historical results directory](https://github.com/ArtlexYoung/dsh-super-code/tree/7edc210c0f6deffaaf5600339f79f84c6f2281bb/eval/results/swebench-pro-final-100/) provides baseline task IDs, instance IDs, and details. Results remain in the public repository rather than being duplicated in the npm package.
 
 ## 历史 0.0.9 · Historical 0.0.9
 

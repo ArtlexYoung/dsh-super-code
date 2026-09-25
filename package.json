@@ -1,7 +1,7 @@
 {
   "name": "dsh-super-code",
   "version": "0.1.4",
-  "description": "One super-code preset with specialist teams and durable task memory for DeepSeek Harness.",
+  "description": "Task-focused coding, specialist teams, and durable task memory with directory and declarative presets for DeepSeek Harness.",
   "license": "Apache-2.0",
   "type": "module",
   "main": "lib/index.js",
@@ -39,6 +39,14 @@
     "presets",
     "cordis.patch.yml",
     "README.md",
+    "docs/Changelog.md",
+    "docs/Compatibility.md",
+    "docs/UsageGuide.md",
+    "docs/EvaluationResults.md",
+    "docs/images/agent-tree.png",
+    "docs/images/agent-tree-preview.png",
+    "docs/images/preset-settings.png",
+    "docs/images/preset-settings-preview.png",
     "LICENSE",
     "client"
   ],

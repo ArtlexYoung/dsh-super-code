@@ -16,7 +16,10 @@ function fixture() {
     locale: { register: (_ns: string, values: any) => Object.assign(dictionaries, values), bind: () => (key: string) => key },
     remote: { $mount: async () => () => {} },
     inject: () => {},
-    slots: { inject: (_: string, callback: Function) => callback(), register: (config: any, component: any) => { slots.push({ config, component }); return () => {} } },
+    slots: { inject: (_: string, callback: Function) => {
+      const result = callback()
+      if (result?.[Symbol.iterator]) for (const _dispose of result) { /* Consume slot registration effects. */ }
+    }, register: (config: any, component: any) => { slots.push({ config, component }); return () => {} } },
     sidebarRightTabs: { register: () => () => {} }, sessions: {}, sidebarRight: {},
   })
   return { plugin, dictionaries, slots }
@@ -55,7 +58,7 @@ test('all plugin labels have both languages and sidebar slots subscribe to local
   assert.deepEqual(Object.keys(dictionaries.zh).sort(), Object.keys(dictionaries.en).sort())
   for (const slot of slots) {
     assert.equal(slot.config.locale, 'dshSuperCode')
-    assert.equal('t' in slot.config.inject(), false)
+    assert.equal('t' in (slot.config.inject?.() ?? {}), false)
   }
   assert.equal(dictionaries.zh['preset.title'], 'Super Code 模式')
   assert.equal(dictionaries.en['preset.title'], 'Super Code')
@@ -63,6 +66,31 @@ test('all plugin labels have both languages and sidebar slots subscribe to local
   assert.equal(dictionaries.en['preset.description'], 'A faster, more efficient, smarter coding mode.')
   assert.equal(dictionaries.zh['preset.confirmHint'], '以下是通过本插件安装的预设，将会被移除并按照新名称重新安装，旧内容会保留恢复备份。对于需要保留的预设可以手动在列表中移除。')
   assert.match(dictionaries.en['preset.confirmHint'], /Remove any preset you want to keep/)
+})
+
+test('open tab titles switch languages without changing user titles or tab identity', () => {
+  const { dictionaries, slots } = fixture()
+  const titles = slots.filter(slot => slot.config.name === 'sidebar.right.pane.tab.title')
+  assert.equal(titles.length, 3)
+  const labels: Record<string, string> = { 'dsh-super-code': 'tree.aria', 'dsh-super-code-memory': 'memory.title' }
+  const tab = { contentId: 'dsh-resource://super-agent/root' }
+  let catalog = { byId: { root: { id: 'root', title: '保留用户任务 / User task' } } }
+  for (const language of ['zh', 'en', 'zh']) {
+    const t = (key: string) => dictionaries[language][key]
+    for (const slot of titles) {
+      assert.equal(slot.config.locale, 'dshSuperCode')
+      const props = { ...slot.config.inject?.(), t, useTabInfo: () => ({ tab }), useSessions: (select: Function) => select(catalog) }
+      assert.equal(slot.component(props), slot.config.key === 'dsh-super-code-detail'
+        ? catalog.byId.root.title || t('detail.title') : t(labels[slot.config.key]!))
+    }
+  }
+  catalog = { byId: { root: { id: 'root', title: '' } } }
+  const detail = titles.find(slot => slot.config.key === 'dsh-super-code-detail')!
+  for (const language of ['zh', 'en']) {
+    const t = (key: string) => dictionaries[language][key]
+    assert.equal(detail.component({ t, useTabInfo: () => ({ tab }), useSessions: (select: Function) => select(catalog) }), t('detail.title'))
+  }
+  assert.equal(tab.contentId, 'dsh-resource://super-agent/root')
 })
 
 test('memory library virtualizes large indexes and keeps the target scope explicit', () => {

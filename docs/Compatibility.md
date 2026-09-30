@@ -40,11 +40,17 @@ Older hosts need host packages to be resolvable from the isolated profile; the c
 
 `zod` validates runtime input and `js-yaml` handles preset files on older hosts; their files are not bundled into the plugin tarball. The package includes the plugin, public guides, and screenshots, not local verification environments, raw logs, or internal scripts.
 
+## 官方 Desktop · Official Desktop
+
+官方 Desktop `0.2.0-rc.2` 的 macOS arm64 发行包已另行通过原生窗口验收：安装和启用插件、选择 Super Code、主/子 Agent 执行、执行树、缩放、侧栏详情、记忆库、记忆使用记录及可折叠设置。中英文切换时，已打开的 tab 标题和界面文案同步更新，任务标题与记忆正文保留原文；重启后记忆和界面语言可恢复。该验收使用隔离配置和本地确定性模型。
+
+The official Desktop `0.2.0-rc.2` macOS arm64 release also passed checks in its native window: plugin installation and activation, Super Code selection, main/child Agent execution, the tree, zoom, sidebar details, the memory library, memory activity, and collapsible settings. Open tab titles and interface labels update when switching between Chinese and English; task titles and memory text stay in their original language. Memory and the interface language persist after restart. These checks use an isolated profile and a local deterministic model.
+
 ## 未覆盖项 · Not Covered
 
-原生 Desktop、真实模型服务、完整升级/自定义配置回归、所有工具与平台组合，以及 0.2.0 候选整合包的新 SWE-bench 效果评测均不在本轮范围内。最新版本的浏览器验收不等于原生 Desktop 验收；依赖声明中的版本范围也不是上述未列版本的验证结论。
+其他 Desktop 版本和平台、真实模型服务、完整升级/自定义配置回归、所有工具组合，以及 0.2.0 候选整合包的新 SWE-bench 效果评测仍未覆盖。依赖声明中的版本范围不是未列版本的验证结论。
 
-Native Desktop, live model services, complete upgrade/customization regression, every tool/platform combination, and a new SWE-bench quality evaluation of the integrated 0.2.0 candidate are outside this scope. The latest browser check does not establish native Desktop support; declared dependency ranges are not verification results for unlisted versions.
+Other Desktop versions and platforms, live model services, complete upgrade/customization regression, every tool combination, and a new SWE-bench quality evaluation of the integrated 0.2.0 candidate remain outside this scope. Declared dependency ranges are not verification results for unlisted versions.
 
 预设管理差异见[使用指南](UsageGuide.md)，版本变更见[更新日志](Changelog.md)。
 

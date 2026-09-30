@@ -103,6 +103,21 @@ function formatText(template, values = {}) { return template.replace(/\{(\w+)\}/
 function text(t, key, values) { return formatText(t(key), values) }
 function localeCode(t) { return text(t, 'status.active') === en['status.active'] ? 'en-US' : 'zh-CN' }
 
+// The registry captures a fallback title when a tab opens. Title slots receive
+// live locale updates, including for tabs whose bodies are not currently shown.
+function LocalizedTabTitle({ titleKey, t }) { return t(titleKey) }
+
+function agentTabTitle(state, address, t) {
+  const target = agentDetailTarget(address), id = target.childSessionId || target.sessionId
+  const node = buildAgentView(agentSessionState(state, id)).nodes.get(id)
+  return node?.title || node?.displayTitle || t('detail.title')
+}
+
+function AgentDetailTitle({ useTabInfo, useSessions, t }) {
+  const { tab } = useTabInfo(), state = useSessions(value => value)
+  return agentTabTitle(state, tab.contentId, t)
+}
+
 function TaskMemoryPanel({ state, t = key => zh[key] || key }) {
   const tasks = state?.tasks || []
   if (!tasks.length) return null
@@ -1355,10 +1370,16 @@ function apply(ctx) {
   const disposeDetailType = ctx.sidebarRightTabs.register({
     id: 'dsh-super-code-detail', kind: 'super-agent-detail', patterns: ['dsh-resource://super-agent/**'],
     title: address => {
-      const target = agentDetailTarget(address), state = ctx.sessions.list.getSnapshot()
-      const node = buildAgentView(agentSessionState(state, target.childSessionId || target.sessionId)).nodes.get(target.childSessionId || target.sessionId)
-      return node?.title || node?.displayTitle || t('detail.title')
+      return agentTabTitle(ctx.sessions.list.getSnapshot(), address, t)
     },
+  })
+  ctx.slots.inject('sidebar.right.pane.tab.title', function* () {
+    for (const [key, titleKey] of [[treeId, 'tree.aria'], ['dsh-super-code-memory', 'memory.title']]) {
+      yield ctx.slots.register({ name: 'sidebar.right.pane.tab.title', key, locale: LOCALE_NS,
+        inject: () => ({ titleKey }),
+      }, LocalizedTabTitle)
+    }
+    yield ctx.slots.register({ name: 'sidebar.right.pane.tab.title', key: 'dsh-super-code-detail', locale: LOCALE_NS }, AgentDetailTitle)
   })
   const detailActions = { openMemory, detailStates: new WeakMap(), createInspector: (address, initial) => createAgentInspector(
     (target, options) => new SessionEventStream(ctx.remote, target, options), address,

@@ -5,7 +5,7 @@ import { join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import type { Context } from '@deepseek-ai/cordis'
 import s from '@deepseek-ai/schemastery'
-import { copyComposition, discoverPresets, writableRoot, type AgentPresets } from '@deepseek-ai/dsh-agent-presets'
+import { copyBundledPreset, writableRoot, type DirectoryPresets } from './preset-files.js'
 import { displayCopy, migrateMetadata, type DisplayBaseline } from './preset-metadata.js'
 import type { SettingsScope } from '@deepseek-ai/dsh-settings'
 import { Remote, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
@@ -44,7 +44,7 @@ async function exists(path: string): Promise<boolean> {
 export class PresetInstaller {
   private tail: Promise<unknown> = Promise.resolve()
   constructor(
-    private readonly roster: Pick<AgentPresets, 'list' | 'roots'>,
+    private readonly roster: DirectoryPresets,
     private readonly settings: SettingsScope<InstallationSettings>,
     private readonly bundledRoot: string = sourceRoot,
     private readonly baseUrl: string = pathToFileURL(bundledRoot).href,
@@ -190,15 +190,13 @@ export class PresetInstaller {
     let claimed = false
     const target = join(writableRoot(this.roster.roots, id), id)
     try {
-      const source = (await discoverPresets([{ path: this.bundledRoot, trust: 'system' }], this.baseUrl))
-        .find(preset => preset.id === 'super-code' && !preset.broken)
-      if (!source) throw new Error('Bundled super-code preset unavailable')
       const root = writableRoot(this.roster.roots, id)
       await mkdir(root, { recursive: true, mode: 0o700 })
       staging = await mkdtemp(join(root, '.super-code-install-'))
       // The host copy helper can clean up its destination on failure. Isolate
       // it from user-owned paths, then exclusively claim the final directory.
-      const prepared = await copyComposition([{ path: staging, trust: 'user' }], source, id, name?.trim() ?? 'Super Code')
+      const source = await copyBundledPreset(this.bundledRoot, staging, id, name?.trim() ?? 'Super Code')
+      const prepared = source.directory
       await mkdir(target, { mode: 0o700 })
       claimed = true
       for (const entry of await readdir(prepared)) {
@@ -284,7 +282,7 @@ export class SuperCodePresets extends TypertRemoteService {
 
 export function applyPresetInstallation(ctx: Context): void {
   ctx.inject(['agentPresets', 'settings'], async owner => {
-    const registry = owner.agentPresets as unknown as { roots?: unknown; list(): Promise<readonly { id: string; name?: string; broken?: string }[]> }
+    const registry = owner.get('agentPresets') as { roots?: unknown; list(): Promise<readonly { id: string; name?: string; broken?: string }[]> }
     if (!Array.isArray(registry.roots)) {
       new SuperCodePresets(owner, new DeclaredPresetStatus(registry))
       return
@@ -296,7 +294,7 @@ export function applyPresetInstallation(ctx: Context): void {
       pendingDisplay: s.dict(s.object({ name: s.string().required(false), description: s.string().required(false) })).default({}),
       display: s.dict(s.object({ name: s.string().required(false), description: s.string().required(false) })).default({}),
     }))
-    const installer = new PresetInstaller(owner.agentPresets, settings, sourceRoot, owner.baseUrl)
+    const installer = new PresetInstaller(registry as DirectoryPresets, settings, sourceRoot, owner.baseUrl)
     new SuperCodePresets(owner, installer)
     try {
       await installer.initialize()

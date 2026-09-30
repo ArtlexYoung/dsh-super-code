@@ -1,5 +1,5 @@
 import type { Context } from '@deepseek-ai/cordis';
-import { type AgentPresets } from '@deepseek-ai/dsh-agent-presets';
+import { type DirectoryPresets } from './preset-files.js';
 import { type DisplayBaseline } from './preset-metadata.js';
 import type { SettingsScope } from '@deepseek-ai/dsh-settings';
 import { TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol';
@@ -35,7 +35,7 @@ export declare class PresetInstaller {
     private readonly bundledRoot;
     private readonly baseUrl;
     private tail;
-    constructor(roster: Pick<AgentPresets, 'list' | 'roots'>, settings: SettingsScope<InstallationSettings>, bundledRoot?: string, baseUrl?: string);
+    constructor(roster: DirectoryPresets, settings: SettingsScope<InstallationSettings>, bundledRoot?: string, baseUrl?: string);
     status(): Promise<PresetInstallationStatus>;
     initialize(): Promise<void>;
     synchronize(language: string): Promise<{

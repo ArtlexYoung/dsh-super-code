@@ -1,0 +1,1 @@
+{"version":3,"file":"host-messages.d.ts","sourceRoot":"","sources":["../../src/core/host-messages.ts"],"names":[],"mappings":"AAAA,+EAA+E;AAC/E,MAAM,MAAM,kBAAkB,GAAG;IAAE,IAAI,EAAE,QAAQ,CAAC;IAAC,MAAM,EAAE,MAAM,CAAC;IAAC,OAAO,EAAE,OAAO,CAAC;IAAC,KAAK,EAAE,MAAM,EAAE,CAAA;CAAE,GAAG;IAAE,IAAI,EAAE,aAAa,CAAA;CAAE,CAAA;AAEhI,wBAAgB,kBAAkB,CAAC,OAAO,EAAE,OAAO,GAAG,kBAAkB,CAQvE"}

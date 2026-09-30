@@ -38,6 +38,24 @@ test('compact view retains constraints, provenance pointers and current decision
   t.diagnostic(`Source-heavy fixture: ${before} -> ${after} context bytes; not model-token or full-history savings`)
 })
 
+test('classified key points replace routine decisions but retain full details and hard constraints', () => {
+  const original = taskMemorySchema.parse({ ...task(), topic: 'preset-install',
+    keyPoints: [{ kind: 'decision', summary: 'Preserve user edits' }],
+  })
+  const state = foldTaskMemory(emptyTaskMemory(), { kind: 'save', task: original })
+  const current = JSON.parse(taskMemoryContext(state, 32768)).current
+  assert.equal(current.topic, 'preset-install')
+  assert.deepEqual(current.keyPoints, original.keyPoints)
+  assert.deepEqual(current.decisions, [])
+  assert.equal(current.omittedDecisions, original.decisions.length)
+  assert.deepEqual(current.requirements.map((item: { text: string }) => item.text), ['Do not publish', 'Use TypeScript'])
+  assert.deepEqual(taskMemorySchema.parse(original).decisions, original.decisions)
+  assert.throws(() => taskMemorySchema.parse({ ...original, keyPoints: [{ kind: 'fact', summary: '中'.repeat(31) }] }), /Key point/)
+  assert.doesNotThrow(() => taskMemorySchema.parse({ ...original, keyPoints: [{ kind: 'fact', summary: '中'.repeat(30) }] }))
+  const revised = reviseTaskMemory(original, { sourceVersion: 'code-2' }, original.revision)
+  assert.deepEqual(revised.keyPoints, [])
+})
+
 test('optional evidence yields to a byte budget while hard requirements and retrieval stay intact', () => {
   const original = task()
   const state = foldTaskMemory(emptyTaskMemory(), { kind: 'save', task: original })

@@ -2,7 +2,7 @@
 import { lstat, readFile, open, mkdtemp, rename, rm } from 'node:fs/promises'
 import { constants } from 'node:fs'
 import { dirname, join } from 'node:path'
-import { readPresetMetadata } from '@deepseek-ai/dsh-agent-presets'
+import { readPresetMetadata } from './preset-files.js'
 
 export interface DisplayBaseline {
   name?: string

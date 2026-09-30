@@ -5,6 +5,7 @@ import type { TeamName, WorkDepth } from './teams.js'
 
 export interface TaskSource { seq: number; quote: string }
 export interface Requirement { id: string; text: string; source: TaskSource }
+export interface KeyPoint { kind: 'constraint' | 'fact' | 'decision' | 'next'; summary: string }
 export interface TaskEvidence {
   summary: string; ref: string; sourceVersion: string; requirementsRevision: number
   kind: 'observed' | 'assumption' | 'test' | 'decision'
@@ -13,6 +14,7 @@ export interface TaskMemory {
   id: string; title: string; team: TeamName; depth: WorkDepth; workspace: string; sourceVersion: string; goal: string
   createdAtSeq: number
   source: TaskSource; requirements: Requirement[]; acceptance: string[]; decisions: string[]; evidence: TaskEvidence[]; next: string
+  keyPoints?: KeyPoint[]; topic?: string
   status: 'active' | 'paused' | 'completed' | 'cancelled'; revision: number; requirementsRevision: number; delegationRevision: number
 }
 export interface TaskMemoryState {
@@ -25,6 +27,10 @@ export type TaskMemoryPatch = Partial<Omit<TaskMemory, 'id' | 'createdAtSeq' | '
 
 const text = z.string().trim().min(1).max(4_000)
 const id = z.string().regex(/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,95}$/)
+const keyPointSchema: z.ZodType<KeyPoint> = z.object({
+  kind: z.enum(['constraint', 'fact', 'decision', 'next']),
+  summary: z.string().trim().min(1).refine(value => Array.from(value).length <= 30, 'Key point exceeds 30 characters'),
+}).strict()
 export const sourceSchema: z.ZodType<TaskSource> = z.object({ seq: z.number().int().nonnegative(), quote: text }).strict()
 export const requirementSchema: z.ZodType<Requirement> = z.object({ id, text, source: sourceSchema }).strict()
 const evidenceSchema = z.object({
@@ -43,6 +49,7 @@ const taskObject = z.object({
   requirements: z.array(requirementSchema).max(64),
   acceptance: z.array(text).min(1).max(32),
   decisions: z.array(text).max(16),
+  keyPoints: z.array(keyPointSchema).max(8).optional(), topic: id.optional(),
   evidence: z.array(evidenceSchema).max(32),
   next: z.string().max(4_000),
   status: z.enum(['active', 'paused', 'completed', 'cancelled']),
@@ -71,6 +78,7 @@ export const taskMemoryPatchSchema: z.ZodType<TaskMemoryPatch> = z.object({
   source: sourceSchema.optional(), requirements: z.array(requirementSchema).max(64).optional(),
   removeRequirements: z.array(id).max(64).optional(), acceptance: taskObject.shape.acceptance.optional(),
   decisions: taskObject.shape.decisions.optional(), evidence: taskObject.shape.evidence.optional(),
+  keyPoints: taskObject.shape.keyPoints, topic: taskObject.shape.topic,
   next: taskObject.shape.next.optional(), status: taskObject.shape.status.optional(),
 }).strict()
 
@@ -101,7 +109,7 @@ export function reviseTaskMemory(task: TaskMemory, patch: TaskMemoryPatch, expec
   }
   const { removeRequirements: _removed, ...fields } = normalized
   const requiresSource = normalized.goal !== undefined || normalized.workspace !== undefined
-    || normalized.acceptance !== undefined || normalized.requirements !== undefined || removals.size > 0
+    || normalized.acceptance !== undefined || normalized.requirements !== undefined || normalized.topic !== undefined || removals.size > 0
   if (requiresSource && normalized.source === undefined) throw new Error('A requirement change needs the source of the user correction')
   // All validation precedes equality: a stale request or a new source is not a retry.
   const candidate = taskMemorySchema.parse({ ...task, ...fields, requirements: [...requirements.values()] })
@@ -110,11 +118,12 @@ export function reviseTaskMemory(task: TaskMemory, patch: TaskMemoryPatch, expec
   // or a new correction source invalidates work; source-only updates keep their contract.
   const changed = requiresSource && (!isDeepStrictEqual(candidate.source, task.source)
     || candidate.goal !== task.goal || candidate.workspace !== task.workspace
-    || !isDeepStrictEqual(candidate.acceptance, task.acceptance) || !isDeepStrictEqual(candidate.requirements, task.requirements))
+    || candidate.topic !== task.topic || !isDeepStrictEqual(candidate.acceptance, task.acceptance) || !isDeepStrictEqual(candidate.requirements, task.requirements))
   const invalidatesDecisions = changed || (normalized.sourceVersion !== undefined && normalized.sourceVersion !== task.sourceVersion)
   // A paused member must never become current merely because its parent resumes.
   const invalidatesDelegation = invalidatesDecisions || (normalized.status !== undefined && normalized.status !== task.status)
-  return taskMemorySchema.parse({ ...task, ...fields, decisions: normalized.decisions ?? (invalidatesDecisions ? [] : task.decisions), requirements: [...requirements.values()], revision: task.revision + 1,
+  return taskMemorySchema.parse({ ...task, ...fields, decisions: normalized.decisions ?? (invalidatesDecisions ? [] : task.decisions),
+    keyPoints: normalized.keyPoints ?? (invalidatesDecisions ? [] : task.keyPoints), requirements: [...requirements.values()], revision: task.revision + 1,
     requirementsRevision: task.requirementsRevision + Number(changed), delegationRevision: task.delegationRevision + Number(invalidatesDelegation) })
 }
 
@@ -144,7 +153,9 @@ function taskResumeView(task: TaskMemory) {
     revision: task.revision, requirementsRevision: task.requirementsRevision, delegationRevision: task.delegationRevision,
     workspace: task.workspace, sourceVersion: task.sourceVersion, sourceSeq: task.source.seq,
     goal: task.goal, requirements: task.requirements.map(({ id, text, source }) => ({ id, text, sourceSeq: source.seq })),
-    acceptance: task.acceptance, decisions: task.decisions, next: task.next,
+    acceptance: task.acceptance, decisions: task.keyPoints?.length ? [] : task.decisions, next: task.next,
+    ...(task.topic ? { topic: task.topic } : {}),
+    ...(task.keyPoints?.length ? { keyPoints: task.keyPoints, omittedDecisions: task.decisions.length } : {}),
     evidence, omittedEvidence: validEvidence.length - evidence.length,
     staleEvidence: task.evidence.length - validEvidence.length,
     ...(evidence.length ? { evidenceBasis: 'recorded-versions; current workspace not checked' as const } : {}),

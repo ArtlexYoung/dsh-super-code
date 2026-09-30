@@ -1,5 +1,8 @@
 # 版本记录 · Changelog
 
+- **0.2.0 候选**：合入分层任务记忆，新增记忆库和每个 Agent 的记忆使用记录，补齐 Harness 0.1.5-alpha.1 至 0.2.0-rc.2 的宿主兼容适配。
+  **0.2.0 candidate**: Integrates hierarchical task memory, adds the memory library and per-Agent memory activity, and adapts the host boundary from Harness 0.1.5-alpha.1 through 0.2.0-rc.2.
+
 - **0.1.4**：适配 Harness 的目录与声明式预设机制：旧宿主保留目录安装，新宿主通过 bundle 声明 Super Code，设置页按宿主能力显示状态；声明式路径不提供目录副本安装、重命名、重装或名称语言同步。扩展 Harness peer 依赖范围，补齐中英文发布说明、使用指南及 npm 包内公开文档。`zod` 保留为运行时依赖，不内嵌其文件。
   Adapts directory and declarative Harness presets: older hosts retain directory installation, while newer hosts use a Super Code bundle declaration and capability-specific status. The declarative path does not install, rename, reinstall, or synchronize localized names for directory copies. Expands Harness peer dependency ranges and includes bilingual release notes, usage guidance, and public documentation in the npm package. `zod` remains a runtime dependency without bundling its files.
   已验证 `0.1.5-rc.3`、`0.1.6-alpha.1`、`0.1.6-alpha.2`、`0.1.7-alpha.1`、`0.1.7-alpha.2`、`0.1.7-rc.1`、`0.1.7-rc.2`；仅代表固定依赖的隔离 Web/CLI 与确定性模型冒烟，不代表原生 Desktop、外部模型、完整升级回归或新的 SWE-bench 成绩。[兼容范围与安装限制](Compatibility.md)

@@ -21,6 +21,13 @@ export interface TaskMemoryView {
 /** The browser needs a task summary, never the durable source quotes or evidence. */
 export declare function taskMemoryView(state: TaskMemoryState): TaskMemoryView;
 export declare const TASK_MEMORY_SOURCE = "dsh-super-code/task-memory/v1";
+declare module '@deepseek-ai/dsh-llm' {
+    interface MessageSourceMap {
+        'dsh-super-code/task-memory/v1': {
+            kind: 'dsh-super-code/task-memory/v1';
+        };
+    }
+}
 /** Known host message vocabulary keeps external plugin records resumable. */
 export declare function taskMemoryEventOf(event: SessionEvent): {
     kind: 'record';

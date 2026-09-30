@@ -29,17 +29,25 @@ test('preset settings registration does not wait on the Remote mount lifecycle',
     __ModuleLoader__: { load: ({ factory }: any) => { plugin = factory(() => ({})) } },
   })
   let injected = false
+  const mounts: any[] = []
   plugin.apply({
     effect: () => {},
     locale: { register: () => () => {}, bind: () => (key: string) => key },
-    remote: { $mount: () => new Promise(() => {}) },
+    remote: { $mount: (contribution: any) => { mounts.push(contribution); return new Promise(() => {}) } },
     inject: (dependencies: string[]) => {
-      assert.deepEqual(Array.from(dependencies), ['remote.superCodePresets'])
-      injected = true
+      assert.ok(['remote.superCodePresets', 'remote.superCodeMemory'].includes(dependencies[0]!))
+      if (dependencies[0] === 'remote.superCodePresets') injected = true
     },
     slots: { inject: () => {} }, sidebarRightTabs: { register: () => () => {} }, sessions: {}, sidebarRight: {},
   })
   assert.equal(injected, true)
+  assert.equal(mounts.length, 1, 'The registry accepts one contribution per package')
+  assert.deepEqual([...new Set(mounts[0].descriptors.map((row: any) => row.namespace))].sort(), ['superCodeMemory', 'superCodePresets'])
+  for (const descriptor of mounts[0].descriptors) for (const parameter of descriptor.parameters) {
+    assert.equal(parameter.codec.create().parse('valid'), 'valid')
+    assert.equal(parameter.codec.schema.parse('legacy'), 'legacy')
+    assert.throws(() => parameter.codec.create().parse(42))
+  }
 })
 
 test('all plugin labels have both languages and sidebar slots subscribe to locale changes', () => {
@@ -55,6 +63,41 @@ test('all plugin labels have both languages and sidebar slots subscribe to local
   assert.equal(dictionaries.en['preset.description'], 'A faster, more efficient, smarter coding mode.')
   assert.equal(dictionaries.zh['preset.confirmHint'], '以下是通过本插件安装的预设，将会被移除并按照新名称重新安装，旧内容会保留恢复备份。对于需要保留的预设可以手动在列表中移除。')
   assert.match(dictionaries.en['preset.confirmHint'], /Remove any preset you want to keep/)
+})
+
+test('memory library virtualizes large indexes and keeps the target scope explicit', () => {
+  const { plugin } = fixture()
+  const items = Array.from({ length: 4000 }, (_, id) => ({ topic: 'topic', id: `entry-${id}`, summary: `Memory ${id}` }))
+  const page = plugin.memoryLibraryWindow(items, '', 152000, 600)
+  assert.equal(page.count, 4000)
+  assert.ok(page.rows.length <= 15)
+  assert.equal(page.before + page.rows.length * 76 + page.after, 4000 * 76)
+  assert.equal(plugin.memoryLibraryWindow(items, 'Memory 3999', 0, 600).rows[0].id, 'entry-3999')
+  const address = plugin.memoryLibraryAddress('child/a', { scope: 'global', topic: 'preferences', id: 'keep-edits' })
+  const target = plugin.memoryLibraryTarget(address, 'root')
+  assert.equal(target.sessionId, 'child/a'); assert.equal(target.scope, 'global')
+  assert.equal(plugin.memoryLibraryTarget('invalid', 'root').sessionId, 'root')
+})
+
+test('published projection catalogs preserve scoped identity, child usage and missing state', () => {
+  const { plugin } = fixture()
+  const usage = { totals: { uncachedInputTokens: 10, cacheReadTokens: 90, outputTokens: 20 } }
+  const raw = { byId: { root: { id: 'root', title: 'Root' }, unrelated: { id: 'unrelated' } }, projectionsBySession: {
+    root: { state: 'ready', values: { subagentCatalog: [{ id: 'child', mode: 'one-shot', label: 'Reader', createdAt: 1 }], superAgentUsage: usage } },
+    child: { state: 'ready', values: { subagentCatalog: [], superAgentUsage: usage } },
+  } }
+  const state = plugin.agentSessionState(raw, 'root', new Map([['root', { running: true }], ['child', { running: false }]]))
+  const view = plugin.buildAgentView(state)
+  assert.equal(view.root, 'root'); assert.equal(view.nodes.size, 2)
+  assert.equal(view.nodes.get('child').parentId, 'root')
+  assert.equal(view.nodes.get('child').running, false)
+  assert.equal(view.nodes.get('child').hasChildren, false)
+  assert.equal(plugin.agentTreeTotals(view, state.subagentsByParent).get('root').tokens, 240)
+  const unknown = plugin.buildAgentView(plugin.agentSessionState(raw, 'root'))
+  assert.equal(unknown.nodes.get('child').running, undefined)
+  const legacy = plugin.agentSessionState({ current: 'unrelated', byId: raw.byId, subagentsByParent: {} }, 'root')
+  assert.equal(legacy.current, 'root')
+  assert.equal('current' in raw, false)
 })
 
 test('existing and appended detail events retranslate labels and image placeholders without changing user content', () => {

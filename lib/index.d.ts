@@ -2,6 +2,7 @@
 import type { Context } from '@deepseek-ai/cordis';
 declare const harnessPlugin: {
     readonly name: string;
+    readonly inject: readonly string[];
     readonly apply: (ctx: Context) => Promise<void>;
 };
 export default harnessPlugin;

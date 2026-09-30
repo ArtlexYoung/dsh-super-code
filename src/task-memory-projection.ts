@@ -25,13 +25,18 @@ export function taskMemoryView(state: TaskMemoryState): TaskMemoryView {
 }
 
 export const TASK_MEMORY_SOURCE = 'dsh-super-code/task-memory/v1'
+declare module '@deepseek-ai/dsh-llm' {
+  interface MessageSourceMap { 'dsh-super-code/task-memory/v1': { kind: 'dsh-super-code/task-memory/v1' } }
+}
 // Persisted records from before the package rename must remain readable.
 const LEGACY_TASK_MEMORY_SOURCE = 'dsh-super-agent/task-memory/v1'
 
 /** Known host message vocabulary keeps external plugin records resumable. */
 export function taskMemoryEventOf(event: SessionEvent): { kind: 'record'; record: TaskMemoryEvent } | { kind: 'unrelated' } {
-  if (event.type !== 'user/message' || event.data.source.kind !== 'plugin') return { kind: 'unrelated' }
-  if (event.data.source.plugin !== TASK_MEMORY_SOURCE && event.data.source.plugin !== LEGACY_TASK_MEMORY_SOURCE) return { kind: 'unrelated' }
+  if (event.type !== 'user/message') return { kind: 'unrelated' }
+  const source = event.data.source as { kind: string; plugin?: string }
+  if (![TASK_MEMORY_SOURCE, LEGACY_TASK_MEMORY_SOURCE].includes(source.kind)
+    && !(source.kind === 'plugin' && [TASK_MEMORY_SOURCE, LEGACY_TASK_MEMORY_SOURCE].includes(source.plugin ?? ''))) return { kind: 'unrelated' }
   const content = event.data.content
   if (content.length !== 1 || content[0]?.type !== 'text') throw new Error('Malformed task-memory record')
   return { kind: 'record', record: taskMemoryEventSchema.parse(JSON.parse(content[0].text)) }

@@ -194,7 +194,7 @@ test('plugin settings use the same collapsed disclosure behavior as host cards',
     slots: {
       inject: (_name: string, callback: () => void) => callback(),
       register: (config: { name: string }, component: (props: object) => Element) => {
-        if (config.name === 'settings.plugin.item') Settings = component
+        if (config.name === 'settings.section') Settings = component
         return () => {}
       },
     },
@@ -220,7 +220,7 @@ test('plugin settings use the same collapsed disclosure behavior as host cards',
     return [...predicate(element) ? [element] : [], ...element.children.flatMap(child => find(child, predicate))]
   }
   let card = render()
-  assert.equal(card.type, 'li')
+  assert.equal(card.type, 'section')
   let disclosure = find(card, element => element.type === 'button' && 'aria-expanded' in element.props)[0]
   assert.equal(disclosure?.props['aria-expanded'], false)
   assert.equal(find(card, element => element.type === 'form').length, 0)

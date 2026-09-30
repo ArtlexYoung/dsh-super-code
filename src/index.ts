@@ -1,11 +1,12 @@
 /** Package-root registration lets Harness discover the browser contribution. */
 import type { Context } from '@deepseek-ai/cordis'
 
-const harnessPlugin: { readonly name: string; readonly apply: (ctx: Context) => Promise<void> } = {
+const harnessPlugin: { readonly name: string; readonly inject: readonly string[]; readonly apply: (ctx: Context) => Promise<void> } = {
   name: 'super-code',
+  inject: [],
   async apply(ctx) {
     const adapter = await import('./dsh/index.js')
-    adapter.apply(ctx)
+    await adapter.apply(ctx)
   },
 }
 

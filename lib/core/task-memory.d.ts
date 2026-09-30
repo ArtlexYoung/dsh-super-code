@@ -9,6 +9,10 @@ export interface Requirement {
     text: string;
     source: TaskSource;
 }
+export interface KeyPoint {
+    kind: 'constraint' | 'fact' | 'decision' | 'next';
+    summary: string;
+}
 export interface TaskEvidence {
     summary: string;
     ref: string;
@@ -31,6 +35,8 @@ export interface TaskMemory {
     decisions: string[];
     evidence: TaskEvidence[];
     next: string;
+    keyPoints?: KeyPoint[];
+    topic?: string;
     status: 'active' | 'paused' | 'completed' | 'cancelled';
     revision: number;
     requirementsRevision: number;

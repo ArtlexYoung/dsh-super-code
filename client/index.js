@@ -9,11 +9,24 @@
 ;(globalThis.window || globalThis).__ModuleLoader__.load({ id: 'dsh-super-code', factory: (require) => {
 const React = require('react')
 const { useEffect, useLayoutEffect, useRef, useMemo, useState, useSyncExternalStore } = React
-const { IconChevronDownOutline14, IconRefreshOutline16 } = require('@deepseek-ai/dsh-client-ui-primitives')
+const icons = require('@deepseek-ai/dsh-client-ui-primitives')
+// Harness 0.2 names shared artwork by weight instead of its nominal size.
+const IconChevronDownOutline14 = icons.IconChevronDownOutlineRegular ?? icons.IconChevronDownOutline14
+const IconRefreshOutline16 = icons.IconRefreshOutlineRegular ?? icons.IconRefreshOutline16
 const { SessionEventStream } = require('@deepseek-ai/dsh-api-session-controller')
 
 const LOCALE_NS = 'dshSuperCode'
 const zh = {
+  'memory.title': '记忆库', 'memory.project': '当前项目', 'memory.global': '全局偏好', 'memory.search': '搜索主题或记忆',
+  'memory.description': '跨对话保留的经验与偏好。按需读取，不会整库塞进上下文。',
+  'memory.empty': '还没有保存的记忆。需要长期保留时，直接告诉 Agent 即可。', 'memory.noMatches': '没有匹配的记忆',
+  'memory.selectSession': '先打开一个对话，查看它所在项目的记忆。', 'memory.error': '暂时无法读取记忆，请刷新重试。',
+  'memory.refresh': '刷新记忆库', 'memory.count': '{count} 条记忆', 'memory.back': '返回列表', 'memory.missing': '这条记忆已删除或更新，请刷新列表。',
+  'memory.historical': '历史记录，不代表当前代码仍然如此；以本次需求和实际验证为准。',
+  'memory.constraint': '用户约定', 'memory.fact': '项目事实', 'memory.experience': '实践经验', 'memory.source': '来源', 'memory.version': '记录时版本',
+  'memory.user': '用户消息', 'memory.tool': '工具结果', 'memory.agentUsage': '记忆使用记录', 'memory.usageHint': '只展示已记录的上下文与工具动作，不代表模型已理解或遵守。',
+  'memory.usageEmpty': '尚无记忆读取记录', 'memory.context': '带入上下文', 'memory.read': '读取详情', 'memory.summary': '读取摘要',
+  'memory.remember': '保存', 'memory.forget': '删除', 'memory.omitted': '仅展示最近 100 条不同动作，完整记录保留在会话中。', 'memory.open': '查看记忆库',
   'preset.title': 'Super Code 模式', 'usage.cacheUnknown': '缓存 —',
   'preset.description': '更快、更省、更聪明的编码模式。', 'preset.refresh': '刷新状态', 'preset.expand': '展开设置', 'preset.collapse': '收起设置',
   'preset.state.available': '预设可用', 'preset.state.installed': '用户预设已安装', 'preset.state.conflict': '已有同名预设',
@@ -49,6 +62,16 @@ const zh = {
   'detail.path': 'Agent 路径', 'detail.title': 'Agent 详情', 'detail.refresh': '刷新对话详情', 'detail.task': '任务', 'detail.agent': 'Agent', 'detail.interrupted': 'Agent · 已中断', 'detail.error': '执行错误', 'detail.incomplete': '执行未完成，请稍后重试。', 'detail.input': '输入', 'detail.output': '输出', 'detail.cacheRead': '缓存读取', 'detail.cacheWrite': '缓存写入', 'detail.total': 'Token 总量', 'detail.hitRate': '缓存命中率', 'detail.moreUsage': '用量详情', 'detail.unavailable': '未提供', 'detail.reading': '正在读取对话…', 'detail.read': '读取中…', 'detail.older': '加载更早记录', 'detail.latest': '回到最新', 'detail.empty': '暂无执行内容', 'detail.new': '有新内容 · 查看最新', 'detail.loadError': '对话详情读取失败', 'detail.connection': '连接中断，正在重连', 'detail.historyError': '历史记录读取失败', 'detail.open': '展开全文', 'detail.noAccess': '无法打开详情，请重试', 'tree.loadError': '部分执行记录读取失败，请刷新重试', 'detail.unknown': '用量未知', 'main.agent': '主 Agent', 'tree.open': '点击查看详情', 'tree.expand': '展开', 'tree.collapse': '收起', 'image': '[图片]'
 }
 const en = {
+  'memory.title': 'Memory library', 'memory.project': 'This project', 'memory.global': 'Global preferences', 'memory.search': 'Search topics or memories',
+  'memory.description': 'Experience and preferences kept across conversations. Details are read on demand, never injected in bulk.',
+  'memory.empty': 'No saved memories yet. Tell the agent when something is worth keeping.', 'memory.noMatches': 'No matching memories',
+  'memory.selectSession': 'Open a conversation to view memory for its project.', 'memory.error': 'Memory is unavailable. Refresh to try again.',
+  'memory.refresh': 'Refresh memory', 'memory.count': '{count} memories', 'memory.back': 'Back to list', 'memory.missing': 'This memory was removed or changed. Refresh the list.',
+  'memory.historical': 'A historical record, not proof of the current code. Follow the current request and verify changing facts.',
+  'memory.constraint': 'User agreement', 'memory.fact': 'Project fact', 'memory.experience': 'Experience', 'memory.source': 'Source', 'memory.version': 'Recorded version',
+  'memory.user': 'User message', 'memory.tool': 'Tool result', 'memory.agentUsage': 'Memory activity', 'memory.usageHint': 'Recorded context and tool actions only; not proof the model understood or followed them.',
+  'memory.usageEmpty': 'No memory reads recorded yet', 'memory.context': 'Added to context', 'memory.read': 'Read details', 'memory.summary': 'Read summary',
+  'memory.remember': 'Saved', 'memory.forget': 'Removed', 'memory.omitted': 'Showing the latest 100 distinct actions. Full records remain in the conversation.', 'memory.open': 'Open memory library',
   'preset.title': 'Super Code', 'usage.cacheUnknown': 'Cache —',
   'preset.description': 'A faster, more efficient, smarter coding mode.', 'preset.refresh': 'Refresh status', 'preset.expand': 'Show settings', 'preset.collapse': 'Hide settings',
   'preset.state.available': 'Preset available', 'preset.state.installed': 'User preset installed', 'preset.state.conflict': 'Preset name already exists',
@@ -98,6 +121,29 @@ function TaskMemoryPanel({ state, t = key => zh[key] || key }) {
   )
 }
 
+/** Normalize the two published host catalog shapes, without opening Agents. */
+function agentSessionState(state, sessionId, statuses) {
+  const current = sessionId || state.current
+  if (state.subagentsByParent) return { ...state, current }
+  const snapshots = state.projectionsBySession || {}, byId = { ...state.byId }, catalogs = {}
+  for (const [id, snapshot] of Object.entries(snapshots)) {
+    byId[id] = { ...byId[id], id, projectionValues: snapshot.values,
+      running: statuses?.get(id)?.running ?? byId[id]?.running }
+  }
+  for (const [parentId, snapshot] of Object.entries(snapshots)) {
+    const entries = snapshot.values.subagentCatalog || []
+    catalogs[parentId] = { state: snapshot.state === 'idle' ? snapshot.values.subagentCatalog === undefined ? 'loading' : 'ready' : snapshot.state,
+      entries: entries.map(entry => {
+        const child = byId[entry.id], children = snapshots[entry.id]?.values.subagentCatalog
+        const running = statuses?.get(entry.id)?.running ?? child?.running
+        return { ...entry, hasChildren: children === undefined || children.length > 0,
+          kind: entry.mode === 'unknown' ? 'diagnostic' : 'child',
+          ...(typeof running === 'boolean' ? { activity: running ? 'running' : 'inactive' } : {}) }
+      }) }
+  }
+  return { ...state, current, byId, subagentsByParent: catalogs }
+}
+
 /** Join host catalogs without leaking agents from unrelated conversations. */
 function buildAgentView(state) {
   const nodes = new Map(Object.values(state.byId || {}).map(node => [node.id, { ...node }]))
@@ -109,7 +155,7 @@ function buildAgentView(state) {
       nodes.set(entry.id, { ...summary, id: entry.id, parentId,
         title: entry.label || summary?.title || summary?.displayTitle || entry.id,
         mode: entry.mode, hasChildren: entry.hasChildren, createdAt: created.get(entry.id),
-        running: summary?.running ?? entry.activity === 'running',
+        running: summary?.running ?? (entry.activity === undefined ? undefined : entry.activity === 'running'),
         unavailable: entry.kind === 'diagnostic',
       })
     }
@@ -344,8 +390,10 @@ function AgentHistory({ view, hidden, totals, open, t = key => zh[key] || key })
       !records.length && React.createElement('p', { className: 'dsh-super-code-history-empty' }, text(t, 'history.empty'))))
 }
 
-function AgentTree({ useSessions, useTabInfo, treeStates, openDetail, refresh, watchCatalog, t = key => zh[key] || key }) {
-  const state = useSessions(s => s)
+function AgentTree({ useSessions, useSessionStatus, sessionId, useTabInfo, treeStates, openDetail, refresh, watchCatalog, t = key => zh[key] || key }) {
+  const catalog = useSessions(s => s)
+  const statuses = useSessionStatus ? useSessionStatus(s => s) : undefined
+  const state = useMemo(() => agentSessionState(catalog, sessionId, statuses), [catalog, sessionId, statuses])
   const { tab } = useTabInfo()
   const view = useMemo(() => buildAgentView(state), [state.byId, state.subagentsByParent, state.current, state.currentAddress])
   const saved = useMemo(() => {
@@ -710,9 +758,130 @@ function DetailText({ text: value, t = key => zh[key] || key }) {
     !full && value.length > 12000 && React.createElement('button', { type: 'button', onClick: () => setFull(true) }, text(t, 'detail.open')))
 }
 
-function AgentDetail({ useTabInfo, useSessions, createInspector, detailStates, t = key => zh[key] || key }) {
+function MemoryActivity({ usage, openMemory, sessionId, t }) {
+  const rows = [...(usage?.rows || [])].reverse()
+  return React.createElement('details', { className: 'dsh-super-code-memory-activity' },
+    React.createElement('summary', null, text(t, 'memory.agentUsage'), rows.length ? ` · ${rows.length}` : ''),
+    React.createElement('p', { className: 'dsh-super-code-memory-muted' }, text(t, 'memory.usageHint')),
+    !rows.length && React.createElement('p', null, text(t, 'memory.usageEmpty')),
+    React.createElement('div', { className: 'dsh-super-code-memory-activity-list' }, rows.map(row =>
+      React.createElement('button', { key: `${row.scope}/${row.topic}/${row.id}/${row.action}`, type: 'button',
+        onClick: () => openMemory(sessionId, row), title: text(t, 'memory.open') },
+      React.createElement('span', { className: 'dsh-super-code-memory-action', 'data-action': row.action }, text(t, `memory.${row.action}`)),
+      React.createElement('span', null, row.summary || row.id),
+      React.createElement('small', null, `${text(t, `memory.${row.scope}`)} · ${row.topic} · r${row.revision}`)))),
+    usage?.omitted > 0 && React.createElement('p', { className: 'dsh-super-code-memory-muted' }, text(t, 'memory.omitted')))
+}
+
+function memoryLibraryAddress(sessionId, row = {}) {
+  const url = new URL(`dsh-resource://super-code-memory/${encodeURIComponent(sessionId)}`)
+  for (const key of ['scope', 'topic', 'id']) if (row[key]) url.searchParams.set(key, row[key])
+  return url.href
+}
+
+function memoryLibraryTarget(address, current) {
+  try {
+    const url = new URL(address)
+    if (url.protocol === 'dsh-resource:' && url.host === 'super-code-memory') return {
+      sessionId: decodeURIComponent(url.pathname.slice(1)) || current, scope: url.searchParams.get('scope') === 'global' ? 'global' : 'project',
+      topic: url.searchParams.get('topic') || '', id: url.searchParams.get('id') || '',
+    }
+  } catch {}
+  return { sessionId: current, scope: 'project', topic: '', id: '' }
+}
+
+/** A fixed-height index keeps large libraries cheap; entry bodies load on click. */
+function memoryLibraryWindow(items, query, top, height) {
+  const search = query.trim().toLocaleLowerCase()
+  const matches = items.filter(item => !search || `${item.topic} ${item.id} ${item.summary}`.toLocaleLowerCase().includes(search))
+  const start = Math.min(Math.max(0, Math.floor(top / 76) - 3), Math.max(0, matches.length - 1))
+  const end = Math.min(matches.length, start + Math.ceil(height / 76) + 7)
+  return { rows: matches.slice(start, end), count: matches.length, before: start * 76, after: (matches.length - end) * 76 }
+}
+
+function MemoryLibrary({ useTabInfo, useSessions, sessionId: scopeSessionId, api, memoryStates, t = key => zh[key] || key }) {
+  const { tab } = useTabInfo(), current = useSessions(state => scopeSessionId || state.current)
+  const target = memoryLibraryTarget(tab.contentId, current)
+  const saved = useMemo(() => {
+    if (!memoryStates.has(tab.signal)) memoryStates.set(tab.signal, {})
+    return memoryStates.get(tab.signal)
+  }, [memoryStates, tab.signal])
+  const [scope, setScope] = useState(saved.scope || target.scope)
+  const [query, setQuery] = useState(saved.query || '')
+  const [selected, setSelected] = useState(saved.selected || (target.id ? { topic: target.topic, id: target.id } : null))
+  const [state, setState] = useState({ key: '', items: [], loading: true, error: false })
+  const [detail, setDetail] = useState(null), [revision, setRevision] = useState(0)
+  const [viewport, setViewport] = useState({ top: saved.top || 0, height: 600 })
+  const list = useRef(null), sessionId = target.sessionId
+  const key = `${sessionId}/${scope}`, selectionKey = selected ? `${key}/${selected.topic}/${selected.id}` : ''
+  const visibleState = state.key === key ? state : { items: [], loading: true, error: false }
+  useEffect(() => {
+    if (!tab.visible || !sessionId) return
+    let cancelled = false
+    setState(previous => ({ ...previous, loading: true, error: false }))
+    api.list(sessionId, scope).then(result => {
+      if (!cancelled) setState({ key, items: result.ok ? result.value.items : [], loading: false, error: !result.ok })
+    }).catch(() => { if (!cancelled) setState({ key, items: [], loading: false, error: true }) })
+    return () => { cancelled = true }
+  }, [api, tab.visible, sessionId, scope, revision])
+  useEffect(() => {
+    if (!tab.visible || !sessionId || !selected) return
+    let cancelled = false
+    setDetail(null)
+    api.read(sessionId, scope, selected.topic, selected.id).then(result => {
+      if (!cancelled) setDetail({ key: selectionKey, ...(result.ok ? result.value : { kind: 'error' }) })
+    }).catch(() => { if (!cancelled) setDetail({ key: selectionKey, kind: 'error' }) })
+    return () => { cancelled = true }
+  }, [api, tab.visible, sessionId, scope, selectionKey, revision])
+  useLayoutEffect(() => {
+    const element = list.current
+    if (!element) return
+    element.scrollTop = saved.top || 0
+    const resize = () => setViewport({ top: element.scrollTop, height: element.clientHeight || 600 })
+    resize()
+    const observer = new ResizeObserver(resize); observer.observe(element)
+    return () => observer.disconnect()
+  }, [selected, key, tab.visible])
+  const resetScroll = () => { saved.top = 0; if (list.current) list.current.scrollTop = 0; setViewport(value => ({ ...value, top: 0 })) }
+  const choose = value => { saved.selected = value; setSelected(value) }
+  const page = useMemo(() => memoryLibraryWindow(visibleState.items, query, viewport.top, viewport.height), [visibleState.items, query, viewport])
+  const currentDetail = detail?.key === selectionKey ? detail : null
+  const entry = currentDetail?.kind === 'found' ? currentDetail.entry : null
+  return React.createElement('section', { className: 'dsh-super-code-memory', 'aria-label': text(t, 'memory.title') },
+    React.createElement('header', null,
+      React.createElement('div', { className: 'dsh-super-code-memory-heading' }, React.createElement('h2', null, text(t, 'memory.title')),
+        React.createElement('button', { type: 'button', className: 'dsh-super-code-icon-button', title: text(t, 'memory.refresh'), 'aria-label': text(t, 'memory.refresh'), onClick: () => setRevision(value => value + 1) }, React.createElement(IconRefreshOutline16))),
+      React.createElement('p', { className: 'dsh-super-code-memory-muted' }, text(t, 'memory.description')),
+      React.createElement('div', { className: 'dsh-super-code-memory-scopes', role: 'group', 'aria-label': text(t, 'memory.title') },
+        ['project', 'global'].map(value => React.createElement('button', { key: value, type: 'button', 'aria-pressed': scope === value, onClick: () => { saved.scope = value; setScope(value); choose(null); resetScroll() } }, text(t, `memory.${value}`)))),
+      !selected && React.createElement('input', { type: 'search', 'aria-label': text(t, 'memory.search'), placeholder: text(t, 'memory.search'), value: query, onChange: event => { saved.query = event.target.value; setQuery(event.target.value); resetScroll() } }),
+      !selected && React.createElement('small', null, text(t, 'memory.count', { count: page.count }))),
+    !sessionId ? React.createElement('p', { className: 'dsh-super-code-memory-empty' }, text(t, 'memory.selectSession')) : selected
+      ? React.createElement('div', { className: 'dsh-super-code-memory-body', 'aria-busy': !currentDetail },
+        React.createElement('button', { type: 'button', className: 'dsh-super-code-view-button', onClick: () => choose(null) }, `← ${text(t, 'memory.back')}`),
+        currentDetail?.kind === 'error' && React.createElement('p', { role: 'alert' }, text(t, 'memory.error')),
+        currentDetail?.kind === 'missing' && React.createElement('p', null, text(t, 'memory.missing')),
+        entry && React.createElement('article', null, React.createElement('small', null, `${entry.topic} · r${entry.revision} · ${text(t, `memory.${entry.kind}`)}`),
+          React.createElement('h3', null, entry.summary), React.createElement('p', { className: 'dsh-super-code-memory-detail' }, entry.detail),
+          React.createElement('p', { className: 'dsh-super-code-memory-hint' }, text(t, 'memory.historical')),
+          React.createElement('dl', null, React.createElement('dt', null, text(t, 'memory.source')),
+            React.createElement('dd', null, `${text(t, `memory.${entry.source.kind}`)} · #${entry.source.eventSeq}`, React.createElement('br'), entry.source.sessionId),
+            entry.sourceVersion && React.createElement(React.Fragment, null, React.createElement('dt', null, text(t, 'memory.version')), React.createElement('dd', null, entry.sourceVersion)))))
+      : React.createElement('div', { ref: list, className: 'dsh-super-code-memory-list', role: 'list', 'aria-busy': visibleState.loading, onScroll: event => { saved.top = event.currentTarget.scrollTop; setViewport(value => ({ ...value, top: saved.top })) } },
+        visibleState.error && React.createElement('p', { role: 'alert' }, text(t, 'memory.error')),
+        !visibleState.error && !visibleState.loading && !page.count && React.createElement('p', { className: 'dsh-super-code-memory-empty' }, text(t, query ? 'memory.noMatches' : 'memory.empty')),
+        React.createElement('div', { 'aria-hidden': true, style: { height: page.before } }),
+        page.rows.map(item => React.createElement('div', { role: 'listitem', key: `${item.topic}/${item.id}` },
+          React.createElement('button', { type: 'button', className: 'dsh-super-code-memory-row', onClick: () => choose({ topic: item.topic, id: item.id }) },
+            React.createElement('strong', null, item.summary), React.createElement('span', null, `${item.topic} · ${text(t, `memory.${item.kind}`)}`)))),
+        React.createElement('div', { 'aria-hidden': true, style: { height: page.after } })))
+}
+
+function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, createInspector, detailStates, openMemory, t = key => zh[key] || key }) {
   const { tab } = useTabInfo()
-  const state = useSessions(s => s)
+  const catalog = useSessions(s => s)
+  const statuses = useSessionStatus ? useSessionStatus(s => s) : undefined
+  const state = useMemo(() => agentSessionState(catalog, sessionId, statuses), [catalog, sessionId, statuses])
   const saved = useMemo(() => {
     if (!detailStates.has(tab.signal)) detailStates.set(tab.signal, { top: 0, following: true, open: new Set(), snapshot: undefined })
     return detailStates.get(tab.signal)
@@ -753,7 +922,7 @@ function AgentDetail({ useTabInfo, useSessions, createInspector, detailStates, t
   const target = agentDetailTarget(tab.contentId), id = target.childSessionId || target.sessionId
   const view = buildAgentView(state), node = view.nodes.get(id)
   const path = agentPath(view, id)
-  const projections = state.byId[id]?.projectionValues || snapshot.projections
+  const projections = { ...snapshot.projections, ...state.byId[id]?.projectionValues }
   const totals = projections.superAgentUsage?.totals || projections.tokenUsage
   const input = totals ? (totals.uncachedInputTokens || 0) + (totals.cacheReadTokens || 0) + (totals.cacheWriteTokens || 0) : 0
   const format = value => value === undefined ? text(t, 'detail.unavailable') : value.toLocaleString(localeCode(t))
@@ -774,6 +943,7 @@ function AgentDetail({ useTabInfo, useSessions, createInspector, detailStates, t
         React.createElement('button', { type: 'button', className: 'dsh-super-code-icon-button', title: text(t, 'detail.refresh'), 'aria-label': text(t, 'detail.refresh'), onClick: latest }, React.createElement(IconRefreshOutline16))),
       id !== view.root && task?.goal && task.goal !== title && React.createElement('p', { className: 'dsh-super-code-detail-task' }, task.goal),
       id === view.root && React.createElement(TaskMemoryPanel, { state: tasks, t }),
+      React.createElement(MemoryActivity, { usage: projections.superCodeMemoryUsage, sessionId: id, openMemory, t }),
       React.createElement('dl', { className: 'dsh-super-code-detail-metrics' },
         React.createElement('div', null, React.createElement('dt', null, text(t, 'detail.total')), React.createElement('dd', null, format(totals ? input + (totals.outputTokens || 0) : undefined))),
         React.createElement('div', null, React.createElement('dt', null, text(t, 'detail.hitRate')), React.createElement('dd', null, totals ? (input ? Math.round((totals.cacheReadTokens || 0) / input * 100) : 0) + '%' : text(t, 'detail.unavailable')))),
@@ -808,12 +978,13 @@ function AgentDetail({ useTabInfo, useSessions, createInspector, detailStates, t
 }
 
 // Explicit public Remote contribution; no model tools or private transport hooks.
-const remoteStringCodec = { mode: 'strict', typeSymbol: 'string', schema: {
+const remoteStringSchema = {
   parse(value) {
     if (typeof value !== 'string') throw new TypeError('Expected a string')
     return value
   },
-} }
+}
+const remoteStringCodec = { mode: 'strict', typeSymbol: 'string', schema: remoteStringSchema, create: () => remoteStringSchema }
 const presetRemoteContribution = {
   package: 'dsh-super-code',
   descriptors: ['status', 'installPreset', 'reinstallPreset', 'synchronize'].map(method => ({
@@ -823,6 +994,12 @@ const presetRemoteContribution = {
       name, wire: name, source: 'json', codec: remoteStringCodec,
     })),
     result: { mode: 'src-json' },
+  })),
+}
+const memoryRemoteContribution = {
+  package: 'dsh-super-code', descriptors: ['list', 'read'].map(method => ({
+    id: `dsh-super-code:superCodeMemory/${method}`, service: 'superCodeMemory', namespace: 'superCodeMemory', method, invocation: { kind: 'direct' },
+    parameters: (method === 'list' ? ['sessionId', 'scope'] : ['sessionId', 'scope', 'topic', 'id']).map(name => ({ name, wire: name, source: 'json', codec: remoteStringCodec })), result: { mode: 'src-json' },
   })),
 }
 
@@ -903,7 +1080,7 @@ function PresetSettings({ api, t }) {
     } else run(true)
   }
   const available = status && ['available', 'installed'].includes(status.state)
-  return React.createElement('li', { className: `dsh-super-code-settings${open ? ' dsh-super-code-settings-open' : ''}` },
+  return React.createElement('section', { className: `dsh-super-code-settings${open ? ' dsh-super-code-settings-open' : ''}` },
     React.createElement('button', { type: 'button', className: 'dsh-super-code-settings-header', 'aria-expanded': open,
       'aria-label': `${t(open ? 'preset.collapse' : 'preset.expand')}: ${t('preset.title')}`, onClick: () => setOpen(!open) },
       React.createElement('span', { className: 'dsh-super-code-settings-head-text' },
@@ -965,12 +1142,21 @@ function apply(ctx) {
   const t = locale.bind(LOCALE_NS)
   // $mount creates a lifecycle effect on this same fiber; awaiting it from
   // another effect would stall the namespace and the settings contribution.
-  void ctx.remote.$mount(presetRemoteContribution).catch(error => console.warn('Super Code preset Remote:', error))
+  void ctx.remote.$mount({ package: 'dsh-super-code', descriptors: [
+    ...presetRemoteContribution.descriptors, ...memoryRemoteContribution.descriptors,
+  ] }).catch(error => console.warn('Super Code Remote:', error))
+  const memoryStates = new WeakMap()
+  ctx.inject(['remote.superCodeMemory'], ready => {
+    ready.slots.inject('sidebar.right.pane.tab', () => ready.slots.register({
+      name: 'sidebar.right.pane.tab', key: 'dsh-super-code-memory', locale: LOCALE_NS,
+      inject: () => ({ api: ready.remote.superCodeMemory, memoryStates }),
+    }, MemoryLibrary))
+  })
   ctx.inject(['remote.superCodePresets'], ready => {
       ready.effect(() => synchronizePresetDisplay(ready.remote.superCodePresets, locale,
         () => window.location.reload(), error => console.warn('Super Code preset display:', error)), 'super-code: preset display')
-      return ready.slots.inject('settings.plugin.item', () => ready.slots.register({
-      name: 'settings.plugin.item', key: 'super-code', locale: LOCALE_NS,
+      ready.slots.inject('settings.section', () => ready.slots.register({
+      name: 'settings.section', id: 'super-code', order: 120, label: () => t('preset.title'), locale: LOCALE_NS,
       inject: () => ({ api: ready.remote.superCodePresets }),
     }, PresetSettings))
   })
@@ -978,6 +1164,23 @@ function apply(ctx) {
     const style = document.createElement('style')
     style.dataset.dshSuperCode = 'true'
     style.textContent = `
+.dsh-super-code-memory{height:100%;min-height:0;display:flex;flex-direction:column;font-size:13px;--agent-muted:var(--dsw-alias-label-secondary,#70757d);--agent-line:var(--dsw-alias-border-l1,#dedfe3)}
+.dsh-super-code-memory>header{padding:18px 18px 12px;border-bottom:1px solid var(--agent-line)}
+.dsh-super-code-memory-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}.dsh-super-code-memory h2{margin:0;font-size:16px;font-weight:600}
+.dsh-super-code-memory-muted{color:var(--agent-muted);font-size:12px;line-height:1.65;margin:10px 0}
+.dsh-super-code-memory-scopes{display:flex;gap:4px;padding:3px;margin:14px 0;border-radius:8px;background:color-mix(in srgb,currentColor 5%,transparent)}
+.dsh-super-code-memory-scopes button{flex:1;border:0;border-radius:6px;padding:7px;background:transparent;color:var(--agent-muted);font:inherit;cursor:pointer}
+.dsh-super-code-memory-scopes button[aria-pressed=true]{background:var(--dsw-alias-bg-layer-2,#fff);color:var(--dsw-color-primary,#3276dc);box-shadow:0 1px 4px #0001}
+.dsh-super-code-memory input{width:100%;box-sizing:border-box;border:1px solid var(--agent-line);border-radius:7px;background:transparent;color:inherit;font:inherit;padding:9px 10px;margin-bottom:10px}
+.dsh-super-code-memory small{font-size:11px;color:var(--agent-muted);overflow-wrap:anywhere}
+.dsh-super-code-memory-list{flex:1;min-height:0;overflow:auto;padding:0 12px}.dsh-super-code-memory-row{display:flex;flex-direction:column;justify-content:center;gap:7px;width:100%;height:76px;box-sizing:border-box;border:0;border-bottom:1px solid var(--agent-line);background:transparent;text-align:left;color:inherit;padding:12px 8px;cursor:pointer;font:inherit}
+.dsh-super-code-memory-row:hover{background:color-mix(in srgb,var(--dsw-color-primary,#3276dc) 5%,transparent)}.dsh-super-code-memory-row strong,.dsh-super-code-memory-row span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dsh-super-code-memory-row strong{font-weight:500}.dsh-super-code-memory-row span{font-size:11px;color:var(--agent-muted)}
+.dsh-super-code-memory-body{overflow:auto;flex:1;min-height:0;padding:14px 18px 28px}.dsh-super-code-memory-body article{padding-top:18px}.dsh-super-code-memory-body h3{font-size:15px;line-height:1.6;margin:8px 0 14px;overflow-wrap:anywhere}
+.dsh-super-code-memory-detail{white-space:pre-wrap;line-height:1.8;overflow-wrap:anywhere}.dsh-super-code-memory-hint{border-left:2px solid #b8ac82;padding:8px 12px;background:color-mix(in srgb,#b8ac82 8%,transparent);color:var(--agent-muted);font-size:12px;line-height:1.6;margin:22px 0}
+.dsh-super-code-memory-body dt{font-size:11px;color:var(--agent-muted);margin-top:18px}.dsh-super-code-memory-body dd{margin:6px 0;line-height:1.6;overflow-wrap:anywhere;font-size:12px}.dsh-super-code-memory-empty{padding:20px 6px;line-height:1.8;color:var(--agent-muted)}
+.dsh-super-code-memory-activity{margin-top:14px;font-size:12px}.dsh-super-code-memory-activity summary{cursor:pointer}.dsh-super-code-memory-activity-list{max-height:200px;overflow:auto}.dsh-super-code-memory-activity-list button{display:grid;grid-template-columns:auto 1fr;gap:5px 8px;width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid var(--agent-line);padding:10px 2px;color:inherit;font:inherit;cursor:pointer}.dsh-super-code-memory-activity-list small{grid-column:2;color:var(--agent-muted);overflow-wrap:anywhere}.dsh-super-code-memory-activity-list span{overflow-wrap:anywhere}
+.dsh-super-code-memory-action{font-size:10px;color:#4d779f}.dsh-super-code-memory-action[data-action=read]{color:#14867b}.dsh-super-code-memory-action[data-action=remember]{color:#927247}.dsh-super-code-memory-action[data-action=forget]{color:var(--agent-muted)}
+.dsh-super-code-memory button:focus-visible,.dsh-super-code-memory input:focus-visible{outline:2px solid var(--dsw-color-primary,#3276dc);outline-offset:2px}
 .dsh-super-code-settings{list-style:none;border:.5px solid var(--dsw-alias-border-l4,#dedfe3);border-radius:16px;background:var(--dsw-alias-bg-layer-3,transparent);line-height:1.6;font-size:13px;transition:border-color .16s,background .16s}
 .dsh-super-code-settings:hover{border-color:var(--dsw-alias-label-dimmed,#a8abb2)}.dsh-super-code-settings-open{background:var(--dsw-alias-bg-layer-2,transparent);border-color:var(--dsw-alias-label-dimmed,#a8abb2)}
 .dsh-super-code-settings-header{width:100%;appearance:none;border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer;display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:12px}
@@ -1134,22 +1337,30 @@ function apply(ctx) {
     title: () => t('tree.aria'),
     guide: [{ order: 40, title: () => t('tree.aria'), description: () => t('tree.canvas') }],
   })
+  const disposeMemoryType = ctx.sidebarRightTabs.register({ id: 'dsh-super-code-memory', kind: 'super-code-memory',
+    patterns: ['dsh-resource://super-code-memory/**'], title: () => t('memory.title'),
+    guide: [{ order: 41, title: () => t('memory.title'), description: () => t('memory.description') }],
+  })
+  const openMemory = (sessionId, row) => ctx.sidebarRight.openResource(memoryLibraryAddress(sessionId, row), { kind: 'super-code-memory' })
   const treeActions = {
     // The host unmounts hidden bodies; tab signals live until close/unload.
     treeStates: new WeakMap(),
-    refresh: id => ctx.sessions.refreshSubagents(id),
-    watchCatalog: (id, open) => ctx.sessions.setSubagentCatalogOpen(id, open),
+    refresh: id => ctx.sessions.refreshSubagents ? ctx.sessions.refreshSubagents(id) : ctx.sessions.refreshProjections(id),
+    watchCatalog: (id, open) => {
+      if (ctx.sessions.setSubagentCatalogOpen) ctx.sessions.setSubagentCatalogOpen(id, open)
+      else if (open) void ctx.sessions.refreshProjections(id).catch(error => console.warn('Super Code projections:', error))
+    },
     openDetail: child => ctx.sidebarRight.openResource(agentDetailAddress(child), { kind: 'super-agent-detail' }),
   }
   const disposeDetailType = ctx.sidebarRightTabs.register({
     id: 'dsh-super-code-detail', kind: 'super-agent-detail', patterns: ['dsh-resource://super-agent/**'],
     title: address => {
       const target = agentDetailTarget(address), state = ctx.sessions.list.getSnapshot()
-      const node = buildAgentView(state).nodes.get(target.childSessionId || target.sessionId)
+      const node = buildAgentView(agentSessionState(state, target.childSessionId || target.sessionId)).nodes.get(target.childSessionId || target.sessionId)
       return node?.title || node?.displayTitle || t('detail.title')
     },
   })
-  const detailActions = { detailStates: new WeakMap(), createInspector: (address, initial) => createAgentInspector(
+  const detailActions = { openMemory, detailStates: new WeakMap(), createInspector: (address, initial) => createAgentInspector(
     (target, options) => new SessionEventStream(ctx.remote, target, options), address,
     (request, signal) => ctx.remote.session.page(request, signal), initial, t) }
   ctx.slots.inject('sidebar.right.pane.tab', () => ctx.slots.register({
@@ -1163,7 +1374,8 @@ function apply(ctx) {
   }, AgentTree))
   ctx.effect(() => disposeTreeType, 'super-code: Agent tree tab')
   ctx.effect(() => disposeDetailType, 'super-code: Agent detail tab')
+  ctx.effect(() => disposeMemoryType, 'super-code: memory library tab')
 }
 
-return { inject, apply, synchronizePresetDisplay, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector, agentHistoryRange, agentHistoryRows, agentHistoryWindow }
+return { inject, apply, synchronizePresetDisplay, agentSessionState, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector, agentHistoryRange, agentHistoryRows, agentHistoryWindow, memoryLibraryAddress, memoryLibraryTarget, memoryLibraryWindow }
 } })

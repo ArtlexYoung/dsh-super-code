@@ -1,80 +1,78 @@
 # dsh-super-code
 
-一个更快、更节省、更聪明的 DeepSeek Harness 编码插件。它会根据任务选择调研、设计、开发、验证和优化方法：简单任务直接完成，复杂任务按需组织工作。
+一个更快、更节省、更聪明的 DeepSeek Harness 编码插件。简单任务直接做，复杂任务按需组织专业 Agent；任务状态和有来源的经验可以留到后续对话，不必反复交代。
 
-A faster, more efficient, smarter coding plugin for DeepSeek Harness. It selects research, design, development, verification, and optimization methods to fit the task: straightforward work stays simple, while complex work is coordinated as needed.
+A faster, more efficient coding plugin for DeepSeek Harness. It handles straightforward tasks directly, brings in specialist Agents when useful, and keeps sourced knowledge available for later conversations.
 
-在选定的 SWE-bench Pro hard-100 评测中，`0.1.2` 相比 DSH minimal 平均回答耗时减少约 38%，每题输入 token 减少约 14%，正确率提高 8 个百分点。[评测方法与完整结果](docs/EvaluationResults.md)
+在同一组 SWE-bench Pro hard-100 的校正结果中，0.2.0 分层记忆候选相比官方 minimal，平均回答耗时减少 **41%**、每题总 token 减少 **20%**，通过率从 **44% 提高到 52%**。[完整结果与限制](docs/EvaluationResults.md)
 
-On the selected SWE-bench Pro hard-100 tasks, `0.1.2` reduced average response time by about 38% and input tokens per task by about 14% versus DSH minimal, while accuracy increased by 8 percentage points. [Methods and full results](docs/EvaluationResults.md)
+On the same SWE-bench Pro hard-100 set, the corrected results for the 0.2.0 memory-hierarchy candidate show **41% less response time**, **20% fewer total tokens**, and a pass rate of **52% versus 44%** for official minimal. [Full results and limitations](docs/EvaluationResults.md)
 
-## 0.1.4 更新 · What's New in 0.1.4
+## 0.2.0 候选 · What's New
 
-适配 Harness 的两种预设机制：0.1.5/0.1.6 沿用目录安装，已验证的 0.1.7 版本通过插件 bundle 声明预设。设置页按宿主能力展示状态；新版不通过插件安装、重命名或重装用户目录副本。
+- **分层记忆：** 区分本次任务、当前项目和全局偏好；只自动带入少量相关摘要，需要时再读详情。
+  **Layered memory:** Separates task state, project knowledge, and global preferences. Only a few relevant summaries enter context; details are read when needed.
+- **记忆库：** 在右侧新标签查看和搜索记忆；Agent 详情中能看到带入上下文、读取、保存和删除记录。
+  **Memory library:** Browse and search memories in a sidebar tab, and see each Agent's recorded context, reads, saves, and removals in its details.
+- **宿主兼容：** 保留旧版目录预设，并适配新版声明式预设及消息格式。具体版本和验收范围见[兼容矩阵](docs/Compatibility.md)。
+  **Host compatibility:** Keeps directory presets on older hosts and supports newer declarative presets and message formats. See the [verified versions and scope](docs/Compatibility.md).
 
-Supports both Harness preset mechanisms: directory installation on 0.1.5/0.1.6 and bundle declarations on the verified 0.1.7 versions. Settings reflect host capabilities; the newer path does not install, rename, or reinstall user-directory copies through this plugin.
+0.2.0 当前为候选，尚未发布到 npm；发布前请使用候选安装包。效果数据来自已冻结的分层记忆实验，不是新增 UI 和兼容改动后的又一轮 100 题评测。
 
-七个指定版本的隔离 Web/CLI 冒烟通过，覆盖 `0.1.5-rc.3`、`0.1.6-alpha.1`、`0.1.6-alpha.2`、`0.1.7-alpha.1`、`0.1.7-alpha.2`、`0.1.7-rc.1`、`0.1.7-rc.2`。验证固定宿主依赖并使用本地确定性模型，不代表原生 Desktop、真实模型或所有升级场景都已通过。[兼容矩阵与限制](docs/Compatibility.md) · [版本记录](docs/Changelog.md)
-
-Isolated Web/CLI smoke checks passed on seven specified versions: `0.1.5-rc.3`, `0.1.6-alpha.1`, `0.1.6-alpha.2`, `0.1.7-alpha.1`, `0.1.7-alpha.2`, `0.1.7-rc.1`, and `0.1.7-rc.2`. Checks pin host dependencies and use a local deterministic model; they do not establish native Desktop, live-model, or complete upgrade compatibility. [Matrix and limitations](docs/Compatibility.md) · [Changelog](docs/Changelog.md)
-
-下方性能数据仍属于 `0.1.2`，不是 `0.1.4` 的新一轮模型效果评测。
-
-The performance figures below remain results for `0.1.2`, not a new model-quality evaluation of `0.1.4`.
+Version 0.2.0 is a candidate, not yet published to npm; use the candidate package before release. Its quality results belong to the frozen memory-hierarchy experiment, not a new 100-task run of the integrated UI and compatibility changes.
 
 ## 开始使用 · Get Started
 
-需要 Node.js 22 或更高版本，以及上述已验证的 DeepSeek Harness 版本。其他版本不能仅凭依赖范围视为已验证。三步就能开始：
+需要 Node.js 22 或更高版本，以及[已验证的 Harness 版本](docs/Compatibility.md)。
 
-Use Node.js 22 or later with one of the verified DeepSeek Harness versions above. A dependency range alone does not establish that another version has been tested. To get started:
+Use Node.js 22 or later and a [verified Harness version](docs/Compatibility.md).
 
-1. **安装插件：** 在 `dsh-market` 搜索 `dsh-super-code`，或运行下面的命令。
+1. **安装：** 在插件市场搜索 `dsh-super-code`，或运行以下命令安装 npm 已发布版。
 
-   **Install the plugin:** Search for `dsh-super-code` in `dsh-market`, or run:
+   **Install:** Search for `dsh-super-code` in the plugin marketplace, or install the published npm version:
 
    ```bash
-   dsh plugin --profile web add dsh-super-code@0.1.4
+   dsh plugin --profile web add dsh-super-code
    ```
 
-2. **选中预设：** 打开 Harness“设置”→“Agent 预设”，选择 `super-code`。
+   候选包可用 `dsh plugin --profile web add ./dsh-super-code-0.2.0.tgz` 安装。
+   For the candidate, use `dsh plugin --profile web add ./dsh-super-code-0.2.0.tgz`.
 
-   **Select the preset:** In Harness, open “Settings” → “Agent Presets” and select `super-code`.
+2. **选中预设：** 打开“设置”→“Agent 预设”，选择 `super-code`。
 
-3. **开始对话：** 新建会话，直接描述你要完成的编码任务。
+   **Select the preset:** Open “Settings” → “Agent Presets” and choose `super-code`.
 
-   **Start a conversation:** Open a new conversation and describe the coding task you want done.
+3. **开始对话：** 新建会话，描述你要完成的编码任务。模型、推理等级、权限和工具沿用 Harness 的设置；子 Agent 默认继承父 Agent 的模型，不用另配模型池。
 
-没看到 `super-code`？先确认插件已启用，再在“设置”→“插件”→“插件配置”→ **Super Code** 查看状态。0.1.5/0.1.6 的可写用户目录支持手动安装及更换标识符；0.1.7 使用宿主声明式预设，不提供此目录安装流程，应检查插件加载与预设依赖。[按宿主排查与预设管理](docs/UsageGuide.md)
+   **Start a conversation:** Open a new session and describe the task. Models, reasoning effort, permissions, and tools come from Harness; child Agents inherit the parent's model by default.
 
-Can't find `super-code`? Confirm the plugin is enabled, then check **Super Code** under “Settings” → “Plugins” → “Plugin configuration”. On 0.1.5/0.1.6, a writable user directory supports manual installation and a different identifier. On 0.1.7, presets are declared through the host; check plugin loading and preset dependencies rather than using the directory-installation workflow. [Host-specific troubleshooting and preset management](docs/UsageGuide.md)
+没看到预设？在“设置”→ **Super Code** 查看状态；旧插件版本的入口在“插件配置”中。[安装与排查](docs/UsageGuide.md)
+
+Can't find the preset? Open “Settings” → **Super Code**. Older plugin versions place this under “Plugin configuration”. [Setup and troubleshooting](docs/UsageGuide.md)
 
 [![Super Code 配置入口 · Super Code settings](docs/images/preset-settings-preview.png)](docs/images/preset-settings.png)
 
-模型、推理等级、权限和工具沿用 Harness 的设置；子 Agent 默认继承父 Agent 的模型选择，不用再配置一套。
+右侧执行树显示各 Agent 的状态、用量和缓存率。拖动平移、滚轮缩放；点节点查看详情，不切换主对话。右侧新标签页中的“记忆库”可以查看当前项目和全局偏好。[界面与记忆说明](docs/UsageGuide.md)
 
-Models, reasoning effort, permissions, and tools come from Harness. Child Agents inherit the parent Agent's model choice by default, so there's no second set of settings to manage.
-
-任务开始后，可以在右侧 Agent 执行树查看每个 Agent 的状态与用量。拖动空白处平移，滚轮或按钮缩放；点一个节点，就能在侧栏标签中查看详情。[界面说明](docs/UsageGuide.md)
-
-Once a task is running, the Agent tree on the right shows each Agent's status and usage. Drag empty space to pan, zoom with the wheel or buttons, and click a node to see its details in a sidebar tab. [Interface guide](docs/UsageGuide.md)
+The Agent tree shows status, usage, and cache hit rate. Drag to pan, scroll to zoom, and click a node for details without leaving the main conversation. Open “Memory library” from the sidebar's new-tab page to view project knowledge and global preferences. [Interface and memory guide](docs/UsageGuide.md)
 
 [![Agent 执行树 · Agent execution tree](docs/images/agent-tree-preview.png)](docs/images/agent-tree.png)
 
 ## 效果 · Results
 
-这组成绩来自选定的 SWE-bench Pro hard-100，使用 `deepseek-v4.1-flash`、`high` 推理等级、原生 DSH Web RPC 和官方评分器。两组都完成了 100/100 题评分。
+同一组 100 题，均完成官方评分；评分环境异常已使用原补丁复核。时间不含官方评分，token 包含缓存输入，并不等于费用。
 
-These results come from the selected SWE-bench Pro hard-100 tasks, using `deepseek-v4.1-flash`, `high` reasoning, native DSH Web RPC, and the official grader. Both runs received scores for all 100 tasks.
+All four versions received official scores for the same 100 tasks. Grading anomalies were rechecked with the original patches. Time excludes grading; tokens include cache reads and are not a monetary cost estimate.
 
-| 指标 / Metric | DSH minimal | super-code 0.1.2 | 变化 / Change |
-|---|---:|---:|---:|
-| 正确率 / Accuracy | 41% | **49%** | **+8 个百分点 / +8 pp** |
-| 平均模型调用/题 / Model calls per task | 124.85 | 99.78 | -20.1% |
-| 平均输入 token/题 / Input tokens per task | 11,477,170 | 9,840,383 | -14.3% |
-| 平均回答耗时 / Response time | 25.69 分钟 / min | 16.01 分钟 / min | -37.7% |
+| 指标 / Metric | 官方 minimal | 0.0.9 | 0.1.2 | 0.2.0 分层记忆 |
+|---|---:|---:|---:|---:|
+| 通过 / Passed | 44/100 | 48/100 | 52/100 | **52/100** |
+| 平均耗时 / Minutes per task | 25.69 | 16.46 | 16.01 | **15.15** |
+| 平均总 token / Tokens per task | 11,578,047 | 9,623,217 | 9,938,176 | **9,299,094** |
+| 模型调用/题 / Model calls | 124.85 | 92.78 | 99.78 | 93.83 |
 
-两次运行使用不同的 Harness 提交，不能将全部差异归因于插件。完整指标、回退题目、统计口径和逐题证据见[评测文档](docs/EvaluationResults.md)。
+0.2.0 与 0.1.2 通过数相同，但有 6 题改善、6 题回退，不代表每道题都更好。这是已用于诊断的历史题集，各轮宿主版本也不同，不能把全部差异归因于插件或记忆功能。[多维指标、逐题证据与统计口径](docs/EvaluationResults.md)
 
-The runs used different Harness commits, so not every difference can be attributed to the plugin. See the [evaluation details](docs/EvaluationResults.md) for all metrics, regressions, calculation methods, and per-task evidence.
+Version 0.2.0 ties 0.1.2 overall, with six gains and six regressions—not an improvement on every task. This is a historically exposed diagnostic set, and host revisions differ between runs; the results do not isolate the effect of the plugin or memory alone. [Detailed metrics, per-task evidence, and methodology](docs/EvaluationResults.md)
 
-[使用说明 · Usage guide](docs/UsageGuide.md) · [评测详情 · Evaluation details](docs/EvaluationResults.md) · [版本记录 · Changelog](docs/Changelog.md)
+[使用说明 · Usage](docs/UsageGuide.md) · [兼容性 · Compatibility](docs/Compatibility.md) · [版本记录 · Changelog](docs/Changelog.md)

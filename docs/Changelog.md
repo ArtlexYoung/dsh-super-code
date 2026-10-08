@@ -1,5 +1,8 @@
 # 版本记录 · Changelog
 
+- **未发布 · 2026-10-08**：逐版验证 Harness `0.2.0-rc.2` 与 `0.2.1-alpha.1`，扩展 peer 依赖范围，补齐根路径及 `/dsh`、`/super-code` 子路径的中英文展示资源，以适配新版插件元数据读取机制。安装、主/子 Agent、记忆、重启及 Safari 界面验收通过；alpha.1 原生 Desktop 尚未验收。[兼容范围与限制](Compatibility.md)
+  **Unreleased · 2026-10-08**: Verifies Harness `0.2.0-rc.2` and `0.2.1-alpha.1` individually, extends peer ranges, and exports Chinese/English display resources for the root, `/dsh`, and `/super-code` entries to support the new plugin metadata reader. Installation, main/child Agents, memory, restart, and Safari checks passed; native Desktop alpha.1 remains unverified. [Compatibility scope and limitations](Compatibility.md)
+
 - **0.2.0 候选**：合入分层任务记忆，新增记忆库和每个 Agent 的记忆使用记录，tab 标题和界面文案跟随中英文切换，补齐 Harness 0.1.5-alpha.1 至 0.2.0-rc.2 的宿主兼容适配并完成官方 Desktop 原生窗口验收。
   **0.2.0 candidate**: Integrates hierarchical task memory, adds the memory library and per-Agent memory activity, keeps tab titles and interface labels in sync with the Chinese/English language setting, and adapts the host boundary from Harness 0.1.5-alpha.1 through 0.2.0-rc.2, including checks in the official Desktop native window.
 

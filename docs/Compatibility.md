@@ -1,8 +1,12 @@
-# 0.2.0 候选兼容性 · Compatibility
+# 宿主兼容性 · Host Compatibility
 
-截至 2026-09-30，以下十个指定 Harness 版本通过了 Super Code 0.2.0 候选的隔离 Web/CLI 集成冒烟和真实浏览器验收，覆盖记忆库、Agent 详情、筛选和缩放。每个环境固定并审计宿主依赖，使用本地确定性模型，不访问外部模型服务。
+2026-10-08 的未发布适配继续验证了 `0.2.0-rc.2` 与 `0.2.1-alpha.1`。官方 npm 发布记录在这个范围内没有其他版本；两版分别使用精确固定的宿主组件和新的隔离 profile。安装、激活、声明式预设、主/子 Agent、任务及项目/全局记忆、跨工作区隔离、重启读取均通过；Safari 中完成执行树、缩放、子 Agent 详情、记忆记录跳转及插件停用后重新启用的检查。alpha.1 另验证中英文切换时打开的 tab 和插件管理文案同步更新。以下更早版本保留此前的验收结果，本轮没有全部重测。
 
-As of 2026-09-30, the Super Code 0.2.0 candidate passed isolated Web/CLI integration and real browser checks on the ten Harness versions below, covering the memory library, Agent details, filtering, and zoom controls. Each environment pins and audits host dependencies and uses a local deterministic model, not an external model service.
+The unpublished adaptation checked `0.2.0-rc.2` and `0.2.1-alpha.1` again on 2026-10-08. The official npm release history contains no other version between them. Each used precisely pinned host components and a fresh isolated profile. Installation, activation, declarative presets, main/child Agents, task and project/global memory, workspace isolation, and restart reads passed. Safari checks covered the execution tree, zoom, child Agent details, memory activity navigation, and disabling/re-enabling the plugin. Alpha.1 also passed Chinese/English switching for open tabs and plugin management text. Earlier rows retain their previous results; they were not all rerun in this batch.
+
+截至 2026-09-30，下表中从 `0.1.5-alpha.1` 到 `0.2.0-rc.2` 的十个指定 Harness 版本通过了 Super Code 0.2.0 候选的隔离 Web/CLI 集成冒烟和真实浏览器验收，覆盖记忆库、Agent 详情、筛选和缩放。每个环境固定并审计宿主依赖，使用本地确定性模型，不访问外部模型服务；本轮也使用该验证方式。
+
+As of 2026-09-30, the Super Code 0.2.0 candidate passed isolated Web/CLI integration and real browser checks on the ten listed Harness versions from `0.1.5-alpha.1` through `0.2.0-rc.2`, covering the memory library, Agent details, filtering, and zoom controls. Each environment pins and audits host dependencies and uses a local deterministic model, not an external model service. This batch uses the same verification approach.
 
 | Harness | 预设机制 / Preset mechanism | 冒烟结果 / Smoke result |
 |---|---|---|
@@ -16,6 +20,17 @@ As of 2026-09-30, the Super Code 0.2.0 candidate passed isolated Web/CLI integra
 | `0.1.7-rc.2` | 声明式 / Declarative | 通过 / Pass |
 | `0.2.0-rc.1` | 声明式 / Declarative | 通过 / Pass |
 | `0.2.0-rc.2` | 声明式 / Declarative | 通过 / Pass |
+| `0.2.1-alpha.1` | 声明式 / Declarative | 通过 / Pass |
+
+## 0.2.1-alpha.1 适配 · Adaptation
+
+该版宿主通过导出的 `<插件标识>/locale/*.json` 读取展示信息，子路径不再读取独立 `package.json`。插件为根路径、`/dsh` 和 `/super-code` 提供相同的中英文名称和描述，官方元数据读取器在两版宿主中均验证通过。Harness peer 依赖范围新增 `^0.2.1-alpha.1`，明确允许该预发布系列；范围内的未来版本仍需单独验收。
+
+This host reads display metadata through exported `<plugin-specifier>/locale/*.json` resources and no longer reads separate `package.json` files for plugin subpaths. The package exports the same Chinese/English names and descriptions for its root, `/dsh`, and `/super-code` entries. Both versions' official metadata readers passed these checks. Harness peer ranges now include `^0.2.1-alpha.1` to allow this prerelease series explicitly; future versions within the range still require separate verification.
+
+宿主同时拆分 composer 的 `stats` 并移除运行时 `invariant` 导出；插件未使用这两个旧接口，无须增加兼容分支。用量展示和插件启停后的界面恢复已通过上述集成及浏览器检查。
+
+The host also splits composer `stats` and removes the runtime `invariant` export. The plugin uses neither old interface, so no compatibility branch is needed. Usage display and interface recovery after plugin reactivation passed the integration and browser checks above.
 
 ## 检查范围 · Checks
 
@@ -41,6 +56,10 @@ Older hosts need host packages to be resolvable from the isolated profile; the c
 `zod` validates runtime input and `js-yaml` handles preset files on older hosts; their files are not bundled into the plugin tarball. The package includes the plugin, public guides, and screenshots, not local verification environments, raw logs, or internal scripts.
 
 ## 官方 Desktop · Official Desktop
+
+以下是此前 `0.2.0-rc.2` 的 Desktop 验收记录。本轮新增验收使用 Web/CLI 和 Safari；`0.2.1-alpha.1` 的官方 GitHub Release 无 Desktop 附件，官方更新源也未获取到该版 macOS arm64 安装包，因此尚未完成该版原生 Desktop 验收。
+
+The following is the previous Desktop verification for `0.2.0-rc.2`. This batch adds Web/CLI and Safari checks. The official `0.2.1-alpha.1` GitHub Release has no Desktop assets, and its macOS arm64 installer was not available from the official update source, so native Desktop verification for that version remains outstanding.
 
 官方 Desktop `0.2.0-rc.2` 的 macOS arm64 发行包已另行通过原生窗口验收：安装和启用插件、选择 Super Code、主/子 Agent 执行、执行树、缩放、侧栏详情、记忆库、记忆使用记录及可折叠设置。中英文切换时，已打开的 tab 标题和界面文案同步更新，任务标题与记忆正文保留原文；重启后记忆和界面语言可恢复。该验收使用隔离配置和本地确定性模型。
 

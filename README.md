@@ -8,18 +8,18 @@ A faster, more efficient coding plugin for DeepSeek Harness. It handles straight
 
 On the same SWE-bench Pro hard-100 set, the corrected results for the 0.2.0 memory-hierarchy candidate show **41% less response time**, **20% fewer total tokens**, and a pass rate of **52% versus 44%** for official minimal. [Full results and limitations](docs/EvaluationResults.md)
 
-## 0.2.0 候选 · What's New
+## 0.2.1 · What's New
 
 - **分层记忆：** 区分本次任务、当前项目和全局偏好；只自动带入少量相关摘要，需要时再读详情。
   **Layered memory:** Separates task state, project knowledge, and global preferences. Only a few relevant summaries enter context; details are read when needed.
 - **记忆库：** 在右侧新标签查看和搜索记忆；Agent 详情中能看到带入上下文、读取、保存和删除记录。
   **Memory library:** Browse and search memories in a sidebar tab, and see each Agent's recorded context, reads, saves, and removals in its details.
-- **宿主兼容：** 保留旧版目录预设，并适配新版声明式预设及消息格式。具体版本和验收范围见[兼容矩阵](docs/Compatibility.md)。
-  **Host compatibility:** Keeps directory presets on older hosts and supports newer declarative presets and message formats. See the [verified versions and scope](docs/Compatibility.md).
+- **宿主兼容：** 适配至 Harness `0.2.1-alpha.1`，补齐插件根路径及子路径的中英文展示资源；保留旧版目录预设及新版声明式预设。具体版本和验收范围见[兼容矩阵](docs/Compatibility.md)。
+  **Host compatibility:** Supports Harness through `0.2.1-alpha.1`, with Chinese/English display resources for the plugin root and subpaths. Keeps directory presets on older hosts and supports newer declarative presets. See the [verified versions and scope](docs/Compatibility.md).
 
-0.2.0 当前为候选，尚未发布到 npm；发布前请使用候选安装包。效果数据来自已冻结的分层记忆实验，不是新增 UI 和兼容改动后的又一轮 100 题评测。
+0.2.1 延续 0.2.0 的分层记忆与界面功能，本次新增宿主兼容适配。效果数据来自已冻结的 0.2.0 分层记忆实验，本次兼容改动没有重新进行 100 题评测。
 
-Version 0.2.0 is a candidate, not yet published to npm; use the candidate package before release. Its quality results belong to the frozen memory-hierarchy experiment, not a new 100-task run of the integrated UI and compatibility changes.
+Version 0.2.1 retains 0.2.0's layered memory and interface features and adds host compatibility updates. Quality results belong to the frozen 0.2.0 memory-hierarchy experiment; these compatibility changes have not undergone a new 100-task evaluation.
 
 ## 开始使用 · Get Started
 
@@ -35,8 +35,8 @@ Use Node.js 22 or later and a [verified Harness version](docs/Compatibility.md).
    dsh plugin --profile web add dsh-super-code
    ```
 
-   候选包可用 `dsh plugin --profile web add ./dsh-super-code-0.2.0.tgz` 安装。
-   For the candidate, use `dsh plugin --profile web add ./dsh-super-code-0.2.0.tgz`.
+   本地 0.2.1 安装包可用 `dsh plugin --profile web add ./dsh-super-code-0.2.1.tgz` 安装。
+   For a local 0.2.1 package, use `dsh plugin --profile web add ./dsh-super-code-0.2.1.tgz`.
 
 2. **选中预设：** 打开“设置”→“Agent 预设”，选择 `super-code`。
 

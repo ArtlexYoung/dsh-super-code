@@ -1,8 +1,8 @@
 # 宿主兼容性 · Host Compatibility
 
-2026-10-08 的未发布适配继续验证了 `0.2.0-rc.2` 与 `0.2.1-alpha.1`。官方 npm 发布记录在这个范围内没有其他版本；两版分别使用精确固定的宿主组件和新的隔离 profile。安装、激活、声明式预设、主/子 Agent、任务及项目/全局记忆、跨工作区隔离、重启读取均通过；Safari 中完成执行树、缩放、子 Agent 详情、记忆记录跳转及插件停用后重新启用的检查。alpha.1 另验证中英文切换时打开的 tab 和插件管理文案同步更新。以下更早版本保留此前的验收结果，本轮没有全部重测。
+Super Code 0.2.1 的兼容适配于 2026-10-08 继续验证了 `0.2.0-rc.2` 与 `0.2.1-alpha.1`。官方 npm 发布记录在这个范围内没有其他版本；两版分别使用精确固定的宿主组件和新的隔离 profile。安装、激活、声明式预设、主/子 Agent、任务及项目/全局记忆、跨工作区隔离、重启读取均通过；Safari 中完成执行树、缩放、子 Agent 详情、记忆记录跳转及插件停用后重新启用的检查。alpha.1 另验证中英文切换时打开的 tab 和插件管理文案同步更新。以下更早版本保留此前的验收结果，本轮没有全部重测。
 
-The unpublished adaptation checked `0.2.0-rc.2` and `0.2.1-alpha.1` again on 2026-10-08. The official npm release history contains no other version between them. Each used precisely pinned host components and a fresh isolated profile. Installation, activation, declarative presets, main/child Agents, task and project/global memory, workspace isolation, and restart reads passed. Safari checks covered the execution tree, zoom, child Agent details, memory activity navigation, and disabling/re-enabling the plugin. Alpha.1 also passed Chinese/English switching for open tabs and plugin management text. Earlier rows retain their previous results; they were not all rerun in this batch.
+The Super Code 0.2.1 adaptation checked `0.2.0-rc.2` and `0.2.1-alpha.1` again on 2026-10-08. The official npm release history contains no other version between them. Each used precisely pinned host components and a fresh isolated profile. Installation, activation, declarative presets, main/child Agents, task and project/global memory, workspace isolation, and restart reads passed. Safari checks covered the execution tree, zoom, child Agent details, memory activity navigation, and disabling/re-enabling the plugin. Alpha.1 also passed Chinese/English switching for open tabs and plugin management text. Earlier rows retain their previous results; they were not all rerun in this batch.
 
 截至 2026-09-30，下表中从 `0.1.5-alpha.1` 到 `0.2.0-rc.2` 的十个指定 Harness 版本通过了 Super Code 0.2.0 候选的隔离 Web/CLI 集成冒烟和真实浏览器验收，覆盖记忆库、Agent 详情、筛选和缩放。每个环境固定并审计宿主依赖，使用本地确定性模型，不访问外部模型服务；本轮也使用该验证方式。
 

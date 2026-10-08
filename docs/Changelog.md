@@ -1,10 +1,10 @@
 # 版本记录 · Changelog
 
-- **未发布 · 2026-10-08**：逐版验证 Harness `0.2.0-rc.2` 与 `0.2.1-alpha.1`，扩展 peer 依赖范围，补齐根路径及 `/dsh`、`/super-code` 子路径的中英文展示资源，以适配新版插件元数据读取机制。安装、主/子 Agent、记忆、重启及 Safari 界面验收通过；alpha.1 原生 Desktop 尚未验收。[兼容范围与限制](Compatibility.md)
-  **Unreleased · 2026-10-08**: Verifies Harness `0.2.0-rc.2` and `0.2.1-alpha.1` individually, extends peer ranges, and exports Chinese/English display resources for the root, `/dsh`, and `/super-code` entries to support the new plugin metadata reader. Installation, main/child Agents, memory, restart, and Safari checks passed; native Desktop alpha.1 remains unverified. [Compatibility scope and limitations](Compatibility.md)
+- **0.2.1 · 2026-10-08**：逐版验证 Harness `0.2.0-rc.2` 与 `0.2.1-alpha.1`，扩展 peer 依赖范围，补齐根路径及 `/dsh`、`/super-code` 子路径的中英文展示资源，以适配新版插件元数据读取机制。安装、主/子 Agent、记忆、重启及 Safari 界面验收通过；alpha.1 原生 Desktop 尚未验收。[兼容范围与限制](Compatibility.md)
+  **0.2.1 · 2026-10-08**: Verifies Harness `0.2.0-rc.2` and `0.2.1-alpha.1` individually, extends peer ranges, and exports Chinese/English display resources for the root, `/dsh`, and `/super-code` entries to support the new plugin metadata reader. Installation, main/child Agents, memory, restart, and Safari checks passed; native Desktop alpha.1 remains unverified. [Compatibility scope and limitations](Compatibility.md)
 
-- **0.2.0 候选**：合入分层任务记忆，新增记忆库和每个 Agent 的记忆使用记录，tab 标题和界面文案跟随中英文切换，补齐 Harness 0.1.5-alpha.1 至 0.2.0-rc.2 的宿主兼容适配并完成官方 Desktop 原生窗口验收。
-  **0.2.0 candidate**: Integrates hierarchical task memory, adds the memory library and per-Agent memory activity, keeps tab titles and interface labels in sync with the Chinese/English language setting, and adapts the host boundary from Harness 0.1.5-alpha.1 through 0.2.0-rc.2, including checks in the official Desktop native window.
+- **0.2.0 · 2026-09-30**：合入分层任务记忆，新增记忆库和每个 Agent 的记忆使用记录，tab 标题和界面文案跟随中英文切换，补齐 Harness 0.1.5-alpha.1 至 0.2.0-rc.2 的宿主兼容适配并完成官方 Desktop 原生窗口验收。
+  **0.2.0 · 2026-09-30**: Integrates hierarchical task memory, adds the memory library and per-Agent memory activity, keeps tab titles and interface labels in sync with the Chinese/English language setting, and adapts the host boundary from Harness 0.1.5-alpha.1 through 0.2.0-rc.2, including checks in the official Desktop native window.
 
 - **0.1.4**：适配 Harness 的目录与声明式预设机制：旧宿主保留目录安装，新宿主通过 bundle 声明 Super Code，设置页按宿主能力显示状态；声明式路径不提供目录副本安装、重命名、重装或名称语言同步。扩展 Harness peer 依赖范围，补齐中英文发布说明、使用指南及 npm 包内公开文档。`zod` 保留为运行时依赖，不内嵌其文件。
   Adapts directory and declarative Harness presets: older hosts retain directory installation, while newer hosts use a Super Code bundle declaration and capability-specific status. The declarative path does not install, rename, reinstall, or synchronize localized names for directory copies. Expands Harness peer dependency ranges and includes bilingual release notes, usage guidance, and public documentation in the npm package. `zod` remains a runtime dependency without bundling its files.

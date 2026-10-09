@@ -10,6 +10,20 @@ The [three steps in the README](../README.md) will get you started. This page co
 
 If you already have a working model, there is nothing extra to configure for the plugin. Otherwise, add a provider under Harness “Settings” → “Models”, then choose a model and reasoning effort below the message input. Super Code uses the current session's choice rather than a separate model pool. Child Agents inherit the parent Agent's model by default, while Harness manages permissions and tools.
 
+## 批量工具调用 · Batched Tool Calls
+
+0.3.0 的 Super Code 预设使用 Harness 原生 PTC。Agent 可以在一次模型调用里组合几个工具操作，例如同时读取互不依赖的文件，拿到结果后再决定下一步。它不需要额外的 Agent，也不用另选模式。
+
+The Super Code preset in 0.3.0 uses Harness-native PTC. An Agent can compose several tool operations in one model call—for example, read independent files together before deciding what to do next. It needs neither an extra Agent nor a separate mode selection.
+
+默认指导要求独立读取按需并行，写入、测试、状态变更和依赖步骤依次执行；失败时保留已成功的结果，只重试失败或过期的读取。插件向宿主声明任务和记忆工具中哪些动作可以并行，未知动作默认独占。其他工具是否允许并行，由它们在 Harness 中的声明决定。权限确认、取消、结果保存和部分失败都由宿主管理。
+
+The default guidance calls for parallel reads when useful, ordered writes, tests, state changes, and dependent steps, and retries limited to failed or stale reads while retaining successful results. The plugin declares which task and memory actions are safe to overlap; unknown actions remain exclusive. Other tools use their own Harness concurrency declarations. Harness handles permissions, cancellation, result persistence, and partial failures.
+
+批量调用减少的是模型与工具之间的来回，不保证每项操作都会更快，也不改变模型、权限或记忆的设置。
+
+Batching reduces round trips between the model and tools. It does not guarantee that every operation runs faster or change model, permission, or memory settings.
+
 ## 找不到预设 · Can't Find the Preset?
 
 先确认插件已启用，并按[兼容矩阵](Compatibility.md)核对宿主版本与实际依赖。插件按宿主提供的预设机制选择以下两条路径。

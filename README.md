@@ -4,22 +4,20 @@
 
 A faster, more efficient coding plugin for DeepSeek Harness. It handles straightforward tasks directly, brings in specialist Agents when useful, and keeps sourced knowledge available for later conversations.
 
-在同一组 SWE-bench Pro hard-100 的校正结果中，0.2.0 分层记忆候选相比官方 minimal，平均回答耗时减少 **41%**、每题总 token 减少 **20%**，通过率从 **44% 提高到 52%**。[完整结果与限制](docs/EvaluationResults.md)
+在同一组 SWE-bench Pro hard-100 中，0.3.0 采用的 Batch.3 候选相比官方 minimal，平均回答耗时减少 **48%**、每题总 token 减少 **45%**、模型调用次数减少 **44.5%**，通过率从 **44% 提高到 54%**。[完整结果与限制](docs/EvaluationResults.md)
 
-On the same SWE-bench Pro hard-100 set, the corrected results for the 0.2.0 memory-hierarchy candidate show **41% less response time**, **20% fewer total tokens**, and a pass rate of **52% versus 44%** for official minimal. [Full results and limitations](docs/EvaluationResults.md)
+On the same SWE-bench Pro hard-100 set, the Batch.3 candidate adopted for 0.3.0 uses **48% less response time**, **45% fewer total tokens**, and **44.5% fewer model calls**, with **54% passing versus 44%** for official minimal. [Full results and limitations](docs/EvaluationResults.md)
 
-## 0.2.1 · What's New
+## 0.3.0 · What's New
 
-- **分层记忆：** 区分本次任务、当前项目和全局偏好；只自动带入少量相关摘要，需要时再读详情。
-  **Layered memory:** Separates task state, project knowledge, and global preferences. Only a few relevant summaries enter context; details are read when needed.
-- **记忆库：** 在右侧新标签查看和搜索记忆；Agent 详情中能看到带入上下文、读取、保存和删除记录。
-  **Memory library:** Browse and search memories in a sidebar tab, and see each Agent's recorded context, reads, saves, and removals in its details.
-- **宿主兼容：** 适配至 Harness `0.2.1-alpha.1`，补齐插件根路径及子路径的中英文展示资源；保留旧版目录预设及新版声明式预设。具体版本和验收范围见[兼容矩阵](docs/Compatibility.md)。
-  **Host compatibility:** Supports Harness through `0.2.1-alpha.1`, with Chinese/English display resources for the plugin root and subpaths. Keeps directory presets on older hosts and supports newer declarative presets. See the [verified versions and scope](docs/Compatibility.md).
+- **批量工具调用：** 用 Harness 原生 PTC 在一次模型调用中组合多个操作，减少来回；独立读取可以并行，写入、测试和有依赖的操作依次执行，不用额外配置。
+  **Batched tool calls:** Uses Harness-native PTC to compose several operations in one model call. Independent reads can overlap; writes, tests, and dependent operations run in order. No extra setup is needed.
+- **保留记忆与界面：** 延续任务、项目和全局三层记忆、右侧执行树及记忆库；已适配 Harness `0.1.5-alpha.1`～`0.2.1-alpha.1`。具体版本和验收范围见[兼容矩阵](docs/Compatibility.md)。
+  **Memory and interface:** Retains task, project, and global memory, the Agent tree, and the memory library, with adaptations for Harness `0.1.5-alpha.1`–`0.2.1-alpha.1`. See the [verified versions and scope](docs/Compatibility.md).
 
-0.2.1 延续 0.2.0 的分层记忆与界面功能，本次新增宿主兼容适配。效果数据来自已冻结的 0.2.0 分层记忆实验，本次兼容改动没有重新进行 100 题评测。
+效果数据来自已完成 100 题评分的冻结 Batch.3 候选；整合后的 0.3.0 发布包另做功能回归，没有重新跑这 100 次模型任务。
 
-Version 0.2.1 retains 0.2.0's layered memory and interface features and adds host compatibility updates. Quality results belong to the frozen 0.2.0 memory-hierarchy experiment; these compatibility changes have not undergone a new 100-task evaluation.
+Quality results come from the frozen Batch.3 candidate, which has scores for all 100 tasks. The integrated 0.3.0 package receives separate functional regression checks, not a fresh 100-task model run.
 
 ## 开始使用 · Get Started
 
@@ -35,8 +33,8 @@ Use Node.js 22 or later and a [verified Harness version](docs/Compatibility.md).
    dsh plugin --profile web add dsh-super-code
    ```
 
-   本地 0.2.1 安装包可用 `dsh plugin --profile web add ./dsh-super-code-0.2.1.tgz` 安装。
-   For a local 0.2.1 package, use `dsh plugin --profile web add ./dsh-super-code-0.2.1.tgz`.
+   本地 0.3.0 安装包可用 `dsh plugin --profile web add ./dsh-super-code-0.3.0.tgz` 安装。
+   For a local 0.3.0 package, use `dsh plugin --profile web add ./dsh-super-code-0.3.0.tgz`.
 
 2. **选中预设：** 打开“设置”→“Agent 预设”，选择 `super-code`。
 
@@ -62,17 +60,17 @@ The Agent tree shows status, usage, and cache hit rate. Drag to pan, scroll to z
 
 同一组 100 题，均完成官方评分；评分环境异常已使用原补丁复核。时间不含官方评分，token 包含缓存输入，并不等于费用。
 
-All four versions received official scores for the same 100 tasks. Grading anomalies were rechecked with the original patches. Time excludes grading; tokens include cache reads and are not a monetary cost estimate.
+All five runs received official scores for the same 100 tasks. Grading anomalies were rechecked with the original patches. Time excludes grading; tokens include cache reads and are not a monetary cost estimate.
 
-| 指标 / Metric | 官方 minimal | 0.0.9 | 0.1.2 | 0.2.0 分层记忆 |
-|---|---:|---:|---:|---:|
-| 通过 / Passed | 44/100 | 48/100 | 52/100 | **52/100** |
-| 平均耗时 / Minutes per task | 25.69 | 16.46 | 16.01 | **15.15** |
-| 平均总 token / Tokens per task | 11,578,047 | 9,623,217 | 9,938,176 | **9,299,094** |
-| 模型调用/题 / Model calls | 124.85 | 92.78 | 99.78 | 93.83 |
+| 指标 / Metric | 官方 minimal | 0.0.9 | 0.1.2 | 0.2.0 分层记忆 | 0.3.0 Batch.3 |
+|---|---:|---:|---:|---:|---:|
+| 通过 / Passed | 44/100 | 48/100 | 52/100 | 52/100 | **54/100** |
+| 平均耗时 / Minutes per task | 25.69 | 16.46 | 16.01 | 15.15 | **13.46** |
+| 平均总 token / Tokens per task | 11,578,047 | 9,623,217 | 9,938,176 | 9,299,094 | **6,381,969** |
+| 模型调用/题 / Model calls | 124.85 | 92.78 | 99.78 | 93.83 | **69.29** |
 
-0.2.0 与 0.1.2 通过数相同，但有 6 题改善、6 题回退，不代表每道题都更好。这是已用于诊断的历史题集，各轮宿主版本也不同，不能把全部差异归因于插件或记忆功能。[多维指标、逐题证据与统计口径](docs/EvaluationResults.md)
+Batch.3 相比 0.2.0 新通过 8 题、回退 6 题，净增 2 题。这是已用于诊断的历史题集，各轮宿主版本也有差异，结果不能单独证明某一项改动的效果。[多维指标、逐题证据与统计口径](docs/EvaluationResults.md)
 
-Version 0.2.0 ties 0.1.2 overall, with six gains and six regressions—not an improvement on every task. This is a historically exposed diagnostic set, and host revisions differ between runs; the results do not isolate the effect of the plugin or memory alone. [Detailed metrics, per-task evidence, and methodology](docs/EvaluationResults.md)
+Batch.3 gains eight tasks and regresses on six against 0.2.0, for a net gain of two. This is a historically exposed diagnostic set, and host revisions differ between some runs; the results do not isolate any single change. [Detailed metrics, per-task evidence, and methodology](docs/EvaluationResults.md)
 
 [使用说明 · Usage](docs/UsageGuide.md) · [兼容性 · Compatibility](docs/Compatibility.md) · [版本记录 · Changelog](docs/Changelog.md)

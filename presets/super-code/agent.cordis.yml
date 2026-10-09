@@ -48,3 +48,11 @@
   name: '@deepseek-ai/dsh-skill-filesystem'
 - id: tool-skill
   name: '@deepseek-ai/dsh-tool-skill'
+
+# Let Harness carry independent read-only calls through its native PTC
+# scheduler. The host owns permissions, cancellation, partial failures and
+# result persistence; this row only changes the model-facing presentation.
+- id: tool-presentation
+  name: '@deepseek-ai/dsh-agent-tool-presentation'
+  config:
+    mode: ptc

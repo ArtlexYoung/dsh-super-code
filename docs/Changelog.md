@@ -1,5 +1,8 @@
 # 版本记录 · Changelog
 
+- **0.3.0 · 2026-10-09**：合入 Batch.3，用 Harness 原生 PTC 合并工具调用、并行独立读取，补齐批量调用中的 Agent 记忆使用记录，保留分层记忆及 0.2.1 的兼容适配，更新完整 100 题成绩和使用说明。
+  **0.3.0 · 2026-10-09**: Integrates Batch.3 with Harness-native PTC for composed tool calls and parallel independent reads, adds per-Agent memory activity for nested calls, retains layered memory and 0.2.1 compatibility updates, and refreshes the complete 100-task results and usage guide.
+
 - **0.2.1 · 2026-10-08**：逐版验证 Harness `0.2.0-rc.2` 与 `0.2.1-alpha.1`，扩展 peer 依赖范围，补齐根路径及 `/dsh`、`/super-code` 子路径的中英文展示资源，以适配新版插件元数据读取机制。安装、主/子 Agent、记忆、重启及 Safari 界面验收通过；alpha.1 原生 Desktop 尚未验收。[兼容范围与限制](Compatibility.md)
   **0.2.1 · 2026-10-08**: Verifies Harness `0.2.0-rc.2` and `0.2.1-alpha.1` individually, extends peer ranges, and exports Chinese/English display resources for the root, `/dsh`, and `/super-code` entries to support the new plugin metadata reader. Installation, main/child Agents, memory, restart, and Safari checks passed; native Desktop alpha.1 remains unverified. [Compatibility scope and limitations](Compatibility.md)
 

@@ -50,6 +50,20 @@ function add(state: MemoryUsageState, rows: MemoryUsageRow[]): MemoryUsageState 
 const overviewSchema = z.object({ topic: z.string().max(96), revision: z.number().int().nonnegative(),
   entries: z.array(entry).max(20), details: z.object({ tool: z.literal('super_code_memory') }),
 })
+const inputSchema = z.object({ action: callSchema.shape.action, scope: callSchema.shape.scope.default('project'),
+  id: callSchema.shape.id, record: z.object({ entries: z.array(entry).max(8).optional() }).optional(),
+})
+function resultRows(call: Pick<MemoryUsageState['pending'][number], 'action' | 'scope' | 'id' | 'entries'>,
+  output: unknown, event: SessionEvent): MemoryUsageRow[] {
+  const value = z.object({ scope: callSchema.shape.scope, topic: z.string().max(96), revision: z.number().int().nonnegative(),
+    entry: entry.optional(), entries: z.array(entry).max(20).optional(),
+  }).safeParse(output)
+  if (!value.success || value.data.scope !== call.scope) return []
+  const items = call.action === 'remember' ? call.entries : call.action === 'forget'
+    ? [{ id: call.id ?? '', summary: call.id ?? '' }] : value.data.entry ? [value.data.entry] : value.data.entries ?? []
+  return items.filter(item => item.id).map(item => ({ ...item, scope: call.scope, topic: value.data.topic,
+    revision: value.data.revision, action: call.action === 'read' && !call.id ? 'summary' : call.action, seq: event.seq, time: event.time }))
+}
 function contextRows(event: Extract<SessionEvent, { type: 'user/message' }>): MemoryUsageRow[] {
   const source = event.data.source as { kind: string; plugin?: string }
   if (source.kind !== 'runtime-context' && !(source.kind === 'plugin' && source.plugin === '@deepseek-ai/dsh-system-prompt')) return []
@@ -72,10 +86,19 @@ export function foldMemoryUsage(state: MemoryUsageState, event: SessionEvent): M
   // A fork inherits history, not proof that the child itself performed a read.
   if (event.seq < state.inherited) return state
   if (event.type === 'user/message') return add(state, contextRows(event))
+  // PTC completion events carry their own arguments and result. Count the
+  // nested operation, not its outer run_code result or a dispatch-start event.
+  if (event.type === 'tool/ptc-dispatch') {
+    const dispatch = z.object({ name: z.literal('super_code_memory'), arguments: inputSchema,
+      isError: z.literal(false), content: z.array(z.object({ type: z.string(), text: z.string().optional() })),
+    }).safeParse(event.data)
+    if (!dispatch.success) return state
+    const { arguments: input, content } = dispatch.data
+    const output = parse(content.filter(block => block.type === 'text').map(block => block.text ?? '').join(''))
+    return add(state, resultRows({ ...input, entries: input.record?.entries ?? [] }, output, event))
+  }
   if (event.type === 'tool/call' && event.data.name === 'super_code_memory') {
-    const input = z.object({ action: callSchema.shape.action, scope: callSchema.shape.scope.default('project'),
-      id: callSchema.shape.id, record: z.object({ entries: z.array(entry).max(8).optional() }).optional(),
-    }).safeParse(parse(event.data.arguments))
+    const input = inputSchema.safeParse(parse(event.data.arguments))
     if (!input.success) return state
     const { action, scope, id, record } = input.data
     return { ...state, pending: [...state.pending.filter(call => call.callId !== event.data.callId).slice(-63),
@@ -88,14 +111,7 @@ export function foldMemoryUsage(state: MemoryUsageState, event: SessionEvent): M
   if (!call) return state
   const next = { ...state, pending: state.pending.filter(item => item !== call) }
   if (block.isError) return next
-  const value = z.object({ scope: callSchema.shape.scope, topic: z.string().max(96), revision: z.number().int().nonnegative(),
-    entry: entry.optional(), entries: z.array(entry).max(20).optional(),
-  }).safeParse(parse(block.texts.join('')))
-  if (!value.success || value.data.scope !== call.scope) return next
-  const items = call.action === 'remember' ? call.entries : call.action === 'forget'
-    ? [{ id: call.id ?? '', summary: call.id ?? '' }] : value.data.entry ? [value.data.entry] : value.data.entries ?? []
-  return add(next, items.filter(item => item.id).map(item => ({ ...item, scope: call.scope, topic: value.data.topic,
-    revision: value.data.revision, action: call.action === 'read' && !call.id ? 'summary' : call.action, seq: event.seq, time: event.time })))
+  return add(next, resultRows(call, parse(block.texts.join('')), event))
 }
 const views = new WeakMap<MemoryUsageRow[], MemoryUsageView>()
 function view(state: MemoryUsageState): MemoryUsageView {
@@ -107,7 +123,7 @@ function view(state: MemoryUsageState): MemoryUsageView {
 export const memoryUsageProjection: ProjectionDefinition<'superCodeMemoryUsage', MemoryUsageState> & {
   wire: NonNullable<ProjectionDefinition<'superCodeMemoryUsage', MemoryUsageState>['wire']>
 } = {
-  key: 'superCodeMemoryUsage', stateVersion: 1, stateSchema,
+  key: 'superCodeMemoryUsage', stateVersion: 2, stateSchema,
   init: (_header, inherited) => ({ rows: [], pending: [], omitted: 0, inherited }), apply: foldMemoryUsage,
   wire: { viewSchema: z.object({ rows: z.array(rowSchema), omitted: z.number() }),
     view },

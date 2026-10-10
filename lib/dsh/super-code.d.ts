@@ -8,6 +8,8 @@ export interface Config {
     readonly maxTasks?: number;
     readonly maxContextBytes?: number;
     readonly guidedRoutes?: GuidedRoute[];
+    readonly presetVersion?: string;
+    readonly presetInstallation?: string;
 }
 export declare const Config: z<Config>;
 /** Installs no agent loop and starts no model calls. */

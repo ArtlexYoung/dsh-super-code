@@ -161,9 +161,9 @@ test('browser loader resolves a plugin that retains its dependency declarations'
   assert.ok(resolved.inject?.includes('sidebarRightTabs'))
 })
 
-test('plugin settings use the same collapsed disclosure behavior as host cards', async () => {
+test('plugin settings stay expanded, compare versions in both languages and retain reinstallation confirmation', async () => {
   type Element = { type: unknown; props: Record<string, any>; children: unknown[] }
-  const state: unknown[] = [], refs: { current: unknown }[] = []
+  const state: unknown[] = [], refs: { current: unknown }[] = [], effects: (() => any)[] = []
   let cursor = 0, refCursor = 0
   const React = {
     Fragment: Symbol('Fragment'),
@@ -177,18 +177,20 @@ test('plugin settings use the same collapsed disclosure behavior as host cards',
       const index = refCursor++
       return refs[index] ?? (refs[index] = { current: initial })
     },
-    useEffect: () => {}, useLayoutEffect: () => {}, useMemo: (factory: () => unknown) => factory(), useSyncExternalStore: () => ({}),
+    useEffect: (effect: () => any) => effects.push(effect), useLayoutEffect: () => {}, useMemo: (factory: () => unknown) => factory(), useSyncExternalStore: () => ({}),
   }
   const localPlugin = client({ react: React, '@deepseek-ai/dsh-client-ui-primitives': {
     IconChevronDownOutline14: 'chevron', IconRefreshOutline16: 'refresh',
   } })
   const pending: Promise<unknown>[] = []
+  const dictionaries: Record<string, Record<string, string>> = {}
   let Settings: ((props: object) => Element) | undefined
   const ctx: any = {
-    effect(callback: () => unknown) {
+    effect(callback: () => unknown, label: string) {
+      if (label === 'dsh-super-code: dictionaries') callback()
       if (callback.constructor.name === 'AsyncFunction') pending.push(Promise.resolve(callback()))
     },
-    locale: { register: () => () => {}, bind: () => (key: string) => key },
+    locale: { register: (_namespace: string, values: Record<string, Record<string, string>>) => { Object.assign(dictionaries, values); return () => {} }, bind: () => (key: string) => key },
     remote: { $mount: async () => {} },
     inject: (_dependencies: string[], callback: (ready: any) => void) => callback(ctx),
     slots: {
@@ -213,7 +215,7 @@ test('plugin settings use the same collapsed disclosure behavior as host cards',
     submissions.push(args)
     return { ok: true, value: { ok: false, error: 'name-taken', status: state[0] } }
   } }
-  const render = () => { cursor = 0; refCursor = 0; return Settings!({ api, t }) }
+  const render = (translate = t) => { cursor = 0; refCursor = 0; effects.length = 0; return Settings!({ api, t: translate }) }
   const find = (node: unknown, predicate: (element: Element) => boolean): Element[] => {
     if (!node || typeof node !== 'object' || !('type' in node)) return []
     const element = node as Element
@@ -221,14 +223,53 @@ test('plugin settings use the same collapsed disclosure behavior as host cards',
   }
   let card = render()
   assert.equal(card.type, 'section')
-  let disclosure = find(card, element => element.type === 'button' && 'aria-expanded' in element.props)[0]
-  assert.equal(disclosure?.props['aria-expanded'], false)
+  assert.equal(find(card, element => element.type === 'button' && 'aria-expanded' in element.props).length, 0)
   assert.equal(find(card, element => element.type === 'form').length, 0)
-  disclosure?.props.onClick()
-  card = render()
-  disclosure = find(card, element => element.type === 'button' && 'aria-expanded' in element.props)[0]
-  assert.equal(disclosure?.props['aria-expanded'], true)
   assert.equal(find(card, element => element.props.className === 'dsh-super-code-settings-body').length, 1)
+  assert.equal(find(card, element => element.type === 'header').length, 1)
+  state[3] = false
+  const strings = (node: unknown): string => {
+    if (typeof node === 'string') return node
+    if (!node || typeof node !== 'object' || !('children' in node)) return ''
+    return (node as Element).children.map(strings).join('')
+  }
+  for (const currentLanguage of ['zh', 'en']) {
+    const translate = (key: string) => dictionaries[currentLanguage][key]!
+    for (const [presetVersion, expected] of [['0.3.1', 'match'], ['0.3.0', 'mismatch'], [undefined, 'unknown']]) {
+      state[0] = { authorable: false, delivery: 'declaration', state: 'available', id: 'super-code', pluginVersion: '0.3.1', presetVersion }
+      card = render(translate)
+      const versions = find(card, element => element.type === 'dd')
+      assert.equal(versions[0]?.children[0], '0.3.1')
+      assert.equal(versions[1]?.children[0], presetVersion ?? translate('preset.versionUnknown'))
+      assert.equal(find(card, element => element.props['data-version-state'] === expected).length, 1)
+      assert.ok(strings(card).includes(translate('preset.declaredReadonly')))
+      assert.ok(!strings(card).includes(translate('preset.readonly')))
+      assert.equal(find(card, element => element.type === 'form').length, 0)
+      if (expected === 'mismatch') assert.ok(strings(card).includes(translate('preset.versionReloadHint')))
+    }
+    for (const unavailable of ['missing', 'broken']) {
+      state[0] = { authorable: false, delivery: 'declaration', state: unavailable, id: 'super-code', pluginVersion: '0.3.1' }
+      card = render(translate)
+      assert.ok(strings(card).includes(translate('preset.unavailableHint')))
+      assert.ok(!strings(card).includes(translate('preset.installHint')))
+      assert.ok(!strings(card).includes(translate('preset.availableHint')))
+      if (unavailable === 'missing') assert.equal(find(card, element => element.type === 'dd')[1]?.children[0], translate('preset.versionMissing'))
+    }
+    state[0] = { authorable: true, delivery: 'directory', state: 'installed', id: 'super-code', pluginVersion: '0.3.1', presetVersion: '0.3.0' }
+    card = render(translate)
+    assert.ok(strings(card).includes(translate('preset.versionReinstallHint')))
+    for (const installed of ['missing', 'installed', 'broken']) {
+      state[0] = { authorable: true, delivery: 'declaration', state: installed, reinstallable: installed !== 'missing',
+        id: 'super-code', name: translate('preset.title'), pluginVersion: '0.3.1', presetVersion: '0.3.0' }
+      card = render(translate)
+      assert.equal(find(card, element => element.type === 'form').length, 1)
+      assert.equal(find(card, element => element.props.type === 'submit')[0]?.children[0], translate(installed === 'missing' ? 'preset.installDeclared' : 'preset.reinstall'))
+      if (installed !== 'missing') assert.ok(strings(card).includes(translate('preset.versionReinstallHint')))
+      assert.ok(strings(card).includes(translate('preset.declaredHint')))
+      assert.ok(!strings(card).includes(translate('preset.readonly')))
+      assert.ok(strings(card).includes(translate('preset.declaredNameHint')))
+    }
+  }
   state[0] = { authorable: true, state: 'missing' }
   card = render()
   const display = () => find(card, element => element.props.id === 'super-code-display-name')[0]!
@@ -282,6 +323,30 @@ test('plugin settings use the same collapsed disclosure behavior as host cards',
   action('preset.cancel').props.onClick()
   card = render()
   assert.equal(modal(), undefined)
+  find(card, element => element.type === 'form')[0]!.props.onSubmit({ preventDefault() {} })
+  card = render()
+  const listeners = new Map<string, (event: any) => void>()
+  const nativeDialog = { open: false, ownerDocument: { defaultView: {
+    addEventListener(type: string, callback: (event: any) => void, capture: boolean) { assert.equal(capture, true); listeners.set(type, callback) },
+    removeEventListener(type: string, callback: (event: any) => void, capture: boolean) { assert.equal(capture, true); assert.equal(listeners.get(type), callback); listeners.delete(type) },
+  } }, showModal() { this.open = true }, close() { this.open = false }, querySelector: () => ({ focus() {} }) }
+  refs[0]!.current = nativeDialog
+  const dispose = effects[0]!()
+  let prevented = false, captured = false
+  const escape = { key: 'Escape', target: nativeDialog.ownerDocument,
+    preventDefault() { prevented = true }, stopPropagation() { captured = true } }
+  listeners.get('keydown')!({ ...escape, key: 'Enter' })
+  assert.equal(prevented, false)
+  listeners.get('keydown')!({ ...escape, isComposing: true })
+  assert.equal(prevented, false)
+  listeners.get('keydown')!(escape)
+  assert.ok(prevented && captured, 'Escape is captured even after removing the focused row')
+  card = render()
+  assert.equal(modal(), undefined)
+  assert.deepEqual(reinstalls, [])
+  dispose()
+  assert.equal(nativeDialog.open, false)
+  assert.equal(listeners.size, 0, 'capture listener is removed when the confirmation closes')
   find(card, element => element.type === 'form')[0]!.props.onSubmit({ preventDefault() {} })
   card = render()
   let stopped = false

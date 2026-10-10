@@ -1,0 +1,1 @@
+{"version":3,"file":"preset-version.d.ts","sourceRoot":"","sources":["../../src/dsh/preset-version.ts"],"names":[],"mappings":"AAKA,eAAO,MAAM,aAAa,EAAE,MAAiG,CAAA;AAM7H,MAAM,WAAW,aAAa;IAAG,aAAa,CAAC,EAAE,MAAM,CAAA;CAAE;AAEzD,wBAAgB,kBAAkB,CAAC,OAAO,EAAE,MAAM,GAAG,aAAa,CAYjE;AAED,wBAAsB,gBAAgB,CAAC,IAAI,EAAE,MAAM,GAAG,OAAO,CAAC,aAAa,CAAC,CAG3E"}

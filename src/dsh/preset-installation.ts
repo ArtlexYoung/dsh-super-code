@@ -3,10 +3,14 @@ import { cp, lstat, mkdir, mkdtemp, readdir, rm, readFile, writeFile, rename, re
 import { randomUUID } from 'node:crypto'
 import { join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import { createRequire } from 'node:module'
 import type { Context } from '@deepseek-ai/cordis'
+import type {} from '@deepseek-ai/cordis-plugin-loader'
 import s from '@deepseek-ai/schemastery'
 import { copyBundledPreset, writableRoot, type DirectoryPresets } from './preset-files.js'
 import { displayCopy, migrateMetadata, type DisplayBaseline } from './preset-metadata.js'
+import { compositionVersion, directoryVersion, pluginVersion } from './preset-version.js'
+import { DeclarationStateFile, DeclaredPresetInstaller, type DeclarationHost } from './preset-declaration.js'
 import type { SettingsScope } from '@deepseek-ai/dsh-settings'
 import { Remote, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
 
@@ -23,11 +27,15 @@ export interface PresetInstallationStatus {
   name?: string
   authorable: boolean
   userConflict: boolean
+  delivery: 'directory' | 'declaration'
+  pluginVersion: string
+  presetVersion?: string
+  reinstallable?: boolean
 }
 export interface PresetInstallationResult {
   ok: boolean
   status: PresetInstallationStatus
-  error?: 'ownership-unverified' | 'invalid-name' | 'invalid-display-name' | 'name-taken' | 'no-user-root' | 'install-failed'
+  error?: 'ownership-unverified' | 'invalid-name' | 'invalid-display-name' | 'name-taken' | 'no-user-root' | 'management-unavailable' | 'install-failed'
 }
 const sourceRoot = fileURLToPath(new URL('../../presets/', import.meta.url))
 const ownershipFile = '.super-code-installation.json'
@@ -60,10 +68,11 @@ export class PresetInstaller {
     const userConflict = occupied && this.settings.get().installedId !== id
     if (preset) {
       const owned = preset.trust === 'system' && resolve(preset.path) === join(this.bundledRoot, 'super-code', 'agent.cordis.yml')
-      return { id, name: preset.name, authorable, userConflict, state: preset.broken ? 'broken' : owned ? 'available'
+      return { id, name: preset.name, authorable, userConflict, delivery: 'directory', pluginVersion,
+        ...await directoryVersion(preset.path), state: preset.broken ? 'broken' : owned ? 'available'
         : preset.trust === 'user' && this.settings.get().installedId === id ? 'installed' : 'conflict' }
     }
-    return { id, authorable, userConflict, state: occupied ? 'conflict' : 'missing' }
+    return { id, authorable, userConflict, delivery: 'directory', pluginVersion, state: occupied ? 'conflict' : 'missing' }
   }
 
   async initialize(): Promise<void> {
@@ -211,7 +220,8 @@ export class PresetInstaller {
         delete display[join(replacedPath, 'agent.cordis.yml')]
         delete pendingDisplay[join(replacedPath, 'agent.cordis.yml')]
       }
-      const status: PresetInstallationStatus = { id, authorable: true, userConflict: false, state: 'installed' }
+      const status: PresetInstallationStatus = { id, authorable: true, userConflict: false, state: 'installed',
+        delivery: 'directory', pluginVersion, ...await directoryVersion(join(target, 'agent.cordis.yml')) }
       await this.settings.update({ checked: true, installedId: id, installation, pendingDisplay, display: {
         ...display,
         [join(target, 'agent.cordis.yml')]: {
@@ -243,25 +253,57 @@ interface InstallationController {
   synchronize(language: string): Promise<{ changed: boolean }>
 }
 
-/** The 0.1.7 registry owns declarations; this package never writes its profile. */
+export interface DeclaredPresetRegistry {
+  list(): Promise<readonly { id: string; name?: string; broken?: string }[]>
+  readDocument?(id: string): Promise<{ agentPreset: string; content: string }>
+}
+
+/** Read-only fallback when a declarative host exposes no profile management. */
 export class DeclaredPresetStatus implements InstallationController {
-  constructor(private readonly registry: { list(): Promise<readonly { id: string; name?: string; broken?: string }[]> }) {}
+  constructor(private readonly registry: DeclaredPresetRegistry) {}
 
   async status(): Promise<PresetInstallationStatus> {
     const preset = (await this.registry.list()).find(row => row.id === 'super-code')
+    let version = {}
+    if (preset && this.registry.readDocument) {
+      try {
+        const document = await this.registry.readDocument(preset.id)
+        if (document.agentPreset === preset.id) version = compositionVersion(document.content)
+      } catch { /* A missing or unreadable declaration has an unknown version. */ }
+    }
     return { id: 'super-code', name: preset?.name, authorable: false, userConflict: false,
+      delivery: 'declaration', pluginVersion, ...version,
       state: preset ? preset.broken ? 'broken' : 'available' : 'missing' }
   }
 
   async install(_id: unknown, _name?: string): Promise<PresetInstallationResult> {
-    return { ok: false, error: 'no-user-root', status: await this.status() }
+    return { ok: false, error: 'management-unavailable', status: await this.status() }
   }
 
   async reinstall(_previousId: string, _id: unknown, _name?: string): Promise<PresetInstallationResult> {
-    return { ok: false, error: 'no-user-root', status: await this.status() }
+    return { ok: false, error: 'management-unavailable', status: await this.status() }
   }
 
   async synchronize(_language: string): Promise<{ changed: boolean }> { return { changed: false } }
+}
+
+async function declarationHost(owner: Context): Promise<DeclarationHost | false> {
+  const profile = owner.get('profileContext') as { patchPath?: string; installAnchor?: string } | undefined
+  const loader = owner.get('loader') as Context['loader'] | undefined
+  if (!profile?.patchPath || !loader) return false
+  try {
+    // Resolve the running host's public API, rather than a second bundled host.
+    const require = createRequire(profile.installAnchor ?? new URL('package.json', owner.baseUrl))
+    const boot = await import(pathToFileURL(require.resolve('@deepseek-ai/dsh-app-boot')).href)
+    if (typeof boot.readProfilePatches !== 'function' || typeof boot.reconcileProfilePatches !== 'function') return false
+    const hmr = owner.get('hmr') as { runExclusive<T>(run: () => Promise<T>): Promise<T> } | undefined
+    return {
+      patchPath: profile.patchPath,
+      entries: () => [...loader.entries()].map(row => ({ id: row.options.id, disabled: row.disabled, options: row.options })),
+      reload: async () => { await boot.reconcileProfilePatches(owner.root, boot.readProfilePatches('dsh', profile), 'dsh') },
+      exclusive: run => hmr ? hmr.runExclusive(run) : run(),
+    }
+  } catch { return false }
 }
 
 export class SuperCodePresets extends TypertRemoteService {
@@ -282,9 +324,18 @@ export class SuperCodePresets extends TypertRemoteService {
 
 export function applyPresetInstallation(ctx: Context): void {
   ctx.inject(['agentPresets', 'settings'], async owner => {
-    const registry = owner.get('agentPresets') as { roots?: unknown; list(): Promise<readonly { id: string; name?: string; broken?: string }[]> }
+    const registry = owner.get('agentPresets') as DeclaredPresetRegistry & { roots?: unknown }
     if (!Array.isArray(registry.roots)) {
-      new SuperCodePresets(owner, new DeclaredPresetStatus(registry))
+      const host = await declarationHost(owner)
+      if (!host) { new SuperCodePresets(owner, new DeclaredPresetStatus(registry)); return }
+      try {
+        const settings = await DeclarationStateFile.open(join(host.patchPath, '..', '.super-code-presets.json'))
+        new SuperCodePresets(owner, new DeclaredPresetInstaller(registry, settings, host,
+          fileURLToPath(new URL('../../cordis.patch.yml', import.meta.url))))
+      } catch {
+        new SuperCodePresets(owner, new DeclaredPresetStatus(registry))
+        owner.logger.warn('Super Code preset management unavailable; check the local installation record.')
+      }
       return
     }
     const settings = owner.settings.register('super-code', s.object({

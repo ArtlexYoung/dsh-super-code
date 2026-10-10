@@ -1,5 +1,10 @@
 # 版本记录 · Changelog
 
+- **0.3.1 · 2026-10-10**：设置页始终展开，展示插件与当前预设的独立版本，提示不一致或未记录版本；声明式宿主新增安装、确认重装、改名、恢复备份及默认名称/描述语言同步。保留目录式安装、归属校验和自定义内容保护，允许新版宿主使用的 Cordis/Schemastery alpha 依赖。
+  **0.3.1 · 2026-10-10**: Keeps settings expanded and shows independent plugin/preset versions with mismatch or unrecorded-version notices. Adds installation, confirmed reinstallation, renaming, recovery backups and default display-language synchronization on declarative hosts. Retains directory installation, ownership checks and custom display-field protection, and accepts the Cordis/Schemastery alpha dependencies used by newer hosts.
+  修复原生桌面宿主管理 API 的解析位置，以及移除确认列表条目后 Escape 误关设置页的问题。逐版验证 15 个官方 Harness 版本（`0.1.5-alpha.1`～`0.2.1-alpha.2`）及可获取的四个 macOS arm64 Desktop 发行包；[验证范围与限制](Compatibility.md)。
+  Fixes native Desktop management API resolution and Escape closing Settings after removing a confirmation row. Verifies 15 official Harness versions (`0.1.5-alpha.1`–`0.2.1-alpha.2`) and four available macOS arm64 Desktop releases; [verification scope and limits](Compatibility.md).
+
 - **0.3.0 · 2026-10-09**：合入 Batch.3，用 Harness 原生 PTC 合并工具调用、并行独立读取，补齐批量调用中的 Agent 记忆使用记录，保留分层记忆及 0.2.1 的兼容适配，更新完整 100 题成绩和使用说明。
   **0.3.0 · 2026-10-09**: Integrates Batch.3 with Harness-native PTC for composed tool calls and parallel independent reads, adds per-Agent memory activity for nested calls, retains layered memory and 0.2.1 compatibility updates, and refreshes the complete 100-task results and usage guide.
 

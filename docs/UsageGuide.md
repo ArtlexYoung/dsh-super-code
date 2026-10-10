@@ -32,13 +32,13 @@ First confirm the plugin is enabled and check the host version and installed dep
 
 ### Harness 0.1.7 / 0.2.0 / 0.2.1：声明式预设 · Declarative Presets
 
-在已验证的 0.1.7、0.2.0 和 0.2.1 版本上，Super Code 由插件 bundle 声明，宿主负责发现和加载；插件不会创建用户预设目录。设置页显示宿主报告的预设状态，不提供安装、重命名或重装目录副本的流程。若状态为缺失或损坏，检查插件是否启用、宿主组件是否混版，以及日志中的预设依赖错误，而不是反复点击安装。
+Super Code 由插件 bundle 声明，宿主负责加载。从 0.3.1 起，未安装时可以在“设置”→ **Super Code** 安装预设；已安装时提供“重新安装预设”，确认后按所填名称和标识符替换。声明保存在当前 profile 的补丁层，通过宿主公开接口加载，不需要用户预设目录。宿主未开放管理接口时，页面会明确提示。
 
-On the verified 0.1.7, 0.2.0, and 0.2.1 versions, the plugin bundle declares Super Code and the host discovers and loads it; the plugin does not create a user preset directory. Settings show the host's preset status rather than a workflow for installing, renaming, or reinstalling directory copies. If the preset is missing or broken, check plugin activation, mixed host versions, and preset dependency errors in the logs instead of retrying directory installation.
+The plugin bundle declares Super Code and the host loads it. From 0.3.1, use “Settings” → **Super Code** to install a missing preset or confirm reinstallation of an installed preset with the entered name and identifier. Declarations persist in the current profile's patch layer and load through public host APIs; no user preset directory is needed. Hosts without management APIs show an explicit notice.
 
-声明默认名称为 `Super Code`，描述为 `A faster, more efficient, smarter coding mode.`；插件不在此路径同步预设名称/描述的语言或改写用户 profile。定制应通过宿主支持的配置机制进行，本轮兼容冒烟不覆盖全部定制场景。插件界面本身仍支持中英文。
+声明式预设的默认名称和描述从 0.3.1 起跟随中英文设置，已自定义的字段保留。语言变化只调整展示字段，不更新旧预设的内容或版本；确认重装才使用当前插件随包的组合。
 
-The declaration defaults to the name `Super Code` and description `A faster, more efficient, smarter coding mode.` On this path, the plugin does not synchronize the preset name/description language or rewrite the user profile. Use the host's supported configuration mechanisms for customization; the smoke checks do not cover every customization scenario. The plugin interface itself still supports Chinese and English.
+From 0.3.1, default declarative preset names and descriptions follow Chinese/English settings while custom fields remain intact. Language changes update display fields only, retaining the older preset's content and version. Confirmed reinstallation uses the composition shipped with the current plugin.
 
 插件管理中的展示信息独立于预设声明：0.2.1 通过导出的语言资源提供 `Super Code 模式` / `Super Code` 和对应描述，支持新版宿主读取根路径及子路径的展示信息。
 
@@ -46,15 +46,25 @@ Plugin management metadata is separate from the preset declaration. Version 0.2.
 
 ### Harness 0.1.5/0.1.6：目录预设 · Directory Presets
 
-如果 Harness 没发现插件自带的 `super-code`，插件首次加载时会尝试安装一份用户预设。仍然没看到时，打开“设置”→ **Super Code**，展开卡片查看状态并手动安装。默认标识符 `super-code` 若已被占用，换一个即可；原有预设不会被覆盖。之后若主动删除这份用户副本，重启也不会自动重装，需要再次手动安装。0.2.0 以前的插件设置入口在“插件”→“插件配置”中。
+如果 Harness 没发现插件自带的 `super-code`，插件首次加载时会尝试安装一份用户预设。仍然没看到时，打开“设置”→ **Super Code**，查看状态并手动安装；0.3.1 起此页始终展开。默认标识符 `super-code` 若已被占用，换一个即可；原有预设不会被覆盖。之后若主动删除这份用户副本，重启也不会自动重装，需要再次手动安装。0.2.0 以前的插件设置入口在“插件”→“插件配置”中。
 
-If Harness doesn't find the bundled `super-code` preset, the plugin tries to install a user copy on first load. If it still isn't listed, open “Settings” → **Super Code** and expand the card to check its status or install it manually. If the default identifier `super-code` is taken, choose another; the existing preset won't be overwritten. If you later delete this copy, a restart won't reinstall it automatically. Plugin versions before 0.2.0 place this page under “Plugins” → “Plugin configuration”.
+If Harness doesn't find the bundled `super-code` preset, the plugin tries to install a user copy on first load. If it still isn't listed, open “Settings” → **Super Code** to check its status or install it manually; this page stays expanded from 0.3.1 onward. If the default identifier `super-code` is taken, choose another; the existing preset won't be overwritten. If you later delete this copy, a restart won't reinstall it automatically. Plugin versions before 0.2.0 place this page under “Plugins” → “Plugin configuration”.
+
+## 查看预设版本 · Checking the Preset Version
+
+0.3.1 起，“设置”→ **Super Code** 分别显示已加载的插件版本和当前预设版本。预设版本来自实际加载的预设组合；两者一致时表示预设与当前安装的插件同步，不代表 npm 上没有更新版本。旧预设没有版本记录时，会显示“未记录版本”，不会自动视为最新版。修改名称或切换语言不改变预设版本。
+
+From 0.3.1 onward, “Settings” → **Super Code** shows the loaded plugin version and the current preset version separately. The preset version comes from its actual composition. Matching versions mean the preset is in sync with the installed plugin, not that no newer npm release exists. Older presets without version metadata show “Version not recorded”. Renaming a preset or changing the language does not change its version.
+
+若版本不一致，先保留需要的自定义内容，再通过确认清单重装。目录式宿主替换用户副本，声明式宿主替换本插件拥有的声明，均保留恢复备份。重装后刷新仍不一致时，检查插件更新是否生效及宿主日志。
+
+If versions differ, save the custom content you need, then confirm reinstallation. Directory hosts replace the user copy; declarative hosts replace this plugin's owned declaration. Both retain recovery backups. If refreshed versions still differ, check that the plugin update took effect and inspect host logs.
 
 ## 名称与语言 · Names and Language
 
-本节的名称同步和自定义安装名称适用于旧宿主的目录预设，不适用于 0.1.7 / 0.2.0 / 0.2.1 的声明式预设。
+0.3.1 的名称同步和自定义安装名称同时支持目录式与声明式预设。
 
-The name synchronization and custom installation names in this section apply to directory presets on older hosts, not declarative presets on 0.1.7 / 0.2.0 / 0.2.1.
+Version 0.3.1 supports display-language synchronization and custom installation names for directory and declarative presets.
 
 标识符和显示名称是两回事：标识符用于选择预设，显示名称可以单独修改。默认名称会跟随 Harness 的中英文语言设置；自定义名称可以包含中文和空格，例如 `Super Code 模式`，最多 120 个字符。插件只更新仍保持默认值的名称和描述，不会改动你的自定义内容。
 
@@ -66,9 +76,9 @@ Older Harness versions cache the preset list, so the page refreshes once if the 
 
 ## 重装与备份 · Reinstallation and Backup
 
-仅适用于插件在旧宿主上管理的用户目录副本；0.1.7 / 0.2.0 / 0.2.1 声明式预设没有此重装/备份流程。
+目录副本与声明式预设均支持此流程；插件只替换能够核实归属的预设。
 
-This applies only to user-directory copies managed by the plugin on older hosts. Declarative presets on 0.1.7 / 0.2.0 / 0.2.1 do not use this reinstallation/backup workflow.
+This workflow supports directory copies and declarative presets. The plugin replaces only presets whose ownership can be verified.
 
 已安装用户预设时，可以点“重新安装预设”。确认框会列出将被替换的预设及新名称、标识符，先核对再确认。可以从列表中移除条目，但全部移除后不能确认；取消或按 Escape 不会改动预设。重装会重置旧副本的内容，所以自定义内容请先自行留存。
 
@@ -77,6 +87,10 @@ If a user preset is already installed, you can choose “Reinstall preset”. Th
 为避免误删，插件只会替换安装记录、目录内 UUID、路径及目录身份都能核对上的副本，不会自动删除旧版无标记副本。重装前的目录会保留在用户预设根目录的 `.super-code-backup-*/<旧标识符>` 下，且不会出现在预设列表中。安装失败时会自动恢复旧目录；若进程意外中断，也可从备份手动恢复。
 
 To avoid removing the wrong files, the plugin replaces only copies whose installation record, UUID, path, and directory identity all match. It never automatically deletes unmarked legacy copies. The previous directory stays under `.super-code-backup-*/<old-id>` in the user preset root and won't appear in the preset list. An installation failure restores the old directory; after an unexpected interruption, you can recover it manually from the backup.
+
+声明式宿主通过 bundle 来源标记，或匹配的安装记录、声明标识符和 UUID 核实归属；同名的无标记声明不会自动认领。旧声明及原 profile 补丁保存在当前 profile 的 `.super-code-backup-*` 中，安装记录位于 `.super-code-presets.json`。失败时尝试恢复原补丁和记录；若进程中断，可从备份恢复。已有会话继续使用宿主保留的旧预设组合，新会话使用重装后的版本。
+
+Declarative hosts verify a bundle source marker or matching installation record, entry identity and UUID. Unmarked same-name declarations are not adopted automatically. The previous declaration and profile patch stay in `.super-code-backup-*` under the current profile; `.super-code-presets.json` stores ownership records. Failures attempt to restore the original patch and record; backups allow recovery after interruption. Existing sessions retain their old composition through the host; new sessions use the reinstalled version.
 
 ## Agent 执行树 · Agent Execution Tree
 

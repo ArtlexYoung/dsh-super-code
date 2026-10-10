@@ -6,19 +6,65 @@ import { join, resolve } from 'node:path'
 import { tmpdir } from 'node:os'
 import { discoverPresets, type PresetRoot } from '@deepseek-ai/dsh-agent-presets'
 import { DeclaredPresetStatus, PresetInstaller } from '../src/dsh/preset-installation.js'
+import { compositionVersion, pluginVersion } from '../src/dsh/preset-version.js'
 
 test('declarative host reports its own preset without editing the profile', async () => {
   const available = new DeclaredPresetStatus({ list: async () => [{ id: 'super-code', name: 'Super Code' }] })
   assert.deepEqual(await available.status(), { id: 'super-code', name: 'Super Code', authorable: false,
-    userConflict: false, state: 'available' })
+    userConflict: false, state: 'available', delivery: 'declaration', pluginVersion })
   assert.deepEqual(await available.synchronize('zh-CN'), { changed: false })
-  assert.equal((await available.install('copy')).error, 'no-user-root')
-  assert.equal((await available.reinstall('super-code', 'copy')).error, 'no-user-root')
+  assert.equal((await available.install('copy')).error, 'management-unavailable')
+  assert.equal((await available.reinstall('super-code', 'copy')).error, 'management-unavailable')
 
   const broken = new DeclaredPresetStatus({ list: async () => [{ id: 'super-code', broken: 'missing tool' }] })
   assert.equal((await broken.status()).state, 'broken')
   const missing = new DeclaredPresetStatus({ list: async () => [] })
   assert.equal((await missing.status()).state, 'missing')
+})
+
+const versionedComposition = (version: string) => `- id: super-code\n  name: dsh-super-code/super-code\n  config:\n    presetVersion: ${version}\n`
+
+test('declarative status reads the actual declaration version, including stale and broken presets', async () => {
+  let version = pluginVersion, broken = ''
+  const registry = new DeclaredPresetStatus({
+    list: async () => [{ id: 'super-code', broken }],
+    readDocument: async id => ({ agentPreset: id, content: versionedComposition(version) }),
+  })
+  assert.equal((await registry.status()).presetVersion, pluginVersion)
+  version = '0.3.0'
+  assert.equal((await registry.status()).presetVersion, '0.3.0')
+  await registry.synchronize('zh')
+  assert.equal((await registry.status()).presetVersion, '0.3.0', 'language synchronization cannot upgrade a composition')
+  broken = 'missing tool'
+  assert.equal((await registry.status()).state, 'broken')
+  assert.equal((await registry.status()).presetVersion, '0.3.0')
+})
+
+test('unknown, unreadable, unrelated and missing declarations never borrow the plugin version', async () => {
+  for (const content of ['[]', versionedComposition('invalid'), versionedComposition(pluginVersion).replace('dsh-super-code/super-code', 'another-plugin')]) {
+    const controller = new DeclaredPresetStatus({ list: async () => [{ id: 'super-code' }],
+      readDocument: async id => ({ agentPreset: id, content }) })
+    assert.equal((await controller.status()).presetVersion, undefined)
+  }
+  const unreadable = new DeclaredPresetStatus({ list: async () => [{ id: 'super-code' }],
+    readDocument: async () => { throw new Error('unavailable') } })
+  assert.equal((await unreadable.status()).presetVersion, undefined)
+  const wrongDocument = new DeclaredPresetStatus({ list: async () => [{ id: 'super-code' }],
+    readDocument: async () => ({ agentPreset: 'another-preset', content: versionedComposition(pluginVersion) }) })
+  assert.equal((await wrongDocument.status()).presetVersion, undefined)
+  const missing = new DeclaredPresetStatus({ list: async () => [], readDocument: async () => { throw new Error('must not read missing preset') } })
+  assert.equal((await missing.status()).state, 'missing')
+  assert.equal((await missing.status()).presetVersion, undefined)
+})
+
+test('version metadata tolerates host expressions without executing them and rejects ambiguous compositions', () => {
+  const expression = '!!js (() => { throw new Error("must not execute") })()'
+  assert.deepEqual(compositionVersion(versionedComposition('0.2.1-alpha.1') + `- name: host-tool\n  disabled: ${expression}\n`),
+    { presetVersion: '0.2.1-alpha.1' })
+  for (const content of [versionedComposition(expression), versionedComposition('0.3.1') + versionedComposition('0.3.0'),
+    '- name: [invalid', '{}', versionedComposition('0.3.1<script>'), versionedComposition('0.3.1').replace('config:', `config: ${expression}\n  ignored:`)]) {
+    assert.deepEqual(compositionVersion(content), {})
+  }
 })
 
 async function fixture(t: TestContext, options: { bundled?: boolean; writable?: boolean } = {}) {
@@ -38,6 +84,36 @@ async function fixture(t: TestContext, options: { bundled?: boolean; writable?: 
     update: async (patch: object) => { if (failWrites) throw new Error('readonly'); stored = { ...stored, ...patch } } }
   return { root, source, user, roster, settings, create: () => new PresetInstaller(roster, settings, source), failWrites: () => { failWrites = true } }
 }
+
+test('directory installation preserves the shipped version across plugin upgrades until confirmed reinstallation', async t => {
+  const f = await fixture(t), installer = f.create()
+  const source = join(f.source, 'super-code', 'agent.cordis.yml')
+  await writeFile(source, versionedComposition('0.3.0'))
+  const installed = await installer.install('my-code', '我的模式')
+  assert.equal(installed.status.pluginVersion, pluginVersion)
+  assert.equal(installed.status.presetVersion, '0.3.0')
+  await writeFile(source, versionedComposition(pluginVersion))
+  await f.create().initialize()
+  await installer.synchronize('zh')
+  assert.equal((await installer.status()).presetVersion, '0.3.0')
+  const reinstalled = await installer.reinstall('my-code', 'new-code', '新模式')
+  assert.equal(reinstalled.ok, true)
+  assert.equal(reinstalled.status.presetVersion, pluginVersion)
+  assert.equal((await f.create().status()).presetVersion, pluginVersion)
+  const backup = (await readdir(f.user)).find(name => name.startsWith('.super-code-backup-'))!
+  assert.equal(await readFile(join(f.user, backup, 'my-code', 'agent.cordis.yml'), 'utf8'), versionedComposition('0.3.0'))
+})
+
+test('directory status reads bundled metadata but reports absent legacy versions as unknown', async t => {
+  const f = await fixture(t, { bundled: true }), installer = f.create()
+  assert.equal((await installer.status()).presetVersion, undefined)
+  await writeFile(join(f.source, 'super-code', 'agent.cordis.yml'), versionedComposition(pluginVersion))
+  assert.equal((await installer.status()).presetVersion, pluginVersion)
+  assert.equal((await installer.status()).delivery, 'directory')
+  await rm(f.source, { recursive: true })
+  assert.equal((await installer.status()).state, 'missing')
+  assert.equal((await installer.status()).presetVersion, undefined)
+})
 
 test('installs once, survives recreation, and respects user deletion until manual reinstall', async t => {
   const f = await fixture(t), installer = f.create()

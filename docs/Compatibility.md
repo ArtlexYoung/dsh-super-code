@@ -1,5 +1,51 @@
 # 宿主兼容性 · Host Compatibility
 
+## 0.3.1 · 2026-10-10
+
+支持下限保持 `0.1.5-alpha.1`。截至本次核对，官方 npm 的 `latest`/`next` 指向 `0.2.0-rc.2`，`alpha` 指向 `0.2.1-alpha.2`；官方 macOS arm64 Desktop 更新源指向 `0.2.0-rc.2`。
+
+The minimum remains `0.1.5-alpha.1`. On this date, official npm `latest`/`next` points to `0.2.0-rc.2` and `alpha` to `0.2.1-alpha.2`; the official macOS arm64 Desktop update feed points to `0.2.0-rc.2`.
+
+下表 15 个官方 Harness 版本均真实安装 0.3.1 候选包，使用固定并审计的宿主依赖和隔离 profile。预设检查覆盖缺失安装、确认流程所用的改名/改标识符重装接口、冲突保护、语言同步和重启后读取/重装。主/子 Agent、任务与项目/全局记忆、跨工作区隔离、重启读取及网页执行树、缩放拖动、侧栏详情、记忆库、展开设置、版本展示和确认列表移除/取消均通过。模型由本地确定性测试提供，没有调用外部模型。
+
+All 15 official Harness versions below installed the 0.3.1 candidate with pinned, audited host dependencies and isolated profiles. Preset checks covered missing installation, rename/identifier reinstallation, conflicts, language synchronization and restart recovery. Main/child Agents, task/project/global memory, workspace isolation and restart reads passed, along with web tree/zoom/pan, sidebar details, memory library, expanded settings, independent versions, and removable/cancellable confirmation lists. Tests used a local deterministic model without external model calls.
+
+| Harness | 预设机制 / Presets | 0.3.1 Web/CLI 与浏览器 / Web/CLI and browser |
+|---|---|---|
+| `0.1.5-alpha.1` | 目录 / Directory | 通过 / Pass |
+| `0.1.5-alpha.2` | 目录 / Directory | 通过 / Pass |
+| `0.1.5-rc.1` | 目录 / Directory | 通过 / Pass |
+| `0.1.5-rc.2` | 目录 / Directory | 通过 / Pass |
+| `0.1.5-rc.3` | 目录 / Directory | 通过 / Pass |
+| `0.1.6-alpha.1` | 目录 / Directory | 通过 / Pass |
+| `0.1.6-alpha.2` | 目录 / Directory | 通过 / Pass |
+| `0.1.7-alpha.1` | 声明式 / Declarative | 通过 / Pass |
+| `0.1.7-alpha.2` | 声明式 / Declarative | 通过 / Pass |
+| `0.1.7-rc.1` | 声明式 / Declarative | 通过 / Pass |
+| `0.1.7-rc.2` | 声明式 / Declarative | 通过 / Pass |
+| `0.2.0-rc.1` | 声明式 / Declarative | 通过 / Pass |
+| `0.2.0-rc.2` | 声明式 / Declarative | 通过 / Pass |
+| `0.2.1-alpha.1` | 声明式 / Declarative | 通过 / Pass |
+| `0.2.1-alpha.2` | 声明式 / Declarative | 通过 / Pass |
+
+原生 PTC 另在最低版、稳定最新版和预发布最新版（`0.1.5-alpha.1`、`0.2.0-rc.2`、`0.2.1-alpha.2`）验证独立读取并行、写入顺序、权限拒绝与部分失败保留。0.1.7 的两个 alpha 版没有预设文档读取接口，因此归属核验要求唯一、启用的 Loader 声明；其他声明式版本核验实际活跃组合的来源标记。桌面宿主使用自己的安装位置解析管理 API，避免加载第二份宿主模块。
+
+Native PTC additionally passed parallel independent reads, ordered writes, permission denial and partial-failure preservation on the minimum, stable latest and prerelease latest versions. The two 0.1.7 alpha hosts lack the document reader, so ownership requires a unique enabled Loader declaration; later hosts verify the marker in the active composition. Desktop management resolves APIs from the running host installation to avoid loading a separate host module.
+
+官方 macOS arm64 的 `0.1.7-rc.1`、`0.1.7-rc.2`、`0.2.0-rc.1`、`0.2.0-rc.2` 发行包均在隔离应用副本中启动，验证原生后端的预设安装、改名重装、语言和版本状态。副本保留原始 CFBundleName，仅隔离应用身份、profile 与测试端口。Safari 最新 alpha.2 与官方 Desktop rc.2 的实际界面验收另留截图。DSH NEXT 2.0.17-next（Harness rc.2）也使用隔离副本验收。
+
+The official macOS arm64 releases of `0.1.7-rc.1`, `0.1.7-rc.2`, `0.2.0-rc.1` and `0.2.0-rc.2` launched in isolated app copies and passed native-backend preset installation, renamed reinstallation, language and version-state checks. Copies retain the original CFBundleName and isolate application identity, profiles and test ports. Separate screenshots record Safari alpha.2 and official Desktop rc.2 UI checks. DSH NEXT 2.0.17-next (Harness rc.2) uses an isolated copy as well.
+
+四版原生后端均验证重启后的归属与版本恢复。官方 Desktop rc.2 和 DSH NEXT 实际点击完成缺失安装、改名/改标识符确认重装，核对设置回填及旧内容恢复备份。官方 Desktop 的中文版本不一致提示通过截图；移除聚焦条目后 Escape 只关闭确认框、保留设置页的修复已复验。英文及未知版本状态有双语单元覆盖，但后续原生截图受桌面控制接口超时限制，未记作通过。
+
+All four native backends restored ownership and version state after restart. Actual clicks in official Desktop rc.2 and DSH NEXT completed missing installation and confirmed rename/identifier reinstallation, with form values and recovery backups checked. The official Desktop Chinese mismatch notice was captured, and Escape after removing the focused row now closes only the confirmation while retaining Settings. Unit tests cover English and unknown-version states; subsequent native screenshots were limited by desktop-control timeouts and are not claimed as passed.
+
+更早版本及 `0.2.1-alpha.1/alpha.2` 的对应官方 macOS arm64 安装包未从本次核对的下载地址获取（HTTP 404），不能据此宣称这些版本的原生桌面窗口已通过。Web/CLI 验证与原生 Desktop 验证分别记录；其他平台、外部模型和完整用户升级场景仍需单独验收。下面保留历史发布记录。
+
+Matching official macOS arm64 installers for earlier versions and `0.2.1-alpha.1/alpha.2` returned HTTP 404 at the checked download URLs; their native desktop windows are not claimed as verified. Web/CLI and native Desktop results are recorded separately. Other platforms, external models and complete user-upgrade scenarios require separate checks. Historical release records follow.
+
+## 历史发布验证 · Previous Release Checks
+
 Super Code 0.3.0 于 2026-10-09 重新验证了最低支持版 `0.1.5-alpha.1`、`0.2.0-rc.2` 和最新已适配版 `0.2.1-alpha.1`。三版均在隔离 profile 中真实安装发布候选包，通过原生 PTC 独立读取并行、写入顺序、权限拒绝、部分失败保留、主/子 Agent 记忆及重启读取；Playwright 网页回归覆盖执行树、拖动和缩放、侧栏详情、记忆库、记忆使用记录及可折叠设置。使用本地确定性模型，没有调用外部模型服务。
 
 On October 9, 2026, Super Code 0.3.0 rechecked the minimum supported host, `0.1.5-alpha.1`, plus `0.2.0-rc.2` and the latest adapted host, `0.2.1-alpha.1`. All three installed the release candidate in isolated profiles and passed native PTC parallel reads, ordered writes, permission denial, partial-failure preservation, main/child Agent memory, and restart reads. Playwright web checks covered the tree, drag and zoom, sidebar details, the memory library, memory activity, and collapsible settings. These checks used a local deterministic model with no external model calls.
@@ -51,9 +97,9 @@ The host also splits composer `stats` and removes the runtime `invariant` export
 
 ## 依赖与安装注意事项 · Dependency and Installation Notes
 
-对外说明按 Harness `0.1.5-alpha.1`～`0.2.1-alpha.1` 的适配范围写；npm 依赖声明仍需分别列出预发布系列。按 npm 的版本规则，单写 `>=0.1.5-alpha.1 <0.3.0` 会排除 `0.1.6-alpha.1`、`0.2.0-rc.2` 等已支持的 alpha/rc 版本，因此不能直接合并成一个连续范围。
+对外说明按 Harness `0.1.5-alpha.1`～`0.2.1-alpha.2` 的适配范围写；npm 依赖声明仍需分别列出预发布系列。按 npm 的版本规则，单写 `>=0.1.5-alpha.1 <0.3.0` 会排除 `0.1.6-alpha.1`、`0.2.0-rc.2` 等已支持的 alpha/rc 版本，因此不能直接合并成一个连续范围。
 
-User-facing guidance describes adaptations for Harness `0.1.5-alpha.1`–`0.2.1-alpha.1`; npm dependency declarations still list the prerelease series individually. Under npm's version rules, a single `>=0.1.5-alpha.1 <0.3.0` range excludes supported prereleases such as `0.1.6-alpha.1` and `0.2.0-rc.2`, so those declarations cannot be collapsed into one continuous range.
+User-facing guidance describes adaptations for Harness `0.1.5-alpha.1`–`0.2.1-alpha.2`; npm dependency declarations still list the prerelease series individually. Under npm's version rules, a single `>=0.1.5-alpha.1 <0.3.0` range excludes supported prereleases such as `0.1.6-alpha.1` and `0.2.0-rc.2`, so those declarations cannot be collapsed into one continuous range.
 
 预发布依赖的 caret 范围可能解析到其他 alpha/rc 版本。此前默认安装 `0.1.6-alpha.1` 时混入 alpha.2，导致宿主在插件加载前报 `watchUserPatches` 导出缺失；`0.1.7-alpha.1` 也曾解析到 rc.1。验证环境通过精确 overrides 解决混版，但这并未修复上游发布的依赖声明，也不证明未锁定的默认安装总能成功。遇到类似错误时，应先核对实际安装的宿主组件版本。
 

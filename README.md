@@ -8,6 +8,16 @@ A faster, more efficient coding plugin for DeepSeek Harness. It handles straight
 
 On the same SWE-bench Pro hard-100 set, the Batch.3 candidate adopted for 0.3.0 uses **48% less response time**, **45% fewer total tokens**, and **44.5% fewer model calls**, with **54% passing versus 44%** for official minimal. [Full results and limitations](docs/EvaluationResults.md)
 
+## 0.3.1 · What's New
+
+设置页始终展开，显示插件与当前预设的独立版本，并提示版本不一致或旧预设未记录版本。目录式和 DSH NEXT 等声明式宿主均提供安装、确认重装、改名及恢复备份，默认名称和描述跟随中英文切换。[版本检查与更新](docs/UsageGuide.md#查看预设版本--checking-the-preset-version)
+
+The settings page stays expanded, shows independent plugin and preset versions, and flags mismatched or unrecorded versions. Directory and declarative hosts such as DSH NEXT support installation, confirmed reinstallation, renaming and recovery backups. Default names and descriptions follow Chinese/English language changes. [Version checks and updates](docs/UsageGuide.md#查看预设版本--checking-the-preset-version)
+
+本版本已逐版验证 Harness `0.1.5-alpha.1`～`0.2.1-alpha.2` 的 15 个官方 Web/CLI 版本；原生桌面范围和限制见[兼容矩阵](docs/Compatibility.md)。
+
+This version verifies 15 official Web/CLI versions from Harness `0.1.5-alpha.1` through `0.2.1-alpha.2`; see the [matrix](docs/Compatibility.md) for native Desktop coverage and limits.
+
 ## 0.3.0 · What's New
 
 - **批量工具调用：** 用 Harness 原生 PTC 在一次模型调用中组合多个操作，减少来回；独立读取可以并行，写入、测试和有依赖的操作依次执行，不用额外配置。
@@ -33,8 +43,8 @@ Use Node.js 22 or later and a [verified Harness version](docs/Compatibility.md).
    dsh plugin --profile web add dsh-super-code
    ```
 
-   本地 0.3.0 安装包可用 `dsh plugin --profile web add ./dsh-super-code-0.3.0.tgz` 安装。
-   For a local 0.3.0 package, use `dsh plugin --profile web add ./dsh-super-code-0.3.0.tgz`.
+   GitHub Release 中的 0.3.1 安装包可用 `dsh plugin --profile web add ./dsh-super-code-0.3.1.tgz` 安装。
+   To install the 0.3.1 package from GitHub Releases, use `dsh plugin --profile web add ./dsh-super-code-0.3.1.tgz`.
 
 2. **选中预设：** 打开“设置”→“Agent 预设”，选择 `super-code`。
 

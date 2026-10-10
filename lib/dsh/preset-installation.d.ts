@@ -22,11 +22,15 @@ export interface PresetInstallationStatus {
     name?: string;
     authorable: boolean;
     userConflict: boolean;
+    delivery: 'directory' | 'declaration';
+    pluginVersion: string;
+    presetVersion?: string;
+    reinstallable?: boolean;
 }
 export interface PresetInstallationResult {
     ok: boolean;
     status: PresetInstallationStatus;
-    error?: 'ownership-unverified' | 'invalid-name' | 'invalid-display-name' | 'name-taken' | 'no-user-root' | 'install-failed';
+    error?: 'ownership-unverified' | 'invalid-name' | 'invalid-display-name' | 'name-taken' | 'no-user-root' | 'management-unavailable' | 'install-failed';
 }
 /** Serialized writes protect double clicks; mkdir claims only an unoccupied name. */
 export declare class PresetInstaller {
@@ -55,16 +59,21 @@ interface InstallationController {
         changed: boolean;
     }>;
 }
-/** The 0.1.7 registry owns declarations; this package never writes its profile. */
+export interface DeclaredPresetRegistry {
+    list(): Promise<readonly {
+        id: string;
+        name?: string;
+        broken?: string;
+    }[]>;
+    readDocument?(id: string): Promise<{
+        agentPreset: string;
+        content: string;
+    }>;
+}
+/** Read-only fallback when a declarative host exposes no profile management. */
 export declare class DeclaredPresetStatus implements InstallationController {
     private readonly registry;
-    constructor(registry: {
-        list(): Promise<readonly {
-            id: string;
-            name?: string;
-            broken?: string;
-        }[]>;
-    });
+    constructor(registry: DeclaredPresetRegistry);
     status(): Promise<PresetInstallationStatus>;
     install(_id: unknown, _name?: string): Promise<PresetInstallationResult>;
     reinstall(_previousId: string, _id: unknown, _name?: string): Promise<PresetInstallationResult>;

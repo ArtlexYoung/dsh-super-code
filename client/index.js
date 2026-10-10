@@ -28,13 +28,26 @@ const zh = {
   'memory.usageEmpty': '尚无记忆读取记录', 'memory.context': '带入上下文', 'memory.read': '读取详情', 'memory.summary': '读取摘要',
   'memory.remember': '保存', 'memory.forget': '删除', 'memory.omitted': '仅展示最近 100 条不同动作，完整记录保留在会话中。', 'memory.open': '查看记忆库',
   'preset.title': 'Super Code 模式', 'usage.cacheUnknown': '缓存 —',
-  'preset.description': '更快、更省、更聪明的编码模式。', 'preset.refresh': '刷新状态', 'preset.expand': '展开设置', 'preset.collapse': '收起设置',
+  'preset.description': '更快、更省、更聪明的编码模式。', 'preset.refresh': '刷新状态',
   'preset.state.available': '预设可用', 'preset.state.installed': '用户预设已安装', 'preset.state.conflict': '已有同名预设',
   'preset.state.missing': '尚未安装', 'preset.state.broken': '预设不可用',
-  'preset.availableHint': '可在新对话中选择此预设。升级仅更新未修改的默认名称和描述。',
-  'preset.installHint': '安装一份用户预设；已有内容会保留，标识符冲突时请换个标识符。',
+  'preset.availableHint': '可在新对话中选择此预设。',
+  'preset.installHint': '安装 Super Code 预设；已有内容会保留，标识符冲突时请换个标识符。',
   'preset.userConflict': '用户目录中已有相同标识符的预设，已保留。可更换标识符安装独立副本。',
-  'preset.readonly': '此宿主未提供用户预设目录，无法安装副本。',
+  'preset.declaredHint': '此宿主通过预设声明加载 Super Code，可在此安装或确认重装。',
+  'preset.declaredReadonly': '此宿主通过插件声明加载预设，但未开放管理接口。请检查插件启用状态或重启宿主。',
+  'preset.state.declaredInstalled': '预设已安装',
+  'preset.installDeclared': '安装预设',
+  'preset.declaredNameHint': '用于识别预设，通常保留 super-code。以小写字母或数字开头，仅支持小写字母、数字和连字符，最多 64 个字符。',
+  'preset.readonly': '此宿主未开放用户预设目录，无法在此安装或重装副本。',
+  'preset.unavailableHint': '请检查插件是否已启用，然后重启宿主或刷新状态。',
+  'preset.pluginVersion': '插件版本', 'preset.presetVersion': '当前预设版本',
+  'preset.versionUnknown': '未记录版本', 'preset.versionMissing': '未安装',
+  'preset.versionMatches': '预设版本与当前插件一致。',
+  'preset.versionMismatch': '预设版本与当前插件版本不一致。',
+  'preset.versionUnknownHint': '此预设未记录版本，无法确认是否与当前插件一致。',
+  'preset.versionReinstallHint': '如需更新预设，请先保留自定义内容，再确认重新安装。',
+  'preset.versionReloadHint': '请确认插件更新已生效，重启宿主后刷新状态；若仍不一致，请重新安装插件。',
   'preset.displayName': '显示名称', 'preset.displayNameHint': '支持中文和空格，最多 120 个字符，例如 Super Code 模式。', 'preset.name': '预设标识符', 'preset.nameHint': '用于安装目录，通常保留 super-code 即可。以小写字母或数字开头，仅含小写字母、数字和连字符，最多 64 个字符。',
   'preset.confirmTitle': '确认重新安装预设',
   'preset.confirmHint': '以下是通过本插件安装的预设，将会被移除并按照新名称重新安装，旧内容会保留恢复备份。对于需要保留的预设可以手动在列表中移除。',
@@ -46,7 +59,8 @@ const zh = {
   'preset.error.invalid-display-name': '显示名称不能为空或全为空格，最多 120 个字符；支持中文和空格。',
   'preset.error.name-taken': '该标识符已被占用，原预设未改动。请更换标识符。',
   'preset.error.no-user-root': '此宿主没有可写的用户预设目录。',
-  'preset.error.install-failed': '安装未完成，请检查预设目录的写入权限后重试。',
+  'preset.error.management-unavailable': '此宿主未开放预设管理接口，请检查插件启用状态或重启宿主。',
+  'preset.error.install-failed': '安装未完成，已尝试恢复原配置。请检查写入权限和宿主日志后重试。',
   'preset.error.connection': '暂时无法读取预设状态，请刷新重试。',
   'task.memory': '任务档案', 'task.other': '其他任务', 'task.history': '任务记录',
   'status.active': '进行中', 'status.paused': '已暂停', 'status.completed': '已完成', 'status.cancelled': '已取消',
@@ -73,13 +87,26 @@ const en = {
   'memory.usageEmpty': 'No memory reads recorded yet', 'memory.context': 'Added to context', 'memory.read': 'Read details', 'memory.summary': 'Read summary',
   'memory.remember': 'Saved', 'memory.forget': 'Removed', 'memory.omitted': 'Showing the latest 100 distinct actions. Full records remain in the conversation.', 'memory.open': 'Open memory library',
   'preset.title': 'Super Code', 'usage.cacheUnknown': 'Cache —',
-  'preset.description': 'A faster, more efficient, smarter coding mode.', 'preset.refresh': 'Refresh status', 'preset.expand': 'Show settings', 'preset.collapse': 'Hide settings',
+  'preset.description': 'A faster, more efficient, smarter coding mode.', 'preset.refresh': 'Refresh status',
   'preset.state.available': 'Preset available', 'preset.state.installed': 'User preset installed', 'preset.state.conflict': 'Preset name already exists',
   'preset.state.missing': 'Not installed', 'preset.state.broken': 'Preset unavailable',
-  'preset.availableHint': 'Select this preset in a new conversation. Upgrades update only unchanged default names and descriptions.',
-  'preset.installHint': 'Install a user copy. Existing content is preserved; choose another identifier if it is taken.',
+  'preset.availableHint': 'Select this preset in a new conversation.',
+  'preset.installHint': 'Install the Super Code preset. Existing content is preserved; choose another identifier if it is taken.',
   'preset.userConflict': 'A user preset with this identifier already exists and was preserved. Choose another identifier for a separate copy.',
-  'preset.readonly': 'This host does not provide a user preset directory.',
+  'preset.declaredHint': 'This host loads Super Code through a preset declaration. You can install it here or confirm reinstallation.',
+  'preset.declaredReadonly': 'This host loads plugin preset declarations but does not expose preset management. Check plugin activation or restart the host.',
+  'preset.state.declaredInstalled': 'Preset installed',
+  'preset.installDeclared': 'Install preset',
+  'preset.declaredNameHint': 'Identifies the preset; usually keep super-code. Start with a lowercase letter or digit; use only lowercase letters, digits and hyphens, up to 64 characters.',
+  'preset.readonly': 'This host does not expose a user preset directory for installing or reinstalling copies.',
+  'preset.unavailableHint': 'Check that the plugin is enabled, then restart the host or refresh the status.',
+  'preset.pluginVersion': 'Plugin version', 'preset.presetVersion': 'Current preset version',
+  'preset.versionUnknown': 'Version not recorded', 'preset.versionMissing': 'Not installed',
+  'preset.versionMatches': 'The preset version matches the installed plugin.',
+  'preset.versionMismatch': 'The preset version differs from the installed plugin.',
+  'preset.versionUnknownHint': 'This preset has no recorded version, so its version cannot be compared with the installed plugin.',
+  'preset.versionReinstallHint': 'To update the preset, save any custom content, then confirm reinstallation.',
+  'preset.versionReloadHint': 'Check that the plugin update has taken effect, restart the host and refresh the status. If the versions still differ, reinstall the plugin.',
   'preset.displayName': 'Display name', 'preset.displayNameHint': 'Supports Chinese characters and spaces, up to 120 characters, e.g. Super Code 模式.', 'preset.name': 'Preset identifier', 'preset.nameHint': 'Used for the installation directory; usually keep super-code. Start with a lowercase letter or digit; use only lowercase letters, digits and hyphens, up to 64 characters.',
   'preset.confirmTitle': 'Confirm preset reinstallation',
   'preset.confirmHint': 'These presets were installed by this plugin. They will be removed and reinstalled with the new names shown, and recovery backups will be kept. Remove any preset you want to keep from the list.',
@@ -91,7 +118,8 @@ const en = {
   'preset.error.invalid-display-name': 'The display name cannot be empty or whitespace-only and must be at most 120 characters. Chinese characters and spaces are supported.',
   'preset.error.name-taken': 'This identifier is taken. The existing preset was preserved. Choose another identifier.',
   'preset.error.no-user-root': 'This host has no writable user preset directory.',
-  'preset.error.install-failed': 'Installation failed. Check directory write permissions and retry.',
+  'preset.error.management-unavailable': 'This host does not expose preset management. Check plugin activation or restart the host.',
+  'preset.error.install-failed': 'Installation failed and restoration of the original configuration was attempted. Check write permissions and host logs, then retry.',
   'preset.error.connection': 'Preset status is unavailable. Refresh to try again.',
   'task.memory': 'Task memory', 'task.other': 'Other tasks', 'task.history': 'Task history',
   'status.active': 'Active', 'status.paused': 'Paused', 'status.completed': 'Completed', 'status.cancelled': 'Cancelled', 'next': 'Next: ',
@@ -1047,10 +1075,11 @@ function synchronizePresetDisplay(api, locale, reload, onError) {
 
 function PresetSettings({ api, t }) {
   const [status, setStatus] = useState(null), [customId, setCustomId] = useState(null)
-  const name = customId ?? (status?.state === 'installed' ? status.id : 'super-code')
+  const reinstall = status?.reinstallable ?? status?.state === 'installed'
+  const name = customId ?? (reinstall ? status.id : 'super-code')
   const [customDisplayName, setCustomDisplayName] = useState(null)
-  const displayName = customDisplayName ?? (status?.state === 'installed' ? status.name || t('preset.title') : t('preset.title'))
-  const [busy, setBusy] = useState(true), [error, setError] = useState(''), [open, setOpen] = useState(false)
+  const displayName = customDisplayName ?? (reinstall ? status.name || t('preset.title') : t('preset.title'))
+  const [busy, setBusy] = useState(true), [error, setError] = useState('')
   const [confirmation, setConfirmation] = useState(null)
   const dialog = useRef(null)
   const alive = useRef(false), pending = useRef(false)
@@ -1059,7 +1088,20 @@ function PresetSettings({ api, t }) {
     const element = dialog.current
     element.showModal()
     element.querySelector('[data-super-code-cancel]')?.focus()
-    return () => { if (element.open) element.close() }
+    // Removing the focused list row can leave focus outside the native dialog.
+    // Capture Escape before the host's document listener closes Settings too.
+    const target = element.ownerDocument.defaultView
+    const cancel = event => {
+      if (event.key !== 'Escape' || event.isComposing) return
+      event.preventDefault()
+      event.stopPropagation()
+      setConfirmation(null)
+    }
+    target.addEventListener('keydown', cancel, true)
+    return () => {
+      target.removeEventListener('keydown', cancel, true)
+      if (element.open) element.close()
+    }
   }, [confirmation !== null])
   const run = async (install, confirmed = null) => {
     if (pending.current) return
@@ -1089,28 +1131,36 @@ function PresetSettings({ api, t }) {
   useEffect(() => { alive.current = true; run(false); return () => { alive.current = false } }, [api])
   const submit = () => {
     if (busy || pending.current || !displayName.trim() || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(name.trim())) return
-    if (status?.state === 'installed') {
+    if (reinstall) {
       setConfirmation([{ previousId: status.id, id: name.trim(),
         name: customDisplayName === null && displayName === t('preset.title') ? '' : displayName.trim(), label: displayName.trim() }])
     } else run(true)
   }
   const available = status && ['available', 'installed'].includes(status.state)
-  return React.createElement('section', { className: `dsh-super-code-settings${open ? ' dsh-super-code-settings-open' : ''}` },
-    React.createElement('button', { type: 'button', className: 'dsh-super-code-settings-header', 'aria-expanded': open,
-      'aria-label': `${t(open ? 'preset.collapse' : 'preset.expand')}: ${t('preset.title')}`, onClick: () => setOpen(!open) },
+  const versionState = status?.presetVersion ? status.presetVersion === status.pluginVersion ? 'match' : 'mismatch' : 'unknown'
+  return React.createElement('section', { className: 'dsh-super-code-settings' },
+    React.createElement('header', { className: 'dsh-super-code-settings-header' },
       React.createElement('span', { className: 'dsh-super-code-settings-head-text' },
-        React.createElement('span', { className: 'dsh-super-code-settings-name' }, t('preset.title')),
-        React.createElement('span', { className: 'dsh-super-code-settings-description' }, t('preset.description'))),
-      React.createElement(IconChevronDownOutline14, { className: `dsh-super-code-settings-chevron${open ? ' dsh-super-code-settings-chevron-open' : ''}`, 'aria-hidden': true })),
-    open && React.createElement('div', { className: 'dsh-super-code-settings-body' },
+        React.createElement('h2', { className: 'dsh-super-code-settings-name' }, t('preset.title')),
+        React.createElement('span', { className: 'dsh-super-code-settings-description' }, t('preset.description')))),
+    React.createElement('div', { className: 'dsh-super-code-settings-body' },
       status && React.createElement('p', { className: 'dsh-super-code-preset-status', role: 'status', 'data-available': available },
-        React.createElement('span', { 'aria-hidden': true }, '●'), ' ', t(`preset.state.${status.state}`), ' · ', status.id),
+        React.createElement('span', { 'aria-hidden': true }, '●'), ' ', t(status.delivery === 'declaration' && status.state === 'installed' ? 'preset.state.declaredInstalled' : `preset.state.${status.state}`), ' · ', status.id),
       React.createElement('div', { className: 'dsh-super-code-settings-actions' },
         React.createElement('button', { type: 'button', disabled: busy, onClick: () => run(false), 'aria-label': t('preset.refresh') }, t('preset.refresh'))),
-      status && React.createElement('p', null, t(available ? 'preset.availableHint' : 'preset.installHint')),
-      status?.state === 'installed' && React.createElement('p', null, t('preset.reinstallHint')),
+      status && React.createElement('dl', { className: 'dsh-super-code-preset-versions' },
+        React.createElement('dt', null, t('preset.pluginVersion')),
+        React.createElement('dd', null, status.pluginVersion),
+        React.createElement('dt', null, t('preset.presetVersion')),
+        React.createElement('dd', null, status.state === 'missing' ? t('preset.versionMissing') : status.presetVersion || t('preset.versionUnknown'))),
+      status && status.state !== 'missing' && React.createElement('p', { className: 'dsh-super-code-version-hint', role: 'status', 'data-version-state': versionState },
+        t(versionState === 'match' ? 'preset.versionMatches' : versionState === 'mismatch' ? 'preset.versionMismatch' : 'preset.versionUnknownHint'),
+        versionState === 'mismatch' && ` ${t(reinstall && status.authorable ? 'preset.versionReinstallHint' : 'preset.versionReloadHint')}`),
+      status && React.createElement('p', null, t(available ? 'preset.availableHint' : status.authorable ? 'preset.installHint' : 'preset.unavailableHint')),
+      reinstall && React.createElement('p', null, t('preset.reinstallHint')),
       status?.userConflict && status.state !== 'conflict' && React.createElement('p', null, t('preset.userConflict')),
-      status && !status.authorable && React.createElement('p', { role: 'note' }, t('preset.readonly')),
+      status?.delivery === 'declaration' && React.createElement('p', { role: 'note' }, t(status.authorable ? 'preset.declaredHint' : 'preset.declaredReadonly')),
+      status?.delivery === 'directory' && !status.authorable && React.createElement('p', { role: 'note' }, t('preset.readonly')),
       status?.authorable && React.createElement('form', { onSubmit: event => { event.preventDefault(); submit() } },
         React.createElement('label', { htmlFor: 'super-code-display-name' }, t('preset.displayName')),
         React.createElement('input', { id: 'super-code-display-name', value: displayName, maxLength: 120, required: true, disabled: busy, 'aria-describedby': 'super-code-display-name-hint', onChange: event => setCustomDisplayName(event.target.value) }),
@@ -1120,8 +1170,8 @@ function PresetSettings({ api, t }) {
           React.createElement('input', { id: 'super-code-preset-name', value: name, maxLength: 64, disabled: busy,
             pattern: '[a-z0-9][a-z0-9\\-]{0,63}', required: true, autoComplete: 'off', spellCheck: false,
             'aria-describedby': 'super-code-preset-name-hint', onChange: event => setCustomId(event.target.value) }),
-          React.createElement('button', { type: 'submit', disabled: busy || !displayName.trim() || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(name.trim()) }, t(busy ? 'preset.working' : status?.state === 'installed' ? 'preset.reinstall' : 'preset.install'))),
-        React.createElement('small', { id: 'super-code-preset-name-hint' }, t('preset.nameHint'))),
+          React.createElement('button', { type: 'submit', disabled: busy || !displayName.trim() || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(name.trim()) }, t(busy ? 'preset.working' : reinstall ? 'preset.reinstall' : status?.delivery === 'declaration' ? 'preset.installDeclared' : 'preset.install'))),
+        React.createElement('small', { id: 'super-code-preset-name-hint' }, t(status?.delivery === 'declaration' ? 'preset.declaredNameHint' : 'preset.nameHint'))),
       error && React.createElement('p', { role: 'alert' }, t(error))),
     confirmation && React.createElement('dialog', { ref: dialog, className: 'dsh-super-code-confirm',
       'aria-labelledby': 'super-code-confirm-title', 'aria-describedby': 'super-code-confirm-hint',
@@ -1196,11 +1246,12 @@ function apply(ctx) {
 .dsh-super-code-memory-activity{margin-top:14px;font-size:12px}.dsh-super-code-memory-activity summary{cursor:pointer}.dsh-super-code-memory-activity-list{max-height:200px;overflow:auto}.dsh-super-code-memory-activity-list button{display:grid;grid-template-columns:auto 1fr;gap:5px 8px;width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid var(--agent-line);padding:10px 2px;color:inherit;font:inherit;cursor:pointer}.dsh-super-code-memory-activity-list small{grid-column:2;color:var(--agent-muted);overflow-wrap:anywhere}.dsh-super-code-memory-activity-list span{overflow-wrap:anywhere}
 .dsh-super-code-memory-action{font-size:10px;color:#4d779f}.dsh-super-code-memory-action[data-action=read]{color:#14867b}.dsh-super-code-memory-action[data-action=remember]{color:#927247}.dsh-super-code-memory-action[data-action=forget]{color:var(--agent-muted)}
 .dsh-super-code-memory button:focus-visible,.dsh-super-code-memory input:focus-visible{outline:2px solid var(--dsw-color-primary,#3276dc);outline-offset:2px}
-.dsh-super-code-settings{list-style:none;border:.5px solid var(--dsw-alias-border-l4,#dedfe3);border-radius:16px;background:var(--dsw-alias-bg-layer-3,transparent);line-height:1.6;font-size:13px;transition:border-color .16s,background .16s}
-.dsh-super-code-settings:hover{border-color:var(--dsw-alias-label-dimmed,#a8abb2)}.dsh-super-code-settings-open{background:var(--dsw-alias-bg-layer-2,transparent);border-color:var(--dsw-alias-label-dimmed,#a8abb2)}
-.dsh-super-code-settings-header{width:100%;appearance:none;border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer;display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:12px}
-.dsh-super-code-settings-head-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}.dsh-super-code-settings-name{font-size:15px;font-weight:600;line-height:1.4;color:var(--dsw-alias-label-primary,inherit)}
-.dsh-super-code-settings-description{font-size:13px;line-height:1.5;color:var(--dsw-alias-label-tertiary,#70757d)}.dsh-super-code-settings-chevron{flex:none;color:var(--dsw-alias-label-tertiary,#70757d);transition:transform .16s}.dsh-super-code-settings-chevron-open{transform:rotate(180deg)}
+.dsh-super-code-settings{list-style:none;border:.5px solid var(--dsw-alias-border-l4,#dedfe3);border-radius:16px;background:var(--dsw-alias-bg-layer-2,transparent);line-height:1.6;font-size:13px}
+.dsh-super-code-settings-header{display:flex;align-items:center;gap:12px;padding:14px 16px}
+.dsh-super-code-settings-head-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}.dsh-super-code-settings-name{margin:0;font-size:15px;font-weight:600;line-height:1.4;color:var(--dsw-alias-label-primary,inherit)}
+.dsh-super-code-settings-description{font-size:13px;line-height:1.5;color:var(--dsw-alias-label-tertiary,#70757d)}
+.dsh-super-code-preset-versions{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 16px;margin:12px 0}.dsh-super-code-preset-versions dt{color:var(--dsw-alias-label-secondary,#70757d)}.dsh-super-code-preset-versions dd{margin:0;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.dsh-super-code-settings .dsh-super-code-version-hint[data-version-state=mismatch],.dsh-super-code-settings .dsh-super-code-version-hint[data-version-state=unknown]{border-left:2px solid #b87716;padding:8px 12px;background:color-mix(in srgb,#b87716 8%,transparent)}
 .dsh-super-code-confirm{box-sizing:border-box;width:min(560px,calc(100vw - 48px));max-height:80vh;overflow:auto;border:1px solid var(--dsw-alias-border-l2,#dedfe3);border-radius:8px;padding:24px;color:var(--dsw-alias-label-primary,#202126);background:var(--dsw-alias-bg-layer-1,#fff);font-size:13px;line-height:1.6}.dsh-super-code-confirm::backdrop{background:#0006}.dsh-super-code-confirm h3{font-size:16px;margin:0 0 12px}.dsh-super-code-confirm p{margin:0 0 14px}.dsh-super-code-confirm ul{padding:0;margin:0 0 18px;list-style:none}.dsh-super-code-confirm li{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:12px 0;overflow-wrap:anywhere}.dsh-super-code-confirm-actions{display:flex;justify-content:flex-end;gap:8px}.dsh-super-code-confirm button{font:inherit;color:inherit;border:1px solid var(--dsw-alias-border-l1,#dedfe3);border-radius:6px;background:transparent;padding:7px 10px;min-height:34px;cursor:pointer}.dsh-super-code-confirm button:disabled{opacity:.45;cursor:default}.dsh-super-code-confirm button:focus-visible{outline:2px solid var(--dsw-color-primary,#3276dc);outline-offset:2px}
 .dsh-super-code-settings-body{border-top:.5px solid var(--dsw-alias-border-l2,#dedfe3);margin:0 16px;padding:12px 0 14px}.dsh-super-code-settings-actions{display:flex;justify-content:flex-end}
 .dsh-super-code-settings p{margin:8px 0;color:var(--dsw-alias-label-secondary,#70757d)}

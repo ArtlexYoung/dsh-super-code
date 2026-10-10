@@ -25,11 +25,13 @@ import { batchSafety, classifyMemoryAction, classifyTaskAction } from '../core/b
 
 export const name = 'super-code'
 export const inject: readonly string[] = ['tools', 'systemPrompt', 'sessions', 'sessionProjections']
-export interface Config { readonly maxTasks?: number; readonly maxContextBytes?: number; readonly guidedRoutes?: GuidedRoute[] }
+export interface Config { readonly maxTasks?: number; readonly maxContextBytes?: number; readonly guidedRoutes?: GuidedRoute[]; readonly presetVersion?: string; readonly presetInstallation?: string }
 export const Config: z<Config> = z.object({
   maxTasks: z.number().step(1).min(1).max(128).default(32),
   maxContextBytes: z.number().step(1).min(1024).max(262144).default(32768),
   guidedRoutes: z.array(z.object({ provider: z.string().required(), model: z.string().required() })),
+  presetVersion: z.string(),
+  presetInstallation: z.string(),
 })
 
 function assertSource(session: Session, source: TaskSource): void {

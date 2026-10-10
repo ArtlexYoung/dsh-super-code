@@ -1,6 +1,8 @@
 # The host supplies registries, models, permissions, persistence and subagents.
 - id: super-code
   name: dsh-super-code/super-code
+  config:
+    presetVersion: 0.3.1
 # Reuse the host backend in an agent-local realm, as shipped Harness presets do.
 # The token meter remains host-owned; each agent owns its compaction lifecycle.
 - id: compaction

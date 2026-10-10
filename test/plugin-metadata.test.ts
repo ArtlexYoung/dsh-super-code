@@ -3,6 +3,8 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { displayCopy } from '../src/dsh/preset-metadata.js'
+import { compositionVersion, pluginVersion } from '../src/dsh/preset-version.js'
+import yaml from 'js-yaml'
 
 const require = createRequire(import.meta.url)
 
@@ -16,4 +18,13 @@ test('host metadata resolves both languages for the root and every plugin subpat
       assert.deepEqual(meta, { title: copy.name, description: copy.description })
     }
   }
+})
+
+test('both shipped preset mechanisms record the package version', () => {
+  const directory = readFileSync(new URL('../presets/super-code/agent.cordis.yml', import.meta.url), 'utf8')
+  assert.deepEqual(compositionVersion(directory), { presetVersion: pluginVersion })
+  const schema = yaml.DEFAULT_SCHEMA.extend(new yaml.Type('tag:yaml.org,2002:js', { kind: 'scalar', construct: () => ({}) }))
+  const patch = yaml.load(readFileSync(new URL('../cordis.patch.yml', import.meta.url), 'utf8'), { schema }) as any[]
+  const declaration = patch.flatMap(row => row.insert).find(row => row.id === 'preset-super-code')
+  assert.deepEqual(compositionVersion(yaml.dump(declaration.config.plugins)), { presetVersion: pluginVersion })
 })

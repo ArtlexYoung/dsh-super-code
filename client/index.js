@@ -15,10 +15,253 @@ const IconChevronDownOutline14 = icons.IconChevronDownOutlineRegular ?? icons.Ic
 const IconRefreshOutline16 = icons.IconRefreshOutlineRegular ?? icons.IconRefreshOutline16
 const { SessionEventStream } = require('@deepseek-ai/dsh-api-session-controller')
 
+/* Shared controls use public React APIs without host-private dependencies. */
+let selectControlSequence = 0
+function selectControlPlacement(rect, count) {
+  const margin = 8, gap = 6, width = Math.min(Math.max(rect.width, 184), window.innerWidth - margin * 2)
+  const below = Math.max(0, window.innerHeight - rect.bottom - gap - margin)
+  const above = Math.max(0, rect.top - gap - margin)
+  const upwards = below < Math.min(count * 32 + 8, 256) && above > below
+  return {
+    left: Math.max(margin, Math.min(rect.left, window.innerWidth - width - margin)), width,
+    maxHeight: Math.min(256, upwards ? above : below),
+    ...(upwards ? { bottom: window.innerHeight - rect.top + gap } : { top: rect.bottom + gap }),
+  }
+}
+function SelectControl({ id, label, value, choices, onChange, disabled = false }) {
+  const identity = useRef('')
+  if (!identity.current) identity.current = id || `super-code-select-${++selectControlSequence}`
+  const controlId = identity.current, listId = `${controlId}-list`
+  const trigger = useRef(null), menu = useRef(null), search = useRef({ text: '', at: 0 })
+  const selected = Math.max(0, choices.findIndex(([choice]) => String(choice) === String(value)))
+  const [open, setOpen] = useState(false), [active, setActive] = useState(selected), [placement, setPlacement] = useState({})
+  const unavailable = disabled || choices.length === 0
+  const show = (index = selected) => {
+    if (unavailable) return
+    setActive(index)
+    setPlacement(selectControlPlacement(trigger.current.getBoundingClientRect(), choices.length))
+    search.current = { text: '', at: 0 }
+    setOpen(true)
+  }
+  const choose = index => {
+    onChange(choices[index][0])
+    setOpen(false)
+    trigger.current.focus({ preventScroll: true })
+  }
+  useLayoutEffect(() => {
+    if (!open) return
+    const place = () => setPlacement(selectControlPlacement(trigger.current.getBoundingClientRect(), choices.length))
+    window.addEventListener('resize', place)
+    window.addEventListener('scroll', place, true)
+    return () => { window.removeEventListener('resize', place); window.removeEventListener('scroll', place, true) }
+  }, [open, choices.length])
+  useLayoutEffect(() => {
+    if (open) menu.current.querySelector(`[data-option-index="${active}"]`)?.scrollIntoView({ block: 'nearest' })
+  }, [open, active])
+  useEffect(() => {
+    if (!open) return
+    const inside = target => Boolean(trigger.current?.contains(target) || menu.current?.contains(target))
+    let pointerInside = false
+    // Dock hosts focus their pane during pointer capture. Observe the pointer
+    // before that focus change so an option survives until its click commits.
+    const pointerDown = event => { pointerInside = inside(event.target); if (!pointerInside) setOpen(false) }
+    const pointerEnd = () => { pointerInside = false }
+    const outsideFocus = event => { if (!pointerInside && !inside(event.target)) setOpen(false) }
+    // Capture Escape before host shortcuts; Tab keeps its normal focus movement.
+    const escape = event => {
+      if (event.key !== 'Escape') return
+      event.preventDefault(); event.stopImmediatePropagation()
+      setOpen(false); trigger.current.focus({ preventScroll: true })
+    }
+    window.addEventListener('pointerdown', pointerDown, true)
+    window.addEventListener('pointerup', pointerEnd, true)
+    window.addEventListener('pointercancel', pointerEnd, true)
+    document.addEventListener('focusin', outsideFocus, true)
+    window.addEventListener('keydown', escape, true)
+    return () => {
+      window.removeEventListener('pointerdown', pointerDown, true)
+      window.removeEventListener('pointerup', pointerEnd, true)
+      window.removeEventListener('pointercancel', pointerEnd, true)
+      document.removeEventListener('focusin', outsideFocus, true)
+      window.removeEventListener('keydown', escape, true)
+    }
+  }, [open])
+  const keyDown = event => {
+    if (unavailable || event.isComposing) return
+    if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
+      event.preventDefault(); event.stopPropagation()
+      const next = event.key === 'Home' ? 0 : event.key === 'End' ? choices.length - 1
+        : Math.max(0, Math.min(choices.length - 1, active + (event.key === 'ArrowDown' ? 1 : -1)))
+      if (open) setActive(next)
+      else show(event.key === 'Home' || event.key === 'End' ? next : selected)
+    } else if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault(); event.stopPropagation()
+      if (open) choose(active)
+      else show()
+    } else if (event.key === 'Tab') setOpen(false)
+    else if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
+      const now = Date.now(), previous = now - search.current.at < 700 ? search.current.text : ''
+      const query = (previous + event.key).toLocaleLowerCase()
+      const next = choices.findIndex(([, text]) => String(text).toLocaleLowerCase().startsWith(query))
+      if (next >= 0) {
+        event.preventDefault(); event.stopPropagation()
+        if (open) setActive(next)
+        else show(next)
+      }
+      search.current = { text: query, at: now }
+    }
+  }
+  return React.createElement('span', { className: 'dsh-super-code-select' },
+    React.createElement(ActionButton, {
+      ref: trigger, id: controlId, type: 'button', role: 'combobox', disabled: unavailable,
+      'aria-label': label, 'aria-haspopup': 'listbox', 'aria-expanded': open, 'aria-controls': open ? listId : undefined,
+      'aria-activedescendant': open ? `${listId}-${active}` : undefined, 'data-value': String(value),
+      className: 'dsh-super-code-select-trigger', onKeyDown: keyDown, onClick: () => { if (open) setOpen(false); else show() },
+    }, React.createElement('span', null, choices[selected]?.[1] || ''),
+    React.createElement('svg', { viewBox: '0 0 16 16', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, 'aria-hidden': true },
+      React.createElement('path', { d: 'm4 6 4 4 4-4', strokeLinecap: 'round', strokeLinejoin: 'round' }))),
+    open && React.createElement('div', { ref: menu, id: listId, role: 'listbox', 'aria-label': label,
+      className: 'dsh-super-code-select-menu', style: placement,
+      onPointerDown: event => event.preventDefault(),
+    }, choices.map(([choice, text], index) => React.createElement('div', {
+      key: choice, id: `${listId}-${index}`, role: 'option', 'aria-selected': String(choice) === String(value),
+      'data-value': String(choice), 'data-option-index': index, 'data-active': index === active,
+      className: 'dsh-super-code-select-option', onPointerMove: () => setActive(index), onClick: () => choose(index),
+    }, React.createElement('span', null, text),
+    React.createElement('svg', { viewBox: '0 0 16 16', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, 'aria-hidden': true },
+      React.createElement('path', { d: 'm3.5 8 3 3 6-6', strokeLinecap: 'round', strokeLinejoin: 'round' }))))))
+}
+
+
+function Glyph({ type }) {
+  const paths = {
+    code: 'M8 5 3 10l5 5m8-10 5 5-5 5M14 3l-4 14',
+    branch: 'M5 3v8a4 4 0 0 0 4 4h6M5 7h10M5 3h0M15 4v6M15 12v6',
+    memory: 'M4 3h12a2 2 0 0 1 2 2v13H6a2 2 0 0 1-2-2V3Zm0 11h14M8 7h6M8 10h4',
+    search: 'M13 13l5 5M15 8a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z',
+    folder: 'M2 6V4h6l2 2h8v10H2V6Z',
+    user: 'M10 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-6 7a6 6 0 0 1 12 0',
+    agent: 'm10 2 2.2 5.8L18 10l-5.8 2.2L10 18l-2.2-5.8L2 10l5.8-2.2L10 2Z',
+    tool: 'm6 5-4 5 4 5m8-10 4 5-4 5M12 3 8 17',
+    context: 'M3 5h14M3 10h14M3 15h9',
+    error: 'M10 6v5m0 3h0M10 2l8 15H2L10 2Z',
+    chevron: 'm6 8 4 4 4-4',
+    arrow: 'M3 10h13m-5-5 5 5-5 5',
+    fit: 'M3 7V3h4m6 0h4v4m0 6v4h-4m-6 0H3v-4',
+    history: 'M3 4v5h5M3 9a7 7 0 1 1 2 6m5-10v5l3 2',
+    organize: 'M8 2h4v4H8zM2 14h4v4H2zm12 0h4v4h-4zM10 6v4m-6 4v-4h12v4'
+  }
+  return React.createElement('svg', { className: 'dsh-super-code-glyph', viewBox: type === 'code' ? '0 0 24 20' : '0 0 20 20', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true }, React.createElement('path', { d: paths[type] || paths.code }))
+}
+
+function AgentMessage({ record, saved, t, toolName }) {
+  const item = record.entry ? detailRecord(record.entry, t) : record
+  const eventType = record.entry?.event?.type
+  const kind = eventType === 'user/message' ? 'user' : eventType === 'assistant/message' ? 'agent'
+    : ['user', 'agent', 'tool', 'context', 'error'].includes(item.kind) ? item.kind : 'context'
+  const time = new Date(item.time).toLocaleTimeString(localeCode(t), { hour12: false })
+  const label = React.createElement('div', { className: 'dsh-super-code-detail-entry-label' },
+    React.createElement('span', null, item.label, toolName && !item.toolName ? ' · ' + toolName : ''), React.createElement('time', { dateTime: new Date(item.time).toISOString() }, time))
+  return React.createElement('article', { className: 'dsh-super-code-detail-entry ' + kind, 'data-event-type': eventType },
+    React.createElement('span', { className: 'dsh-super-code-detail-avatar', 'aria-hidden': true }, React.createElement(Glyph, { type: kind })),
+    React.createElement('div', { className: 'dsh-super-code-detail-message' }, item.collapsed
+      ? React.createElement('details', { open: saved.open.has(item.seq), onToggle: event => {
+          if (event.currentTarget.open) saved.open.add(item.seq); else saved.open.delete(item.seq)
+        } },
+        React.createElement('summary', null, label, React.createElement(Glyph, { type: 'chevron' })),
+        React.createElement(DetailText, { text: item.text, t }))
+      : React.createElement(React.Fragment, null, label, React.createElement(DetailText, { text: item.text, t }))))
+}
+
+/* Keep the native button and its refs/events; mount name bubbles outside clipped
+ * panels, or in the active dialog's top layer. No host-private UI is needed. */
+let actionTooltipSequence = 0
+let actionTooltipDismiss = () => {}
+function actionButtonText(children) {
+  return React.Children.toArray(children).map(child => {
+    if (typeof child === 'string' || typeof child === 'number') return String(child)
+    if (!React.isValidElement(child) || child.props['aria-hidden']) return ''
+    return actionButtonText(child.props.children)
+  }).filter(Boolean).join(' ').replace(/\s+/g, ' ').trim()
+}
+const ActionButton = React.forwardRef(function ActionButton({ children, title, ...props }, forwardedRef) {
+  const button = useRef(null), pending = useRef(0), cleanup = useRef(() => {})
+  const name = props['aria-label'] || title || actionButtonText(children)
+  const attach = React.useCallback(node => {
+    button.current = node
+    if (typeof forwardedRef === 'function') forwardedRef(node)
+    else if (forwardedRef) forwardedRef.current = node
+  }, [forwardedRef])
+  // Event procedures deliberately return no value.
+  const hide = () => {
+    clearTimeout(pending.current)
+    pending.current = 0
+    cleanup.current()
+    cleanup.current = () => {}
+    if (actionTooltipDismiss === hide) actionTooltipDismiss = () => {}
+  }
+  const show = () => {
+    hide()
+    actionTooltipDismiss()
+    const anchor = button.current
+    if (!anchor || !name) return
+    const bubble = document.createElement('div'), id = `super-code-tooltip-${++actionTooltipSequence}`
+    bubble.id = id
+    bubble.className = 'dsh-super-code-tooltip'
+    bubble.setAttribute('role', 'tooltip')
+    bubble.textContent = name
+    bubble.style.visibility = 'hidden'
+    ;(anchor.closest('dialog[open]') || document.body).appendChild(bubble)
+    const rect = anchor.getBoundingClientRect(), bounds = bubble.getBoundingClientRect(), margin = 8, gap = 8
+    const left = Math.max(margin, Math.min(rect.left + rect.width / 2 - bounds.width / 2, window.innerWidth - bounds.width - margin))
+    const top = Math.max(margin, rect.top - bounds.height - gap)
+    bubble.dataset.side = 'top'
+    bubble.style.left = left + 'px'
+    bubble.style.top = top + 'px'
+    bubble.style.setProperty('--sc-tooltip-arrow-left', Math.max(8, Math.min(bounds.width - 8, rect.left + rect.width / 2 - left)) + 'px')
+    bubble.style.visibility = 'visible'
+    anchor.setAttribute('aria-describedby', [anchor.getAttribute('aria-describedby'), id].filter(Boolean).join(' '))
+    const escape = event => { if (event.key === 'Escape') hide() }
+    window.addEventListener('resize', hide)
+    window.addEventListener('scroll', hide, true)
+    window.addEventListener('keydown', escape, true)
+    document.addEventListener('pointerdown', hide, true)
+    cleanup.current = () => {
+      bubble.remove()
+      const remaining = (anchor.getAttribute('aria-describedby') || '').split(/\s+/).filter(value => value && value !== id).join(' ')
+      if (remaining) anchor.setAttribute('aria-describedby', remaining)
+      else anchor.removeAttribute('aria-describedby')
+      window.removeEventListener('resize', hide)
+      window.removeEventListener('scroll', hide, true)
+      window.removeEventListener('keydown', escape, true)
+      document.removeEventListener('pointerdown', hide, true)
+    }
+    actionTooltipDismiss = hide
+  }
+  useEffect(() => { hide() }, [name])
+  useEffect(() => () => hide(), [])
+  return React.createElement('button', {
+    ...props, ref: attach, 'data-tooltip-name': name,
+    onPointerEnter: event => {
+      props.onPointerEnter?.(event)
+      if (event.pointerType !== 'touch') { hide(); pending.current = setTimeout(show, 250) }
+    },
+    onPointerLeave: event => { hide(); props.onPointerLeave?.(event) },
+    onPointerCancel: event => { hide(); props.onPointerCancel?.(event) },
+    onFocus: event => { props.onFocus?.(event); if (event.currentTarget.matches(':focus-visible')) show() },
+    onBlur: event => { hide(); props.onBlur?.(event) },
+    onKeyDown: event => { hide(); props.onKeyDown?.(event) },
+  }, children)
+})
+
 const LOCALE_NS = 'dshSuperCode'
 const zh = {
+  'tree.collapsedLabel': '已收起', 'tree.organizeLabel': '自动整理',
+  'detail.toolCall': '工具调用', 'detail.toolResult': '工具结果', 'detail.toolError': '工具失败',
+  'detail.cache': '缓存', 'detail.info': '详情', 'tree.countCompact': '{shown}/{total} · 运行 {running}',
+  'memory.loading': '正在读取记忆…', 'memory.topics': '知识主题', 'memory.allTopics': '全部主题', 'memory.related': '同主题知识', 'preset.configuration': '预设配置',
   'memory.title': '记忆库', 'memory.project': '当前项目', 'memory.global': '全局偏好', 'memory.search': '搜索主题或记忆',
-  'memory.description': '跨对话保留的经验与偏好。按需读取，不会整库塞进上下文。',
+  'memory.description': '知识主题与条目',
   'memory.empty': '还没有保存的记忆。需要长期保留时，直接告诉 Agent 即可。', 'memory.noMatches': '没有匹配的记忆',
   'memory.selectSession': '先打开一个对话，查看它所在项目的记忆。', 'memory.error': '暂时无法读取记忆，请刷新重试。',
   'memory.refresh': '刷新记忆库', 'memory.count': '{count} 条记忆', 'memory.back': '返回列表', 'memory.missing': '这条记忆已删除或更新，请刷新列表。',
@@ -76,8 +319,12 @@ const zh = {
   'detail.path': 'Agent 路径', 'detail.title': 'Agent 详情', 'detail.refresh': '刷新对话详情', 'detail.task': '任务', 'detail.agent': 'Agent', 'detail.interrupted': 'Agent · 已中断', 'detail.error': '执行错误', 'detail.incomplete': '执行未完成，请稍后重试。', 'detail.input': '输入', 'detail.output': '输出', 'detail.cacheRead': '缓存读取', 'detail.cacheWrite': '缓存写入', 'detail.total': 'Token 总量', 'detail.hitRate': '缓存命中率', 'detail.moreUsage': '用量详情', 'detail.unavailable': '未提供', 'detail.reading': '正在读取对话…', 'detail.read': '读取中…', 'detail.older': '加载更早记录', 'detail.latest': '回到最新', 'detail.empty': '暂无执行内容', 'detail.new': '有新内容 · 查看最新', 'detail.loadError': '对话详情读取失败', 'detail.connection': '连接中断，正在重连', 'detail.historyError': '历史记录读取失败', 'detail.open': '展开全文', 'detail.noAccess': '无法打开详情，请重试', 'tree.loadError': '部分执行记录读取失败，请刷新重试', 'detail.unknown': '用量未知', 'main.agent': '主 Agent', 'tree.open': '点击查看详情', 'tree.expand': '展开', 'tree.collapse': '收起', 'image': '[图片]'
 }
 const en = {
+  'tree.collapsedLabel': 'Collapsed', 'tree.organizeLabel': 'Organize',
+  'detail.toolCall': 'Tool call', 'detail.toolResult': 'Tool result', 'detail.toolError': 'Tool failed',
+  'detail.cache': 'Cache', 'detail.info': 'Details', 'tree.countCompact': '{shown}/{total} · Running {running}',
+  'memory.loading': 'Loading memories…', 'memory.topics': 'Knowledge topics', 'memory.allTopics': 'All topics', 'memory.related': 'More in this topic', 'preset.configuration': 'Preset configuration',
   'memory.title': 'Memory library', 'memory.project': 'This project', 'memory.global': 'Global preferences', 'memory.search': 'Search topics or memories',
-  'memory.description': 'Experience and preferences kept across conversations. Details are read on demand, never injected in bulk.',
+  'memory.description': 'Knowledge topics and entries',
   'memory.empty': 'No saved memories yet. Tell the agent when something is worth keeping.', 'memory.noMatches': 'No matching memories',
   'memory.selectSession': 'Open a conversation to view memory for its project.', 'memory.error': 'Memory is unavailable. Refresh to try again.',
   'memory.refresh': 'Refresh memory', 'memory.count': '{count} memories', 'memory.back': 'Back to list', 'memory.missing': 'This memory was removed or changed. Refresh the list.',
@@ -404,9 +651,9 @@ function AgentHistory({ view, hidden, totals, open, t = key => zh[key] || key })
     else if ((target + 1) * historyRowHeight > element.scrollTop + element.clientHeight) element.scrollTop = (target + 1) * historyRowHeight - element.clientHeight
     setScroll({ top: element.scrollTop, height: element.clientHeight })
   }
-  const select = (key, label, choices) => React.createElement('label', null, label,
-    React.createElement('select', { value: filters[key], 'aria-label': label, onChange: event => change(key, event.target.value) },
-      choices.map(([value, text]) => React.createElement('option', { key: value, value }, text))))
+  const select = (key, label, choices) => React.createElement('div', { className: 'dsh-super-code-select-field' },
+    React.createElement('label', { htmlFor: 'super-code-history-' + key }, label),
+    React.createElement(SelectControl, { id: 'super-code-history-' + key, label, value: filters[key], choices, onChange: value => change(key, value) }))
   return React.createElement('section', { className: 'dsh-super-code-history', 'aria-label': text(t, 'history.aria') },
     React.createElement('input', { type: 'search', value: filters.query, 'aria-label': text(t, 'history.find'), placeholder: text(t, 'history.search'), onChange: event => change('query', event.target.value) }),
     React.createElement('div', { className: 'dsh-super-code-history-filters' },
@@ -423,7 +670,7 @@ function AgentHistory({ view, hidden, totals, open, t = key => zh[key] || key })
         const date = record.time < 0 ? text(t, 'history.unknownTime') : dateFormat.format(record.time)
         return React.createElement('div', { key: record.id, role: 'listitem', 'aria-posinset': index + 1, 'aria-setsize': records.length,
           style: { position: 'absolute', top: index * historyRowHeight, height: historyRowHeight, width: '100%' } },
-          React.createElement('button', { type: 'button', 'data-history-id': record.id, onClick: () => open(record.node), onKeyDown: event => keyDown(event, index),
+          React.createElement(ActionButton, { type: 'button', 'data-history-id': record.id, onClick: () => open(record.node), onKeyDown: event => keyDown(event, index),
             title: `${record.title} · ${record.parent} · ${record.time < 0 ? date : new Date(record.time).toLocaleString(localeCode(t))} · ${record.tokens < 0 ? text(t, 'history.unknownUsage') : record.tokens + ' Token' + (record.partial ? ' (' + text(t, 'usage.partial') + ')' : '')}`,
             'aria-label': text(t, 'history.view', { title: record.title }) },
             React.createElement('i', { className: 'dsh-super-code-circle ' + status.tone, 'aria-hidden': true }),
@@ -597,23 +844,24 @@ function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog, 
   return React.createElement('section', { className: 'dsh-super-code-tree', 'data-super-agent-tree': true },
     watched.map(id => React.createElement(AgentCatalogWatch, { key: id, id, watchCatalog })),
     React.createElement('header', { className: 'dsh-super-code-tree-header' },
-      React.createElement('div', null,
-        React.createElement('strong', null, text(t, 'tree.title')),
-        React.createElement('span', { className: 'dsh-super-code-tree-count' }, text(t, 'tree.count', { shown: rows.length, total: view.nodes.size, running }))),
-      React.createElement('button', { type: 'button', className: 'dsh-super-code-icon-button', disabled: busy || !view.root, onClick: reload, title: text(t, 'tree.refresh'), 'aria-label': text(t, 'tree.refresh') }, React.createElement(IconRefreshOutline16))),
+      React.createElement('div', { className: 'dsh-super-code-tree-heading' },
+        React.createElement('div', { className: 'dsh-super-code-title-line' }, React.createElement(Glyph, { type: 'branch' }), React.createElement('strong', null, text(t, 'tree.title'))),
+        React.createElement('span', { className: 'dsh-super-code-tree-count', title: text(t, 'tree.count', { shown: rows.length, total: view.nodes.size, running }) }, text(t, 'tree.countCompact', { shown: rows.length, total: view.nodes.size, running }))),
+      React.createElement('div', { className: 'dsh-super-code-tree-toolbar' },
+        React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-icon-button', disabled: busy || !view.root, onClick: reload, title: text(t, 'tree.refresh'), 'aria-label': text(t, 'tree.refresh') }, React.createElement(IconRefreshOutline16)),
+        React.createElement('div', { className: 'dsh-super-code-graph-controls', 'aria-label': text(t, 'tree.canvas') },
+          React.createElement(ActionButton, { type: 'button', title: text(t, 'tree.zoom.out'), 'aria-label': text(t, 'tree.zoom.out'), disabled: zoom <= .4, onClick: () => zoomButton(1 / 1.2) }, '−'),
+          React.createElement('span', { 'aria-live': 'polite' }, `${Math.round(zoom * 100)}%`),
+          React.createElement(ActionButton, { type: 'button', title: text(t, 'tree.zoom.in'), 'aria-label': text(t, 'tree.zoom.in'), disabled: zoom >= 2, onClick: () => zoomButton(1.2) }, '+')),
+        React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-icon-button', title: text(t, 'tree.fit'), 'aria-label': text(t, 'tree.fit'), onClick: fit }, React.createElement(Glyph, { type: 'fit' })),
+        (display.hidden.length > 0 || expanded.size > 0 || collapsed.size > 0) && React.createElement('div', { className: 'dsh-super-code-history-controls' },
+          React.createElement(ActionButton, { type: 'button', title: text(t, 'tree.collapsed', { count: display.hidden.length }), 'aria-label': text(t, 'tree.collapsed', { count: display.hidden.length }), 'aria-expanded': historyOpen, onClick: () => setHistoryOpen(!historyOpen) }, React.createElement(Glyph, { type: 'history' }), React.createElement('span', { className: 'dsh-super-code-action-label' }, text(t, 'tree.collapsedLabel')), React.createElement('span', { className: 'dsh-super-code-action-count' }, display.hidden.length)),
+          (expanded.size > 0 || collapsed.size > 0) && React.createElement(ActionButton, { type: 'button', title: text(t, 'tree.organize'), 'aria-label': text(t, 'tree.organize'), onClick: () => { autoFit.current = true; setExpanded(new Set()); setCollapsed(new Set()); setFocused(state.current) } }, React.createElement(Glyph, { type: 'organize' }), React.createElement('span', { className: 'dsh-super-code-action-label' }, text(t, 'tree.organizeLabel'))))),
+      React.createElement('div', { className: 'dsh-super-code-graph-legend', 'aria-label': text(t, 'tree.status') },
+        ['tree.legend.active', 'tree.legend.idle', 'tree.legend.stopped', 'tree.legend.unavailable'].map((key, index) => React.createElement('span', { key },
+          React.createElement('i', { className: 'dsh-super-code-circle ' + ['active', 'idle', 'stopped', 'unavailable'][index], 'aria-hidden': true }), text(t, key))))),
     (error || catalogError) && React.createElement('p', { role: 'alert', className: 'dsh-super-code-tree-error' }, text(t, error || 'tree.loadError')),
-    React.createElement('div', { className: 'dsh-super-code-graph-legend', 'aria-label': text(t, 'tree.status') },
-      ['tree.legend.active', 'tree.legend.idle', 'tree.legend.stopped', 'tree.legend.unavailable'].map((key, index) => React.createElement('span', { key },
-        React.createElement('i', { className: 'dsh-super-code-circle ' + ['active', 'idle', 'stopped', 'unavailable'][index], 'aria-hidden': true }), text(t, key)))),
     !view.root && React.createElement('p', { className: 'dsh-super-code-tree-empty' }, text(t, 'tree.empty')),
-    React.createElement('div', { className: 'dsh-super-code-graph-controls', 'aria-label': text(t, 'tree.canvas') },
-      React.createElement('button', { type: 'button', 'aria-label': text(t, 'tree.zoom.out'), disabled: zoom <= .4, onClick: () => zoomButton(1 / 1.2) }, '−'),
-      React.createElement('span', { 'aria-live': 'polite' }, `${Math.round(zoom * 100)}%`),
-      React.createElement('button', { type: 'button', 'aria-label': text(t, 'tree.zoom.in'), disabled: zoom >= 2, onClick: () => zoomButton(1.2) }, '+'),
-      React.createElement('button', { type: 'button', onClick: fit }, text(t, 'tree.fit'))),
-    (display.hidden.length > 0 || expanded.size > 0 || collapsed.size > 0) && React.createElement('div', { className: 'dsh-super-code-history-controls' },
-      React.createElement('button', { type: 'button', 'aria-expanded': historyOpen, onClick: () => setHistoryOpen(!historyOpen) }, text(t, 'tree.collapsed', { count: display.hidden.length })),
-      (expanded.size > 0 || collapsed.size > 0) && React.createElement('button', { type: 'button', onClick: () => { autoFit.current = true; setExpanded(new Set()); setCollapsed(new Set()); setFocused(state.current) } }, text(t, 'tree.organize'))),
     historyOpen && React.createElement(AgentHistory, { view, hidden: display.hidden, totals, open, t }),
     React.createElement('div', { ref: viewport, className: 'dsh-super-code-graph-scroll',
       onPointerDown: event => {
@@ -650,7 +898,7 @@ function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog, 
       const number = value => value.toLocaleString(localeCode(t), { notation: 'compact', maximumFractionDigits: 1 })
       const hasChildren = (view.children.get(row.id) || []).length > 0
       const isExpanded = (display.view.children.get(row.id) || []).length > 0
-      return React.createElement(React.Fragment, { key: row.id }, React.createElement('button', {
+      return React.createElement(React.Fragment, { key: row.id }, React.createElement(ActionButton, {
           type: 'button',
           role: 'treeitem', tabIndex: row.id === focusId ? 0 : -1, 'data-agent-id': row.id,
           'aria-level': row.level, 'aria-selected': row.id === state.current,
@@ -664,16 +912,17 @@ function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog, 
         React.createElement('span', { className: 'dsh-super-code-circle ' + tone, 'aria-hidden': true }, row.id === view.root ? text(t, 'main.agent').slice(0, 1) : String(rows.findIndex(item => item.id === row.id))),
         React.createElement('span', { className: 'dsh-super-code-tree-content' },
           React.createElement('span', { className: 'dsh-super-code-tree-title' }, title),
+          React.createElement('span', { className: 'dsh-super-code-node-status', 'data-tone': tone }, React.createElement('i', { 'aria-hidden': true }), status),
           React.createElement('span', { className: 'dsh-super-code-tree-usage', title: text(t, 'tree.usage', { partial: partial ? text(t, 'usage.incomplete') : '', tokens: usage.tokens.toLocaleString(localeCode(t)), cache: usage.cache.toLocaleString(localeCode(t)), agents: usage.agents }) },
             React.createElement('span', null, usage.known ? `${number(usage.tokens)} token` : text(t, 'usage.unknown')),
             React.createElement('span', null, usage.known ? text(t, 'usage.cache', { value: usage.input ? Math.round(usage.cache / usage.input * 100) : 0 }) + (partial ? ` · ${text(t, 'usage.partial')}` : '') : text(t, 'usage.cacheUnknown'))))),
-        hasChildren && React.createElement('button', { type: 'button', className: 'dsh-super-code-branch-toggle',
+        hasChildren && React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-branch-toggle',
           style: { left: row.x + 21, top: row.y + 25 }, 'aria-label': `${collapsed.has(row.id) || !isExpanded ? text(t, 'tree.expand') : text(t, 'tree.collapse')} ${title}`,
           title: text(t, 'tree.organize'), onClick: () => toggleBranch(row.id) },
           React.createElement('svg', { width: 12, height: 12, viewBox: '0 0 12 12', 'aria-hidden': true, style: { transform: collapsed.has(row.id) || !isExpanded ? 'rotate(-90deg)' : undefined } },
             React.createElement('path', { d: 'M3 4.5 6 7.5 9 4.5', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5 }))))
     }))),
-    more && React.createElement('button', { type: 'button', className: 'dsh-super-code-tree-more', onClick: () => setLimit(limit + 200) }, text(t, 'tree.more')))
+    more && React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-tree-more', onClick: () => setLimit(limit + 200) }, text(t, 'tree.more')))
 }
 
 function agentDetailAddress(node) {
@@ -723,6 +972,23 @@ function detailRecord(entry, t = key => zh[key] || key) {
     return { ...base, kind: 'message', label: text(t, 'detail.task'), text: contentText(data.content, t) }
   }
   if (event.type === 'assistant/message') return { ...base, kind: 'message', label: data.interrupted ? text(t, 'detail.interrupted') : text(t, 'detail.agent'), text: contentText(data.message?.content, t) }
+  if (event.type === 'tool/call' && typeof data.name === 'string' && data.name) {
+    let value = typeof data.arguments === 'string' ? data.arguments : JSON.stringify(data.arguments ?? {})
+    try { value = JSON.stringify(JSON.parse(value), null, 2) } catch { /* Incomplete arguments remain readable. */ }
+    return { ...base, kind: 'tool', collapsed: true, toolName: data.name, callId: data.callId,
+      label: text(t, 'detail.toolCall') + ' · ' + data.name, text: value }
+  }
+  if (event.type === 'tool/result') {
+    const blocks = (data.message?.content || []).filter(block => block.type === 'tool-result')
+    // Older journals store a direct tool message; newer ones nest its content.
+    const direct = data.message?.role === 'tool'
+    if (!blocks.length && !direct) return { kind: 'skip' }
+    const failed = direct ? data.message.isError : blocks.some(block => block.isError)
+    return { ...base, kind: failed ? 'error' : 'tool', collapsed: true,
+      callId: direct ? data.message.toolCallId : blocks[0]?.toolCallId,
+      label: text(t, failed ? 'detail.toolError' : 'detail.toolResult'),
+      text: contentText(direct ? data.message.content : blocks.flatMap(block => block.content || []), t) }
+  }
   if (event.type === 'turn/error') return { ...base, kind: 'error', label: text(t, 'detail.error'), text: data.message || text(t, 'detail.incomplete') }
   return { kind: 'skip' }
 }
@@ -798,17 +1064,16 @@ function DetailText({ text: value, t = key => zh[key] || key }) {
   const [full, setFull] = useState(false)
   return React.createElement(React.Fragment, null,
     React.createElement('pre', null, full ? value : value.slice(0, 12000)),
-    !full && value.length > 12000 && React.createElement('button', { type: 'button', onClick: () => setFull(true) }, text(t, 'detail.open')))
+    !full && value.length > 12000 && React.createElement(ActionButton, { type: 'button', onClick: () => setFull(true) }, text(t, 'detail.open')))
 }
 
 function MemoryActivity({ usage, openMemory, sessionId, t }) {
   const rows = [...(usage?.rows || [])].reverse()
   return React.createElement('details', { className: 'dsh-super-code-memory-activity' },
     React.createElement('summary', null, text(t, 'memory.agentUsage'), rows.length ? ` · ${rows.length}` : ''),
-    React.createElement('p', { className: 'dsh-super-code-memory-muted' }, text(t, 'memory.usageHint')),
     !rows.length && React.createElement('p', null, text(t, 'memory.usageEmpty')),
     React.createElement('div', { className: 'dsh-super-code-memory-activity-list' }, rows.map(row =>
-      React.createElement('button', { key: `${row.scope}/${row.topic}/${row.id}/${row.action}`, type: 'button',
+      React.createElement(ActionButton, { key: `${row.scope}/${row.topic}/${row.id}/${row.action}`, type: 'button',
         onClick: () => openMemory(sessionId, row), title: text(t, 'memory.open') },
       React.createElement('span', { className: 'dsh-super-code-memory-action', 'data-action': row.action }, text(t, `memory.${row.action}`)),
       React.createElement('span', null, row.summary || row.id),
@@ -851,11 +1116,12 @@ function MemoryLibrary({ useTabInfo, useSessions, sessionId: scopeSessionId, api
   }, [memoryStates, tab.signal])
   const [scope, setScope] = useState(saved.scope || target.scope)
   const [query, setQuery] = useState(saved.query || '')
+  const [topicFilter, setTopicFilter] = useState(saved.topicFilter || '')
   const [selected, setSelected] = useState(saved.selected || (target.id ? { topic: target.topic, id: target.id } : null))
   const [state, setState] = useState({ key: '', items: [], loading: true, error: false })
   const [detail, setDetail] = useState(null), [revision, setRevision] = useState(0)
   const [viewport, setViewport] = useState({ top: saved.top || 0, height: 600 })
-  const list = useRef(null), sessionId = target.sessionId
+  const list = useRef(null), detailBody = useRef(null), sessionId = target.sessionId
   const key = `${sessionId}/${scope}`, selectionKey = selected ? `${key}/${selected.topic}/${selected.id}` : ''
   const visibleState = state.key === key ? state : { items: [], loading: true, error: false }
   useEffect(() => {
@@ -886,38 +1152,66 @@ function MemoryLibrary({ useTabInfo, useSessions, sessionId: scopeSessionId, api
     return () => observer.disconnect()
   }, [selected, key, tab.visible])
   const resetScroll = () => { saved.top = 0; if (list.current) list.current.scrollTop = 0; setViewport(value => ({ ...value, top: 0 })) }
-  const choose = value => { saved.selected = value; setSelected(value) }
-  const page = useMemo(() => memoryLibraryWindow(visibleState.items, query, viewport.top, viewport.height), [visibleState.items, query, viewport])
+  const choose = value => { if (detailBody.current) detailBody.current.scrollTop = 0; saved.selected = value; setSelected(value) }
+  const changeTopic = value => { saved.topicFilter = value; setTopicFilter(value); resetScroll() }
+  const topics = useMemo(() => {
+    const counts = new Map()
+    for (const item of visibleState.items) counts.set(item.topic, (counts.get(item.topic) || 0) + 1)
+    return [...counts].map(([topic, count]) => ({ topic, count })).sort((a, b) => a.topic.localeCompare(b.topic, localeCode(t)))
+  }, [visibleState.items, t])
+  const topicItems = useMemo(() => topicFilter ? visibleState.items.filter(item => item.topic === topicFilter) : visibleState.items, [visibleState.items, topicFilter])
+  const page = useMemo(() => memoryLibraryWindow(topicItems, query, viewport.top, viewport.height), [topicItems, query, viewport])
   const currentDetail = detail?.key === selectionKey ? detail : null
   const entry = currentDetail?.kind === 'found' ? currentDetail.entry : null
+  const related = entry ? visibleState.items.filter(item => item.topic === entry.topic && item.id !== entry.id).slice(0, 5) : []
   return React.createElement('section', { className: 'dsh-super-code-memory', 'aria-label': text(t, 'memory.title') },
     React.createElement('header', null,
-      React.createElement('div', { className: 'dsh-super-code-memory-heading' }, React.createElement('h2', null, text(t, 'memory.title')),
-        React.createElement('button', { type: 'button', className: 'dsh-super-code-icon-button', title: text(t, 'memory.refresh'), 'aria-label': text(t, 'memory.refresh'), onClick: () => setRevision(value => value + 1) }, React.createElement(IconRefreshOutline16))),
-      React.createElement('p', { className: 'dsh-super-code-memory-muted' }, text(t, 'memory.description')),
+      React.createElement('div', { className: 'dsh-super-code-memory-heading' },
+        React.createElement('div', { className: 'dsh-super-code-title-line' }, React.createElement(Glyph, { type: 'memory' }), React.createElement('h2', null, text(t, 'memory.title'))),
+        React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-icon-button', title: text(t, 'memory.refresh'), 'aria-label': text(t, 'memory.refresh'), onClick: () => setRevision(value => value + 1) }, React.createElement(IconRefreshOutline16))),
       React.createElement('div', { className: 'dsh-super-code-memory-scopes', role: 'group', 'aria-label': text(t, 'memory.title') },
-        ['project', 'global'].map(value => React.createElement('button', { key: value, type: 'button', 'aria-pressed': scope === value, onClick: () => { saved.scope = value; setScope(value); choose(null); resetScroll() } }, text(t, `memory.${value}`)))),
-      !selected && React.createElement('input', { type: 'search', 'aria-label': text(t, 'memory.search'), placeholder: text(t, 'memory.search'), value: query, onChange: event => { saved.query = event.target.value; setQuery(event.target.value); resetScroll() } }),
-      !selected && React.createElement('small', null, text(t, 'memory.count', { count: page.count }))),
+        ['project', 'global'].map(value => React.createElement(ActionButton, { key: value, type: 'button', 'aria-pressed': scope === value, onClick: () => {
+          saved.scope = value; setScope(value); changeTopic(''); choose(null)
+        } }, text(t, `memory.${value}`)))),
+      !selected && React.createElement('div', { className: 'dsh-super-code-memory-search' }, React.createElement(Glyph, { type: 'search' }),
+        React.createElement('input', { type: 'search', 'aria-label': text(t, 'memory.search'), placeholder: text(t, 'memory.search'), value: query, onChange: event => { saved.query = event.target.value; setQuery(event.target.value); resetScroll() } }))),
     !sessionId ? React.createElement('p', { className: 'dsh-super-code-memory-empty' }, text(t, 'memory.selectSession')) : selected
-      ? React.createElement('div', { className: 'dsh-super-code-memory-body', 'aria-busy': !currentDetail },
-        React.createElement('button', { type: 'button', className: 'dsh-super-code-view-button', onClick: () => choose(null) }, `← ${text(t, 'memory.back')}`),
+      ? React.createElement('div', { ref: detailBody, className: 'dsh-super-code-memory-body', 'aria-busy': !currentDetail },
+        React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-view-button', onClick: () => choose(null) }, `← ${text(t, 'memory.back')}`),
+        !currentDetail && React.createElement('p', { role: 'status', className: 'dsh-super-code-memory-empty' }, text(t, 'memory.loading')),
         currentDetail?.kind === 'error' && React.createElement('p', { role: 'alert' }, text(t, 'memory.error')),
         currentDetail?.kind === 'missing' && React.createElement('p', null, text(t, 'memory.missing')),
-        entry && React.createElement('article', null, React.createElement('small', null, `${entry.topic} · r${entry.revision} · ${text(t, `memory.${entry.kind}`)}`),
+        entry && React.createElement('article', { 'data-kind': entry.kind },
+          React.createElement('div', { className: 'dsh-super-code-memory-detail-meta' },
+            React.createElement('span', null, React.createElement(Glyph, { type: 'folder' }), entry.topic),
+            React.createElement('span', null, text(t, `memory.${entry.kind}`)), React.createElement('span', null, `r${entry.revision}`)),
           React.createElement('h3', null, entry.summary), React.createElement('p', { className: 'dsh-super-code-memory-detail' }, entry.detail),
-          React.createElement('p', { className: 'dsh-super-code-memory-hint' }, text(t, 'memory.historical')),
           React.createElement('dl', null, React.createElement('dt', null, text(t, 'memory.source')),
             React.createElement('dd', null, `${text(t, `memory.${entry.source.kind}`)} · #${entry.source.eventSeq}`, React.createElement('br'), entry.source.sessionId),
-            entry.sourceVersion && React.createElement(React.Fragment, null, React.createElement('dt', null, text(t, 'memory.version')), React.createElement('dd', null, entry.sourceVersion)))))
-      : React.createElement('div', { ref: list, className: 'dsh-super-code-memory-list', role: 'list', 'aria-busy': visibleState.loading, onScroll: event => { saved.top = event.currentTarget.scrollTop; setViewport(value => ({ ...value, top: saved.top })) } },
-        visibleState.error && React.createElement('p', { role: 'alert' }, text(t, 'memory.error')),
-        !visibleState.error && !visibleState.loading && !page.count && React.createElement('p', { className: 'dsh-super-code-memory-empty' }, text(t, query ? 'memory.noMatches' : 'memory.empty')),
-        React.createElement('div', { 'aria-hidden': true, style: { height: page.before } }),
-        page.rows.map(item => React.createElement('div', { role: 'listitem', key: `${item.topic}/${item.id}` },
-          React.createElement('button', { type: 'button', className: 'dsh-super-code-memory-row', onClick: () => choose({ topic: item.topic, id: item.id }) },
-            React.createElement('strong', null, item.summary), React.createElement('span', null, `${item.topic} · ${text(t, `memory.${item.kind}`)}`)))),
-        React.createElement('div', { 'aria-hidden': true, style: { height: page.after } })))
+            entry.sourceVersion && React.createElement(React.Fragment, null, React.createElement('dt', null, text(t, 'memory.version')), React.createElement('dd', null, entry.sourceVersion))),
+          related.length > 0 && React.createElement('section', { className: 'dsh-super-code-memory-related' },
+            React.createElement('h4', null, text(t, 'memory.related')),
+            related.map(item => React.createElement(ActionButton, { key: item.id, type: 'button', onClick: () => choose({ topic: item.topic, id: item.id }) },
+              React.createElement(Glyph, { type: 'memory' }), React.createElement('span', null, item.summary), React.createElement(Glyph, { type: 'arrow' }))))))
+      : React.createElement('div', { className: 'dsh-super-code-memory-workspace' },
+        React.createElement('nav', { className: 'dsh-super-code-memory-topic-index', 'aria-label': text(t, 'memory.topics') },
+          React.createElement('div', { className: 'dsh-super-code-memory-topic-label' }, text(t, 'memory.topics'), React.createElement('span', null, topics.length)),
+          React.createElement('div', { className: 'dsh-super-code-memory-topic-options' },
+            [{ topic: '', count: visibleState.items.length }, ...topics].map(({ topic, count }) => React.createElement(ActionButton, { key: topic, type: 'button', title: topic || text(t, 'memory.allTopics'), 'data-topic': topic, 'aria-pressed': topicFilter === topic, onClick: () => changeTopic(topic) },
+              React.createElement(Glyph, { type: topic ? 'folder' : 'memory' }), React.createElement('span', null, topic || text(t, 'memory.allTopics')), React.createElement('small', null, count))))),
+        React.createElement('div', { className: 'dsh-super-code-memory-results' },
+          React.createElement('div', { className: 'dsh-super-code-memory-list-heading' }, React.createElement('strong', null, topicFilter || text(t, 'memory.allTopics')), React.createElement('small', null, text(t, 'memory.count', { count: page.count }))),
+          React.createElement('div', { ref: list, className: 'dsh-super-code-memory-list', role: 'list', 'aria-busy': visibleState.loading, onScroll: event => { saved.top = event.currentTarget.scrollTop; setViewport(value => ({ ...value, top: saved.top })) } },
+            visibleState.loading && !visibleState.error && React.createElement('p', { role: 'status', className: 'dsh-super-code-memory-empty' }, text(t, 'memory.loading')),
+            visibleState.error && React.createElement('p', { role: 'alert' }, text(t, 'memory.error')),
+            !visibleState.error && !visibleState.loading && !page.count && React.createElement('p', { className: 'dsh-super-code-memory-empty' }, text(t, query || topicFilter ? 'memory.noMatches' : 'memory.empty')),
+            React.createElement('div', { 'aria-hidden': true, style: { height: page.before } }),
+            page.rows.map(item => React.createElement('div', { role: 'listitem', key: `${item.topic}/${item.id}` },
+              React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-memory-row', 'data-topic': item.topic, 'data-kind': item.kind, onClick: () => choose({ topic: item.topic, id: item.id }) },
+                React.createElement('span', { className: 'dsh-super-code-memory-row-heading' }, React.createElement(Glyph, { type: 'folder' }), React.createElement('span', { className: 'dsh-super-code-memory-row-topic' }, item.topic)),
+                React.createElement('strong', null, item.summary),
+                React.createElement('span', { className: 'dsh-super-code-memory-row-meta' }, React.createElement('span', { className: 'dsh-super-code-memory-row-kind' }, text(t, `memory.${item.kind}`)), React.createElement('span', null, `r${item.revision}`))))),
+            React.createElement('div', { 'aria-hidden': true, style: { height: page.after } })))))
 }
 
 function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, createInspector, detailStates, openMemory, t = key => zh[key] || key }) {
@@ -970,6 +1264,7 @@ function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, cre
   const input = totals ? (totals.uncachedInputTokens || 0) + (totals.cacheReadTokens || 0) + (totals.cacheWriteTokens || 0) : 0
   const format = value => value === undefined ? text(t, 'detail.unavailable') : value.toLocaleString(localeCode(t))
   const tasks = projections.superCodeTasks
+  const toolNames = new Map(snapshot.items.filter(item => item.toolName && item.callId).map(item => [item.callId, item.toolName]))
   const task = tasks?.current?.kind === 'task' ? tasks.current : undefined
   const title = node?.title || node?.displayTitle || text(t, 'detail.title')
   const metrics = [
@@ -978,21 +1273,26 @@ function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, cre
   ]
   return React.createElement('section', { className: 'dsh-super-code-detail', 'data-agent-detail': id },
     React.createElement('header', { className: 'dsh-super-code-detail-header' },
-      React.createElement('nav', { 'aria-label': text(t, 'detail.path') }, path.map((part, index) => React.createElement('span', { key: part.id }, index > 0 ? ' / ' : '', part.title))),
+      path.length > 1 && React.createElement('nav', { 'aria-label': text(t, 'detail.path'), title: path.map(part => part.title).join(' / ') },
+        path.slice(0, -1).map((part, index) => React.createElement('span', { key: part.id }, index > 0 ? ' / ' : '', part.title))),
       React.createElement('div', { className: 'dsh-super-code-detail-heading' },
-        React.createElement('div', null,
-          React.createElement('h2', null, title),
-          React.createElement('span', { className: 'dsh-super-code-detail-status' }, agentExecutionStatus(node, id === view.root, t).label)),
-        React.createElement('button', { type: 'button', className: 'dsh-super-code-icon-button', title: text(t, 'detail.refresh'), 'aria-label': text(t, 'detail.refresh'), onClick: latest }, React.createElement(IconRefreshOutline16))),
-      id !== view.root && task?.goal && task.goal !== title && React.createElement('p', { className: 'dsh-super-code-detail-task' }, task.goal),
-      id === view.root && React.createElement(TaskMemoryPanel, { state: tasks, t }),
-      React.createElement(MemoryActivity, { usage: projections.superCodeMemoryUsage, sessionId: id, openMemory, t }),
-      React.createElement('dl', { className: 'dsh-super-code-detail-metrics' },
-        React.createElement('div', null, React.createElement('dt', null, text(t, 'detail.total')), React.createElement('dd', null, format(totals ? input + (totals.outputTokens || 0) : undefined))),
-        React.createElement('div', null, React.createElement('dt', null, text(t, 'detail.hitRate')), React.createElement('dd', null, totals ? (input ? Math.round((totals.cacheReadTokens || 0) / input * 100) : 0) + '%' : text(t, 'detail.unavailable')))),
-      React.createElement('details', { className: 'dsh-super-code-usage-details', open: saved.open.has('usage'), onToggle: event => { if (event.currentTarget.open) saved.open.add('usage'); else saved.open.delete('usage') } },
-        React.createElement('summary', null, text(t, 'detail.moreUsage')),
-        React.createElement('dl', { className: 'dsh-super-code-detail-metrics' }, metrics.map(([label, value]) => React.createElement('div', { key: label }, React.createElement('dt', null, label), React.createElement('dd', null, format(value))))))),
+        React.createElement('h2', { title }, title),
+        React.createElement('span', { className: 'dsh-super-code-detail-status', 'data-tone': agentExecutionStatus(node, id === view.root, t).tone }, agentExecutionStatus(node, id === view.root, t).label),
+        React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-icon-button', title: text(t, 'detail.refresh'), 'aria-label': text(t, 'detail.refresh'), onClick: latest }, React.createElement(IconRefreshOutline16))),
+      React.createElement('details', { className: 'dsh-super-code-usage-details', open: saved.open.has('usage'), onToggle: event => {
+        if (event.target !== event.currentTarget) return
+        if (event.currentTarget.open) saved.open.add('usage'); else saved.open.delete('usage')
+      } },
+        React.createElement('summary', null,
+          React.createElement('span', { className: 'dsh-super-code-detail-summary' },
+            React.createElement('span', { title: text(t, 'detail.total') }, React.createElement('span', null, 'Token'), React.createElement('strong', null, format(totals ? input + (totals.outputTokens || 0) : undefined))),
+            React.createElement('span', { title: text(t, 'detail.hitRate') }, React.createElement('span', null, text(t, 'detail.cache')), React.createElement('strong', null, totals ? (input ? Math.round((totals.cacheReadTokens || 0) / input * 100) : 0) + '%' : text(t, 'detail.unavailable')))),
+          React.createElement('span', { className: 'dsh-super-code-detail-info-toggle' }, text(t, 'detail.info'), React.createElement(Glyph, { type: 'chevron' }))),
+        React.createElement('div', { className: 'dsh-super-code-detail-info' },
+          React.createElement('dl', { className: 'dsh-super-code-detail-metrics' }, metrics.map(([label, value]) => React.createElement('div', { key: label }, React.createElement('dt', null, label), React.createElement('dd', null, format(value))))),
+          id !== view.root && task?.goal && task.goal !== title && React.createElement('p', { className: 'dsh-super-code-detail-task' }, task.goal),
+          id === view.root && React.createElement(TaskMemoryPanel, { state: tasks, t }),
+          React.createElement(MemoryActivity, { usage: projections.superCodeMemoryUsage, sessionId: id, openMemory, t })))),
     React.createElement('div', { ref: log, className: 'dsh-super-code-detail-log', 'aria-label': text(t, 'tree.title'), onScroll: event => {
       const element = event.currentTarget
       saved.top = element.scrollTop
@@ -1001,21 +1301,11 @@ function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, cre
     } },
       snapshot.error && React.createElement('p', { role: 'alert' }, text(t, snapshot.error)),
       snapshot.status === 'loading' && React.createElement('p', { role: 'status' }, text(t, 'detail.reading')),
-      snapshot.hasMore && React.createElement('button', { type: 'button', disabled: snapshot.status === 'paging', onClick: inspector.older }, snapshot.status === 'paging' ? text(t, 'detail.read') : text(t, 'detail.older')),
-      (snapshot.earlier || snapshot.truncated) && React.createElement('button', { type: 'button', onClick: latest }, text(t, 'detail.latest')),
+      snapshot.hasMore && React.createElement(ActionButton, { type: 'button', disabled: snapshot.status === 'paging', onClick: inspector.older }, snapshot.status === 'paging' ? text(t, 'detail.read') : text(t, 'detail.older')),
+      (snapshot.earlier || snapshot.truncated) && React.createElement(ActionButton, { type: 'button', onClick: latest }, text(t, 'detail.latest')),
       snapshot.status === 'ready' && !snapshot.items.length && React.createElement('p', null, text(t, 'detail.empty')),
-      snapshot.items.map(record => {
-        const item = record.entry ? detailRecord(record.entry, t) : record
-        return React.createElement('article', { key: item.seq, className: 'dsh-super-code-detail-entry ' + item.kind },
-        item.collapsed ? React.createElement('details', { open: saved.open.has(item.seq), onToggle: event => { if (event.currentTarget.open) saved.open.add(item.seq); else saved.open.delete(item.seq) } },
-          React.createElement('summary', null, item.label),
-            React.createElement(DetailText, { text: item.text, t }))
-          : React.createElement(React.Fragment, null,
-            React.createElement('div', { className: 'dsh-super-code-detail-entry-label' }, item.label,
-              React.createElement('time', null, new Date(item.time).toLocaleTimeString(localeCode(t), { hour12: false }))),
-            React.createElement(DetailText, { text: item.text, t })))
-      }) ),
-    unread && React.createElement('button', { type: 'button', className: 'dsh-super-code-new-content', onClick: () => {
+      snapshot.items.map(record => React.createElement(AgentMessage, { key: record.seq, record, saved, t, toolName: toolNames.get(record.callId) }))),
+    unread && React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-new-content', onClick: () => {
       saved.following = true; log.current.scrollTop = log.current.scrollHeight; markUnread(false)
     } }, text(t, 'detail.new')))
 }
@@ -1048,9 +1338,12 @@ const memoryRemoteContribution = {
 
 // Old hosts render file metadata. Synchronize through our own Remote, then
 // reload their cached roster only when a managed field actually changed.
-function synchronizePresetDisplay(api, locale, reload, onError) {
+function synchronizePresetDisplay(api, locale, reload, onError, preferenceScope) {
   let disposed = false, running = false, pending = '', last = '', needsReload = false
   const changed = () => {
+    // A provisional browser locale can precede the host's saved preference.
+    // Do not rewrite the preset or reload while that public scope is loading.
+    if (preferenceScope?.getSnapshot().status === 'loading') return
     pending = locale.getSnapshot().active
     if (running || pending === last) return
     running = true
@@ -1069,8 +1362,9 @@ function synchronizePresetDisplay(api, locale, reload, onError) {
     })()
   }
   const unsubscribe = locale.subscribe(changed)
+  const unsubscribePreference = preferenceScope ? preferenceScope.subscribe(changed) : () => {}
   changed()
-  return () => { disposed = true; unsubscribe() }
+  return () => { disposed = true; unsubscribe(); unsubscribePreference() }
 }
 
 function PresetSettings({ api, t }) {
@@ -1140,38 +1434,46 @@ function PresetSettings({ api, t }) {
   const versionState = status?.presetVersion ? status.presetVersion === status.pluginVersion ? 'match' : 'mismatch' : 'unknown'
   return React.createElement('section', { className: 'dsh-super-code-settings' },
     React.createElement('header', { className: 'dsh-super-code-settings-header' },
-      React.createElement('span', { className: 'dsh-super-code-settings-head-text' },
+      React.createElement('span', { className: 'dsh-super-code-settings-mark', 'aria-hidden': true }, React.createElement(Glyph, { type: 'code' })),
+      React.createElement('div', { className: 'dsh-super-code-settings-head-text' },
         React.createElement('h2', { className: 'dsh-super-code-settings-name' }, t('preset.title')),
-        React.createElement('span', { className: 'dsh-super-code-settings-description' }, t('preset.description')))),
+        React.createElement('p', { className: 'dsh-super-code-settings-description' }, t('preset.description')))),
     React.createElement('div', { className: 'dsh-super-code-settings-body' },
-      status && React.createElement('p', { className: 'dsh-super-code-preset-status', role: 'status', 'data-available': available },
-        React.createElement('span', { 'aria-hidden': true }, '●'), ' ', t(status.delivery === 'declaration' && status.state === 'installed' ? 'preset.state.declaredInstalled' : `preset.state.${status.state}`), ' · ', status.id),
-      React.createElement('div', { className: 'dsh-super-code-settings-actions' },
-        React.createElement('button', { type: 'button', disabled: busy, onClick: () => run(false), 'aria-label': t('preset.refresh') }, t('preset.refresh'))),
-      status && React.createElement('dl', { className: 'dsh-super-code-preset-versions' },
-        React.createElement('dt', null, t('preset.pluginVersion')),
-        React.createElement('dd', null, status.pluginVersion),
-        React.createElement('dt', null, t('preset.presetVersion')),
-        React.createElement('dd', null, status.state === 'missing' ? t('preset.versionMissing') : status.presetVersion || t('preset.versionUnknown'))),
-      status && status.state !== 'missing' && React.createElement('p', { className: 'dsh-super-code-version-hint', role: 'status', 'data-version-state': versionState },
-        t(versionState === 'match' ? 'preset.versionMatches' : versionState === 'mismatch' ? 'preset.versionMismatch' : 'preset.versionUnknownHint'),
-        versionState === 'mismatch' && ` ${t(reinstall && status.authorable ? 'preset.versionReinstallHint' : 'preset.versionReloadHint')}`),
-      status && React.createElement('p', null, t(available ? 'preset.availableHint' : status.authorable ? 'preset.installHint' : 'preset.unavailableHint')),
-      reinstall && React.createElement('p', null, t('preset.reinstallHint')),
-      status?.userConflict && status.state !== 'conflict' && React.createElement('p', null, t('preset.userConflict')),
-      status?.delivery === 'declaration' && React.createElement('p', { role: 'note' }, t(status.authorable ? 'preset.declaredHint' : 'preset.declaredReadonly')),
-      status?.delivery === 'directory' && !status.authorable && React.createElement('p', { role: 'note' }, t('preset.readonly')),
+      React.createElement('div', { className: 'dsh-super-code-settings-summary' },
+        React.createElement('div', { className: 'dsh-super-code-settings-status-row' },
+          status ? React.createElement('p', { className: 'dsh-super-code-preset-status', role: 'status', 'data-available': available },
+            React.createElement('i', { 'aria-hidden': true }),
+            React.createElement('span', null, t(status.delivery === 'declaration' && status.state === 'installed' ? 'preset.state.declaredInstalled' : `preset.state.${status.state}`)),
+            React.createElement('code', null, status.id))
+            : React.createElement('p', { className: 'dsh-super-code-preset-status', role: 'status' }, busy ? t('preset.working') : t('preset.unavailableHint')),
+          React.createElement('div', { className: 'dsh-super-code-settings-actions' },
+            React.createElement(ActionButton, { type: 'button', disabled: busy, onClick: () => run(false), 'aria-label': t('preset.refresh') },
+              React.createElement(IconRefreshOutline16), t('preset.refresh')))),
+        status && React.createElement('dl', { className: 'dsh-super-code-preset-versions' },
+          React.createElement('div', null, React.createElement('dt', null, t('preset.pluginVersion')), React.createElement('dd', null, status.pluginVersion)),
+          React.createElement('div', null, React.createElement('dt', null, t('preset.presetVersion')), React.createElement('dd', null, status.state === 'missing' ? t('preset.versionMissing') : status.presetVersion || t('preset.versionUnknown')))),
+        status && status.state !== 'missing' && React.createElement('p', { className: 'dsh-super-code-version-hint', role: 'status', 'data-version-state': versionState },
+          t(versionState === 'match' ? 'preset.versionMatches' : versionState === 'mismatch' ? 'preset.versionMismatch' : 'preset.versionUnknownHint'),
+          versionState === 'mismatch' && ` ${t(reinstall && status.authorable ? 'preset.versionReinstallHint' : 'preset.versionReloadHint')}`)),
       status?.authorable && React.createElement('form', { onSubmit: event => { event.preventDefault(); submit() } },
-        React.createElement('label', { htmlFor: 'super-code-display-name' }, t('preset.displayName')),
-        React.createElement('input', { id: 'super-code-display-name', value: displayName, maxLength: 120, required: true, disabled: busy, 'aria-describedby': 'super-code-display-name-hint', onChange: event => setCustomDisplayName(event.target.value) }),
-        React.createElement('small', { id: 'super-code-display-name-hint' }, t('preset.displayNameHint')),
-        React.createElement('label', { htmlFor: 'super-code-preset-name' }, t('preset.name')),
-        React.createElement('div', { className: 'dsh-super-code-install-row' },
-          React.createElement('input', { id: 'super-code-preset-name', value: name, maxLength: 64, disabled: busy,
+        React.createElement('h3', null, t('preset.configuration')),
+        React.createElement('div', { className: 'dsh-super-code-settings-field' },
+          React.createElement('label', { htmlFor: 'super-code-display-name' }, t('preset.displayName')),
+          React.createElement('input', { id: 'super-code-display-name', value: displayName, maxLength: 120, required: true, disabled: busy, 'aria-describedby': 'super-code-display-name-hint', onChange: event => setCustomDisplayName(event.target.value) }),
+          React.createElement('small', { id: 'super-code-display-name-hint' }, t('preset.displayNameHint'))),
+        React.createElement('div', { className: 'dsh-super-code-settings-field' },
+          React.createElement('label', { htmlFor: 'super-code-preset-name' }, t('preset.name')),
+          React.createElement('input', { id: 'super-code-preset-name', className: 'dsh-super-code-technical', value: name, maxLength: 64, disabled: busy,
             pattern: '[a-z0-9][a-z0-9\\-]{0,63}', required: true, autoComplete: 'off', spellCheck: false,
             'aria-describedby': 'super-code-preset-name-hint', onChange: event => setCustomId(event.target.value) }),
-          React.createElement('button', { type: 'submit', disabled: busy || !displayName.trim() || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(name.trim()) }, t(busy ? 'preset.working' : reinstall ? 'preset.reinstall' : status?.delivery === 'declaration' ? 'preset.installDeclared' : 'preset.install'))),
-        React.createElement('small', { id: 'super-code-preset-name-hint' }, t(status?.delivery === 'declaration' ? 'preset.declaredNameHint' : 'preset.nameHint'))),
+          React.createElement('small', { id: 'super-code-preset-name-hint' }, t(status?.delivery === 'declaration' ? 'preset.declaredNameHint' : 'preset.nameHint'))),
+        React.createElement('div', { className: 'dsh-super-code-settings-form-actions' },
+          React.createElement(ActionButton, { type: 'submit', className: 'dsh-super-code-primary-button', disabled: busy || !displayName.trim() || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(name.trim()) }, t(busy ? 'preset.working' : reinstall ? 'preset.reinstall' : status?.delivery === 'declaration' ? 'preset.installDeclared' : 'preset.install')))),
+      React.createElement('div', { className: 'dsh-super-code-settings-guidance' },
+        status && !status.authorable && ['missing', 'broken'].includes(status.state) && React.createElement('p', { role: 'note' }, t('preset.unavailableHint')),
+        status?.userConflict && status.state !== 'conflict' && React.createElement('p', null, t('preset.userConflict')),
+        status?.delivery === 'declaration' && !status.authorable && React.createElement('p', { role: 'note' }, t('preset.declaredReadonly')),
+        status?.delivery === 'directory' && !status.authorable && React.createElement('p', { role: 'note' }, t('preset.readonly'))),
       error && React.createElement('p', { role: 'alert' }, t(error))),
     confirmation && React.createElement('dialog', { ref: dialog, className: 'dsh-super-code-confirm',
       'aria-labelledby': 'super-code-confirm-title', 'aria-describedby': 'super-code-confirm-hint',
@@ -1181,13 +1483,15 @@ function PresetSettings({ api, t }) {
       React.createElement('p', { id: 'super-code-confirm-hint' }, t('preset.confirmHint')),
       confirmation.length ? React.createElement('ul', null, ...confirmation.map(item =>
         React.createElement('li', { key: item.previousId },
-          React.createElement('span', null, `${item.previousId} → ${item.label} · ${item.id}`),
-          React.createElement('button', { type: 'button', 'aria-label': `${t('preset.remove')}: ${item.previousId}`,
+          React.createElement('div', { className: 'dsh-super-code-confirm-item-info' },
+            React.createElement('span', { className: 'dsh-super-code-confirm-previous' }, React.createElement('code', null, item.previousId), ' →'),
+            React.createElement('strong', null, item.label), React.createElement('code', { className: 'dsh-super-code-confirm-new-id' }, item.id)),
+          React.createElement(ActionButton, { type: 'button', 'aria-label': `${t('preset.remove')}: ${item.previousId}`,
             onClick: () => setConfirmation(items => items.filter(row => row.previousId !== item.previousId)) }, t('preset.remove')))))
-        : React.createElement('p', { role: 'status' }, t('preset.confirmEmpty')),
+        : React.createElement('p', { className: 'dsh-super-code-confirm-empty', role: 'status' }, t('preset.confirmEmpty')),
       React.createElement('div', { className: 'dsh-super-code-confirm-actions' },
-        React.createElement('button', { type: 'button', autoFocus: true, 'data-super-code-cancel': true, onClick: () => setConfirmation(null) }, t('preset.cancel')),
-        React.createElement('button', { type: 'button', disabled: busy || !confirmation.length,
+        React.createElement(ActionButton, { type: 'button', autoFocus: true, 'data-super-code-cancel': true, onClick: () => setConfirmation(null) }, t('preset.cancel')),
+        React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-primary-button', disabled: busy || !confirmation.length,
           onClick: () => {
             if (busy || pending.current || !confirmation.length) return
             const selected = confirmation[0]
@@ -1217,10 +1521,15 @@ function apply(ctx) {
       inject: () => ({ api: ready.remote.superCodeMemory, memoryStates }),
     }, MemoryLibrary))
   })
-  ctx.inject(['remote.superCodePresets'], ready => {
-      ready.effect(() => synchronizePresetDisplay(ready.remote.superCodePresets, locale,
-        () => window.location.reload(), error => console.warn('Super Code preset display:', error)), 'super-code: preset display')
-      ready.slots.inject('settings.section', () => ready.slots.register({
+  // Locale already requires its host's preference service. Declare that same
+  // service here: Cordis rejects even optional reads without an injection.
+  const preferenceService = 'configForms' in ctx ? 'configForms' : 'settingsScope'
+  ctx.inject(['remote.superCodePresets', preferenceService], ready => {
+    const preferenceScope = preferenceService === 'configForms'
+      ? ready.configForms.get('locale') : ready.settingsScope.bind({ namespace: 'locale' })
+    ready.effect(() => synchronizePresetDisplay(ready.remote.superCodePresets, locale,
+      () => window.location.reload(), error => console.warn('Super Code preset display:', error), preferenceScope), 'super-code: preset display')
+    ready.slots.inject('settings.section', () => ready.slots.register({
       name: 'settings.section', id: 'super-code', order: 120, label: () => t('preset.title'), locale: LOCALE_NS,
       inject: () => ({ api: ready.remote.superCodePresets }),
     }, PresetSettings))
@@ -1229,168 +1538,352 @@ function apply(ctx) {
     const style = document.createElement('style')
     style.dataset.dshSuperCode = 'true'
     style.textContent = `
-.dsh-super-code-memory{height:100%;min-height:0;display:flex;flex-direction:column;font-size:13px;--agent-muted:var(--dsw-alias-label-secondary,#70757d);--agent-line:var(--dsw-alias-border-l1,#dedfe3)}
-.dsh-super-code-memory>header{padding:18px 18px 12px;border-bottom:1px solid var(--agent-line)}
-.dsh-super-code-memory-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}.dsh-super-code-memory h2{margin:0;font-size:16px;font-weight:600}
-.dsh-super-code-memory-muted{color:var(--agent-muted);font-size:12px;line-height:1.65;margin:10px 0}
-.dsh-super-code-memory-scopes{display:flex;gap:4px;padding:3px;margin:14px 0;border-radius:8px;background:color-mix(in srgb,currentColor 5%,transparent)}
-.dsh-super-code-memory-scopes button{flex:1;border:0;border-radius:6px;padding:7px;background:transparent;color:var(--agent-muted);font:inherit;cursor:pointer}
-.dsh-super-code-memory-scopes button[aria-pressed=true]{background:var(--dsw-alias-bg-layer-2,#fff);color:var(--dsw-color-primary,#3276dc);box-shadow:0 1px 4px #0001}
-.dsh-super-code-memory input{width:100%;box-sizing:border-box;border:1px solid var(--agent-line);border-radius:7px;background:transparent;color:inherit;font:inherit;padding:9px 10px;margin-bottom:10px}
-.dsh-super-code-memory small{font-size:11px;color:var(--agent-muted);overflow-wrap:anywhere}
-.dsh-super-code-memory-list{flex:1;min-height:0;overflow:auto;padding:0 12px}.dsh-super-code-memory-row{display:flex;flex-direction:column;justify-content:center;gap:7px;width:100%;height:76px;box-sizing:border-box;border:0;border-bottom:1px solid var(--agent-line);background:transparent;text-align:left;color:inherit;padding:12px 8px;cursor:pointer;font:inherit}
-.dsh-super-code-memory-row:hover{background:color-mix(in srgb,var(--dsw-color-primary,#3276dc) 5%,transparent)}.dsh-super-code-memory-row strong,.dsh-super-code-memory-row span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dsh-super-code-memory-row strong{font-weight:500}.dsh-super-code-memory-row span{font-size:11px;color:var(--agent-muted)}
-.dsh-super-code-memory-body{overflow:auto;flex:1;min-height:0;padding:14px 18px 28px}.dsh-super-code-memory-body article{padding-top:18px}.dsh-super-code-memory-body h3{font-size:15px;line-height:1.6;margin:8px 0 14px;overflow-wrap:anywhere}
-.dsh-super-code-memory-detail{white-space:pre-wrap;line-height:1.8;overflow-wrap:anywhere}.dsh-super-code-memory-hint{border-left:2px solid #b8ac82;padding:8px 12px;background:color-mix(in srgb,#b8ac82 8%,transparent);color:var(--agent-muted);font-size:12px;line-height:1.6;margin:22px 0}
-.dsh-super-code-memory-body dt{font-size:11px;color:var(--agent-muted);margin-top:18px}.dsh-super-code-memory-body dd{margin:6px 0;line-height:1.6;overflow-wrap:anywhere;font-size:12px}.dsh-super-code-memory-empty{padding:20px 6px;line-height:1.8;color:var(--agent-muted)}
-.dsh-super-code-memory-activity{margin-top:14px;font-size:12px}.dsh-super-code-memory-activity summary{cursor:pointer}.dsh-super-code-memory-activity-list{max-height:200px;overflow:auto}.dsh-super-code-memory-activity-list button{display:grid;grid-template-columns:auto 1fr;gap:5px 8px;width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid var(--agent-line);padding:10px 2px;color:inherit;font:inherit;cursor:pointer}.dsh-super-code-memory-activity-list small{grid-column:2;color:var(--agent-muted);overflow-wrap:anywhere}.dsh-super-code-memory-activity-list span{overflow-wrap:anywhere}
-.dsh-super-code-memory-action{font-size:10px;color:#4d779f}.dsh-super-code-memory-action[data-action=read]{color:#14867b}.dsh-super-code-memory-action[data-action=remember]{color:#927247}.dsh-super-code-memory-action[data-action=forget]{color:var(--agent-muted)}
-.dsh-super-code-memory button:focus-visible,.dsh-super-code-memory input:focus-visible{outline:2px solid var(--dsw-color-primary,#3276dc);outline-offset:2px}
-.dsh-super-code-settings{list-style:none;border:.5px solid var(--dsw-alias-border-l4,#dedfe3);border-radius:16px;background:var(--dsw-alias-bg-layer-2,transparent);line-height:1.6;font-size:13px}
-.dsh-super-code-settings-header{display:flex;align-items:center;gap:12px;padding:14px 16px}
-.dsh-super-code-settings-head-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}.dsh-super-code-settings-name{margin:0;font-size:15px;font-weight:600;line-height:1.4;color:var(--dsw-alias-label-primary,inherit)}
-.dsh-super-code-settings-description{font-size:13px;line-height:1.5;color:var(--dsw-alias-label-tertiary,#70757d)}
-.dsh-super-code-preset-versions{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 16px;margin:12px 0}.dsh-super-code-preset-versions dt{color:var(--dsw-alias-label-secondary,#70757d)}.dsh-super-code-preset-versions dd{margin:0;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
-.dsh-super-code-settings .dsh-super-code-version-hint[data-version-state=mismatch],.dsh-super-code-settings .dsh-super-code-version-hint[data-version-state=unknown]{border-left:2px solid #b87716;padding:8px 12px;background:color-mix(in srgb,#b87716 8%,transparent)}
-.dsh-super-code-confirm{box-sizing:border-box;width:min(560px,calc(100vw - 48px));max-height:80vh;overflow:auto;border:1px solid var(--dsw-alias-border-l2,#dedfe3);border-radius:8px;padding:24px;color:var(--dsw-alias-label-primary,#202126);background:var(--dsw-alias-bg-layer-1,#fff);font-size:13px;line-height:1.6}.dsh-super-code-confirm::backdrop{background:#0006}.dsh-super-code-confirm h3{font-size:16px;margin:0 0 12px}.dsh-super-code-confirm p{margin:0 0 14px}.dsh-super-code-confirm ul{padding:0;margin:0 0 18px;list-style:none}.dsh-super-code-confirm li{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:12px 0;overflow-wrap:anywhere}.dsh-super-code-confirm-actions{display:flex;justify-content:flex-end;gap:8px}.dsh-super-code-confirm button{font:inherit;color:inherit;border:1px solid var(--dsw-alias-border-l1,#dedfe3);border-radius:6px;background:transparent;padding:7px 10px;min-height:34px;cursor:pointer}.dsh-super-code-confirm button:disabled{opacity:.45;cursor:default}.dsh-super-code-confirm button:focus-visible{outline:2px solid var(--dsw-color-primary,#3276dc);outline-offset:2px}
-.dsh-super-code-settings-body{border-top:.5px solid var(--dsw-alias-border-l2,#dedfe3);margin:0 16px;padding:12px 0 14px}.dsh-super-code-settings-actions{display:flex;justify-content:flex-end}
-.dsh-super-code-settings p{margin:8px 0;color:var(--dsw-alias-label-secondary,#70757d)}
-.dsh-super-code-settings-body button,.dsh-super-code-settings input{font:inherit;color:inherit;border:1px solid var(--dsw-alias-border-l1,#dedfe3);border-radius:7px;background:transparent;padding:7px 10px;min-height:34px}
-.dsh-super-code-settings button{cursor:pointer;white-space:nowrap}.dsh-super-code-settings button:disabled{opacity:.45;cursor:default}
-.dsh-super-code-settings form{margin-top:16px}.dsh-super-code-settings label{display:block;margin-bottom:6px}
-.dsh-super-code-install-row{display:flex;gap:8px;flex-wrap:wrap}.dsh-super-code-install-row input{flex:1;min-width:140px}
-.dsh-super-code-settings small{display:block;margin-top:6px;color:var(--dsw-alias-label-secondary,#70757d)}
-.dsh-super-code-settings .dsh-super-code-preset-status{color:inherit}.dsh-super-code-preset-status span{color:#b87716}.dsh-super-code-preset-status[data-available=true] span{color:#008b78}
-.dsh-super-code-settings [role=alert]{color:var(--dsw-color-text-error,#bd423b)}.dsh-super-code-settings :focus-visible{outline:2px solid var(--dsw-color-primary,#3276dc);outline-offset:2px}
+/* Host aliases remain the source of theme colors. */
+:where(.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-detail,.dsh-super-code-memory,.dsh-super-code-confirm,.dsh-super-code-select,.dsh-super-code-tooltip){
+  --sc-text:var(--dsw-alias-label-primary,#242831);
+  --sc-muted:var(--dsw-alias-label-secondary,#6a707a);
+  --sc-faint:var(--dsw-alias-label-tertiary,#818793);
+  --sc-bg:var(--dsw-alias-bg-layer-1,#fff);
+  --sc-surface:var(--dsw-alias-bg-layer-2,#f5f6f8);
+  --sc-line:var(--dsw-alias-border-l1,#e2e4e8);
+  --sc-hover:color-mix(in srgb,var(--sc-text) 5%,var(--sc-bg));
+  --sc-selected:color-mix(in srgb,var(--dsw-color-primary,#3e78c5) 7%,var(--sc-bg));
+  --sc-accent:var(--dsw-color-primary,#3e78c5);
+  --sc-success:var(--dsw-color-text-success,#197661);
+  --sc-warning:var(--dsw-color-text-warning,#9c650c);
+  --sc-error:var(--dsw-color-text-error,#bb4545);
+  --sc-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --agent-muted:var(--sc-muted);--agent-line:var(--sc-line);
+  color:var(--sc-text);font-size:14px;line-height:1.55;letter-spacing:0;
+  box-sizing:border-box;min-width:0;
+}
+:where(.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-detail,.dsh-super-code-memory,.dsh-super-code-confirm) *{box-sizing:border-box}
+:where(.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-detail,.dsh-super-code-memory,.dsh-super-code-confirm) :is(button,input,select){font:inherit;color:inherit;min-width:0}
+:where(.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-detail,.dsh-super-code-memory,.dsh-super-code-confirm) button{cursor:pointer;transition:background-color .12s,border-color .12s;color:inherit}
+:where(.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-detail,.dsh-super-code-memory,.dsh-super-code-confirm) button:disabled{opacity:.45;cursor:default}
+:where(.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-detail,.dsh-super-code-memory,.dsh-super-code-confirm) :is(button,input,select,summary):focus-visible{outline:2px solid var(--sc-accent);outline-offset:2px}
+:where(.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-detail,.dsh-super-code-memory) :is(input,select){width:100%;height:36px;padding:7px 12px;border:1px solid var(--sc-line);border-radius:8px;background:var(--sc-bg);transition:border-color .12s;outline-offset:2px}
+:where(.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-memory) input::placeholder{color:var(--sc-faint)}
+:where(.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-memory) :is(input,select):hover{border-color:color-mix(in srgb,var(--sc-text) 25%,var(--sc-line))}
+.dsh-super-code-technical,.dsh-super-code-confirm code,.dsh-super-code-preset-status code{font-family:var(--sc-mono);font-size:12px}
+.dsh-super-code-title-line{display:flex;align-items:center;gap:8px;min-width:0}
+.dsh-super-code-glyph{width:18px;height:18px;flex:none;color:var(--sc-muted)}
+.dsh-super-code-icon-button{display:inline-flex;align-items:center;justify-content:center;flex:none;width:32px;height:32px;border:0;border-radius:8px;padding:0;background:transparent;color:var(--sc-muted)}
+.dsh-super-code-icon-button:hover,.dsh-super-code-view-button:hover{background:var(--sc-hover);color:var(--sc-text)}
+.dsh-super-code-icon-button svg{width:16px;height:16px}
+.dsh-super-code-view-button{display:inline-flex;align-items:center;gap:6px;border:0;border-radius:8px;padding:6px 8px;background:transparent;color:var(--sc-muted);font-size:13px}
 
-.dsh-super-code-tree{--agent-muted:var(--dsw-alias-label-secondary,#70757d);--agent-line:var(--dsw-alias-border-l1,#dedfe3);height:100%;min-width:0;min-height:0;display:flex;flex-direction:column;overflow:auto;font-size:13px;letter-spacing:0;color:inherit}
-.dsh-super-code-tree>header,.dsh-super-code-tree>.dsh-super-code-graph-controls,.dsh-super-code-tree>.dsh-super-code-graph-legend,.dsh-super-code-tree>.dsh-super-code-history-controls{flex-shrink:0}
-.dsh-super-code-tree-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 18px 16px}
-.dsh-super-code-tree-header strong{display:block;font-size:14px;font-weight:600}
-.dsh-super-code-tree-count{display:block;margin-top:5px;color:var(--agent-muted);font-size:12px}
-.dsh-super-code-graph-controls{display:flex;align-items:center;gap:6px;padding:2px 18px 12px;color:var(--agent-muted);font-size:11px}
-.dsh-super-code-graph-controls button{border:1px solid var(--agent-line);border-radius:5px;background:transparent;color:inherit;padding:3px 8px;min-height:28px;cursor:pointer;font:inherit}
-.dsh-super-code-graph-controls button:disabled{opacity:.4;cursor:default}
-.dsh-super-code-graph-controls span{min-width:38px;text-align:center;font-variant-numeric:tabular-nums}
-.dsh-super-code-history-controls{display:flex;gap:8px;padding:0 18px 10px}
-.dsh-super-code-history-controls button{border:1px solid var(--agent-line);border-radius:14px;background:transparent;color:var(--agent-muted);padding:5px 10px;font:inherit;font-size:11px;cursor:pointer}
-.dsh-super-code-history-controls button[aria-expanded=true]{color:var(--dsw-color-primary,#3276dc);background:color-mix(in srgb,currentColor 5%,transparent)}
-.dsh-super-code-history{display:flex;flex-direction:column;flex-shrink:0;box-sizing:border-box;height:46%;min-height:220px;max-height:400px;margin:0 12px 12px;padding:12px;border:1px solid var(--agent-line);border-radius:12px;background:color-mix(in srgb,var(--agent-muted) 3%,transparent)}
-.dsh-super-code-history>p,.dsh-super-code-history>input,.dsh-super-code-history-filters{flex-shrink:0}
-.dsh-super-code-history p{font-size:11px;color:var(--agent-muted);margin:0 0 10px;line-height:1.6}
-.dsh-super-code-history input,.dsh-super-code-history select{box-sizing:border-box;min-width:0;width:100%;border:1px solid var(--agent-line);border-radius:7px;background:var(--dsw-alias-bg-base,#fff);color:var(--dsw-alias-text-primary,inherit);font:inherit;font-size:12px;padding:7px 8px}
-.dsh-super-code-history>input{margin-bottom:8px}
-.dsh-super-code-history-filters{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:8px}
-.dsh-super-code-history-filters label{display:flex;flex-direction:column;gap:4px;min-width:0;font-size:10px;color:var(--agent-muted)}
-.dsh-super-code-history-filters select{cursor:pointer}
-.dsh-super-code-history input:focus-visible,.dsh-super-code-history select:focus-visible,.dsh-super-code-history-list button:focus-visible{outline:2px solid var(--dsw-color-primary,#3276dc);outline-offset:-2px}
-.dsh-super-code-history p.dsh-super-code-history-summary{font-size:10px;margin-bottom:6px}
-.dsh-super-code-history-list{flex:1;min-height:56px;overflow:auto;overflow-anchor:none;overscroll-behavior:contain;scrollbar-gutter:stable}
-.dsh-super-code-history-list button{display:flex;align-items:center;box-sizing:border-box;gap:9px;width:100%;height:56px;text-align:left;border:0;border-radius:7px;padding:9px 5px;background:transparent;color:inherit;cursor:pointer;font:inherit}
-.dsh-super-code-history-list button:hover{background:color-mix(in srgb,currentColor 5%,transparent)}
-.dsh-super-code-history-list button>span{flex:1;min-width:0}.dsh-super-code-history-list strong{display:block;font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.dsh-super-code-history-list small{font-size:10px;color:var(--agent-muted);line-height:1.6}.dsh-super-code-history-list button>small{white-space:nowrap;font-variant-numeric:tabular-nums}
-.dsh-super-code-history-list button>span>small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.dsh-super-code-history-list .dsh-super-code-circle{width:7px;height:7px;box-shadow:none}
-.dsh-super-code-history-empty{padding:14px 5px}
-.dsh-super-code-branch-toggle{position:absolute;display:grid;place-items:center;width:22px;height:22px;padding:0;border:1px solid var(--agent-line);border-radius:50%;background:var(--dsw-alias-bg-base,#fff);color:var(--agent-muted);cursor:pointer;box-shadow:0 1px 3px #0000000a}
-.dsh-super-code-branch-toggle:hover{color:var(--dsw-color-primary,#3276dc);border-color:currentColor}
-.dsh-super-code-graph-scroll{overflow:hidden;padding:0 12px;min-height:180px;flex:1;touch-action:none;cursor:grab;user-select:none}
-.dsh-super-code-graph-scroll.dragging,.dsh-super-code-graph-scroll.dragging *{cursor:grabbing!important}
-.dsh-super-code-graph-legend{display:flex;flex-wrap:wrap;gap:6px 12px;padding:0 18px 8px;color:var(--agent-muted);font-size:10px}
+/* Settings. */
+.dsh-super-code-settings{container-type:inline-size;border:1px solid var(--sc-line);border-radius:12px;background:var(--sc-bg);overflow:hidden}
+.dsh-super-code-settings-header{display:flex;align-items:center;gap:12px;padding:20px 24px;border-bottom:1px solid var(--sc-line)}
+.dsh-super-code-settings-mark{display:grid;place-items:center;flex:none;width:40px;height:40px;background:var(--sc-surface);border:1px solid var(--sc-line);border-radius:10px}
+.dsh-super-code-settings-mark svg{width:22px;height:22px;color:var(--sc-text)}
+.dsh-super-code-settings-head-text{display:grid;gap:4px;min-width:0}
+.dsh-super-code-settings-name{font-size:16px;font-weight:600;line-height:1.4;margin:0}
+.dsh-super-code-settings-description{font-size:13px;color:var(--sc-muted);margin:0}
+.dsh-super-code-settings-body{padding:20px 24px 24px}
+.dsh-super-code-settings-summary{padding:16px;border-radius:12px;background:var(--sc-surface)}
+.dsh-super-code-settings-status-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.dsh-super-code-preset-status{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:4px 0;font-size:13px;min-width:0;flex:1}
+.dsh-super-code-preset-status>i{width:7px;height:7px;flex:none;border-radius:50%;background:var(--sc-warning)}
+.dsh-super-code-preset-status[data-available=true]>i{background:var(--sc-success)}
+.dsh-super-code-preset-status>span{font-weight:500}
+.dsh-super-code-preset-status code{color:var(--sc-muted);overflow-wrap:anywhere}
+.dsh-super-code-settings-actions{display:flex;flex:none;margin-left:auto}
+.dsh-super-code-settings-actions button,.dsh-super-code-settings-form-actions button,.dsh-super-code-confirm button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:32px;border:1px solid var(--sc-line);border-radius:8px;background:var(--sc-bg);padding:5px 10px;font-size:13px}
+.dsh-super-code-settings-actions button:hover,.dsh-super-code-confirm button:hover{background:var(--sc-hover)}
+.dsh-super-code-settings-actions svg{width:14px;height:14px}
+.dsh-super-code-preset-versions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:16px 0 0;padding-top:16px;border-top:1px solid var(--sc-line)}
+.dsh-super-code-preset-versions>div+div{border-left:1px solid var(--sc-line);padding-left:16px}
+.dsh-super-code-preset-versions dt{font-size:12px;color:var(--sc-muted)}
+.dsh-super-code-preset-versions dd{font-family:var(--sc-mono);font-variant-numeric:tabular-nums;font-size:15px;margin:4px 0 0;overflow-wrap:anywhere}
+.dsh-super-code-version-hint{font-size:12px;color:var(--sc-muted);margin:12px 0 0;overflow-wrap:anywhere}
+.dsh-super-code-version-hint[data-version-state=mismatch],.dsh-super-code-version-hint[data-version-state=unknown]{padding:10px 12px;background:color-mix(in srgb,var(--sc-warning) 8%,var(--sc-bg));border-left:2px solid var(--sc-warning);border-radius:0 6px 6px 0;color:var(--sc-text)}
+.dsh-super-code-settings form{display:grid;gap:16px;margin-top:24px}
+.dsh-super-code-settings form>h3{margin:0;font-size:14px;font-weight:600}
+.dsh-super-code-settings-field{display:grid;gap:6px}
+.dsh-super-code-settings label{font-size:13px;font-weight:500}
+.dsh-super-code-settings small{display:block;font-size:12px;color:var(--sc-muted);line-height:1.6;overflow-wrap:anywhere}
+.dsh-super-code-settings-form-actions{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:12px;padding-top:4px}
+.dsh-super-code-settings-form-actions>small{flex:1;min-width:220px}
+.dsh-super-code-settings-form-actions>button{margin-left:auto;flex:none}
+.dsh-super-code-settings .dsh-super-code-primary-button,.dsh-super-code-confirm .dsh-super-code-primary-button{background:var(--sc-text);border-color:var(--sc-text);color:var(--sc-bg);font-weight:500}
+.dsh-super-code-settings .dsh-super-code-primary-button:hover,.dsh-super-code-confirm .dsh-super-code-primary-button:hover{background:color-mix(in srgb,var(--sc-text) 85%,var(--sc-bg))}
+.dsh-super-code-settings-guidance:empty{display:none}
+.dsh-super-code-settings-guidance{margin-top:20px;padding-top:12px;border-top:1px solid var(--sc-line);color:var(--sc-muted);font-size:12px}
+.dsh-super-code-settings-guidance p{margin:0 0 4px}
+.dsh-super-code-settings [role=alert],.dsh-super-code-detail [role=alert],.dsh-super-code-tree-error{font-size:13px;color:var(--sc-error);overflow-wrap:anywhere}
+@container(max-width:420px){.dsh-super-code-settings-header{padding:16px}.dsh-super-code-settings-body{padding:16px}.dsh-super-code-settings-summary{padding:12px}.dsh-super-code-settings-status-row{gap:8px}.dsh-super-code-preset-status{flex-basis:100%}.dsh-super-code-settings-form-actions>small{min-width:0;flex-basis:100%}}
+
+/* Confirmation. */
+.dsh-super-code-confirm{width:min(520px,calc(100vw - 32px));max-height:calc(100dvh - 48px);overflow:auto;border:1px solid var(--sc-line);border-radius:16px;padding:24px;background:var(--sc-bg);box-shadow:0 12px 48px #0003}
+.dsh-super-code-confirm::backdrop{background:#10182066}
+.dsh-super-code-confirm h3{font-size:16px;font-weight:600;margin:0 0 8px}
+.dsh-super-code-confirm>p{font-size:13px;color:var(--sc-muted);margin:0 0 16px;line-height:1.7}
+.dsh-super-code-confirm ul{padding:0;list-style:none;margin:20px 0;background:var(--sc-surface);border-radius:12px;overflow:hidden}
+.dsh-super-code-confirm li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px;overflow-wrap:anywhere}
+.dsh-super-code-confirm li+li{border-top:1px solid var(--sc-line)}
+.dsh-super-code-confirm li>button{background:transparent;flex:none;font-size:12px}
+.dsh-super-code-confirm-item-info{display:grid;gap:3px;min-width:0}
+.dsh-super-code-confirm-item-info strong{font-size:14px;font-weight:500}
+.dsh-super-code-confirm-previous,.dsh-super-code-confirm-new-id{font-size:12px;color:var(--sc-muted)}
+.dsh-super-code-confirm-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+.dsh-super-code-confirm .dsh-super-code-confirm-empty{padding:20px 16px;background:var(--sc-surface);border-radius:12px}
+
+/* Memory library: geometry stays at 76px per row. */
+.dsh-super-code-memory{height:100%;min-height:0;display:flex;flex-direction:column;container-type:inline-size}
+.dsh-super-code-memory>header{padding:16px;border-bottom:1px solid var(--sc-line);flex:none}
+.dsh-super-code-memory-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.dsh-super-code-memory h2{font-size:16px;font-weight:600;margin:0}
+.dsh-super-code-memory-muted{font-size:13px;color:var(--sc-muted);line-height:1.65;margin:8px 0}
+.dsh-super-code-memory-scopes{display:flex;gap:2px;padding:3px;margin:16px 0 12px;border-radius:18px;background:var(--sc-surface)}
+.dsh-super-code-memory-scopes button{flex:1;min-height:28px;padding:3px 8px;border:0;border-radius:16px;font-size:13px;background:transparent;color:var(--sc-muted)}
+.dsh-super-code-memory-scopes button[aria-pressed=true]{background:var(--sc-bg);color:var(--sc-text);box-shadow:inset 0 0 0 1px var(--sc-line)}
+.dsh-super-code-memory-search{position:relative;margin-bottom:8px}
+.dsh-super-code-memory-search>svg{position:absolute;left:11px;top:9px;width:16px;height:16px;color:var(--sc-muted);pointer-events:none}
+.dsh-super-code-memory-search input{padding-left:34px}
+.dsh-super-code-memory small{font-size:12px;color:var(--sc-muted);overflow-wrap:anywhere}
+.dsh-super-code-memory-workspace{flex:1;display:flex;flex-direction:column;min-height:0;background:var(--sc-surface)}
+.dsh-super-code-memory-topic-index{display:flex;flex-direction:column;flex:none;gap:8px;min-width:0;padding:12px 16px;border-bottom:1px solid var(--sc-line);background:var(--sc-bg)}
+.dsh-super-code-memory-topic-label{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:500;color:var(--sc-muted)}
+.dsh-super-code-memory-topic-label>span{padding:0 5px;border-radius:4px;background:var(--sc-surface);font-variant-numeric:tabular-nums}
+.dsh-super-code-memory-topic-options{display:flex;gap:6px;overflow:auto;min-width:0;padding:2px 0 5px}
+.dsh-super-code-memory-topic-index button{flex:none;display:inline-flex;align-items:center;gap:6px;min-height:30px;padding:5px 8px;border:1px solid var(--sc-line);border-radius:8px;background:var(--sc-bg);color:var(--sc-muted);font-size:12px;white-space:nowrap}
+.dsh-super-code-memory-topic-index button .dsh-super-code-glyph{width:14px;height:14px}
+.dsh-super-code-memory-topic-index button>span{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.dsh-super-code-memory-topic-index button small{font-size:11px;line-height:1.3;min-width:16px;text-align:center;padding:1px 4px;border-radius:4px;background:var(--sc-surface);font-variant-numeric:tabular-nums}
+.dsh-super-code-memory-topic-index button:hover{background:var(--sc-hover);color:var(--sc-text)}
+.dsh-super-code-memory-topic-index button[aria-pressed=true]{border-color:var(--sc-accent);background:var(--sc-selected);color:var(--sc-text)}
+.dsh-super-code-memory-results{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0}
+.dsh-super-code-memory-list-heading{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:12px 16px 8px;flex:none}
+.dsh-super-code-memory-list-heading strong{font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dsh-super-code-memory-list-heading small{font-size:11px;flex:none}
+.dsh-super-code-memory-list{flex:1;min-height:0;overflow:auto;padding:0 12px;background:var(--sc-surface)}
+.dsh-super-code-memory-list>[role=listitem]{height:76px;padding-bottom:6px}
+.dsh-super-code-memory-row{position:relative;display:flex;flex-direction:column;justify-content:center;gap:2px;width:100%;height:70px;border:1px solid var(--sc-line);border-radius:10px;padding:6px 12px 6px 16px;text-align:left;background:var(--sc-bg);box-shadow:0 1px 2px #00000008;overflow:hidden}
+.dsh-super-code-memory-row:before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:3px;border-radius:0 3px 3px 0;background:var(--sc-accent)}
+.dsh-super-code-memory-row[data-kind=constraint]:before{background:var(--sc-warning)}
+.dsh-super-code-memory-row[data-kind=fact]:before{background:var(--sc-accent)}
+.dsh-super-code-memory-row[data-kind=experience]:before{background:var(--sc-success)}
+.dsh-super-code-memory-row:hover{background:var(--sc-hover);border-color:color-mix(in srgb,var(--sc-accent) 35%,var(--sc-line))}
+.dsh-super-code-memory-row-heading{display:flex;align-items:center;gap:6px;min-width:0;line-height:14px}
+.dsh-super-code-memory-row-heading .dsh-super-code-glyph{width:12px;height:12px;color:var(--sc-faint)}
+.dsh-super-code-memory-row-topic{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--sc-muted);font-size:11px}
+.dsh-super-code-memory-row-kind{color:var(--sc-muted);white-space:nowrap}
+.dsh-super-code-memory-row strong{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:500;line-height:16px}
+.dsh-super-code-memory-row-meta{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--sc-muted);white-space:nowrap;line-height:12px}
+.dsh-super-code-memory-row-meta>span+span{border-left:1px solid var(--sc-line);padding-left:8px;font-family:var(--sc-mono)}
+.dsh-super-code-memory-empty{padding:24px 8px;color:var(--sc-muted);font-size:13px;line-height:1.8}
+.dsh-super-code-memory-body{flex:1;min-height:0;overflow:auto;padding:16px;background:var(--sc-surface)}
+.dsh-super-code-memory-body article{padding:16px;border:1px solid var(--sc-line);border-radius:12px;background:var(--sc-bg);box-shadow:0 1px 3px #0000000a}
+.dsh-super-code-memory-detail-meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px;color:var(--sc-muted);font-size:11px}
+.dsh-super-code-memory-detail-meta>span{display:inline-flex;align-items:center;gap:5px;padding:3px 7px;border-radius:6px;background:var(--sc-surface)}
+.dsh-super-code-memory-detail-meta>span:first-child{background:var(--sc-selected);color:var(--sc-accent)}
+.dsh-super-code-memory-detail-meta .dsh-super-code-glyph{width:13px;height:13px;color:inherit}
+.dsh-super-code-memory-body h3{font-size:16px;font-weight:600;line-height:1.6;margin:12px 0 16px;overflow-wrap:anywhere}
+.dsh-super-code-memory-detail{font-size:14px;white-space:pre-wrap;line-height:1.8;overflow-wrap:anywhere}
+.dsh-super-code-memory-body dl{padding-top:8px;border-top:1px solid var(--sc-line)}
+.dsh-super-code-memory-body dt{font-size:12px;color:var(--sc-muted);margin-top:12px}
+.dsh-super-code-memory-body dd{margin:4px 0;font-size:12px;line-height:1.7;overflow-wrap:anywhere}
+.dsh-super-code-memory-related{border-top:1px solid var(--sc-line);margin-top:20px;padding-top:12px}
+.dsh-super-code-memory-related h4{font-size:12px;font-weight:500;color:var(--sc-muted);margin:0 0 6px}
+.dsh-super-code-memory-related button{display:flex;align-items:center;gap:8px;width:100%;padding:8px 4px;border:0;border-radius:6px;background:transparent;font-size:12px;text-align:left}
+.dsh-super-code-memory-related button:hover{background:var(--sc-hover)}
+.dsh-super-code-memory-related button>span{min-width:0;flex:1;overflow-wrap:anywhere}
+.dsh-super-code-memory-related .dsh-super-code-glyph{width:14px;height:14px}
+@container(min-width:520px){
+  .dsh-super-code-memory-workspace{display:grid;grid-template-columns:170px minmax(0,1fr)}
+  .dsh-super-code-memory-topic-index{min-height:0;padding:16px 10px;border-bottom:0;border-right:1px solid var(--sc-line)}
+  .dsh-super-code-memory-topic-label{padding:0 6px}
+  .dsh-super-code-memory-topic-options{flex-direction:column;gap:4px;padding:2px;min-height:0;overflow:auto}
+  .dsh-super-code-memory-topic-index button{width:100%;justify-content:space-between;border-color:transparent;background:transparent}
+  .dsh-super-code-memory-topic-index button>span{flex:1;text-align:left}
+}
+.dsh-super-code-memory-activity{margin-top:12px;font-size:13px}
+.dsh-super-code-memory-activity summary{cursor:pointer;color:var(--sc-muted)}
+.dsh-super-code-memory-activity-list{max-height:200px;overflow:auto}
+.dsh-super-code-memory-activity-list button{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;width:100%;border:0;border-bottom:1px solid var(--sc-line);background:transparent;padding:8px 0;text-align:left;font-size:12px}
+.dsh-super-code-memory-activity-list small{grid-column:2;color:var(--sc-muted);font-size:11px;overflow-wrap:anywhere}
+.dsh-super-code-memory-activity-list span{overflow-wrap:anywhere}
+.dsh-super-code-memory-action{color:var(--sc-muted)}
+.dsh-super-code-memory-action[data-action=read]{color:var(--sc-accent)}
+.dsh-super-code-memory-action[data-action=remember]{color:var(--sc-success)}
+
+/* Graph: preserve 128px node width and layout anchors. */
+.dsh-super-code-tree{height:100%;min-height:0;display:flex;flex-direction:column;overflow:auto;container-type:inline-size}
+.dsh-super-code-tree>header,.dsh-super-code-graph-legend,.dsh-super-code-graph-controls,.dsh-super-code-history-controls{flex:none}
+.dsh-super-code-tree-header{display:flex;flex-direction:column;gap:8px;padding:12px}
+.dsh-super-code-tree-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0}
+.dsh-super-code-tree-header strong{font-size:15px;font-weight:600;white-space:nowrap}
+.dsh-super-code-tree-header .dsh-super-code-title-line{gap:6px;min-width:0}
+.dsh-super-code-tree-header .dsh-super-code-title-line>.dsh-super-code-glyph{width:16px;height:16px}
+.dsh-super-code-tree-count{font-size:11px;color:var(--sc-muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.dsh-super-code-tree-toolbar{display:flex;align-items:center;gap:6px;min-width:0}
+.dsh-super-code-tree-toolbar>.dsh-super-code-icon-button{width:28px;height:28px;border-radius:6px}
+.dsh-super-code-tree-toolbar>.dsh-super-code-icon-button svg{width:16px;height:16px}
+.dsh-super-code-graph-legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:10px;color:var(--sc-muted)}
 .dsh-super-code-graph-legend>span{display:flex;align-items:center;gap:5px}
-.dsh-super-code-graph-legend .dsh-super-code-circle{width:7px;height:7px;box-shadow:none}
+.dsh-super-code-circle.active{--state-color:#008b78}
+.dsh-super-code-circle.idle{--state-color:#3971de}
+.dsh-super-code-circle.stopped{--state-color:#777d87}
+.dsh-super-code-circle.unavailable{--state-color:#b87716}
+.dsh-super-code-graph-legend .dsh-super-code-circle,.dsh-super-code-history-list .dsh-super-code-circle{display:block;width:7px;height:7px;flex:none;border-radius:50%;background:var(--state-color)}
+.dsh-super-code-graph-legend .dsh-super-code-circle.idle{background:transparent;border:1px solid var(--state-color)}
+.dsh-super-code-graph-controls{display:flex;align-items:center;gap:0;padding:0;border:1px solid var(--sc-line);border-radius:7px;color:var(--sc-muted);font-size:12px;flex:none}
+.dsh-super-code-graph-controls button,.dsh-super-code-history-controls button{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:28px;min-width:28px;padding:3px 6px;border:0;border-radius:6px;background:transparent;font-size:12px}
+.dsh-super-code-graph-controls button:hover,.dsh-super-code-history-controls button:hover{background:var(--sc-hover)}
+.dsh-super-code-graph-controls span{min-width:36px;text-align:center;font-family:var(--sc-mono);font-size:11px}
+.dsh-super-code-history-controls{display:flex;align-items:center;gap:6px;border-left:1px solid var(--sc-line);padding-left:6px}
+.dsh-super-code-history-controls .dsh-super-code-glyph{width:16px;height:16px}
+.dsh-super-code-history-controls button{white-space:nowrap}
+.dsh-super-code-history-controls .dsh-super-code-action-count{font-family:var(--sc-mono);font-size:11px}
+.dsh-super-code-history-controls button[aria-expanded=true]{background:var(--sc-selected);border-color:var(--sc-accent)}
+@container(max-width:360px){
+  .dsh-super-code-tree-toolbar{gap:3px}
+  .dsh-super-code-graph-controls button{min-width:26px;padding:3px 4px}
+  .dsh-super-code-graph-controls span{min-width:28px}
+  .dsh-super-code-history-controls{gap:3px;padding-left:3px}
+  .dsh-super-code-history-controls button{gap:3px;padding:3px;font-size:11px}
+  .dsh-super-code-history-controls .dsh-super-code-glyph{display:none}
+}
+.dsh-super-code-graph-scroll{flex:1;min-height:180px;overflow:hidden;padding:0 12px;touch-action:none;cursor:grab;user-select:none;border-top:1px solid var(--sc-line);background:var(--sc-surface)}
+.dsh-super-code-graph-scroll.dragging,.dsh-super-code-graph-scroll.dragging *{cursor:grabbing!important}
 .dsh-super-code-graph{position:relative;transform-origin:0 0}
-.dsh-super-code-graph-edges{position:absolute;inset:0;pointer-events:none;stroke:var(--agent-line);stroke-width:1.5}
-.dsh-super-code-graph-node{position:absolute;width:128px;min-height:100px;display:flex;flex-direction:column;align-items:center;gap:6px;border:0;padding:0 4px;background:transparent;color:inherit;font:inherit;cursor:pointer;border-radius:8px}
-.dsh-super-code-circle{position:relative;display:flex;align-items:center;justify-content:center;flex:none;width:40px;height:40px;border-radius:50%!important;corner-shape:round!important;font-size:13px;font-weight:600;background:var(--state-color);color:#fff}
-.dsh-super-code-circle.active{--state-color:#008b78}.dsh-super-code-circle.idle{--state-color:#3971de}.dsh-super-code-circle.stopped{--state-color:#777d87}.dsh-super-code-circle.unavailable{--state-color:#b87716}
-.dsh-super-code-graph-node .dsh-super-code-circle{background:linear-gradient(145deg,color-mix(in srgb,var(--state-color) 83%,white),var(--state-color));box-shadow:inset 0 1px 1px #ffffff40,0 2px 6px #00000012}
-.dsh-super-code-graph-node .dsh-super-code-circle:after{content:"";position:absolute;inset:-5px;border:1px solid color-mix(in srgb,var(--state-color) 22%,transparent);border-radius:50%;corner-shape:round;pointer-events:none}
-.dsh-super-code-graph-node .dsh-super-code-circle.idle:after{animation:super-agent-breathe 3s ease-in-out infinite}
-.dsh-super-code-graph-node .dsh-super-code-circle.active:after{border-width:2px;border-top-color:var(--state-color);border-right-color:var(--state-color);animation:super-agent-process 1.6s linear infinite}
-.dsh-super-code-graph-node .dsh-super-code-circle.stopped{background:linear-gradient(145deg,#9297a0,#747a84);box-shadow:inset 0 1px 1px #ffffff30}
-.dsh-super-code-graph-node .dsh-super-code-circle.stopped:after{border-color:color-mix(in srgb,var(--state-color) 14%,transparent)}
-.dsh-super-code-graph-node .dsh-super-code-circle.unavailable:after{border-style:dashed;border-color:var(--state-color)}
-.dsh-super-code-graph-node:hover .dsh-super-code-circle{box-shadow:inset 0 1px 1px #ffffff40,0 3px 10px color-mix(in srgb,var(--state-color) 25%,transparent)}
+.dsh-super-code-graph-edges{position:absolute;inset:0;pointer-events:none;stroke:color-mix(in srgb,var(--sc-muted) 35%,var(--sc-surface));stroke-width:1.25}
+.dsh-super-code-graph-node{position:absolute;display:flex;align-items:center;flex-direction:column;width:128px;height:105px;gap:4px;padding:0 4px;border:0;border-radius:12px;background:transparent;cursor:pointer}
+.dsh-super-code-graph-node[aria-disabled]{cursor:default;opacity:.65}
+.dsh-super-code-graph-node>.dsh-super-code-circle{position:relative;display:grid;place-items:center;flex:none;width:40px;height:40px;border-radius:50%!important;corner-shape:round!important;background:linear-gradient(145deg,color-mix(in srgb,var(--state-color) 83%,white),var(--state-color));box-shadow:inset 0 1px 1px #ffffff40,0 2px 6px #00000012;color:#fff;font-size:13px;font-weight:600}
+.dsh-super-code-graph-node>.dsh-super-code-circle:after{content:"";position:absolute;inset:-5px;border:1px solid color-mix(in srgb,var(--state-color) 22%,transparent);border-radius:50%;corner-shape:round;pointer-events:none}
+.dsh-super-code-graph-node>.dsh-super-code-circle.idle:after{animation:super-agent-breathe 3s ease-in-out infinite}
+.dsh-super-code-graph-node>.dsh-super-code-circle.active:after{border-width:2px;border-top-color:var(--state-color);border-right-color:var(--state-color);animation:super-agent-process 1.6s linear infinite}
+.dsh-super-code-graph-node>.dsh-super-code-circle.stopped{background:linear-gradient(145deg,#9297a0,#747a84);box-shadow:inset 0 1px 1px #ffffff30}
+.dsh-super-code-graph-node>.dsh-super-code-circle.stopped:after{border-color:color-mix(in srgb,var(--state-color) 14%,transparent)}
+.dsh-super-code-graph-node>.dsh-super-code-circle.unavailable:after{border-style:dashed;border-color:var(--state-color)}
+.dsh-super-code-graph-node:hover>.dsh-super-code-circle{box-shadow:inset 0 1px 1px #ffffff40,0 3px 10px color-mix(in srgb,var(--state-color) 25%,transparent)}
+.dsh-super-code-graph-node.selected>.dsh-super-code-circle{outline:2px solid var(--sc-accent);outline-offset:7px}
 @keyframes super-agent-breathe{0%,100%{transform:scale(1);opacity:.35}50%{transform:scale(1.12);opacity:.85}}
 @keyframes super-agent-process{to{transform:rotate(360deg)}}
-.dsh-super-code-graph-node:focus-visible{outline:2px solid var(--dsw-color-primary,#3276dc);outline-offset:4px}
-.dsh-super-code-graph-node[aria-disabled]{cursor:default;opacity:.65}
-.dsh-super-code-graph-node .dsh-super-code-tree-content{width:100%;text-align:center}
-.dsh-super-code-graph-node .dsh-super-code-tree-title{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:18px;height:18px;font-size:12px}
-.dsh-super-code-graph-node .dsh-super-code-tree-usage{justify-content:center;gap:1px 7px;font-size:10px}
-.dsh-super-code-icon-button,.dsh-super-code-tree-toggle{display:inline-flex;align-items:center;justify-content:center;flex:none;width:28px;height:28px;padding:0;border:0;border-radius:4px;background:transparent;color:var(--agent-muted);cursor:pointer}
-.dsh-super-code-icon-button:hover,.dsh-super-code-tree-toggle:hover{background:color-mix(in srgb,currentColor 9%,transparent)}
-.dsh-super-code-icon-button:disabled{opacity:.45;cursor:default}
-.dsh-super-code-view-button{flex:none;border:0;border-radius:4px;padding:6px 8px;background:transparent;color:var(--agent-muted);font:inherit;font-size:12px;cursor:pointer}
-.dsh-super-code-view-button:hover{background:color-mix(in srgb,currentColor 7%,transparent);color:inherit}
-.dsh-super-code-view-button:disabled{opacity:.45;cursor:default}
-.dsh-super-code-tree-rows{padding:0 12px 20px}
-.dsh-super-code-tree-row{position:relative;display:flex;align-items:center;gap:6px;min-width:0;min-height:64px;padding:10px 8px 10px calc(4px + var(--agent-depth)*14px);border-radius:6px;cursor:default;box-sizing:border-box}
-.dsh-super-code-tree-row[aria-expanded]{cursor:pointer}
-.dsh-super-code-tree-row[aria-level]:not([aria-level="1"]):before{content:"";position:absolute;left:15px;width:calc(var(--agent-depth)*14px);height:100%;top:0;background:repeating-linear-gradient(to right,var(--agent-line) 0,var(--agent-line) 1px,transparent 1px,transparent 14px);pointer-events:none}
-.dsh-super-code-tree-row:hover{background:color-mix(in srgb,currentColor 5%,transparent)}
-.dsh-super-code-tree-row.selected{background:color-mix(in srgb,var(--dsw-color-primary,#3276dc) 6%,transparent)}
-.dsh-super-code-tree-row:focus-visible,.dsh-super-code-tree button:focus-visible{outline:2px solid var(--dsw-color-primary,#3276dc);outline-offset:-2px}
-.dsh-super-code-tree-row[aria-disabled]{cursor:default;opacity:.7}
-.dsh-super-code-tree-toggle{width:22px;height:26px;z-index:1}
-.dsh-super-code-tree-toggle svg{transition:transform .12s}.dsh-super-code-tree-toggle.expanded svg{transform:rotate(90deg)}
-.dsh-super-code-tree-connector{width:22px;flex:none}
-.dsh-super-code-tree-content{display:grid;gap:4px;flex:1;min-width:0}
-.dsh-super-code-tree-title{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere;line-height:1.4}
-.dsh-super-code-tree-meta{color:var(--agent-muted);font-size:11px;line-height:1.4;overflow-wrap:anywhere}
-.dsh-super-code-tree-usage{display:flex;flex-wrap:wrap;gap:3px 10px;font-size:10px;line-height:1.6;color:var(--agent-muted);font-variant-numeric:tabular-nums}
-.dsh-super-code-tree-usage>span{white-space:nowrap}
-.dsh-super-code-state{display:inline-flex;align-items:center;gap:5px;padding:2px 6px;border-radius:5px;color:var(--state-color);background:color-mix(in srgb,var(--state-color) 9%,transparent)}
-.dsh-super-code-state:before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor}
-.dsh-super-code-state.active{--state-color:#16877d}
-.dsh-super-code-state.idle{--state-color:#5471bb}
-.dsh-super-code-state.stopped{--state-color:#827299}
-.dsh-super-code-state.unavailable{--state-color:#b77b29}
-@media(prefers-color-scheme:dark){.dsh-super-code-state.active{--state-color:#6bc7b6}.dsh-super-code-state.idle{--state-color:#91b0f4}.dsh-super-code-state.stopped{--state-color:#b9a9cf}.dsh-super-code-state.unavailable{--state-color:#e8b971}}
-.dsh-super-code-tree-status{width:6px;height:6px;border-radius:50%;background:var(--agent-line);flex:none}
-.dsh-super-code-tree-row.running .dsh-super-code-tree-status{background:#168c78}
-.dsh-super-code-tree-status.unavailable{background:#c17e1d}
-.dsh-super-code-tree-note,.dsh-super-code-tree-empty{margin:10px 18px;color:var(--agent-muted);font-size:12px}
-.dsh-super-code-tree-error{margin:12px 14px;color:var(--dsw-color-text-error,#bd423b);font-size:12px;overflow-wrap:anywhere}
-.dsh-super-code-tree-more{display:block;margin:4px auto 14px;padding:6px 12px;border:1px solid var(--agent-line);border-radius:4px;background:transparent;color:inherit;cursor:pointer}
-.dsh-super-code-detail{height:100%;min-width:0;display:flex;flex-direction:column;font-size:13px;letter-spacing:0;--agent-muted:var(--dsw-alias-label-secondary,#70757d);--agent-line:var(--dsw-alias-border-l1,#dedfe3)}
-.dsh-super-code-detail-header{padding:20px 20px 18px;border-bottom:1px solid var(--agent-line);flex:none;max-height:45%;overflow:auto}
-.dsh-super-code-detail-header nav{font-size:11px;line-height:1.5;color:var(--agent-muted);overflow-wrap:anywhere}
-.dsh-super-code-detail-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-top:14px}
-.dsh-super-code-detail-heading>div{min-width:0}
-.dsh-super-code-detail h2{font-size:16px;line-height:1.5;font-weight:600;margin:0;overflow-wrap:anywhere}
-.dsh-super-code-detail-task{font-size:13px;line-height:1.7;margin:12px 0 0;overflow-wrap:anywhere}
-.dsh-super-code-task-memory{margin-top:16px;padding-top:14px;border-top:1px solid var(--agent-line);font-size:12px;line-height:1.7;overflow-wrap:anywhere}
+.dsh-super-code-tree-content{display:grid;gap:2px;width:100%;min-width:0;text-align:center}
+.dsh-super-code-tree-title{height:16px;font-size:12px;line-height:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dsh-super-code-node-status{display:flex;align-items:center;justify-content:center;gap:4px;font-size:11px;line-height:14px;color:var(--sc-muted)}
+.dsh-super-code-node-status>i{width:5px;height:5px;border-radius:50%;background:currentColor;flex:none}
+.dsh-super-code-node-status[data-tone=active]{color:var(--sc-accent)}
+.dsh-super-code-node-status[data-tone=unavailable]{color:var(--sc-warning)}
+.dsh-super-code-node-status[data-tone=idle]>i{background:transparent;border:1px solid currentColor}
+.dsh-super-code-tree-usage{display:flex;flex-direction:column;gap:0;font-size:10px;line-height:12px;color:var(--sc-muted);font-variant-numeric:tabular-nums}
+.dsh-super-code-tree-usage>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dsh-super-code-branch-toggle{position:absolute;display:grid;place-items:center;width:22px;height:22px;border:1px solid var(--sc-line);border-radius:50%;padding:0;background:var(--sc-bg);color:var(--sc-muted)}
+.dsh-super-code-branch-toggle:hover{color:var(--sc-accent);border-color:currentColor}
+.dsh-super-code-tree-empty,.dsh-super-code-tree-error{margin:12px 16px}
+.dsh-super-code-tree-more{align-self:center;margin:8px 16px;padding:5px 10px;border:1px solid var(--sc-line);border-radius:8px;background:var(--sc-bg);font-size:13px}
+.dsh-super-code-history{display:flex;flex-direction:column;flex:none;height:46%;min-height:220px;max-height:400px;margin:0 12px 12px;padding:12px;border:1px solid var(--sc-line);border-radius:12px;background:var(--sc-surface)}
+.dsh-super-code-history>input{flex:none;margin-bottom:8px}
+.dsh-super-code-history p{flex:none;font-size:12px;color:var(--sc-muted);margin:0 0 8px;line-height:1.6}
+.dsh-super-code-history-filters{display:grid;flex:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:8px}
+.dsh-super-code-history-filters :is(label,.dsh-super-code-select-field){display:grid;gap:4px;min-width:0;font-size:12px;color:var(--sc-muted)}
+.dsh-super-code-history-list{flex:1;min-height:56px;overflow:auto;overflow-anchor:none;overscroll-behavior:contain}
+.dsh-super-code-history-list button{display:flex;align-items:center;gap:8px;width:100%;height:56px;padding:8px 4px;text-align:left;border:0;border-radius:8px;background:transparent}
+.dsh-super-code-history-list button:hover{background:var(--sc-hover)}
+.dsh-super-code-history-list button>span{flex:1;min-width:0}
+.dsh-super-code-history-list strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:500}
+.dsh-super-code-history-list small{font-size:11px;color:var(--sc-muted);white-space:nowrap}
+.dsh-super-code-history-list button>span>small{display:block;overflow:hidden;text-overflow:ellipsis}
+
+/* Agent details. */
+.dsh-super-code-detail{height:100%;min-height:0;display:flex;flex-direction:column}
+.dsh-super-code-detail-header{flex:none;max-height:40%;overflow:auto;padding:10px 12px;border-bottom:1px solid var(--sc-line)}
+.dsh-super-code-detail-header nav{font-size:11px;color:var(--sc-muted);line-height:16px;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dsh-super-code-detail-heading{display:flex;align-items:center;gap:8px;min-width:0}
+.dsh-super-code-detail-heading h2{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:600;line-height:20px;margin:0}
+.dsh-super-code-detail-heading .dsh-super-code-icon-button{width:28px;height:28px;border-radius:6px}
+.dsh-super-code-detail-status{display:inline-flex;align-items:center;flex:none;gap:5px;padding:2px 6px;border-radius:5px;font-size:11px;white-space:nowrap;background:var(--sc-surface);color:var(--sc-muted)}
+.dsh-super-code-detail-status:before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor}
+.dsh-super-code-detail-status[data-tone=active]{color:var(--sc-accent)}
+.dsh-super-code-detail-status[data-tone=unavailable]{color:var(--sc-warning)}
+.dsh-super-code-detail-task{font-size:14px;line-height:1.7;margin:12px 0 0;overflow-wrap:anywhere}
+.dsh-super-code-task-memory{margin-top:16px;padding-top:12px;border-top:1px solid var(--sc-line);font-size:13px;line-height:1.7;overflow-wrap:anywhere}
 .dsh-super-code-task-heading{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
-.dsh-super-code-task-heading strong{font-weight:500;color:inherit}
-.dsh-super-code-task-heading span{color:var(--agent-muted);font-size:11px}
-.dsh-super-code-task-memory p{margin:6px 0 0}
-.dsh-super-code-task-memory details{margin-top:8px;color:var(--agent-muted)}
+.dsh-super-code-task-heading strong{font-weight:500}
+.dsh-super-code-task-heading span{font-size:12px;color:var(--sc-muted)}
+.dsh-super-code-task-memory p{margin:4px 0 0}
+.dsh-super-code-task-memory details{margin-top:8px;color:var(--sc-muted)}
 .dsh-super-code-task-memory summary{cursor:pointer}
-.dsh-super-code-detail-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 16px;margin:16px 0 0}
-.dsh-super-code-usage-details{margin-top:14px;font-size:12px;color:var(--agent-muted)}
-.dsh-super-code-usage-details summary{cursor:pointer}
-.dsh-super-code-new-content{align-self:center;flex:none;margin:8px 16px 12px;padding:7px 12px;border:1px solid var(--agent-line);border-radius:6px;background:transparent;color:inherit;font:inherit;font-size:12px;cursor:pointer}
-.dsh-super-code-detail-metrics dt{font-size:11px;color:var(--agent-muted)}
-.dsh-super-code-detail-metrics dd{margin:5px 0 0;font-variant-numeric:tabular-nums;font-size:14px;line-height:1.4;overflow-wrap:anywhere}
-.dsh-super-code-detail-metrics>div:first-child dd{font-weight:600}
-.dsh-super-code-detail-status{display:block;margin-top:5px;font-size:11px;color:var(--agent-muted)}
-.dsh-super-code-detail-log{flex:1;min-height:0;overflow:auto;padding:4px 20px 24px}
-.dsh-super-code-detail-log>button,.dsh-super-code-detail-entry button{border:1px solid var(--agent-line);border-radius:4px;background:transparent;color:inherit;padding:5px 8px;margin:10px 8px 4px 0;font-size:12px;cursor:pointer}
-.dsh-super-code-detail-entry{padding:20px 0;min-width:0}
-.dsh-super-code-detail-entry:has(>details){padding:10px 0;color:var(--agent-muted)}
-.dsh-super-code-detail-entry details[open]{color:inherit;padding-bottom:8px}
-.dsh-super-code-detail-entry-label{display:flex;justify-content:space-between;gap:10px;font-size:12px;font-weight:600}
-.dsh-super-code-detail-entry time{color:var(--agent-muted);font-size:11px;font-weight:400;flex:none}
-.dsh-super-code-detail-entry pre{font:inherit;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0 0}
-.dsh-super-code-detail-entry summary{cursor:pointer;font-size:12px;overflow-wrap:anywhere}
-.dsh-super-code-detail-entry.context{color:var(--agent-muted)}
-.dsh-super-code-detail-entry.error,.dsh-super-code-detail [role=alert]{color:var(--dsw-color-text-error,#bd423b)}
-.dsh-super-code-detail button:focus-visible,.dsh-super-code-detail summary:focus-visible{outline:2px solid var(--dsw-color-primary,#3276dc);outline-offset:3px}
-.dsh-super-code-detail-entry summary:hover{color:var(--dsw-alias-label-primary,inherit)}
-@media(prefers-reduced-motion:reduce){.dsh-super-code-tree-toggle svg{transition:none}.dsh-super-code-graph-node .dsh-super-code-circle:after{animation:none!important}}
+.dsh-super-code-detail-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px;margin:0;padding:10px;border-radius:8px;background:var(--sc-surface)}
+.dsh-super-code-detail-metrics>div{display:flex;align-items:baseline;justify-content:space-between;gap:6px;min-width:0}
+.dsh-super-code-detail-metrics dt{font-size:11px;color:var(--sc-muted)}
+.dsh-super-code-detail-metrics dd{font-size:12px;line-height:1.4;margin:0;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;font-weight:500}
+.dsh-super-code-usage-details{margin-top:4px;color:var(--sc-muted);font-size:12px}
+.dsh-super-code-usage-details>summary{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:24px;border-radius:5px;cursor:pointer;list-style:none}
+.dsh-super-code-usage-details>summary::-webkit-details-marker{display:none}
+.dsh-super-code-usage-details>summary:hover{background:var(--sc-hover)}
+.dsh-super-code-detail-summary{display:flex;align-items:center;gap:16px;min-width:0}
+.dsh-super-code-detail-summary>span{display:inline-flex;align-items:baseline;gap:5px;font-size:11px;white-space:nowrap}
+.dsh-super-code-detail-summary strong{font-weight:500;font-size:12px;color:var(--sc-text);font-variant-numeric:tabular-nums}
+.dsh-super-code-detail-info-toggle{display:inline-flex;align-items:center;gap:3px;flex:none;font-size:11px}
+.dsh-super-code-detail-info-toggle .dsh-super-code-glyph{width:13px;height:13px;transition:transform .12s}
+.dsh-super-code-usage-details[open]>.dsh-super-code-detail-info-toggle .dsh-super-code-glyph,.dsh-super-code-usage-details[open]>summary .dsh-super-code-detail-info-toggle .dsh-super-code-glyph{transform:rotate(180deg)}
+.dsh-super-code-detail-info{padding-top:8px;padding-bottom:2px}
+.dsh-super-code-detail-info .dsh-super-code-memory-activity{margin-top:10px;font-size:12px}
+.dsh-super-code-detail-info .dsh-super-code-task-memory{margin-top:10px;font-size:12px}
+.dsh-super-code-detail-log{flex:1;min-height:0;overflow:auto;padding:14px 14px 24px;background:var(--sc-bg)}
+.dsh-super-code-detail-log>button,.dsh-super-code-detail-entry button{border:1px solid var(--sc-line);border-radius:8px;background:var(--sc-bg);padding:5px 8px;margin:0 8px 10px 0;font-size:12px}
+.dsh-super-code-detail-entry{display:flex;align-items:flex-start;gap:8px;min-width:0;margin:0 0 16px}
+.dsh-super-code-detail-avatar{display:grid;place-items:center;flex:none;width:26px;height:26px;margin-top:2px;border-radius:8px;background:var(--sc-surface);color:var(--sc-muted)}
+.dsh-super-code-detail-avatar .dsh-super-code-glyph{width:16px;height:16px;color:inherit}
+.dsh-super-code-detail-message{flex:1;min-width:0;padding:10px 12px;border:1px solid var(--sc-line);border-radius:4px 12px 12px 12px;background:var(--sc-bg)}
+.dsh-super-code-detail-entry.user{flex-direction:row-reverse;margin-left:28px}
+.dsh-super-code-detail-entry.user .dsh-super-code-detail-avatar{background:var(--sc-accent);color:#fff}
+.dsh-super-code-detail-entry.user .dsh-super-code-detail-message{border-color:color-mix(in srgb,var(--sc-accent) 22%,var(--sc-line));border-radius:12px 4px 12px 12px;background:var(--sc-selected)}
+.dsh-super-code-detail-entry.agent .dsh-super-code-detail-avatar{background:color-mix(in srgb,var(--sc-success) 10%,var(--sc-bg));color:var(--sc-success)}
+.dsh-super-code-detail-entry.tool{margin-bottom:12px}
+.dsh-super-code-detail-entry.tool .dsh-super-code-detail-message{padding:8px 10px;border-radius:8px;background:var(--sc-surface)}
+.dsh-super-code-detail-entry.context .dsh-super-code-detail-message{border-style:dotted;color:var(--sc-muted);background:var(--sc-surface)}
+.dsh-super-code-detail-entry.error .dsh-super-code-detail-avatar{color:var(--sc-error);background:color-mix(in srgb,var(--sc-error) 10%,var(--sc-bg))}
+.dsh-super-code-detail-entry.error .dsh-super-code-detail-message{border-color:color-mix(in srgb,var(--sc-error) 35%,var(--sc-line));color:var(--sc-error)}
+.dsh-super-code-detail-entry-label{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;font-size:11px;font-weight:500;color:var(--sc-muted)}
+.dsh-super-code-detail-entry-label>span{min-width:0;overflow-wrap:anywhere}
+.dsh-super-code-detail-entry.user .dsh-super-code-detail-entry-label{color:var(--sc-accent)}
+.dsh-super-code-detail-entry time{flex:none;font-family:var(--sc-mono);font-size:11px;font-weight:400;color:var(--sc-faint)}
+.dsh-super-code-detail-entry pre{min-width:0;font:inherit;font-size:14px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere;margin:6px 0 0}
+.dsh-super-code-detail-entry.tool pre{font-family:var(--sc-mono);font-size:12px;line-height:1.6;color:var(--sc-muted)}
+.dsh-super-code-detail-message>details{min-width:0;color:var(--sc-muted)}
+.dsh-super-code-detail-message>details[open]{color:var(--sc-text)}
+.dsh-super-code-detail-message summary{display:flex;align-items:center;gap:6px;cursor:pointer;overflow-wrap:anywhere;list-style:none}
+.dsh-super-code-detail-message summary::-webkit-details-marker{display:none}
+.dsh-super-code-detail-message summary .dsh-super-code-detail-entry-label{flex:1;min-width:0;font-size:12px}
+.dsh-super-code-detail-message summary>.dsh-super-code-glyph{width:14px;height:14px;transition:transform .12s}
+.dsh-super-code-detail-message details[open] summary>.dsh-super-code-glyph{transform:rotate(180deg)}
+.dsh-super-code-detail-message details pre{margin-top:10px;padding:8px 10px;border:1px solid var(--sc-line);border-radius:7px;background:var(--sc-bg)}
+.dsh-super-code-detail-entry button{margin:8px 0 0}
+.dsh-super-code-new-content{flex:none;align-self:center;margin:8px 16px 12px;border:1px solid var(--sc-line);border-radius:8px;padding:6px 12px;background:var(--sc-bg);font-size:13px}
+@media(hover:none) and (pointer:coarse){:where(.dsh-super-code-settings,.dsh-super-code-memory,.dsh-super-code-tree) input{font-size:16px}}
+@media(prefers-reduced-motion:reduce){:where(.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-detail,.dsh-super-code-memory,.dsh-super-code-confirm,.dsh-super-code-select) *{transition:none!important;animation:none!important}.dsh-super-code-graph-node>.dsh-super-code-circle:after{animation:none!important}}
+
+/* Same custom trigger and option list for all six dropdowns. Fixed placement
+ * keeps history menus visible outside the clipped graph/sidebar viewport. */
+.dsh-super-code-select{display:inline-block;min-width:0;width:100%;font-size:12px;vertical-align:middle}
+.dsh-super-code-select :is(button,div,span,svg){box-sizing:border-box}
+.dsh-super-code-select .dsh-super-code-select-trigger{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;height:36px;min-width:0;padding:7px 10px;border:1px solid var(--sc-line);border-radius:8px;background:var(--sc-bg);color:var(--sc-text);font:inherit;text-align:left;cursor:pointer;transition:border-color .12s,background-color .12s}
+.dsh-super-code-select-trigger>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dsh-super-code-select-trigger>svg{flex:none;width:14px;height:14px;color:var(--sc-muted);transition:transform .12s}
+.dsh-super-code-select-trigger[aria-expanded=true]>svg{transform:rotate(180deg)}
+.dsh-super-code-select .dsh-super-code-select-trigger:hover{background:var(--sc-hover);border-color:color-mix(in srgb,var(--sc-text) 25%,var(--sc-line))}
+.dsh-super-code-select .dsh-super-code-select-trigger[aria-expanded=true]{border-color:var(--sc-accent)}
+.dsh-super-code-select .dsh-super-code-select-trigger:focus-visible{outline:2px solid var(--sc-accent);outline-offset:2px}
+.dsh-super-code-select-trigger:disabled{opacity:.45;cursor:default}
+.dsh-super-code-select-menu{position:fixed;z-index:1200;overflow:auto;overscroll-behavior:contain;padding:4px;border:1px solid var(--sc-line);border-radius:10px;background:var(--sc-bg);color:var(--sc-text);box-shadow:0 6px 20px #0002;font-size:12px;line-height:1.5;text-align:left}
+.dsh-super-code-select-option{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:32px;padding:6px 8px;border-radius:6px;cursor:pointer}
+.dsh-super-code-select-option>span{min-width:0;overflow-wrap:anywhere}
+.dsh-super-code-select-option>svg{flex:none;width:14px;height:14px;color:var(--sc-accent);visibility:hidden}
+.dsh-super-code-select-option[aria-selected=true]{font-weight:500}
+.dsh-super-code-select-option[aria-selected=true]>svg{visibility:visible}
+.dsh-super-code-select-option[data-active=true]{background:var(--sc-selected)}
+
+/* Shared action-name bubble. Fixed outside the panel avoids graph transforms
+ * and scroll clipping; dialog bubbles remain in the modal's top layer. */
+.dsh-super-code-tooltip{position:fixed;z-index:1400;max-width:min(260px,calc(100vw - 16px));padding:5px 8px;border-radius:6px;background:var(--sc-text);color:var(--sc-bg);box-shadow:0 2px 8px #0002;font-size:12px;line-height:1.5;font-weight:400;text-align:left;overflow-wrap:anywhere;pointer-events:none}
+.dsh-super-code-tooltip:after{content:"";position:absolute;left:var(--sc-tooltip-arrow-left);width:6px;height:6px;background:inherit;transform:translateX(-50%) rotate(45deg)}
+.dsh-super-code-tooltip[data-side=top]:after{bottom:-3px}
 `
     document.head.appendChild(style)
     return () => { style.remove() }

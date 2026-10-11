@@ -1,5 +1,10 @@
 # 版本记录 · Changelog
 
+- **0.3.2 · 2026-10-11**：统一预设设置、执行树和记忆库的视觉样式，保留圆形节点，紧凑工具栏显示“已收起”/“自动整理”名称；所有插件按钮使用上方名称气泡，历史时间/排序改为支持键盘操作的自定义下拉。Agent 详情按对话呈现用户消息、回复和可展开的真实工具调用/结果，兼容旧版与新版 journal，顶部额外信息按需展开。记忆库新增主题导航、筛选和同主题条目，精简中英文冗余文案。保留预设安装、版本提示、归属保护及重装备份；[验证范围](Compatibility.md)。
+  **0.3.2 · 2026-10-11**: Refreshes preset settings, the Agent tree, and memory library while retaining circular nodes. Compact actions have visible Collapsed/Organize labels; plugin buttons show name bubbles above, and history filters use keyboard-accessible custom dropdowns. Agent details show user/reply roles and expandable real tool calls/results from old and new journals, with additional header information folded. Adds memory topic navigation, filtering, and related entries, and trims redundant bilingual copy. Preserves installation, version notices, ownership protection, and reinstall backups; [validation scope](Compatibility.md).
+  修复新版侧栏聚焦导致下拉选项无法点击的问题；启动时等待宿主语言偏好加载，避免暂定浏览器语言触发预设重复同步与刷新。
+  Fixes dropdown options closing before selection when newer sidebars take focus. Startup waits for the host language preference, preventing provisional browser locales from repeatedly synchronizing presets and reloading the page.
+
 - **0.3.1 · 2026-10-10**：设置页始终展开，展示插件与当前预设的独立版本，提示不一致或未记录版本；声明式宿主新增安装、确认重装、改名、恢复备份及默认名称/描述语言同步。保留目录式安装、归属校验和自定义内容保护，允许新版宿主使用的 Cordis/Schemastery alpha 依赖。
   **0.3.1 · 2026-10-10**: Keeps settings expanded and shows independent plugin/preset versions with mismatch or unrecorded-version notices. Adds installation, confirmed reinstallation, renaming, recovery backups and default display-language synchronization on declarative hosts. Retains directory installation, ownership checks and custom display-field protection, and accepts the Cordis/Schemastery alpha dependencies used by newer hosts.
   修复原生桌面宿主管理 API 的解析位置，以及移除确认列表条目后 Escape 误关设置页的问题。逐版验证 15 个官方 Harness 版本（`0.1.5-alpha.1`～`0.2.1-alpha.2`）及可获取的四个 macOS arm64 Desktop 发行包；[验证范围与限制](Compatibility.md)。

@@ -9,7 +9,7 @@ function fixture() {
   const slots: any[] = []
   runInNewContext(readFileSync(new URL('../client/index.js', import.meta.url), 'utf8'), {
     URL,
-    __ModuleLoader__: { load: ({ factory }: any) => { plugin = factory(() => ({})) } },
+    __ModuleLoader__: { load: ({ factory }: any) => { plugin = factory((id: string) => id === 'react' ? { forwardRef: () => 'button' } : {}) } },
   })
   plugin.apply({
     effect: (callback: Function, label: string) => { if (label === 'dsh-super-code: dictionaries') callback() },
@@ -29,7 +29,7 @@ test('preset settings registration does not wait on the Remote mount lifecycle',
   let plugin: any
   runInNewContext(readFileSync(new URL('../client/index.js', import.meta.url), 'utf8'), {
     URL,
-    __ModuleLoader__: { load: ({ factory }: any) => { plugin = factory(() => ({})) } },
+    __ModuleLoader__: { load: ({ factory }: any) => { plugin = factory((id: string) => id === 'react' ? { forwardRef: () => 'button' } : {}) } },
   })
   let injected = false
   const mounts: any[] = []
@@ -153,6 +153,28 @@ test('existing and appended detail events retranslate labels and image placehold
   inspector.dispose()
 })
 
+test('tool calls and old/new results retranslate while preserving arguments and public output', () => {
+  const { plugin, dictionaries } = fixture()
+  const records = [
+    { type: 'tool/call', data: { callId: 'read-1', name: 'read_file', arguments: '{"path":"中文文件.txt"}' } },
+    { type: 'tool/result', data: { message: { role: 'tool', toolCallId: 'read-1', content: [{ type: 'text', text: '文件内容' }] } } },
+    { type: 'tool/result', data: { message: { content: [{ type: 'tool-result', toolCallId: 'read-1', isError: true,
+      content: [{ type: 'text', text: '读取失败' }, { type: 'reasoning', text: 'Private' }, { type: 'image' }] }] } } },
+  ]
+  for (const language of ['zh', 'en']) {
+    const t = (key: string) => dictionaries[language][key]
+    const items = records.map(event => plugin.detailRecord({ event: { seq: 1, time: 1, ...event } }, t))
+    assert.equal(items[0].label, `${t('detail.toolCall')} · read_file`)
+    assert.equal(items[0].text, '{\n  "path": "中文文件.txt"\n}')
+    assert.equal(items[1].label, t('detail.toolResult'))
+    assert.equal(items[1].text, '文件内容')
+    assert.equal(items[2].kind, 'error')
+    assert.equal(items[2].label, t('detail.toolError'))
+    assert.equal(items[2].text, `读取失败\n\n${t('image')}`)
+    assert.ok(items.every(item => item.callId === 'read-1'))
+  }
+})
+
 test('standalone display synchronization reloads only after a change and detaches on unload', async () => {
   const { plugin } = fixture()
   let active = 'zh', listener = () => {}, reloads = 0, stopped = false
@@ -173,6 +195,66 @@ test('standalone display synchronization reloads only after a change and detache
   assert.equal(reloads, 1)
   stop()
   assert.equal(stopped, true)
+})
+
+test('preset display waits for the host preference instead of rewriting a provisional browser locale', async () => {
+  const { plugin } = fixture()
+  let active = 'en', preference: object | undefined
+  let localeChanged = () => {}, preferenceChanged = () => {}, detached = 0
+  const calls: string[] = []
+  const stop = plugin.synchronizePresetDisplay({ synchronize: async (language: string) => {
+    calls.push(language)
+    return { ok: true, value: { changed: false } }
+  } }, { getSnapshot: () => ({ active }), subscribe: (callback: () => void) => {
+    localeChanged = callback; return () => { detached++ }
+  } }, () => assert.fail('unchanged display must not reload'), (error: unknown) => { throw error }, {
+    getSnapshot: () => ({ status: preference ? 'ready' : 'loading', value: preference }), subscribe: (callback: () => void) => {
+      preferenceChanged = callback; return () => { detached++ }
+    },
+  })
+  localeChanged()
+  await new Promise(resolve => setImmediate(resolve))
+  assert.deepEqual(calls, [])
+  preference = { preference: 'zh' }; active = 'zh'
+  localeChanged(); preferenceChanged()
+  await new Promise(resolve => setImmediate(resolve))
+  assert.deepEqual(calls, ['zh'])
+  active = 'en'; localeChanged()
+  await new Promise(resolve => setImmediate(resolve))
+  assert.deepEqual(calls, ['zh', 'en'])
+  stop()
+  assert.equal(detached, 2)
+})
+
+test('preset settings declare the available host preference service before reading it', () => {
+  for (const service of ['configForms', 'settingsScope']) {
+    const { plugin } = fixture()
+    const registered: string[] = [], dependencies: string[][] = []
+    const preferenceScope = { getSnapshot: () => ({ status: 'unavailable' }), subscribe: () => () => {} }
+    const preference = service === 'configForms'
+      ? { get: (namespace: string) => { assert.equal(namespace, 'locale'); return preferenceScope } }
+      : { bind: (spec: any) => { assert.equal(spec.namespace, 'locale'); return preferenceScope } }
+    const ready = new Proxy({
+      [service]: preference,
+      remote: { superCodePresets: {} }, effect: () => {},
+      slots: { inject: (_: string, callback: Function) => callback(), register: (config: any) => { registered.push(config.id); return () => {} } },
+    }, { get: (target, key) => {
+      if (key === 'configForms' || key === 'settingsScope') assert.ok(dependencies.at(-1)?.includes(String(key)), 'Cordis services require injection')
+      return Reflect.get(target, key)
+    } })
+    plugin.apply({
+      [service]: preference, effect: () => {},
+      locale: { register: () => () => {}, bind: () => (key: string) => key },
+      remote: { $mount: async () => () => {} },
+      inject: (names: string[], callback: Function) => {
+        if (names[0] !== 'remote.superCodePresets') return
+        dependencies.push(names); callback(ready)
+      },
+      slots: { inject: () => {} }, sidebarRightTabs: { register: () => () => {} }, sessions: {}, sidebarRight: {},
+    })
+    assert.deepEqual([...dependencies[0]!], ['remote.superCodePresets', service])
+    assert.deepEqual(registered, ['super-code'])
+  }
 })
 
 test('failed display synchronization can retry and late completion never reloads an unloaded plugin', async () => {

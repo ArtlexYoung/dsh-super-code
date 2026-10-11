@@ -8,15 +8,26 @@ A faster, more efficient coding plugin for DeepSeek Harness. It handles straight
 
 On the same SWE-bench Pro hard-100 set, the Batch.3 candidate adopted for 0.3.0 uses **48% less response time**, **45% fewer total tokens**, and **44.5% fewer model calls**, with **54% passing versus 44%** for official minimal. [Full results and limitations](docs/EvaluationResults.md)
 
+## 0.3.2 · What's New
+
+- **更紧凑的执行树：** 保留圆形节点，顶部操作集中一行；“已收起”和“自动整理”显示名称，所有插件按钮的名称气泡位于上方，历史筛选使用自定义下拉菜单。
+  **Compact Agent tree:** Retains circular nodes and puts actions in one row, with visible Collapsed/Organize labels, above-button name bubbles, and custom history dropdowns.
+- **对话式详情与主题记忆库：** 用户消息、Agent 回复和可展开的真实工具记录分别呈现；顶部用量摘要保持紧凑。记忆可按主题浏览、搜索，并查看同主题条目、来源和版本。
+  **Chat details and topic library:** Separates user messages, Agent replies, and expandable journal tool records beneath a compact usage header. Browse and search memory topics, related entries, sources, and versions.
+
+安装、确认重装、归属校验及恢复备份沿用 0.3.1；[本次验证范围](docs/Compatibility.md)单独记录。
+
+Installation, confirmed reinstallation, ownership checks, and recovery backups retain the 0.3.1 behavior; [this release's validation scope](docs/Compatibility.md) is recorded separately.
+
 ## 0.3.1 · What's New
 
 设置页始终展开，显示插件与当前预设的独立版本，并提示版本不一致或旧预设未记录版本。目录式和 DSH NEXT 等声明式宿主均提供安装、确认重装、改名及恢复备份，默认名称和描述跟随中英文切换。[版本检查与更新](docs/UsageGuide.md#查看预设版本--checking-the-preset-version)
 
 The settings page stays expanded, shows independent plugin and preset versions, and flags mismatched or unrecorded versions. Directory and declarative hosts such as DSH NEXT support installation, confirmed reinstallation, renaming and recovery backups. Default names and descriptions follow Chinese/English language changes. [Version checks and updates](docs/UsageGuide.md#查看预设版本--checking-the-preset-version)
 
-本版本已逐版验证 Harness `0.1.5-alpha.1`～`0.2.1-alpha.2` 的 15 个官方 Web/CLI 版本；原生桌面范围和限制见[兼容矩阵](docs/Compatibility.md)。
+0.3.1 已逐版验证 Harness `0.1.5-alpha.1`～`0.2.1-alpha.2` 的 15 个官方 Web/CLI 版本；原生桌面范围和限制见[兼容矩阵](docs/Compatibility.md)。
 
-This version verifies 15 official Web/CLI versions from Harness `0.1.5-alpha.1` through `0.2.1-alpha.2`; see the [matrix](docs/Compatibility.md) for native Desktop coverage and limits.
+Version 0.3.1 verified 15 official Web/CLI versions from Harness `0.1.5-alpha.1` through `0.2.1-alpha.2`; see the [matrix](docs/Compatibility.md) for native Desktop coverage and limits.
 
 ## 0.3.0 · What's New
 
@@ -43,8 +54,8 @@ Use Node.js 22 or later and a [verified Harness version](docs/Compatibility.md).
    dsh plugin --profile web add dsh-super-code
    ```
 
-   GitHub Release 中的 0.3.1 安装包可用 `dsh plugin --profile web add ./dsh-super-code-0.3.1.tgz` 安装。
-   To install the 0.3.1 package from GitHub Releases, use `dsh plugin --profile web add ./dsh-super-code-0.3.1.tgz`.
+   GitHub Release 中的 0.3.2 安装包可用 `dsh plugin --profile web add ./dsh-super-code-0.3.2.tgz` 安装。
+   To install the 0.3.2 package from GitHub Releases, use `dsh plugin --profile web add ./dsh-super-code-0.3.2.tgz`.
 
 2. **选中预设：** 打开“设置”→“Agent 预设”，选择 `super-code`。
 

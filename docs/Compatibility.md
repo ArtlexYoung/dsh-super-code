@@ -1,5 +1,29 @@
 # 宿主兼容性 · Host Compatibility
 
+## 0.3.2 · 2026-10-11
+
+支持下限保持 `0.1.5-alpha.1`，没有新增依赖或宿主私有 UI 接口。官方 npm `latest`/`next` 仍为 `0.2.0-rc.2`，`alpha` 为 `0.2.1-alpha.2`。本次使用固定并审计的依赖和隔离 profile，在以下三个宿主重新安装 0.3.2 候选包并验收；中间版本保留下面 0.3.1 的逐版记录，本次没有全部重测。
+
+The minimum remains `0.1.5-alpha.1`, without new dependencies or private host UI APIs. Official npm `latest`/`next` remains `0.2.0-rc.2`, and `alpha` is `0.2.1-alpha.2`. This release installed the 0.3.2 candidate in the three pinned, audited hosts below using isolated profiles. Intermediate versions retain the per-version 0.3.1 records below and were not all rerun.
+
+| Harness | 预设机制 / Presets | 0.3.2 Web/CLI 与浏览器 / Web/CLI and browser |
+|---|---|---|
+| `0.1.5-alpha.1` | 目录 / Directory | 通过 / Pass |
+| `0.2.0-rc.2` | 声明式 / Declarative | 通过 / Pass |
+| `0.2.1-alpha.2` | 声明式 / Declarative | 通过 / Pass |
+
+三版均通过插件安装/激活、主/子 Agent、任务与项目/全局记忆、跨工作区隔离和重启读取。浏览器检查覆盖圆形执行树、缩放拖动、320/400/560px 单行操作、上方名称气泡、自定义时间/排序菜单的鼠标与键盘操作、紧凑 Agent 详情、旧/新版真实工具卡、主题目录/关联条目/搜索、展开设置、版本、刷新及确认列表移除/取消。没有浏览器控制台或页面错误。稳定版另实际切换中英文和明暗主题，核对默认名称、版本和气泡并截图。模型由本地确定性验收程序提供，没有调用外部模型。
+
+All three passed installation/activation, main/child Agents, task/project/global memory, workspace isolation and restart reads. Browser checks covered circular trees, zoom/pan, one-row actions at 320/400/560px, above-button name bubbles, custom time/sort menus with mouse and keyboard, compact Agent details, real tool cards from old/new journals, topic navigation/related entries/search, expanded settings, versions, refresh and removable/cancellable confirmation lists. No console or page errors occurred. The stable host additionally passed actual Chinese/English and light/dark switching with default-name, version and tooltip screenshots. A local deterministic fixture supplied model responses; no external model was called.
+
+官方 macOS arm64 Desktop `0.2.0-rc.2` 的隔离应用副本实际验收了圆形树、命名操作、自定义菜单、真实工具详情、主题记忆库、版本和确认重装；移除后确认禁用、Escape 保留设置页、实际确认成功及恢复备份均已核对。副本保留原始 CFBundleName，隔离 bundle ID、profile 和 userData。后续启动语言等待修复由三版 Web 和单元测试复验；原生控制接口恢复时超时，未补录该最终修复的原生窗口截图。其他桌面版本和平台沿用历史范围，不宣称本次已全部验收。
+
+An isolated copy of official macOS arm64 Desktop `0.2.0-rc.2` passed actual UI checks for circular trees, named actions, custom menus, real tool details, topic memory, versions and confirmed reinstallation. Removal disabled confirmation, Escape retained Settings, and actual reinstallation and recovery backups were checked. The copy preserves CFBundleName and isolates its bundle ID, profile and userData. The later startup-language wait fix passed all three Web hosts and unit tests; desktop-control recovery timed out, so a final native-window screenshot for that fix was not obtained. Other desktop versions and platforms retain historical coverage rather than a claim of full revalidation.
+
+158 项测试、类型检查、构建与客户端语法检查通过。预设安装、归属校验、用户字段保护和备份逻辑未改；启动同步通过宿主公开语言偏好服务等待加载，并按宿主版本声明 `settingsScope` 或 `configForms` 依赖。
+
+All 158 tests, type checking, build and client syntax checks passed. Preset installation, ownership checks, user-field protection and backup logic are unchanged. Startup synchronization waits through the host's public language-preference service and declares the host-appropriate `settingsScope` or `configForms` dependency.
+
 ## 0.3.1 · 2026-10-10
 
 支持下限保持 `0.1.5-alpha.1`。截至本次核对，官方 npm 的 `latest`/`next` 指向 `0.2.0-rc.2`，`alpha` 指向 `0.2.1-alpha.2`；官方 macOS arm64 Desktop 更新源指向 `0.2.0-rc.2`。

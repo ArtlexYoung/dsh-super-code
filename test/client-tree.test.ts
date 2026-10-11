@@ -31,7 +31,7 @@ function client(modules: Record<string, object> = {}): Client {
     URL,
     __ModuleLoader__: { load: ({ id, factory }: { id: string; factory: (require: (id: string) => object) => Client }) => {
       assert.equal(id, 'dsh-super-code')
-      loaded = factory(id => modules[id] ?? {})
+      loaded = factory(id => id === 'react' ? { forwardRef: () => 'button', ...modules.react } : modules[id] ?? {})
     } },
   })
   assert.ok(loaded)
@@ -191,6 +191,7 @@ test('plugin settings stay expanded, compare versions in both languages and reta
       if (callback.constructor.name === 'AsyncFunction') pending.push(Promise.resolve(callback()))
     },
     locale: { register: (_namespace: string, values: Record<string, Record<string, string>>) => { Object.assign(dictionaries, values); return () => {} }, bind: () => (key: string) => key },
+    settingsScope: { bind: () => ({ getSnapshot: () => ({ status: 'ready', value: { preference: 'zh' } }), subscribe: () => () => {} }) },
     remote: { $mount: async () => {} },
     inject: (_dependencies: string[], callback: (ready: any) => void) => callback(ctx),
     slots: {
@@ -265,7 +266,7 @@ test('plugin settings stay expanded, compare versions in both languages and reta
       assert.equal(find(card, element => element.type === 'form').length, 1)
       assert.equal(find(card, element => element.props.type === 'submit')[0]?.children[0], translate(installed === 'missing' ? 'preset.installDeclared' : 'preset.reinstall'))
       if (installed !== 'missing') assert.ok(strings(card).includes(translate('preset.versionReinstallHint')))
-      assert.ok(strings(card).includes(translate('preset.declaredHint')))
+      assert.ok(!strings(card).includes(translate('preset.declaredHint')))
       assert.ok(!strings(card).includes(translate('preset.readonly')))
       assert.ok(strings(card).includes(translate('preset.declaredNameHint')))
     }
@@ -302,9 +303,9 @@ test('plugin settings stay expanded, compare versions in both languages and reta
   display().props.onChange({ target: { value: '新模式' } })
   find(card, element => element.props.id === 'super-code-preset-name')[0]!.props.onChange({ target: { value: 'new-code' } })
   card = render()
-  const body = find(card, element => element.props.className === 'dsh-super-code-settings-body')[0]!
-  assert.equal((body.children[0] as Element).props.role, 'status')
-  assert.equal((body.children[1] as Element).props.className, 'dsh-super-code-settings-actions')
+  const statusRow = find(card, element => element.props.className === 'dsh-super-code-settings-status-row')[0]!
+  assert.equal((statusRow.children[0] as Element).props.role, 'status')
+  assert.equal((statusRow.children[1] as Element).props.className, 'dsh-super-code-settings-actions')
   assert.equal(find(card, element => element.props.type === 'submit')[0]!.children[0], 'preset.reinstall')
   find(card, element => element.type === 'form')[0]!.props.onSubmit({ preventDefault() {} })
   await Promise.resolve()
@@ -314,7 +315,10 @@ test('plugin settings stay expanded, compare versions in both languages and reta
   const action = (key: string) => find(modal(), element => element.type === 'button' && element.children[0] === key)[0]!
   assert.ok(modal())
   assert.equal(find(modal(), element => element.type === 'input').length, 0, 'list has no add or edit input')
-  assert.equal(find(modal(), element => element.type === 'span')[0]!.children[0], 'old-code → 新模式 · new-code')
+  const confirmationText = strings(modal())
+  assert.ok(confirmationText.includes('old-code'))
+  assert.ok(confirmationText.includes('新模式'))
+  assert.ok(confirmationText.includes('new-code'))
   action('preset.remove').props.onClick()
   card = render()
   assert.equal(action('preset.confirm').props.disabled, true)
@@ -590,13 +594,18 @@ test('detail history failures can retry and late pages cannot revive a closed in
   assert.equal(inspector.getSnapshot(), snapshot)
 })
 
-test('detail records show user tasks, public replies and execution errors without internal records', () => {
+test('detail records show user tasks, public replies, tools and execution errors without private reasoning', () => {
   const record = (type: string, data: object) => plugin.detailRecord({ type: 'event', event: { seq: 1, time: 1, type, data } })
   assert.equal(record('user/message', { source: { kind: 'user' }, content: [{ type: 'text', text: 'Task' }] }).label, '任务')
   assert.equal(record('user/message', { source: { kind: 'system' }, content: [{ type: 'text', text: 'Context' }] }).kind, 'skip')
-  assert.equal(record('tool/call', { name: 'super_code_task', arguments: '{}' }).kind, 'skip')
+  const call = record('tool/call', { name: 'super_code_task', arguments: '{"action":"read"}' })
+  assert.equal(call.kind, 'tool')
+  assert.equal(call.label, '工具调用 · super_code_task')
+  assert.equal(call.text, '{\n  "action": "read"\n}')
   const failure = record('tool/result', { message: { content: [{ type: 'tool-result', isError: true, content: [{ type: 'text', text: 'Unavailable' }] }] } })
-  assert.equal(failure.kind, 'skip')
+  assert.equal(failure.kind, 'error')
+  assert.equal(failure.label, '工具失败')
+  assert.equal(failure.text, 'Unavailable')
   const reply = record('assistant/message', { message: { content: [
     { type: 'reasoning', text: 'Private reasoning' },
     { type: 'tool-call', name: 'super_code_task', text: 'Internal' },
@@ -606,6 +615,33 @@ test('detail records show user tasks, public replies and execution errors withou
   assert.equal(record('turn/error', { message: 'Connection failed' }).text, 'Connection failed')
   assert.equal(record('turn/error', { internal: 'details' }).text, '执行未完成，请稍后重试。')
   assert.equal(record('other/event', {}).kind, 'skip')
+})
+
+test('tool details accept old and new journals, preserve incomplete arguments and follow stream pagination', async () => {
+  const entry = (seq: number, type: string, data: object) => ({ event: { seq, time: seq, type, data } })
+  const call = entry(10, 'tool/call', { callId: 'read-1', name: 'read_file', arguments: '{"path":' })
+  const legacy = entry(11, 'tool/result', { message: { role: 'tool', toolCallId: 'read-1', isError: false,
+    content: [{ type: 'text', text: 'File contents' }, { type: 'reasoning', text: 'Private' }] } })
+  const modern = entry(12, 'tool/result', { message: { content: [{ type: 'tool-result', toolCallId: 'read-1', isError: false,
+    content: [{ type: 'text', text: 'Next result' }, { type: 'image' }] }] } })
+  assert.equal(plugin.detailRecord(call).text, '{"path":')
+  assert.equal(plugin.detailRecord(legacy).text, 'File contents')
+  assert.equal(plugin.detailRecord(modern).text, 'Next result\n\n[图片]')
+  assert.equal(plugin.detailRecord(entry(13, 'tool/call', {})).kind, 'skip')
+  assert.equal(plugin.detailRecord(entry(14, 'tool/result', {})).kind, 'skip')
+  let callbacks: any
+  const inspector = plugin.createAgentInspector((_address, next) => {
+    callbacks = next
+    return { open: async () => {}, dispose: async () => {} }
+  }, plugin.agentDetailAddress({ id: 'root' }), async () => ({ ok: true, value: { records: [call, legacy], hasMore: false } }))
+  callbacks.publish({ type: 'replace', entries: [modern], hasMore: true, page: {} })
+  await inspector.older()
+  assert.equal(inspector.getSnapshot().items.map((item: { seq: number }) => item.seq).join(','), '10,11')
+  assert.equal(inspector.getSnapshot().earlier, true)
+  assert.equal(inspector.getSnapshot().cursor, 12)
+  assert.equal(inspector.getSnapshot().items[0].kind, 'tool')
+  assert.equal(inspector.getSnapshot().items[1].text, 'File contents')
+  inspector.dispose()
 })
 
 test('reopening a historical page preserves its records and cursor across stream reconnects', async () => {

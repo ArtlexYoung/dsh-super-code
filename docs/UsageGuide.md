@@ -98,16 +98,23 @@ Declarative hosts verify a bundle source marker or matching installation record,
 
 The Agent tree on the right shows status, usage, and cache hit rate for each Agent in the current session. Drag empty space to pan, zoom with the wheel or buttons, and click a node to open its details in a new sidebar tab. The main conversation stays put. The interface follows Harness's Chinese/English language setting.
 
-[执行树截图](images/agent-tree.png)来自全新隔离的 DSH 网页会话，展示 hard-100 难度排名第一题 `task-099`（`future-architect/vuls` 的 OS 生命周期预警）的初步调研。主 Agent 和三个子 Agent 分别调查 EOL/版本解析、告警链路与测试边界。截图只展示协作过程，不代表该题已修复或通过评分。
+[执行树截图](images/agent-tree.png)来自安装 0.3.2 包的隔离 Harness 网页宿主，展示主 Agent 和记忆读取子 Agent 的真实会话记录。模型响应由本地确定性验收程序提供，用于检查界面与记忆功能，不代表外部模型效果或评测成绩。
 
-The [execution tree screenshot](images/agent-tree.png) comes from a fresh, isolated DSH web session. It shows the initial investigation of the highest-ranked hard-100 task, `task-099` (`future-architect/vuls`, OS lifecycle warnings). A lead Agent and three child Agents investigate EOL/version parsing, the warning pipeline, and test boundaries. The screenshot shows how they work together, not a completed fix or a passing grade.
+The [execution tree screenshot](images/agent-tree.png) comes from an isolated Harness web host with the 0.3.2 package installed. It shows real journal records for a lead Agent and a memory-reading child Agent. A local deterministic fixture supplies model responses for UI and memory checks; this is not an external-model result or benchmark score.
 
+0.3.2 保留圆形节点，将顶部操作集中一行；“已收起”和“自动整理”有可见名称。历史的创建时间与排序使用自定义下拉，支持方向键、Home/End、Enter 和 Escape；所有插件按钮的名称气泡都在上方。
+
+Version 0.3.2 retains circular nodes and groups actions in one row with visible Collapsed/Organize labels. Custom creation-time and sort dropdowns support arrow keys, Home/End, Enter, and Escape. All plugin button name bubbles appear above the control.
+
+Agent 详情采用对话列表：用户任务、Agent 回复分开呈现，真实工具调用和结果可展开查看。顶部先显示状态、Token 与缓存，展开“详情”可看更多用量、任务档案与记忆使用记录。翻页、返回最新内容和滚动位置保留现有行为。
+
+Agent details use a chat list with distinct user tasks, replies, and expandable real tool calls/results. The compact header shows status, tokens, and cache; open Details for additional usage, task records, and memory activity. Pagination, latest-content navigation, and scroll restoration retain their existing behavior.
 
 ## 记忆库 · Memory Library
 
-打开右侧栏，点新标签页中的“记忆库”。先选“当前项目”或“全局偏好”，再搜索主题、摘要或标识符；点一条记忆查看详情、来源和记录时的代码版本。返回列表时会保留搜索和滚动位置。列表采用虚拟滚动，详情按需加载。
+打开右侧栏，点新标签页中的“记忆库”。先选“当前项目”或“全局偏好”，再从主题目录选择主题，或搜索主题、摘要与标识符；点一条记忆查看详情、来源和记录时的代码版本。返回列表时会保留搜索和滚动位置。主题筛选与搜索可以同时使用，详情列出同主题条目。列表采用虚拟滚动，详情按需加载。
 
-Open the right sidebar and choose “Memory library” on its new-tab page. Select “This project” or “Global preferences”, search by topic, summary, or identifier, and open an entry for its details, source, and recorded code version. Search and scroll position are retained when you return. The list is virtualized; details load on demand.
+Open the right sidebar and choose “Memory library” on its new-tab page. Select “This project” or “Global preferences”, choose a topic or search by topic, summary, or identifier, and open an entry for its details, source, and recorded code version. Search and scroll position are retained when you return. Topic filtering and search can be combined; details include related entries from the same topic. The list is virtualized; details load on demand.
 
 记忆分三层，各管一件事：
 
@@ -129,9 +136,9 @@ Memory lives in local host storage, not project files, and the full library is n
 
 ## 每个 Agent 用了什么 · Per-Agent Memory Activity
 
-在执行树中点一个节点，展开详情顶部的“记忆使用记录”。这里区分“带入上下文”“读取摘要”“读取详情”“保存”和“删除”，并标明项目/全局、主题与修订号；点记录可在侧栏记忆库查看当前条目，不切换主对话。
+在执行树中点一个节点，展开顶部“详情”，再展开“记忆使用记录”。这里区分“带入上下文”“读取摘要”“读取详情”“保存”和“删除”，并标明项目/全局、主题与修订号；点记录可在侧栏记忆库查看当前条目，不切换主对话。
 
-Click an Agent node, then expand “Memory activity” at the top of its details. Actions distinguish context inclusion, summary reads, detail reads, saves, and removals, with scope, topic, and revision. Click a record to open the current entry in the sidebar without switching the main conversation.
+Click an Agent node, then open “Details”, then expand “Memory activity” at the top of its details. Actions distinguish context inclusion, summary reads, detail reads, saves, and removals, with scope, topic, and revision. Click a record to open the current entry in the sidebar without switching the main conversation.
 
 这些是宿主实际记录的动作，不代表模型一定理解或遵守了记忆。子 Agent 不会把继承的父会话历史算成自己的读取；失败调用也不显示为成功读取。界面最多显示最近 100 条不同动作，原始完整记录仍在会话日志中。条目后来修改或删除时，历史使用记录仍保留，但记忆库展示当前内容，不伪装成旧版本快照。
 

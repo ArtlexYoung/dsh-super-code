@@ -12,6 +12,7 @@ export interface LongMemoryEntry {
   id: string; kind: 'constraint' | 'fact' | 'experience'; summary: string; detail: string
   source: { sessionId: string; eventSeq: number; kind: 'user'; quote: string }
     | { sessionId: string; eventSeq: number; kind: 'tool'; callSeq: number }
+    | { sessionId: string; kind: 'manual' }
   sourceVersion?: string
 }
 export const longMemoryEntrySchema: z.ZodType<LongMemoryEntry> = z.object({
@@ -20,9 +21,14 @@ export const longMemoryEntrySchema: z.ZodType<LongMemoryEntry> = z.object({
   source: z.discriminatedUnion('kind', [
     z.object({ sessionId: z.string().min(1), eventSeq: z.number().int().nonnegative(), kind: z.literal('user'), quote: z.string().min(1).max(4000) }).strict(),
     z.object({ sessionId: z.string().min(1), eventSeq: z.number().int().nonnegative(), kind: z.literal('tool'), callSeq: z.number().int().nonnegative() }).strict(),
+    z.object({ sessionId: z.string().min(1), kind: z.literal('manual') }).strict(),
   ]),
   sourceVersion: z.string().min(1).max(4000).optional(),
 }).strict().superRefine((entry, ctx) => {
+  if (entry.source.kind === 'manual') {
+    if (entry.sourceVersion !== undefined) ctx.addIssue({ code: 'custom', message: 'Manual memory has no code version' })
+    return
+  }
   if (entry.kind === 'constraint' && entry.source.kind !== 'user') ctx.addIssue({ code: 'custom', message: 'A constraint requires a user source' })
   if (entry.kind !== 'constraint' && (entry.source.kind !== 'tool' || !entry.sourceVersion)) {
     ctx.addIssue({ code: 'custom', message: 'A fact or experience requires a tool source and version' })
@@ -62,6 +68,12 @@ export function memoryGlobalNamespace(): string { return GLOBAL_MEMORY_NAMESPACE
 function recordKey(workspace: string, topic: string): string {
   return createHash('sha256').update(`${workspace}\0${topic}`).digest('hex')
 }
+
+/** Opaque current-content check; never stores a prior entry or a version history. */
+export function memoryEntryToken(entry: LongMemoryEntry): string {
+  return createHash('sha256').update(JSON.stringify(entry)).digest('hex')
+}
+export type MemoryLibraryChange = { kind: 'saved'; entry: LongMemoryEntry } | { kind: 'removed' | 'conflict' | 'missing' | 'full' }
 
 /** A single host-owned writer serializes topic creation and revision checks. */
 export class LongMemoryStore {
@@ -104,6 +116,28 @@ export class LongMemoryStore {
     })
   }
 
+  /** UI changes share the Agent writer queue and compare only the affected entry. */
+  edit(workspace: string, topic: string, entryId: string, expected: string, change: { kind: 'save'; entry: LongMemoryEntry } | { kind: 'remove' }): Promise<MemoryLibraryChange> {
+    id.parse(topic); id.parse(entryId)
+    z.string().regex(/^(?:[a-f0-9]{64})?$/).parse(expected)
+    const replacement = change.kind === 'save' ? longMemoryEntrySchema.parse(change.entry) : undefined
+    if (replacement && replacement.id !== entryId) throw new Error('Memory identity cannot change during editing')
+    return this.mutate(async () => {
+      const found = this.read(workspace, topic)
+      const current = found.kind === 'found' ? found.value : undefined
+      const entry = current?.entries.find(item => item.id === entryId)
+      if (expected && !entry) return { kind: 'missing' }
+      if (entry ? memoryEntryToken(entry) !== expected : expected !== '') return { kind: 'conflict' }
+      if (change.kind === 'remove' && !entry) return { kind: 'missing' }
+      if (replacement && ((!current && this.topics(workspace).length >= 200) || (!entry && (current?.entries.length ?? 0) >= 20))) return { kind: 'full' }
+      const entries = new Map(current?.entries.map(item => [item.id, item]) ?? [])
+      if (replacement) entries.set(entryId, replacement); else entries.delete(entryId)
+      const value = longMemoryTopicSchema.parse({ workspace, topic, revision: (current?.revision ?? 0) + 1, entries: [...entries.values()] })
+      await this.table.put(recordKey(workspace, topic), value)
+      return replacement ? { kind: 'saved', entry: replacement } : { kind: 'removed' }
+    })
+  }
+
   forget(workspace: string, topic: string, expectedRevision: number, entryId: string): Promise<LongMemoryTopic> {
     id.parse(entryId)
     return this.mutate(async () => {
@@ -122,13 +156,13 @@ export class LongMemoryStore {
 /** Bound context keeps the entry identity and historical status within 2 KiB. */
 export function longMemoryContext(topic: LongMemoryTopic | undefined, maxBytes = 2048, currentVersion?: string): string {
   if (!topic) return ''
-  const relevant = topic.entries.filter(entry => entry.source.kind === 'user' || currentVersion === undefined || entry.sourceVersion === currentVersion)
+  const relevant = topic.entries.filter(entry => entry.source.kind !== 'tool' || currentVersion === undefined || entry.sourceVersion === currentVersion)
   const entries = relevant.slice(-4).map(({ id, kind, summary, sourceVersion }) => ({ id, kind, summary,
     ...(sourceVersion ? { sourceVersion } : {}) }))
   for (;;) {
     const value = JSON.stringify({ topic: topic.topic, revision: topic.revision, entries,
       omitted: relevant.length - entries.length, staleFacts: topic.entries.length - relevant.length,
-      basis: 'historical; tool source pairs checked at write time, summaries not semantically verified; verify mutable facts; no permission granted',
+      basis: 'historical; manual entries are user-maintained; tool source pairs checked at write time, summaries not semantically verified; verify mutable facts; no permission granted',
       details: { tool: 'super_code_memory', action: 'read' } }).replace(/\{\{/g, '\\u007b\\u007b')
     if (Buffer.byteLength(value, 'utf8') <= maxBytes) return value
     if (entries.length === 0) throw new Error('Long-memory context exceeds its budget')

@@ -1,8 +1,8 @@
-/** User-facing, read-only memory API. Workspace identity comes from the host. */
+/** User-facing memory API. Workspace identity comes from the host. */
 import type { Context } from '@deepseek-ai/cordis';
 import { TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol';
 import { LongMemoryStore } from '../long-memory.js';
-import type { LongMemoryEntry } from '../long-memory.js';
+import type { LongMemoryEntry, MemoryLibraryChange } from '../long-memory.js';
 export interface MemoryLibraryItem {
     topic: string;
     revision: number;
@@ -15,11 +15,12 @@ export type MemoryLibraryDetail = {
 } | {
     kind: 'found';
     entry: MemoryLibraryItem & {
+        token: string;
         detail: string;
         source: {
-            kind: 'user' | 'tool';
+            kind: 'user' | 'tool' | 'manual';
             sessionId: string;
-            eventSeq: number;
+            eventSeq?: number;
         };
         sourceVersion?: string;
     };
@@ -33,6 +34,8 @@ export declare class MemoryLibraryReader {
         items: MemoryLibraryItem[];
     }>;
     read(sessionId: string, scope: string, topic: string, id: string): Promise<MemoryLibraryDetail>;
+    save(sessionId: string, scope: string, topic: string, id: string, content: string): Promise<MemoryLibraryChange>;
+    remove(sessionId: string, scope: string, topic: string, id: string, expected: string): Promise<MemoryLibraryChange>;
 }
 export declare class SuperCodeMemory extends TypertRemoteService {
     private readonly reader;
@@ -40,6 +43,8 @@ export declare class SuperCodeMemory extends TypertRemoteService {
     list(sessionId: string, scope: string): Promise<{
         items: MemoryLibraryItem[];
     }>;
+    saveEntry(sessionId: string, scope: string, topic: string, id: string, content: string): Promise<MemoryLibraryChange>;
+    deleteEntry(sessionId: string, scope: string, topic: string, id: string, expected: string): Promise<MemoryLibraryChange>;
     read(sessionId: string, scope: string, topic: string, id: string): Promise<MemoryLibraryDetail>;
 }
 //# sourceMappingURL=memory-library.d.ts.map

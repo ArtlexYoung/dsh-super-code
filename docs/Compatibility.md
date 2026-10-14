@@ -1,5 +1,33 @@
 # 宿主兼容性 · Host Compatibility
 
+## 0.3.3 · 2026-10-14
+
+支持下限保持 `0.1.5-alpha.1`，依赖范围不变。本次核对官方 npm `latest`/`next` 为 `0.2.0-rc.2`，`alpha` 为 `0.2.1-alpha.2`。以下三个宿主使用固定并审计的依赖和隔离 profile，真实安装 0.3.3 组合候选包；其他版本保留此前逐版记录，本次没有全部重测。
+
+The minimum remains `0.1.5-alpha.1`, with unchanged dependency ranges. Official npm `latest`/`next` is `0.2.0-rc.2` and `alpha` is `0.2.1-alpha.2` on this date. The three pinned, audited hosts below installed the combined 0.3.3 candidate in isolated profiles. Other versions retain earlier per-version records and were not all rerun.
+
+| Harness | 预设机制 / Presets | 0.3.3 Web/CLI 与浏览器 / Web/CLI and browser |
+|---|---|---|
+| `0.1.5-alpha.1` | 目录 / Directory | 通过 / Pass |
+| `0.2.0-rc.2` | 声明式 / Declarative | 通过 / Pass |
+| `0.2.1-alpha.2` | 声明式 / Declarative | 通过 / Pass |
+
+三版均通过安装/激活、主/子 Agent、项目/全局记忆、跨工作区隔离和重启读取。实际浏览器验证覆盖单个 Super Code 入口、默认执行区、互斥展开与键盘/焦点、整行标题、同页及重复记忆定位、树分支与历史筛选恢复、记忆新增/编辑/取消/保存/删除确认、草稿及进行中保存跨区恢复；另验证运行与完成动画、减弱动态效果、320/400/560px 与极限缩放时节点/文字/连线间距。稳定版与 alpha 版另实际切换中英文、明暗主题，无页面或控制台错误。模型由本地确定性验收程序提供，没有调用外部模型。
+
+All three passed installation/activation, main/child Agents, project/global memory, workspace isolation, and restart reads. Real-browser checks covered the unified Super Code entry, the default tree, mutually exclusive sections, keyboard/focus behavior, full-width headings, repeated same-page memory navigation, retained tree/history filters, memory creation/editing/cancellation/saving/confirmed deletion, and drafts/in-flight saves across section switches. Checks also covered running/completed animation, reduced motion, node/label/connector spacing at 320/400/560px and zoom limits. Stable and alpha hosts additionally passed Chinese/English and light/dark switching, without page or console errors. A local deterministic fixture supplied model responses; no external model was called.
+
+内嵌前端 Skill 从同一候选包验证三版宿主的六条原生加载路径，覆盖目录预设及复制安装、声明式组合及持久化 profile、摘要目录、按需正文/参考读取和项目/用户同名覆盖。安装与加载验证不代表模型前端作品质量已经提升。
+
+The bundled frontend Skill passed six native loading paths from the same candidate across these hosts: directory presets/copied installs, declarative bundles/persisted profiles, summary catalogs, on-demand content/reference reads, and project/user overrides. Installation and loading checks do not establish improved model-generated frontend quality.
+
+官方 macOS arm64 Desktop `0.2.0-rc.2` 在隔离应用及 profile 中通过原生插件页面从 0.3.2 升级到 0.3.3，重启后旧预设仍为 0.3.2，差异提示与确认取消通过；确认重装及宿主自动重载后，预设版本更新为 0.3.3 并包含内嵌 Skill。统一侧栏切换、草稿恢复与完整记忆维护流程通过并留有截图；真实主会话的运行/完成动画、切换恢复、宽度/缩放、减弱动态效果及节点间距通过，不将主会话检查视为原生 live 子 Agent 工具验收。副本保留原始 CFBundleName，隔离应用身份、profile 和 userData；正式应用及日常配置未修改。
+
+Official macOS arm64 Desktop `0.2.0-rc.2` upgraded from 0.3.2 to 0.3.3 through its native plugin page in an isolated app/profile. After restart, the old preset retained 0.3.2, with a mismatch notice and cancellable confirmation. Confirmed reinstallation and the host's automatic reload updated the preset to 0.3.3 with the bundled Skill. Unified-section switching, draft recovery, and the complete memory maintenance flow passed with screenshots. A live main session passed running/completed animation, section recovery, width/zoom, reduced motion, and node spacing; this does not constitute native live child-Agent tool validation. The copy retains CFBundleName and isolates application identity, profile, and userData; the official app and daily configuration were not modified.
+
+171 项全量测试、类型检查、构建、客户端语法及 diff 检查通过。其他原生桌面版本和平台沿用历史覆盖，不宣称本轮全量复验；没有新增 SWE-bench 效果成绩。
+
+All 171 tests, type checking, build, client syntax, and diff checks passed. Other native desktop versions and platforms retain historical coverage rather than a claim of full revalidation. This release adds no new SWE-bench performance scores.
+
 ## 0.3.2 · 2026-10-11
 
 支持下限保持 `0.1.5-alpha.1`，没有新增依赖或宿主私有 UI 接口。官方 npm `latest`/`next` 仍为 `0.2.0-rc.2`，`alpha` 为 `0.2.1-alpha.2`。本次使用固定并审计的依赖和隔离 profile，在以下三个宿主重新安装 0.3.2 候选包并验收；中间版本保留下面 0.3.1 的逐版记录，本次没有全部重测。

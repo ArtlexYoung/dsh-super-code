@@ -503,23 +503,25 @@ test('automatic depth folding, catalog chronology, cycles and ten thousand nodes
 
 test('plugin opens read-only resource tabs without navigating the main conversation', () => {
   const slots: { config: Record<string, unknown>; component: unknown }[] = []
-  const opened: object[] = []
-  plugin.apply({
+  const opened: object[] = [], pages: object[] = [], definitions: any[] = []
+  const context = {
     effect: () => {},
-    remote: { $mount: async () => () => {} },
-    inject: () => {},
-    slots: { inject: (_name: string, register: () => void) => register(), register: (config: Record<string, unknown>, component: unknown) => slots.push({ config, component }) },
-    sidebarRightTabs: { register: () => () => {} },
+    remote: { $mount: async () => () => {}, superCodeMemory: {} },
+    settingsScope: { bind: () => ({}) },
+    inject: (_deps: string[], ready: (ctx: object) => void) => ready(context),
+    slots: { inject: (_name: string, register: () => any) => { const result = register(); if (result?.[Symbol.iterator]) for (const _ of result) { /* Consume keyed registrations. */ } }, register: (config: Record<string, unknown>, component: unknown) => slots.push({ config, component }) },
+    sidebarRightTabs: { register: (definition: any) => { definitions.push(definition); return () => {} } },
     sessions: { openSubagent: () => assert.fail('must not switch conversations'), open: () => assert.fail('must not switch conversations') },
-    sidebarRight: { openResource: (address: string, options: object) => opened.push({ address, options }) },
-  })
+    sidebarRight: { openTab: (kind: string, options: object) => pages.push({ kind, options }), openResource: (address: string, options: object) => opened.push({ address, options }) },
+  }
+  plugin.apply(context)
   assert.equal(slots.some(slot => slot.config.name === 'conversation.input.left'), false)
   assert.equal(slots.some(slot => slot.config.id === 'super-agent-token-stats'), false)
   assert.equal(slots.some(slot => slot.config.name === 'conversation.composer.dock'), false)
   assert.equal(plugin.inject.includes('remote.agentPresets'), false)
   assert.equal(slots.some(slot => slot.config.name === 'settings.plugin.item'), false)
   assert.equal(plugin.inject.includes('settingsScope'), false)
-  const tree = slots.find(slot => slot.config.key === 'dsh-super-code')!
+  const tree = slots.find(slot => slot.config.key === 'dsh-super-code' && slot.config.name === 'sidebar.right.pane.tab')!
   const props = (tree.config.inject as () => { openDetail: (node: Node) => void })()
   props.openDetail({ id: 'child', parentId: 'parent', mode: 'continuable' })
   props.openDetail({ id: 'parent' })
@@ -527,7 +529,18 @@ test('plugin opens read-only resource tabs without navigating the main conversat
     { address: 'dsh-resource://super-agent/child?parent=parent&mode=continuable', options: { kind: 'super-agent-detail' } },
     { address: 'dsh-resource://super-agent/parent', options: { kind: 'super-agent-detail' } },
   ]))
-  assert.ok(slots.some(slot => slot.config.key === 'dsh-super-code-detail'))
+  const guide = definitions.filter(definition => definition.guide?.length)
+  assert.equal(guide.length, 1)
+  assert.equal(guide[0].kind, 'super-agent-agents')
+  const legacy = slots.find(slot => slot.config.key === 'dsh-super-code-memory' && slot.config.name === 'sidebar.right.pane.tab')!
+  assert.equal(legacy.component, tree.component, 'restored memory tabs use the unified page')
+  const details = slots.find(slot => slot.config.key === 'dsh-super-code-detail' && slot.config.name === 'sidebar.right.pane.tab')!
+  const actions = (details.config.inject as () => { openMemory: (id: string, row: object) => void })()
+  for (let i = 0; i < 2; i++) actions.openMemory('child', { scope: 'global', topic: 'preferences', id: 'preserve edits' })
+  assert.equal(JSON.stringify(pages), JSON.stringify(Array(2).fill({ kind: 'super-agent-agents', options: {
+    params: { memory: 'dsh-resource://super-code-memory/child?scope=global&topic=preferences&id=preserve+edits' },
+  } })))
+  assert.equal(opened.length, 2, 'memory links use the existing page, not another resource tab')
 })
 
 test('detail addresses preserve child authority and escape identifiers', () => {
@@ -678,4 +691,96 @@ test('a resumed recent page retains overlapping displayed records instead of shi
   assert.equal(inspector.getSnapshot().firstSeq, 10)
   assert.equal(inspector.getSnapshot().cursor, 12)
   inspector.dispose()
+})
+
+function workspaceFixture() {
+  const react = {
+    createElement: (type: unknown, props: any, ...children: any[]) => ({ type, props, children }),
+    useMemo: (read: () => any) => read(), useState: (value: any) => [typeof value === 'function' ? value() : value, () => {}],
+    useRef: (value: any) => ({ current: value }), useEffect: () => {}, useLayoutEffect: () => {},
+    useSyncExternalStore: (_subscribe: Function, read: Function) => read(),
+  }
+  const subject = client({ react }), slots: any[] = []
+  const context = {
+    effect: () => {}, remote: { $mount: async () => () => {}, superCodeMemory: {
+      saveEntry: async () => ({ ok: true, value: { kind: 'saved' } }),
+    } }, settingsScope: { bind: () => ({}) },
+    inject: (_deps: string[], run: Function) => run(context),
+    slots: { inject: (_name: string, register: Function) => {
+      const result = register(); if (result?.[Symbol.iterator]) for (const _ of result) { /* Register tab types. */ }
+    }, register: (config: any, component: any) => { slots.push({ config, component }); return () => {} } },
+    sidebarRightTabs: { register: () => () => {} }, sessions: {}, sidebarRight: {},
+  }
+  subject.apply(context)
+  const slot = slots.find(row => row.config.key === 'dsh-super-code' && row.config.name === 'sidebar.right.pane.tab')
+  const tab = { signal: new AbortController().signal, visible: true, contentId: 'sidebar://super-agent-agents',
+    navigation: { revision: 1, params: {} as any } }
+  const props = { ...slot.config.inject(), t: (key: string) => key, sessionId: 'root',
+    useTabInfo: () => ({ tab }), useSessions: (select: Function) => select({ current: 'root' }) }
+  return { props, tab, render: () => slot.component(props) }
+}
+
+test('workspace defaults to execution and title toggles keep exactly one section expanded', () => {
+  const { props, tab, render } = workspaceFixture()
+  let layout = render().children[0]
+  assert.equal(layout.props['data-active-section'], 'tree')
+  assert.equal(layout.children[0].props.key, 'tree')
+  assert.equal(layout.children[1].props.key, 'memory-collapsed')
+  let title = layout.children[1].children[0].type(layout.children[1].children[0].props)
+  assert.equal(title.props['aria-expanded'], false)
+  title.props.onClick()
+  layout = render().children[0]
+  assert.equal(layout.props['data-active-section'], 'memory')
+  assert.equal(layout.children[0].props.key, 'tree-collapsed')
+  assert.equal(layout.children[1].props.key, 'memory')
+  assert.equal(props.workspaceStates.get(tab.signal).active, 'memory', 'remount retains the chosen section')
+  layout.children[1].props.onToggle()
+  layout = render().children[0]
+  assert.equal(layout.props['data-active-section'], 'tree', 'clicking the open heading opens the other section')
+  layout.children[0].props.onToggle()
+  layout = render().children[0]
+  assert.equal(layout.props['data-active-section'], 'memory', 'the other open heading also cannot leave both closed')
+  layout.children[0].children[0].props.onToggle()
+  assert.equal(render().children[0].props['data-active-section'], 'tree', 'a collapsed heading opens its section')
+})
+
+test('memory links expand their section once and repeated explicit navigation reopens it', () => {
+  const { props, tab, render } = workspaceFixture()
+  render()
+  tab.navigation = { revision: 2, params: { memory: 'dsh-resource://super-code-memory/root?topic=notes&id=entry' } }
+  let layout = render().children[0]
+  assert.equal(layout.props['data-active-section'], 'memory')
+  layout.children[1].props.onToggle()
+  assert.equal(render().children[0].props['data-active-section'], 'tree', 'unchanged link does not undo a user toggle')
+  tab.navigation.revision++
+  assert.equal(render().children[0].props['data-active-section'], 'memory')
+  tab.signal = new AbortController().signal
+  tab.contentId = 'dsh-resource://super-code-memory/root?topic=notes&id=entry'
+  tab.navigation = { revision: 1, params: {} }
+  assert.equal(render().children[0].props['data-active-section'], 'memory', 'legacy memory resources expand memory')
+  tab.signal = new AbortController().signal
+  tab.contentId = 'sidebar://super-agent-agents'
+  tab.navigation = { revision: 1, params: { memory: 'invalid' } }
+  assert.equal(render().children[0].props['data-active-section'], 'tree', 'invalid links preserve the default')
+  assert.notEqual(props.workspaceStates.get(tab.signal).active, 'memory')
+})
+
+test('hidden workspace remount after memory navigation keeps the editor attached to its current tab state', async () => {
+  const { props, tab, render } = workspaceFixture()
+  render().children[0].children[1].children[0].props.onToggle()
+  const memory = render().children[0].children[1]
+  memory.type(memory.props)
+  const original = props.memoryStates.get(tab.signal)
+  tab.navigation = { revision: 2, params: { memory: 'dsh-resource://super-code-memory/root?topic=notes&id=existing' } }
+  memory.type(memory.props)
+  assert.equal(props.memoryStates.get(tab.signal), original, 'navigation must not replace the state captured by pending operations')
+  original.editorStore.update({ draft: { sessionId: 'root', scope: 'project', topic: 'notes', id: 'new', expected: '',
+    kind: 'constraint', summary: 'Title', detail: 'Content' } })
+  render().children[0].children[1].props.onToggle()
+  assert.equal(render().children[0].props['data-active-section'], 'tree')
+  render().children[0].children[1].children[0].props.onToggle()
+  assert.equal(render().children[0].props['data-active-section'], 'memory')
+  assert.equal(props.memoryStates.get(tab.signal).editorStore.getSnapshot().draft.summary, 'Title', 'collapse retains the draft')
+  await original.editorStore.save()
+  assert.equal(props.memoryStates.get(tab.signal).selected.id, 'new', 'saving after tab navigation opens the saved entry')
 })

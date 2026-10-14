@@ -17,7 +17,7 @@
           - id: super-code
             name: dsh-super-code/super-code
             config:
-              presetVersion: 0.3.2
+              presetVersion: 0.3.3
               presetInstallation: bundle:dsh-super-code
           - id: compaction
             name: cordis:group
@@ -62,6 +62,19 @@
               maxDepth: 1
           - id: skill-filesystem
             name: '@deepseek-ai/dsh-skill-filesystem'
+          # Declarations may be persisted in a profile patch. Resolve the
+          # installed package instead of treating that patch as a skill root.
+          - id: skill-super-code-bundled
+            name: '@deepseek-ai/dsh-skill-filesystem'
+            config:
+              providerName: super-code-bundled
+              includeDefaultRoots: false
+              watch: false
+              bundledSkillDir: !!js >-
+                (() => {
+                  const require = process.getBuiltinModule('node:module').createRequire(new URL('package.json', baseUrl))
+                  return require('node:path').join(require('node:path').dirname(require.resolve('dsh-super-code/package.json')), 'presets/super-code/skills')
+                })()
           - id: tool-skill
             name: '@deepseek-ai/dsh-tool-skill'
           - id: tool-presentation

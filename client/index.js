@@ -256,6 +256,13 @@ const ActionButton = React.forwardRef(function ActionButton({ children, title, .
 
 const LOCALE_NS = 'dshSuperCode'
 const zh = {
+  'memory.add': '新增记忆', 'memory.edit': '编辑', 'memory.cancel': '取消', 'memory.save': '保存', 'memory.delete': '删除', 'memory.deleting': '正在删除…', 'memory.saving': '正在保存…',
+  'memory.topic': '主题', 'memory.kind': '类型', 'memory.summaryLabel': '标题', 'memory.detailLabel': '内容', 'memory.manual': '手动维护',
+  'memory.topicHint': '字母、数字、点、下划线或短横线，最多 96 个字符。',
+  'memory.deleteTitle': '删除记忆', 'memory.deleteHint': '确定删除“{summary}”吗？删除后无法恢复。',
+  'memory.writeError': '操作失败，内容已保留，请重试。', 'memory.conflict': '这条记忆已在别处更改，请取消后刷新再编辑。',
+  'memory.missingEdit': '这条记忆已被删除，输入内容已保留。', 'memory.full': '该主题或记忆库已满，请删除不再需要的条目。',
+  'workspace.title': 'Super Code', 'workspace.description': 'Agent 执行树与记忆库', 'workspace.resize': '调整执行树与记忆库高度',
   'tree.collapsedLabel': '已收起', 'tree.organizeLabel': '自动整理',
   'detail.toolCall': '工具调用', 'detail.toolResult': '工具结果', 'detail.toolError': '工具失败',
   'detail.cache': '缓存', 'detail.info': '详情', 'tree.countCompact': '{shown}/{total} · 运行 {running}',
@@ -319,6 +326,13 @@ const zh = {
   'detail.path': 'Agent 路径', 'detail.title': 'Agent 详情', 'detail.refresh': '刷新对话详情', 'detail.task': '任务', 'detail.agent': 'Agent', 'detail.interrupted': 'Agent · 已中断', 'detail.error': '执行错误', 'detail.incomplete': '执行未完成，请稍后重试。', 'detail.input': '输入', 'detail.output': '输出', 'detail.cacheRead': '缓存读取', 'detail.cacheWrite': '缓存写入', 'detail.total': 'Token 总量', 'detail.hitRate': '缓存命中率', 'detail.moreUsage': '用量详情', 'detail.unavailable': '未提供', 'detail.reading': '正在读取对话…', 'detail.read': '读取中…', 'detail.older': '加载更早记录', 'detail.latest': '回到最新', 'detail.empty': '暂无执行内容', 'detail.new': '有新内容 · 查看最新', 'detail.loadError': '对话详情读取失败', 'detail.connection': '连接中断，正在重连', 'detail.historyError': '历史记录读取失败', 'detail.open': '展开全文', 'detail.noAccess': '无法打开详情，请重试', 'tree.loadError': '部分执行记录读取失败，请刷新重试', 'detail.unknown': '用量未知', 'main.agent': '主 Agent', 'tree.open': '点击查看详情', 'tree.expand': '展开', 'tree.collapse': '收起', 'image': '[图片]'
 }
 const en = {
+  'memory.add': 'Add memory', 'memory.edit': 'Edit', 'memory.cancel': 'Cancel', 'memory.save': 'Save', 'memory.delete': 'Delete', 'memory.deleting': 'Deleting…', 'memory.saving': 'Saving…',
+  'memory.topic': 'Topic', 'memory.kind': 'Type', 'memory.summaryLabel': 'Title', 'memory.detailLabel': 'Content', 'memory.manual': 'Manually maintained',
+  'memory.topicHint': 'Letters, digits, dots, underscores or hyphens; up to 96 characters.',
+  'memory.deleteTitle': 'Delete memory', 'memory.deleteHint': 'Delete “{summary}”? This cannot be undone.',
+  'memory.writeError': 'The operation failed. Your input is retained; try again.', 'memory.conflict': 'This memory changed elsewhere. Cancel and refresh before editing again.',
+  'memory.missingEdit': 'This memory was deleted. Your input is retained.', 'memory.full': 'This topic or library is full. Remove entries you no longer need.',
+  'workspace.title': 'Super Code', 'workspace.description': 'Agent tree and memory library', 'workspace.resize': 'Resize agent tree and memory library',
   'tree.collapsedLabel': 'Collapsed', 'tree.organizeLabel': 'Organize',
   'detail.toolCall': 'Tool call', 'detail.toolResult': 'Tool result', 'detail.toolError': 'Tool failed',
   'detail.cache': 'Cache', 'detail.info': 'Details', 'tree.countCompact': '{shown}/{total} · Running {running}',
@@ -611,9 +625,10 @@ function agentHistoryWindow(count, scrollTop, height) {
 }
 
 /** Local scroll state keeps the graph out of the scrolling render path. */
-function AgentHistory({ view, hidden, totals, open, t = key => zh[key] || key }) {
-  const [filters, setFilters] = useState({ query: '', range: 'all', from: '', to: '', sort: 'time-desc' })
-  const [scroll, setScroll] = useState({ top: 0, height: 168 })
+function AgentHistory({ view, hidden, totals, open, saved, t = key => zh[key] || key }) {
+  const [filters, setFilters] = useState(saved.historyFilters || { query: '', range: 'all', from: '', to: '', sort: 'time-desc' })
+  const [scroll, setScroll] = useState({ top: saved.historyTop || 0, height: 168 })
+  const previousFilters = useRef(filters)
   const viewport = useRef(null), focusTarget = useRef('')
   const records = useMemo(() => agentHistoryRows(view, hidden, totals, { ...filters, t }), [view, hidden, totals, filters, t])
   const language = localeCode(t)
@@ -622,20 +637,25 @@ function AgentHistory({ view, hidden, totals, open, t = key => zh[key] || key })
   const range = agentHistoryRange(filters.range, filters.from, filters.to)
   const change = (key, value) => setFilters(previous => ({ ...previous, [key]: value }))
   useLayoutEffect(() => {
-    viewport.current.scrollTop = 0
-    setScroll(previous => ({ ...previous, top: 0 }))
-  }, [filters])
+    saved.historyFilters = filters
+    if (previousFilters.current !== filters) {
+      viewport.current.scrollTop = 0; saved.historyTop = 0
+      setScroll(previous => ({ ...previous, top: 0 }))
+    }
+    previousFilters.current = filters
+  }, [filters, saved])
   useLayoutEffect(() => {
     const element = viewport.current
     const measure = () => setScroll(previous => previous.top === element.scrollTop && previous.height === element.clientHeight
       ? previous : { top: element.scrollTop, height: element.clientHeight })
+    element.scrollTop = saved.historyTop || 0
     measure()
     const observer = new ResizeObserver(measure)
     observer.observe(element)
     return () => observer.disconnect()
   }, [])
   useLayoutEffect(() => {
-    viewport.current.scrollTop = window.top
+    viewport.current.scrollTop = window.top; saved.historyTop = window.top
     if (focusTarget.current) {
       const target = Array.from(viewport.current.querySelectorAll('button')).find(button => button.dataset.historyId === focusTarget.current)
       if (target) { target.focus({ preventScroll: true }); focusTarget.current = '' }
@@ -680,7 +700,7 @@ function AgentHistory({ view, hidden, totals, open, t = key => zh[key] || key })
       !records.length && React.createElement('p', { className: 'dsh-super-code-history-empty' }, text(t, 'history.empty'))))
 }
 
-function AgentTree({ useSessions, useSessionStatus, sessionId, useTabInfo, treeStates, openDetail, refresh, watchCatalog, t = key => zh[key] || key }) {
+function AgentTree({ useSessions, useSessionStatus, sessionId, useTabInfo, treeStates, openDetail, refresh, watchCatalog, onToggle, t = key => zh[key] || key }) {
   const catalog = useSessions(s => s)
   const statuses = useSessionStatus ? useSessionStatus(s => s) : undefined
   const state = useMemo(() => agentSessionState(catalog, sessionId, statuses), [catalog, sessionId, statuses])
@@ -694,7 +714,59 @@ function AgentTree({ useSessions, useSessionStatus, sessionId, useTabInfo, treeS
     }
     return value
   }, [treeStates, tab.signal, view.root])
-  return React.createElement(AgentTreeBody, { key: view.root, state, view, saved, openDetail, refresh, watchCatalog, t })
+  return React.createElement(AgentTreeBody, { key: view.root, state, view, saved, openDetail, refresh, watchCatalog, onToggle, t })
+}
+
+function WorkspaceSectionToggle({ section, expanded, onToggle, children, t }) {
+  const label = text(t, section === 'tree' ? 'tree.title' : 'memory.title')
+  return React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-section-toggle',
+    'data-workspace-section': section, 'aria-label': label, 'aria-expanded': expanded, onClick: onToggle },
+    React.createElement(Glyph, { type: 'chevron' }),
+    React.createElement(Glyph, { type: section === 'tree' ? 'branch' : 'memory' }),
+    React.createElement('strong', null, label), children)
+}
+
+/** One active section guarantees exactly one open view; tab state retains drafts. */
+function SuperCodeWorkspace(props) {
+  const { tab } = props.useTabInfo()
+  const address = typeof tab.navigation?.params?.memory === 'string' ? tab.navigation.params.memory : tab.contentId
+  const navigationKey = `${address}/${tab.navigation?.revision || 0}`
+  const memoryTarget = memoryLibraryTarget(address, '')
+  const saved = useMemo(() => {
+    const value = props.workspaceStates.get(tab.signal) || { active: 'tree' }
+    if (value.navigationKey !== navigationKey) {
+      value.navigationKey = navigationKey
+      if (memoryTarget.id) value.active = 'memory'
+    }
+    props.workspaceStates.set(tab.signal, value)
+    return value
+  }, [props.workspaceStates, tab.signal])
+  const [active, setActive] = useState(saved.active === 'memory' ? 'memory' : 'tree')
+  const layout = useRef(null), focusSection = useRef('')
+  const toggle = () => {
+    const next = active === 'tree' ? 'memory' : 'tree'
+    saved.active = next; focusSection.current = next; setActive(next)
+  }
+  useLayoutEffect(() => {
+    if (saved.navigationKey === navigationKey) return
+    saved.navigationKey = navigationKey
+    if (memoryTarget.id) { saved.active = 'memory'; setActive('memory') }
+  }, [saved, navigationKey])
+  useLayoutEffect(() => {
+    if (!focusSection.current) return
+    layout.current.querySelector(`[data-workspace-section="${focusSection.current}"]`)?.focus({ preventScroll: true })
+    focusSection.current = ''
+  }, [active])
+  return React.createElement('section', { className: 'dsh-super-code-workspace', 'aria-label': text(props.t, 'workspace.title') },
+    React.createElement('div', { ref: layout, className: 'dsh-super-code-workspace-layout', 'data-active-section': active, style: {
+      gridTemplateRows: active === 'tree' ? 'minmax(280px, 1fr) 44px' : '44px minmax(280px, 1fr)',
+    } },
+      active === 'tree' ? React.createElement(AgentTree, { ...props, key: 'tree', onToggle: toggle })
+        : React.createElement('header', { key: 'tree-collapsed', className: 'dsh-super-code-workspace-collapsed' },
+          React.createElement(WorkspaceSectionToggle, { section: 'tree', expanded: false, onToggle: toggle, t: props.t })),
+      active === 'memory' ? React.createElement(MemoryLibrary, { ...props, key: 'memory', onToggle: toggle })
+        : React.createElement('header', { key: 'memory-collapsed', className: 'dsh-super-code-workspace-collapsed' },
+          React.createElement(WorkspaceSectionToggle, { section: 'memory', expanded: false, onToggle: toggle, t: props.t }))))
 }
 
 function AgentCatalogWatch({ id, watchCatalog }) {
@@ -705,6 +777,8 @@ function AgentCatalogWatch({ id, watchCatalog }) {
   return null
 }
 
+// Keep connector anchors and canvas bounds in step with the node's text stack.
+const agentTreeNodeHeight = 120, agentTreeLevelSpacing = 152
 function agentTreeLayout(view, limit) {
   const { rows, more } = visibleAgentRows(view, () => true, limit)
   const positions = new Map(), edges = []
@@ -713,14 +787,14 @@ function agentTreeLayout(view, limit) {
     const row = rows[i]
     const children = (view.children.get(row.id) || []).filter(id => positions.has(id) && positions.get(id).level === row.level + 1)
     const x = children.length ? children.reduce((sum, id) => sum + positions.get(id).x, 0) / children.length : 70 + leaves++ * 140
-    positions.set(row.id, { ...row, x, y: 18 + (row.level - 1) * 128 })
+    positions.set(row.id, { ...row, x, y: 18 + (row.level - 1) * agentTreeLevelSpacing })
     for (const child of children) edges.push({ parent: row.id, child })
   }
   const width = Math.max(140, leaves * 140)
   // Reverse the postorder leaf allocation to preserve catalog order.
   for (const position of positions.values()) position.x = width - position.x
   return { rows: rows.map(row => positions.get(row.id)), edges, positions, more, width,
-    height: Math.max(140, ...rows.map(row => row.level * 128)) }
+    height: Math.max(140, ...rows.map(row => row.level * agentTreeLevelSpacing)) }
 }
 
 function agentExecutionStatus(node, isRoot, t = key => zh[key] || key) {
@@ -729,7 +803,7 @@ function agentExecutionStatus(node, isRoot, t = key => zh[key] || key) {
   return isRoot || node.mode === 'continuable' ? { tone: 'idle', label: text(t, 'tree.legend.idle') } : { tone: 'stopped', label: text(t, 'tree.legend.stopped') }
 }
 
-function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog, t = key => zh[key] || key }) {
+function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog, onToggle, t = key => zh[key] || key }) {
   const [pan, setPan] = useState(saved.pan || { x: 0, y: 0 })
   const [zoom, setZoom] = useState(saved.zoom || 1)
   const viewport = useRef(null), graph = useRef(null)
@@ -768,9 +842,9 @@ function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog, 
   const [focused, setFocused] = useState(saved.focused)
   const [expanded, setExpanded] = useState(saved.expanded || new Set())
   const [collapsed, setCollapsed] = useState(saved.collapsed || new Set())
-  const [historyOpen, setHistoryOpen] = useState(false)
+  const [historyOpen, setHistoryOpen] = useState(saved.historyOpen || false)
   const [compact, setCompact] = useState(false)
-  useEffect(() => { Object.assign(saved, { limit, focused, expanded, collapsed }) }, [saved, limit, focused, expanded, collapsed])
+  useEffect(() => { Object.assign(saved, { limit, focused, expanded, collapsed, historyOpen }) }, [saved, limit, focused, expanded, collapsed, historyOpen])
   const catalogs = state.subagentsByParent || {}
   const display = useMemo(() => agentTreeDisplay(view, catalogs, { expanded, collapsed, focused, compact }), [view, catalogs, expanded, collapsed, focused, compact])
   const { rows, more, edges, positions, width, height } = useMemo(() => agentTreeLayout(display.view, limit), [display, limit])
@@ -845,8 +919,11 @@ function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog, 
     watched.map(id => React.createElement(AgentCatalogWatch, { key: id, id, watchCatalog })),
     React.createElement('header', { className: 'dsh-super-code-tree-header' },
       React.createElement('div', { className: 'dsh-super-code-tree-heading' },
-        React.createElement('div', { className: 'dsh-super-code-title-line' }, React.createElement(Glyph, { type: 'branch' }), React.createElement('strong', null, text(t, 'tree.title'))),
-        React.createElement('span', { className: 'dsh-super-code-tree-count', title: text(t, 'tree.count', { shown: rows.length, total: view.nodes.size, running }) }, text(t, 'tree.countCompact', { shown: rows.length, total: view.nodes.size, running }))),
+        onToggle ? React.createElement(WorkspaceSectionToggle, { section: 'tree', expanded: true, onToggle, t },
+          React.createElement('span', { className: 'dsh-super-code-tree-count' }, text(t, 'tree.countCompact', { shown: rows.length, total: view.nodes.size, running })))
+          : React.createElement(React.Fragment, null,
+            React.createElement('div', { className: 'dsh-super-code-title-line' }, React.createElement(Glyph, { type: 'branch' }), React.createElement('strong', null, text(t, 'tree.title'))),
+            React.createElement('span', { className: 'dsh-super-code-tree-count', title: text(t, 'tree.count', { shown: rows.length, total: view.nodes.size, running }) }, text(t, 'tree.countCompact', { shown: rows.length, total: view.nodes.size, running })))),
       React.createElement('div', { className: 'dsh-super-code-tree-toolbar' },
         React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-icon-button', disabled: busy || !view.root, onClick: reload, title: text(t, 'tree.refresh'), 'aria-label': text(t, 'tree.refresh') }, React.createElement(IconRefreshOutline16)),
         React.createElement('div', { className: 'dsh-super-code-graph-controls', 'aria-label': text(t, 'tree.canvas') },
@@ -856,13 +933,13 @@ function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog, 
         React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-icon-button', title: text(t, 'tree.fit'), 'aria-label': text(t, 'tree.fit'), onClick: fit }, React.createElement(Glyph, { type: 'fit' })),
         (display.hidden.length > 0 || expanded.size > 0 || collapsed.size > 0) && React.createElement('div', { className: 'dsh-super-code-history-controls' },
           React.createElement(ActionButton, { type: 'button', title: text(t, 'tree.collapsed', { count: display.hidden.length }), 'aria-label': text(t, 'tree.collapsed', { count: display.hidden.length }), 'aria-expanded': historyOpen, onClick: () => setHistoryOpen(!historyOpen) }, React.createElement(Glyph, { type: 'history' }), React.createElement('span', { className: 'dsh-super-code-action-label' }, text(t, 'tree.collapsedLabel')), React.createElement('span', { className: 'dsh-super-code-action-count' }, display.hidden.length)),
-          (expanded.size > 0 || collapsed.size > 0) && React.createElement(ActionButton, { type: 'button', title: text(t, 'tree.organize'), 'aria-label': text(t, 'tree.organize'), onClick: () => { autoFit.current = true; setExpanded(new Set()); setCollapsed(new Set()); setFocused(state.current) } }, React.createElement(Glyph, { type: 'organize' }), React.createElement('span', { className: 'dsh-super-code-action-label' }, text(t, 'tree.organizeLabel'))))),
+          (expanded.size > 0 || collapsed.size > 0) && React.createElement(ActionButton, { type: 'button', title: text(t, 'tree.organize'), 'aria-label': text(t, 'tree.organize'), onClick: () => { autoFit.current = true; setExpanded(new Set()); setCollapsed(new Set()); setHistoryOpen(false); setFocused(state.current) } }, React.createElement(Glyph, { type: 'organize' }), React.createElement('span', { className: 'dsh-super-code-action-label' }, text(t, 'tree.organizeLabel'))))),
       React.createElement('div', { className: 'dsh-super-code-graph-legend', 'aria-label': text(t, 'tree.status') },
         ['tree.legend.active', 'tree.legend.idle', 'tree.legend.stopped', 'tree.legend.unavailable'].map((key, index) => React.createElement('span', { key },
           React.createElement('i', { className: 'dsh-super-code-circle ' + ['active', 'idle', 'stopped', 'unavailable'][index], 'aria-hidden': true }), text(t, key))))),
     (error || catalogError) && React.createElement('p', { role: 'alert', className: 'dsh-super-code-tree-error' }, text(t, error || 'tree.loadError')),
     !view.root && React.createElement('p', { className: 'dsh-super-code-tree-empty' }, text(t, 'tree.empty')),
-    historyOpen && React.createElement(AgentHistory, { view, hidden: display.hidden, totals, open, t }),
+    historyOpen && React.createElement(AgentHistory, { view, hidden: display.hidden, totals, open, saved, t }),
     React.createElement('div', { ref: viewport, className: 'dsh-super-code-graph-scroll',
       onPointerDown: event => {
         if (!event.isPrimary || event.button !== 0) return
@@ -887,7 +964,7 @@ function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog, 
     React.createElement('div', { ref: graph, role: 'tree', 'aria-label': text(t, 'tree.aria'), className: 'dsh-super-code-graph', style: { width, height, transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` } },
       React.createElement('svg', { width, height, className: 'dsh-super-code-graph-edges', 'aria-hidden': true }, edges.map(edge => {
         const parent = positions.get(edge.parent), child = positions.get(edge.child)
-        return React.createElement('path', { key: edge.child, d: `M ${parent.x} ${parent.y + 105} V ${child.y - 12} H ${child.x} V ${child.y}`, fill: 'none' })
+        return React.createElement('path', { key: edge.child, d: `M ${parent.x} ${parent.y + agentTreeNodeHeight} V ${child.y - 16} H ${child.x} V ${child.y - 10}`, fill: 'none' })
       })),
       rows.map(row => {
       const node = view.nodes.get(row.id)
@@ -1077,7 +1154,7 @@ function MemoryActivity({ usage, openMemory, sessionId, t }) {
         onClick: () => openMemory(sessionId, row), title: text(t, 'memory.open') },
       React.createElement('span', { className: 'dsh-super-code-memory-action', 'data-action': row.action }, text(t, `memory.${row.action}`)),
       React.createElement('span', null, row.summary || row.id),
-      React.createElement('small', null, `${text(t, `memory.${row.scope}`)} · ${row.topic} · r${row.revision}`)))),
+      React.createElement('small', null, `${text(t, `memory.${row.scope}`)} · ${row.topic}`)))),
     usage?.omitted > 0 && React.createElement('p', { className: 'dsh-super-code-memory-muted' }, text(t, 'memory.omitted')))
 }
 
@@ -1098,6 +1175,18 @@ function memoryLibraryTarget(address, current) {
   return { sessionId: current, scope: 'project', topic: '', id: '' }
 }
 
+/** A repeated explicit navigation reopens its entry; ordinary remounts retain reading state. */
+function memoryLibraryNavigation(saved, tab, current) {
+  const address = typeof tab.navigation?.params?.memory === 'string' ? tab.navigation.params.memory : tab.contentId
+  const navigationKey = `${address}/${tab.navigation?.revision || 0}`
+  if (saved.navigationKey === navigationKey) return saved
+  const target = memoryLibraryTarget(address, current)
+  return { ...saved, navigationKey, ...(target.id ? {
+    scope: target.scope, selected: { topic: target.topic, id: target.id }, detailTop: 0,
+    ...(saved.scope && saved.scope !== target.scope ? { topicFilter: '', top: 0 } : {}),
+  } : {}) }
+}
+
 /** A fixed-height index keeps large libraries cheap; entry bodies load on click. */
 function memoryLibraryWindow(items, query, top, height) {
   const search = query.trim().toLocaleLowerCase()
@@ -1107,23 +1196,119 @@ function memoryLibraryWindow(items, query, top, height) {
   return { rows: matches.slice(start, end), count: matches.length, before: start * 76, after: (matches.length - end) * 76 }
 }
 
-function MemoryLibrary({ useTabInfo, useSessions, sessionId: scopeSessionId, api, memoryStates, t = key => zh[key] || key }) {
+/** Drafts and in-flight operations survive the host unmounting a hidden tab. */
+function createMemoryEditor(saved, api) {
+  if (saved.editorStore) return saved.editorStore
+  let snapshot = { draft: null, confirmation: null, busy: false, error: '', refresh: 0 }
+  const listeners = new Set()
+  const update = patch => { snapshot = { ...snapshot, ...patch }; for (const listener of listeners) listener() }
+  const run = async (method, target) => {
+    if (snapshot.busy) return { kind: 'busy' }
+    update({ busy: true, error: '' })
+    try {
+      const response = method === 'save' ? await api.saveEntry(target.sessionId, target.scope, target.topic, target.id, JSON.stringify({
+        expected: target.expected, kind: target.kind, summary: target.summary.trim(), detail: target.detail.trim(),
+      })) : await api.deleteEntry(target.sessionId, target.scope, target.topic, target.id, target.expected)
+      if (!response.ok) throw new Error('Remote unavailable')
+      const result = response.value
+      if (!['saved', 'removed'].includes(result.kind)) {
+        update({ busy: false, error: { conflict: 'memory.conflict', missing: 'memory.missingEdit', full: 'memory.full' }[result.kind] || 'memory.writeError' })
+        return result
+      }
+      saved.scope = target.scope
+      saved.selected = result.kind === 'saved' ? { topic: target.topic, id: target.id } : null
+      saved.detailTop = 0
+      update({ draft: null, confirmation: null, busy: false, error: '', refresh: snapshot.refresh + 1 })
+      return result
+    } catch {
+      update({ busy: false, error: 'memory.writeError' })
+      return { kind: 'error' }
+    }
+  }
+  saved.editorStore = { getSnapshot: () => snapshot, subscribe: listener => { listeners.add(listener); return () => listeners.delete(listener) },
+    update, save: () => run('save', snapshot.draft), remove: () => run('remove', snapshot.confirmation) }
+  return saved.editorStore
+}
+
+function MemoryEditor({ store, state, t }) {
+  const draft = state.draft
+  const set = (key, value) => store.update({ draft: { ...draft, [key]: value }, error: '' })
+  return React.createElement('form', { className: 'dsh-super-code-memory-editor', 'aria-label': text(t, draft.expected ? 'memory.edit' : 'memory.add'),
+    onSubmit: event => { event.preventDefault(); void store.save() } },
+    React.createElement('div', { className: 'dsh-super-code-memory-editor-heading' },
+      React.createElement('strong', null, text(t, draft.expected ? 'memory.edit' : 'memory.add')),
+      React.createElement('small', null, text(t, `memory.${draft.scope}`))),
+    React.createElement('label', null, text(t, 'memory.topic'),
+      React.createElement('input', { value: draft.topic, 'aria-label': text(t, 'memory.topic'), required: true, maxLength: 96,
+        disabled: state.busy || Boolean(draft.expected) || draft.scope === 'global', onChange: event => set('topic', event.target.value) }),
+      !draft.expected && draft.scope !== 'global' && React.createElement('small', null, text(t, 'memory.topicHint'))),
+    React.createElement(SelectControl, { label: text(t, 'memory.kind'), value: draft.kind, disabled: state.busy || draft.scope === 'global',
+      choices: ['constraint', 'fact', 'experience'].map(kind => [kind, text(t, `memory.${kind}`)]), onChange: kind => set('kind', kind) }),
+    React.createElement('label', null, text(t, 'memory.summaryLabel'), React.createElement('small', null, `${Array.from(draft.summary).length}/30`),
+      React.createElement('input', { value: draft.summary, 'aria-label': text(t, 'memory.summaryLabel'), required: true, disabled: state.busy, onChange: event => set('summary', event.target.value) })),
+    React.createElement('label', null, text(t, 'memory.detailLabel'), React.createElement('small', null, `${draft.detail.length}/1000`),
+      React.createElement('textarea', { value: draft.detail, 'aria-label': text(t, 'memory.detailLabel'), required: true, maxLength: 1000, rows: 5, disabled: state.busy, onChange: event => set('detail', event.target.value) })),
+    state.error && React.createElement('p', { role: 'alert' }, text(t, state.error)),
+    React.createElement('div', { className: 'dsh-super-code-memory-actions' },
+      React.createElement(ActionButton, { type: 'button', disabled: state.busy, onClick: () => store.update({ draft: null, error: '' }) }, text(t, 'memory.cancel')),
+      React.createElement(ActionButton, { type: 'submit', className: 'dsh-super-code-memory-primary', disabled: state.busy || !/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,95}$/.test(draft.topic) || !draft.summary.trim() || Array.from(draft.summary.trim()).length > 30 || !draft.detail.trim() }, text(t, state.busy ? 'memory.saving' : 'memory.save'))))
+}
+
+function MemoryDeleteConfirmation({ store, state, t }) {
+  const dialog = useRef(null), target = state.confirmation
+  useLayoutEffect(() => {
+    dialog.current.showModal()
+    return () => { if (dialog.current?.open) dialog.current.close() }
+  }, [])
+  const cancel = () => { if (!store.getSnapshot().busy) store.update({ confirmation: null, error: '' }) }
+  return React.createElement('dialog', { ref: dialog, className: 'dsh-super-code-confirm', 'aria-label': text(t, 'memory.deleteTitle'),
+    onCancel: event => { event.preventDefault(); cancel() }, onKeyDown: event => {
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); cancel() }
+    } },
+    React.createElement('h3', null, text(t, 'memory.deleteTitle')),
+    React.createElement('p', null, text(t, 'memory.deleteHint', { summary: target.summary })),
+    state.error && React.createElement('p', { role: 'alert' }, text(t, state.error)),
+    React.createElement('div', { className: 'dsh-super-code-confirm-actions' },
+      React.createElement(ActionButton, { type: 'button', disabled: state.busy, onClick: cancel }, text(t, 'memory.cancel')),
+      React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-memory-danger', disabled: state.busy, onClick: () => { void store.remove() } }, text(t, state.busy ? 'memory.deleting' : 'memory.delete'))))
+}
+
+function MemoryLibrary({ useTabInfo, useSessions, sessionId: scopeSessionId, api, memoryStates, onToggle, t = key => zh[key] || key }) {
   const { tab } = useTabInfo(), current = useSessions(state => scopeSessionId || state.current)
-  const target = memoryLibraryTarget(tab.contentId, current)
+  const address = typeof tab.navigation?.params?.memory === 'string' ? tab.navigation.params.memory : tab.contentId
+  const target = memoryLibraryTarget(address, current)
   const saved = useMemo(() => {
-    if (!memoryStates.has(tab.signal)) memoryStates.set(tab.signal, {})
-    return memoryStates.get(tab.signal)
+    const value = memoryStates.get(tab.signal) || {}
+    Object.assign(value, memoryLibraryNavigation(value, tab, current))
+    memoryStates.set(tab.signal, value)
+    return value
   }, [memoryStates, tab.signal])
+  const editor = useMemo(() => createMemoryEditor(saved, api), [saved, api])
+  const editing = useSyncExternalStore(editor.subscribe, editor.getSnapshot, editor.getSnapshot)
   const [scope, setScope] = useState(saved.scope || target.scope)
   const [query, setQuery] = useState(saved.query || '')
   const [topicFilter, setTopicFilter] = useState(saved.topicFilter || '')
-  const [selected, setSelected] = useState(saved.selected || (target.id ? { topic: target.topic, id: target.id } : null))
+  const [selected, setSelected] = useState(saved.selected || null)
   const [state, setState] = useState({ key: '', items: [], loading: true, error: false })
   const [detail, setDetail] = useState(null), [revision, setRevision] = useState(0)
   const [viewport, setViewport] = useState({ top: saved.top || 0, height: 600 })
-  const list = useRef(null), detailBody = useRef(null), sessionId = target.sessionId
+  const list = useRef(null), detailBody = useRef(null), sessionId = editing.draft?.sessionId || editing.confirmation?.sessionId || target.sessionId
   const key = `${sessionId}/${scope}`, selectionKey = selected ? `${key}/${selected.topic}/${selected.id}` : ''
   const visibleState = state.key === key ? state : { items: [], loading: true, error: false }
+  useLayoutEffect(() => {
+    if (editing.draft || editing.confirmation || editing.busy) return
+    const next = memoryLibraryNavigation(saved, tab, current)
+    if (next === saved) return
+    Object.assign(saved, next)
+    setScope(saved.scope || target.scope); setSelected(saved.selected || null)
+    setTopicFilter(saved.topicFilter || '')
+    setViewport(value => ({ ...value, top: saved.top || 0 }))
+    if (detailBody.current) detailBody.current.scrollTop = 0
+  }, [saved, address, tab.navigation?.revision, editing.draft, editing.confirmation, editing.busy])
+  useLayoutEffect(() => {
+    if (!editing.refresh) return
+    setScope(saved.scope); setSelected(saved.selected); setRevision(value => value + 1)
+  }, [editing.refresh])
   useEffect(() => {
     if (!tab.visible || !sessionId) return
     let cancelled = false
@@ -1150,9 +1335,12 @@ function MemoryLibrary({ useTabInfo, useSessions, sessionId: scopeSessionId, api
     resize()
     const observer = new ResizeObserver(resize); observer.observe(element)
     return () => observer.disconnect()
-  }, [selected, key, tab.visible])
+  }, [selected, key, tab.visible, Boolean(editing.draft)])
+  useLayoutEffect(() => {
+    if (detailBody.current) detailBody.current.scrollTop = saved.detailTop || 0
+  }, [selectionKey, detail?.key, tab.visible, Boolean(editing.draft)])
   const resetScroll = () => { saved.top = 0; if (list.current) list.current.scrollTop = 0; setViewport(value => ({ ...value, top: 0 })) }
-  const choose = value => { if (detailBody.current) detailBody.current.scrollTop = 0; saved.selected = value; setSelected(value) }
+  const choose = value => { saved.detailTop = 0; if (detailBody.current) detailBody.current.scrollTop = 0; saved.selected = value; setSelected(value) }
   const changeTopic = value => { saved.topicFilter = value; setTopicFilter(value); resetScroll() }
   const topics = useMemo(() => {
     const counts = new Map()
@@ -1167,28 +1355,36 @@ function MemoryLibrary({ useTabInfo, useSessions, sessionId: scopeSessionId, api
   return React.createElement('section', { className: 'dsh-super-code-memory', 'aria-label': text(t, 'memory.title') },
     React.createElement('header', null,
       React.createElement('div', { className: 'dsh-super-code-memory-heading' },
-        React.createElement('div', { className: 'dsh-super-code-title-line' }, React.createElement(Glyph, { type: 'memory' }), React.createElement('h2', null, text(t, 'memory.title'))),
-        React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-icon-button', title: text(t, 'memory.refresh'), 'aria-label': text(t, 'memory.refresh'), onClick: () => setRevision(value => value + 1) }, React.createElement(IconRefreshOutline16))),
+        onToggle ? React.createElement(WorkspaceSectionToggle, { section: 'memory', expanded: true, onToggle, t })
+          : React.createElement('div', { className: 'dsh-super-code-title-line' }, React.createElement(Glyph, { type: 'memory' }), React.createElement('h2', null, text(t, 'memory.title'))),
+        React.createElement('div', { className: 'dsh-super-code-memory-header-actions' },
+          React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-view-button', 'aria-label': text(t, 'memory.add'), disabled: !sessionId || editing.busy || Boolean(editing.draft), onClick: () => editor.update({ error: '', draft: {
+            sessionId, scope, topic: scope === 'global' ? 'preferences' : topicFilter || 'notes', id: window.crypto.randomUUID(), expected: '', kind: 'constraint', summary: '', detail: '',
+          } }) }, `+ ${text(t, 'memory.add')}`),
+          React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-icon-button', title: text(t, 'memory.refresh'), 'aria-label': text(t, 'memory.refresh'), disabled: editing.busy || Boolean(editing.draft), onClick: () => { editor.update({ error: '' }); setRevision(value => value + 1) } }, React.createElement(IconRefreshOutline16)))),
       React.createElement('div', { className: 'dsh-super-code-memory-scopes', role: 'group', 'aria-label': text(t, 'memory.title') },
-        ['project', 'global'].map(value => React.createElement(ActionButton, { key: value, type: 'button', 'aria-pressed': scope === value, onClick: () => {
+        ['project', 'global'].map(value => React.createElement(ActionButton, { key: value, type: 'button', 'aria-pressed': scope === value, disabled: editing.busy || Boolean(editing.draft), onClick: () => {
           saved.scope = value; setScope(value); changeTopic(''); choose(null)
         } }, text(t, `memory.${value}`)))),
-      !selected && React.createElement('div', { className: 'dsh-super-code-memory-search' }, React.createElement(Glyph, { type: 'search' }),
+      !selected && !editing.draft && React.createElement('div', { className: 'dsh-super-code-memory-search' }, React.createElement(Glyph, { type: 'search' }),
         React.createElement('input', { type: 'search', 'aria-label': text(t, 'memory.search'), placeholder: text(t, 'memory.search'), value: query, onChange: event => { saved.query = event.target.value; setQuery(event.target.value); resetScroll() } }))),
-    !sessionId ? React.createElement('p', { className: 'dsh-super-code-memory-empty' }, text(t, 'memory.selectSession')) : selected
-      ? React.createElement('div', { ref: detailBody, className: 'dsh-super-code-memory-body', 'aria-busy': !currentDetail },
-        React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-view-button', onClick: () => choose(null) }, `← ${text(t, 'memory.back')}`),
+    !sessionId ? React.createElement('p', { className: 'dsh-super-code-memory-empty' }, text(t, 'memory.selectSession')) : editing.draft ? React.createElement(MemoryEditor, { store: editor, state: editing, t }) : selected
+      ? React.createElement('div', { ref: detailBody, className: 'dsh-super-code-memory-body', 'aria-busy': !currentDetail, onScroll: event => { saved.detailTop = event.currentTarget.scrollTop } },
+        React.createElement('div', { className: 'dsh-super-code-memory-actions' },
+          React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-view-button', onClick: () => choose(null) }, `← ${text(t, 'memory.back')}`),
+          entry && React.createElement(React.Fragment, null,
+            React.createElement(ActionButton, { type: 'button', onClick: () => editor.update({ error: '', draft: { sessionId, scope, topic: entry.topic, id: entry.id, expected: entry.token, kind: entry.kind, summary: entry.summary, detail: entry.detail } }) }, text(t, 'memory.edit')),
+            React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-memory-danger', onClick: () => editor.update({ error: '', confirmation: { sessionId, scope, topic: entry.topic, id: entry.id, expected: entry.token, summary: entry.summary } }) }, text(t, 'memory.delete')))),
         !currentDetail && React.createElement('p', { role: 'status', className: 'dsh-super-code-memory-empty' }, text(t, 'memory.loading')),
         currentDetail?.kind === 'error' && React.createElement('p', { role: 'alert' }, text(t, 'memory.error')),
         currentDetail?.kind === 'missing' && React.createElement('p', null, text(t, 'memory.missing')),
         entry && React.createElement('article', { 'data-kind': entry.kind },
           React.createElement('div', { className: 'dsh-super-code-memory-detail-meta' },
             React.createElement('span', null, React.createElement(Glyph, { type: 'folder' }), entry.topic),
-            React.createElement('span', null, text(t, `memory.${entry.kind}`)), React.createElement('span', null, `r${entry.revision}`)),
+            React.createElement('span', null, text(t, `memory.${entry.kind}`))),
           React.createElement('h3', null, entry.summary), React.createElement('p', { className: 'dsh-super-code-memory-detail' }, entry.detail),
           React.createElement('dl', null, React.createElement('dt', null, text(t, 'memory.source')),
-            React.createElement('dd', null, `${text(t, `memory.${entry.source.kind}`)} · #${entry.source.eventSeq}`, React.createElement('br'), entry.source.sessionId),
-            entry.sourceVersion && React.createElement(React.Fragment, null, React.createElement('dt', null, text(t, 'memory.version')), React.createElement('dd', null, entry.sourceVersion))),
+            React.createElement('dd', null, `${text(t, `memory.${entry.source.kind}`)}${entry.source.eventSeq === undefined ? '' : ` · #${entry.source.eventSeq}`}`, React.createElement('br'), entry.source.sessionId)),
           related.length > 0 && React.createElement('section', { className: 'dsh-super-code-memory-related' },
             React.createElement('h4', null, text(t, 'memory.related')),
             related.map(item => React.createElement(ActionButton, { key: item.id, type: 'button', onClick: () => choose({ topic: item.topic, id: item.id }) },
@@ -1210,8 +1406,9 @@ function MemoryLibrary({ useTabInfo, useSessions, sessionId: scopeSessionId, api
               React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-memory-row', 'data-topic': item.topic, 'data-kind': item.kind, onClick: () => choose({ topic: item.topic, id: item.id }) },
                 React.createElement('span', { className: 'dsh-super-code-memory-row-heading' }, React.createElement(Glyph, { type: 'folder' }), React.createElement('span', { className: 'dsh-super-code-memory-row-topic' }, item.topic)),
                 React.createElement('strong', null, item.summary),
-                React.createElement('span', { className: 'dsh-super-code-memory-row-meta' }, React.createElement('span', { className: 'dsh-super-code-memory-row-kind' }, text(t, `memory.${item.kind}`)), React.createElement('span', null, `r${item.revision}`))))),
-            React.createElement('div', { 'aria-hidden': true, style: { height: page.after } })))))
+                React.createElement('span', { className: 'dsh-super-code-memory-row-meta' }, React.createElement('span', { className: 'dsh-super-code-memory-row-kind' }, text(t, `memory.${item.kind}`)))))),
+            React.createElement('div', { 'aria-hidden': true, style: { height: page.after } })))),
+    editing.confirmation && React.createElement(MemoryDeleteConfirmation, { store: editor, state: editing, t }))
 }
 
 function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, createInspector, detailStates, openMemory, t = key => zh[key] || key }) {
@@ -1330,9 +1527,9 @@ const presetRemoteContribution = {
   })),
 }
 const memoryRemoteContribution = {
-  package: 'dsh-super-code', descriptors: ['list', 'read'].map(method => ({
+  package: 'dsh-super-code', descriptors: ['list', 'read', 'saveEntry', 'deleteEntry'].map(method => ({
     id: `dsh-super-code:superCodeMemory/${method}`, service: 'superCodeMemory', namespace: 'superCodeMemory', method, invocation: { kind: 'direct' },
-    parameters: (method === 'list' ? ['sessionId', 'scope'] : ['sessionId', 'scope', 'topic', 'id']).map(name => ({ name, wire: name, source: 'json', codec: remoteStringCodec })), result: { mode: 'src-json' },
+    parameters: (method === 'list' ? ['sessionId', 'scope'] : method === 'saveEntry' ? ['sessionId', 'scope', 'topic', 'id', 'content'] : method === 'deleteEntry' ? ['sessionId', 'scope', 'topic', 'id', 'expected'] : ['sessionId', 'scope', 'topic', 'id']).map(name => ({ name, wire: name, source: 'json', codec: remoteStringCodec })), result: { mode: 'src-json' },
   })),
 }
 
@@ -1514,13 +1711,7 @@ function apply(ctx) {
   void ctx.remote.$mount({ package: 'dsh-super-code', descriptors: [
     ...presetRemoteContribution.descriptors, ...memoryRemoteContribution.descriptors,
   ] }).catch(error => console.warn('Super Code Remote:', error))
-  const memoryStates = new WeakMap()
-  ctx.inject(['remote.superCodeMemory'], ready => {
-    ready.slots.inject('sidebar.right.pane.tab', () => ready.slots.register({
-      name: 'sidebar.right.pane.tab', key: 'dsh-super-code-memory', locale: LOCALE_NS,
-      inject: () => ({ api: ready.remote.superCodeMemory, memoryStates }),
-    }, MemoryLibrary))
-  })
+  const memoryStates = new WeakMap(), workspaceStates = new WeakMap()
   // Locale already requires its host's preference service. Declare that same
   // service here: Cordis rejects even optional reads without an injection.
   const preferenceService = 'configForms' in ctx ? 'configForms' : 'settingsScope'
@@ -1539,7 +1730,7 @@ function apply(ctx) {
     style.dataset.dshSuperCode = 'true'
     style.textContent = `
 /* Host aliases remain the source of theme colors. */
-:where(.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-detail,.dsh-super-code-memory,.dsh-super-code-confirm,.dsh-super-code-select,.dsh-super-code-tooltip){
+:where(.dsh-super-code-workspace,.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-detail,.dsh-super-code-memory,.dsh-super-code-confirm,.dsh-super-code-select,.dsh-super-code-tooltip){
   --sc-text:var(--dsw-alias-label-primary,#242831);
   --sc-muted:var(--dsw-alias-label-secondary,#6a707a);
   --sc-faint:var(--dsw-alias-label-tertiary,#818793);
@@ -1557,14 +1748,14 @@ function apply(ctx) {
   color:var(--sc-text);font-size:14px;line-height:1.55;letter-spacing:0;
   box-sizing:border-box;min-width:0;
 }
-:where(.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-detail,.dsh-super-code-memory,.dsh-super-code-confirm) *{box-sizing:border-box}
-:where(.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-detail,.dsh-super-code-memory,.dsh-super-code-confirm) :is(button,input,select){font:inherit;color:inherit;min-width:0}
-:where(.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-detail,.dsh-super-code-memory,.dsh-super-code-confirm) button{cursor:pointer;transition:background-color .12s,border-color .12s;color:inherit}
-:where(.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-detail,.dsh-super-code-memory,.dsh-super-code-confirm) button:disabled{opacity:.45;cursor:default}
-:where(.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-detail,.dsh-super-code-memory,.dsh-super-code-confirm) :is(button,input,select,summary):focus-visible{outline:2px solid var(--sc-accent);outline-offset:2px}
-:where(.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-detail,.dsh-super-code-memory) :is(input,select){width:100%;height:36px;padding:7px 12px;border:1px solid var(--sc-line);border-radius:8px;background:var(--sc-bg);transition:border-color .12s;outline-offset:2px}
-:where(.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-memory) input::placeholder{color:var(--sc-faint)}
-:where(.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-memory) :is(input,select):hover{border-color:color-mix(in srgb,var(--sc-text) 25%,var(--sc-line))}
+:where(.dsh-super-code-workspace,.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-detail,.dsh-super-code-memory,.dsh-super-code-confirm) *{box-sizing:border-box}
+:where(.dsh-super-code-workspace,.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-detail,.dsh-super-code-memory,.dsh-super-code-confirm) :is(button,input,select){font:inherit;color:inherit;min-width:0}
+:where(.dsh-super-code-workspace,.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-detail,.dsh-super-code-memory,.dsh-super-code-confirm) button{cursor:pointer;transition:background-color .12s,border-color .12s;color:inherit}
+:where(.dsh-super-code-workspace,.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-detail,.dsh-super-code-memory,.dsh-super-code-confirm) button:disabled{opacity:.45;cursor:default}
+:where(.dsh-super-code-workspace,.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-detail,.dsh-super-code-memory,.dsh-super-code-confirm) :is(button,input,select,summary):focus-visible{outline:2px solid var(--sc-accent);outline-offset:2px}
+:where(.dsh-super-code-workspace,.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-detail,.dsh-super-code-memory) :is(input,select){width:100%;height:36px;padding:7px 12px;border:1px solid var(--sc-line);border-radius:8px;background:var(--sc-bg);transition:border-color .12s;outline-offset:2px}
+:where(.dsh-super-code-workspace,.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-memory) input::placeholder{color:var(--sc-faint)}
+:where(.dsh-super-code-workspace,.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-memory) :is(input,select):hover{border-color:color-mix(in srgb,var(--sc-text) 25%,var(--sc-line))}
 .dsh-super-code-technical,.dsh-super-code-confirm code,.dsh-super-code-preset-status code{font-family:var(--sc-mono);font-size:12px}
 .dsh-super-code-title-line{display:flex;align-items:center;gap:8px;min-width:0}
 .dsh-super-code-glyph{width:18px;height:18px;flex:none;color:var(--sc-muted)}
@@ -1629,6 +1820,19 @@ function apply(ctx) {
 .dsh-super-code-confirm-previous,.dsh-super-code-confirm-new-id{font-size:12px;color:var(--sc-muted)}
 .dsh-super-code-confirm-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
 .dsh-super-code-confirm .dsh-super-code-confirm-empty{padding:20px 16px;background:var(--sc-surface);border-radius:12px}
+
+/* Exactly one section fills the pane; the other keeps its clickable heading. */
+.dsh-super-code-workspace{height:100%;min-height:0;overflow:auto;background:var(--sc-bg)}
+.dsh-super-code-workspace-layout{display:grid;height:100%;min-height:324px;min-width:0}
+.dsh-super-code-workspace-collapsed{display:flex;align-items:center;border-block:1px solid var(--sc-line);background:var(--sc-bg);padding:0 12px}
+.dsh-super-code-section-toggle{display:flex;align-items:center;gap:6px;flex:1;min-width:0;width:100%;min-height:36px;border:0;border-radius:6px;background:transparent;padding:6px 8px;text-align:left}
+.dsh-super-code-section-toggle>.dsh-super-code-tree-count{margin-left:auto}
+.dsh-super-code-section-toggle strong{font-size:14px;font-weight:600;white-space:nowrap}
+.dsh-super-code-section-toggle>.dsh-super-code-glyph{width:16px;height:16px}
+.dsh-super-code-section-toggle>.dsh-super-code-glyph:first-child{width:12px;height:12px;transition:transform .12s}
+.dsh-super-code-section-toggle[aria-expanded=false]>.dsh-super-code-glyph:first-child{transform:rotate(-90deg)}
+.dsh-super-code-section-toggle:hover{background:var(--sc-hover)}
+.dsh-super-code-workspace-collapsed>.dsh-super-code-section-toggle{width:100%;height:100%}
 
 /* Memory library: geometry stays at 76px per row. */
 .dsh-super-code-memory{height:100%;min-height:0;display:flex;flex-direction:column;container-type:inline-size}
@@ -1709,7 +1913,32 @@ function apply(ctx) {
 .dsh-super-code-memory-action[data-action=read]{color:var(--sc-accent)}
 .dsh-super-code-memory-action[data-action=remember]{color:var(--sc-success)}
 
-/* Graph: preserve 128px node width and layout anchors. */
+/* Direct memory editing keeps one current copy, with no version UI. */
+.dsh-super-code-memory-editor{display:grid;align-content:start;gap:12px;flex:1;min-height:0;overflow:auto;padding:12px 16px}
+.dsh-super-code-memory-editor-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.dsh-super-code-memory-editor label{display:grid;grid-template-columns:1fr auto;gap:6px;font-size:12px}
+.dsh-super-code-memory-editor label>:is(input,textarea),.dsh-super-code-memory-editor label>small:last-child{grid-column:1/-1}
+.dsh-super-code-memory-editor textarea{font:inherit;color:inherit;resize:vertical;min-height:100px;width:100%;padding:8px 12px;border:1px solid var(--sc-line);border-radius:8px;background:var(--sc-bg)}
+.dsh-super-code-memory-editor [role=alert]{margin:0;font-size:12px;color:var(--sc-error)}
+.dsh-super-code-memory-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap}
+.dsh-super-code-memory-actions>button{padding:5px 10px;font-size:12px;border:1px solid var(--sc-line);border-radius:7px;background:var(--sc-bg)}
+.dsh-super-code-memory-actions>.dsh-super-code-view-button{margin-right:auto;border:0;padding-left:0}
+.dsh-super-code-memory-actions>.dsh-super-code-memory-primary{background:var(--sc-text);color:var(--sc-bg);border-color:var(--sc-text)}
+.dsh-super-code-memory-danger{color:var(--sc-error)!important}
+.dsh-super-code-memory-editor textarea:focus-visible{outline:2px solid var(--sc-accent);outline-offset:2px}
+
+/* Compact library header leaves room for entries in the shared pane. */
+.dsh-super-code-workspace .dsh-super-code-memory>header{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:10px 12px}
+.dsh-super-code-workspace .dsh-super-code-memory-heading{display:contents}
+.dsh-super-code-workspace .dsh-super-code-memory h2{font-size:14px}
+.dsh-super-code-workspace .dsh-super-code-memory-header-actions{display:flex;align-items:center;gap:4px;grid-column:2;grid-row:1}
+.dsh-super-code-memory-header-actions>.dsh-super-code-view-button{font-size:12px;white-space:nowrap}
+.dsh-super-code-workspace .dsh-super-code-memory-scopes{grid-column:1/-1;margin:0;padding:2px}
+.dsh-super-code-workspace .dsh-super-code-memory-search{grid-column:1/-1;margin:0}
+.dsh-super-code-workspace .dsh-super-code-memory-topic-index{padding:8px 12px;gap:6px}
+.dsh-super-code-workspace .dsh-super-code-memory-list-heading{padding:8px 12px 6px}
+
+/* Graph: reserve space for animated/selected rings before the text stack. */
 .dsh-super-code-tree{height:100%;min-height:0;display:flex;flex-direction:column;overflow:auto;container-type:inline-size}
 .dsh-super-code-tree>header,.dsh-super-code-graph-legend,.dsh-super-code-graph-controls,.dsh-super-code-history-controls{flex:none}
 .dsh-super-code-tree-header{display:flex;flex-direction:column;gap:8px;padding:12px}
@@ -1750,12 +1979,12 @@ function apply(ctx) {
 .dsh-super-code-graph-scroll.dragging,.dsh-super-code-graph-scroll.dragging *{cursor:grabbing!important}
 .dsh-super-code-graph{position:relative;transform-origin:0 0}
 .dsh-super-code-graph-edges{position:absolute;inset:0;pointer-events:none;stroke:color-mix(in srgb,var(--sc-muted) 35%,var(--sc-surface));stroke-width:1.25}
-.dsh-super-code-graph-node{position:absolute;display:flex;align-items:center;flex-direction:column;width:128px;height:105px;gap:4px;padding:0 4px;border:0;border-radius:12px;background:transparent;cursor:pointer}
+.dsh-super-code-graph-node{position:absolute;display:flex;align-items:center;flex-direction:column;width:128px;height:${agentTreeNodeHeight}px;gap:16px;padding:0 4px;border:0;border-radius:12px;background:transparent;cursor:pointer}
 .dsh-super-code-graph-node[aria-disabled]{cursor:default;opacity:.65}
 .dsh-super-code-graph-node>.dsh-super-code-circle{position:relative;display:grid;place-items:center;flex:none;width:40px;height:40px;border-radius:50%!important;corner-shape:round!important;background:linear-gradient(145deg,color-mix(in srgb,var(--state-color) 83%,white),var(--state-color));box-shadow:inset 0 1px 1px #ffffff40,0 2px 6px #00000012;color:#fff;font-size:13px;font-weight:600}
 .dsh-super-code-graph-node>.dsh-super-code-circle:after{content:"";position:absolute;inset:-5px;border:1px solid color-mix(in srgb,var(--state-color) 22%,transparent);border-radius:50%;corner-shape:round;pointer-events:none}
 .dsh-super-code-graph-node>.dsh-super-code-circle.idle:after{animation:super-agent-breathe 3s ease-in-out infinite}
-.dsh-super-code-graph-node>.dsh-super-code-circle.active:after{border-width:2px;border-top-color:var(--state-color);border-right-color:var(--state-color);animation:super-agent-process 1.6s linear infinite}
+.dsh-super-code-graph-node>.dsh-super-code-circle.active:after{inset:-6px;border-width:3px;border-color:color-mix(in srgb,var(--state-color) 14%,transparent);border-top-color:var(--state-color);border-right-color:color-mix(in srgb,var(--state-color) 60%,transparent);animation:super-agent-process 1.2s linear infinite}
 .dsh-super-code-graph-node>.dsh-super-code-circle.stopped{background:linear-gradient(145deg,#9297a0,#747a84);box-shadow:inset 0 1px 1px #ffffff30}
 .dsh-super-code-graph-node>.dsh-super-code-circle.stopped:after{border-color:color-mix(in srgb,var(--state-color) 14%,transparent)}
 .dsh-super-code-graph-node>.dsh-super-code-circle.unavailable:after{border-style:dashed;border-color:var(--state-color)}
@@ -1856,8 +2085,8 @@ function apply(ctx) {
 .dsh-super-code-detail-message details pre{margin-top:10px;padding:8px 10px;border:1px solid var(--sc-line);border-radius:7px;background:var(--sc-bg)}
 .dsh-super-code-detail-entry button{margin:8px 0 0}
 .dsh-super-code-new-content{flex:none;align-self:center;margin:8px 16px 12px;border:1px solid var(--sc-line);border-radius:8px;padding:6px 12px;background:var(--sc-bg);font-size:13px}
-@media(hover:none) and (pointer:coarse){:where(.dsh-super-code-settings,.dsh-super-code-memory,.dsh-super-code-tree) input{font-size:16px}}
-@media(prefers-reduced-motion:reduce){:where(.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-detail,.dsh-super-code-memory,.dsh-super-code-confirm,.dsh-super-code-select) *{transition:none!important;animation:none!important}.dsh-super-code-graph-node>.dsh-super-code-circle:after{animation:none!important}}
+@media(hover:none) and (pointer:coarse){:where(.dsh-super-code-workspace,.dsh-super-code-settings,.dsh-super-code-memory,.dsh-super-code-tree) input{font-size:16px}}
+@media(prefers-reduced-motion:reduce){:where(.dsh-super-code-workspace,.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-detail,.dsh-super-code-memory,.dsh-super-code-confirm,.dsh-super-code-select) *{transition:none!important;animation:none!important}.dsh-super-code-graph-node>.dsh-super-code-circle:after{animation:none!important}}
 
 /* Same custom trigger and option list for all six dropdowns. Fixed placement
  * keeps history menus visible outside the clipped graph/sidebar viewport. */
@@ -1888,19 +2117,18 @@ function apply(ctx) {
     document.head.appendChild(style)
     return () => { style.remove() }
   }, 'super-code: browser styles')
-  // Both the tree and read-only details stay in the current conversation's tabs.
+  // Keep the original tree kind so restored tabs become the unified workspace.
   const treeId = 'dsh-super-code'
   const treeKind = 'super-agent-agents'
   const disposeTreeType = ctx.sidebarRightTabs.register({
     id: treeId, kind: treeKind,
-    title: () => t('tree.aria'),
-    guide: [{ order: 40, title: () => t('tree.aria'), description: () => t('tree.canvas') }],
+    title: () => t('workspace.title'),
+    guide: [{ order: 40, title: () => t('workspace.title'), description: () => t('workspace.description') }],
   })
   const disposeMemoryType = ctx.sidebarRightTabs.register({ id: 'dsh-super-code-memory', kind: 'super-code-memory',
-    patterns: ['dsh-resource://super-code-memory/**'], title: () => t('memory.title'),
-    guide: [{ order: 41, title: () => t('memory.title'), description: () => t('memory.description') }],
+    patterns: ['dsh-resource://super-code-memory/**'], title: () => t('workspace.title'),
   })
-  const openMemory = (sessionId, row) => ctx.sidebarRight.openResource(memoryLibraryAddress(sessionId, row), { kind: 'super-code-memory' })
+  const openMemory = (sessionId, row) => ctx.sidebarRight.openTab(treeKind, { params: { memory: memoryLibraryAddress(sessionId, row) } })
   const treeActions = {
     // The host unmounts hidden bodies; tab signals live until close/unload.
     treeStates: new WeakMap(),
@@ -1918,7 +2146,7 @@ function apply(ctx) {
     },
   })
   ctx.slots.inject('sidebar.right.pane.tab.title', function* () {
-    for (const [key, titleKey] of [[treeId, 'tree.aria'], ['dsh-super-code-memory', 'memory.title']]) {
+    for (const [key, titleKey] of [[treeId, 'workspace.title'], ['dsh-super-code-memory', 'workspace.title']]) {
       yield ctx.slots.register({ name: 'sidebar.right.pane.tab.title', key, locale: LOCALE_NS,
         inject: () => ({ titleKey }),
       }, LocalizedTabTitle)
@@ -1931,16 +2159,19 @@ function apply(ctx) {
   ctx.slots.inject('sidebar.right.pane.tab', () => ctx.slots.register({
     name: 'sidebar.right.pane.tab', key: 'dsh-super-code-detail', locale: LOCALE_NS, inject: () => ({ ...detailActions }),
   }, AgentDetail))
-  ctx.slots.inject('sidebar.right.pane.tab', () => ctx.slots.register({
-    // Keyed tab bodies dispatch by the definition id, while `kind` is the
-    // page/content discriminator used by the Sidebar controller.
-    name: 'sidebar.right.pane.tab', key: treeId, locale: LOCALE_NS,
-    inject: () => ({ ...treeActions }),
-  }, AgentTree))
-  ctx.effect(() => disposeTreeType, 'super-code: Agent tree tab')
+  ctx.inject(['remote.superCodeMemory'], ready => {
+    ready.slots.inject('sidebar.right.pane.tab', function* () {
+      // The hidden legacy key restores old memory tabs and resource URLs.
+      for (const key of [treeId, 'dsh-super-code-memory']) yield ready.slots.register({
+        name: 'sidebar.right.pane.tab', key, locale: LOCALE_NS,
+        inject: () => ({ ...treeActions, api: ready.remote.superCodeMemory, memoryStates, workspaceStates }),
+      }, SuperCodeWorkspace)
+    })
+  })
+  ctx.effect(() => disposeTreeType, 'super-code: workspace tab')
   ctx.effect(() => disposeDetailType, 'super-code: Agent detail tab')
   ctx.effect(() => disposeMemoryType, 'super-code: memory library tab')
 }
 
-return { inject, apply, synchronizePresetDisplay, agentSessionState, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector, agentHistoryRange, agentHistoryRows, agentHistoryWindow, memoryLibraryAddress, memoryLibraryTarget, memoryLibraryWindow }
+return { inject, apply, synchronizePresetDisplay, agentSessionState, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector, agentHistoryRange, agentHistoryRows, agentHistoryWindow, memoryLibraryAddress, memoryLibraryTarget, memoryLibraryNavigation, memoryLibraryWindow, createMemoryEditor }
 } })

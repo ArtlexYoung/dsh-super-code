@@ -72,7 +72,7 @@ test('open tab titles switch languages without changing user titles or tab ident
   const { dictionaries, slots } = fixture()
   const titles = slots.filter(slot => slot.config.name === 'sidebar.right.pane.tab.title')
   assert.equal(titles.length, 3)
-  const labels: Record<string, string> = { 'dsh-super-code': 'tree.aria', 'dsh-super-code-memory': 'memory.title' }
+  const labels: Record<string, string> = { 'dsh-super-code': 'workspace.title', 'dsh-super-code-memory': 'workspace.title' }
   const tab = { contentId: 'dsh-resource://super-agent/root' }
   let catalog = { byId: { root: { id: 'root', title: '保留用户任务 / User task' } } }
   for (const language of ['zh', 'en', 'zh']) {
@@ -126,6 +126,29 @@ test('published projection catalogs preserve scoped identity, child usage and mi
   const legacy = plugin.agentSessionState({ current: 'unrelated', byId: raw.byId, subagentsByParent: {} }, 'root')
   assert.equal(legacy.current, 'root')
   assert.equal('current' in raw, false)
+})
+
+test('live execution switches from idle to running and back in both host catalog shapes', () => {
+  const { plugin } = fixture()
+  const root = { id: 'root' }, child = { id: 'child' }
+  const projection = { byId: { root, child }, projectionsBySession: {
+    root: { state: 'ready', values: { subagentCatalog: [{ id: 'child', mode: 'one-shot' }] } },
+    child: { state: 'ready', values: { subagentCatalog: [] } },
+  } }
+  for (const running of [false, true, false]) {
+    const statuses = new Map([['root', { running }], ['child', { running }]])
+    const projected = plugin.buildAgentView(plugin.agentSessionState(projection, 'root', statuses))
+    const navigation = plugin.buildAgentView(plugin.agentSessionState({
+      byId: { root: { ...root, running } },
+      subagentsByParent: { root: { state: 'ready', entries: [{ id: 'child', kind: 'child', mode: 'one-shot', activity: running ? 'running' : 'inactive' }] } },
+    }, 'root'))
+    for (const view of [projected, navigation]) {
+      assert.equal(plugin.agentExecutionStatus(view.nodes.get('root'), true).tone, running ? 'active' : 'idle')
+      assert.equal(plugin.agentExecutionStatus(view.nodes.get('child'), false).tone, running ? 'active' : 'stopped')
+    }
+  }
+  assert.equal('running' in root, false)
+  assert.equal('running' in child, false)
 })
 
 test('existing and appended detail events retranslate labels and image placeholders without changing user content', () => {
@@ -271,4 +294,78 @@ test('failed display synchronization can retry and late completion never reloads
   listener(); stop(); finish({ ok: true, value: { changed: true } })
   await new Promise(resolve => setImmediate(resolve))
   assert.equal(reloads, 0)
+})
+
+
+test('unified memory navigation retains list state and acts on repeated explicit opens', () => {
+  const { plugin } = fixture()
+  const tab = { contentId: 'sidebar://super-agent-agents', navigation: { revision: 1, params: {} as any } }
+  const saved = { scope: 'project', query: 'shell', topicFilter: 'compat-memory', selected: null, top: 152, detailTop: 90 }
+  const initial = plugin.memoryLibraryNavigation(saved, tab, 'root')
+  assert.equal(initial.query, 'shell'); assert.equal(initial.top, 152)
+  assert.equal(initial.selected, null)
+  assert.equal(plugin.memoryLibraryNavigation(initial, tab, 'root'), initial)
+  tab.navigation = { revision: 2, params: { memory: plugin.memoryLibraryAddress('child', { scope: 'global', topic: 'preferences', id: 'rule' }) } }
+  const opened = plugin.memoryLibraryNavigation(initial, tab, 'root')
+  assert.equal(opened.scope, 'global'); assert.equal(opened.topicFilter, ''); assert.equal(opened.top, 0)
+  assert.equal(opened.query, 'shell'); assert.equal(opened.detailTop, 0)
+  assert.equal(JSON.stringify(opened.selected), JSON.stringify({ topic: 'preferences', id: 'rule' }))
+  const returned = { ...opened, selected: null, top: 76, detailTop: 45 }
+  assert.equal(plugin.memoryLibraryNavigation(returned, tab, 'root'), returned, 'a hidden tab remount does not reopen the entry')
+  tab.navigation.revision++
+  const reopened = plugin.memoryLibraryNavigation(returned, tab, 'root')
+  assert.equal(reopened.selected.id, 'rule'); assert.equal(reopened.top, 76); assert.equal(reopened.detailTop, 0)
+  tab.navigation = { revision: 4, params: {} }
+  const revealed = plugin.memoryLibraryNavigation(reopened, tab, 'root')
+  assert.equal(revealed.selected, reopened.selected, 'revealing the guide entry retains the reader')
+  assert.equal(revealed.query, 'shell')
+})
+
+test('restored memory resource addresses still locate their entry in the unified page', () => {
+  const { plugin } = fixture()
+  const tab = { contentId: plugin.memoryLibraryAddress('历史 / session', { topic: 'code', id: 'fact' }) }
+  const opened = plugin.memoryLibraryNavigation({}, tab, 'root')
+  assert.equal(opened.scope, 'project'); assert.equal(opened.selected.id, 'fact')
+  assert.equal(plugin.memoryLibraryTarget(tab.contentId, 'root').sessionId, '历史 / session')
+  assert.equal(plugin.memoryLibraryNavigation(opened, tab, 'root'), opened)
+  const invalid = plugin.memoryLibraryNavigation({ query: 'preserve', selected: null }, { contentId: 'sidebar://super-agent-agents', navigation: { params: { memory: 42 } } }, 'root')
+  assert.equal(invalid.selected, null); assert.equal(invalid.query, 'preserve')
+})
+
+test('memory drafts, failed saves, hidden completion, and delete cancellation have no unintended writes', async () => {
+  const { plugin } = fixture()
+  let finish: (value: any) => void = () => {}, calls = 0, fail = false
+  const api = { saveEntry: async () => { calls++; return await new Promise(resolve => { finish = resolve }) },
+    deleteEntry: async () => { calls++; if (fail) throw new Error('offline'); return { ok: true, value: { kind: 'removed' } } } }
+  const saved: any = { selected: { topic: 'notes', id: 'existing' }, scope: 'project', query: 'find', top: 152 }
+  const store = plugin.createMemoryEditor(saved, api)
+  const draft = { sessionId: 'root', scope: 'project', topic: 'notes', id: 'new', expected: '', kind: 'fact', summary: '  Title  ', detail: 'Detail' }
+  store.update({ draft })
+  assert.equal(calls, 0, 'opening and editing a form does not write')
+  assert.equal(plugin.createMemoryEditor(saved, api), store, 'hidden tab remount reuses its draft and pending operation')
+  store.update({ draft: null })
+  assert.equal(calls, 0, 'cancel does not write')
+  assert.equal(saved.selected.id, 'existing')
+  store.update({ draft })
+  const pending = store.save()
+  assert.equal(store.getSnapshot().busy, true)
+  assert.equal((await store.save()).kind, 'busy'); assert.equal(calls, 1)
+  finish({ ok: true, value: { kind: 'conflict' } }); await pending
+  assert.equal(store.getSnapshot().draft.summary, '  Title  ')
+  assert.equal(store.getSnapshot().error, 'memory.conflict')
+  const retry = store.save()
+  finish({ ok: false }); await retry
+  assert.equal(store.getSnapshot().error, 'memory.writeError')
+  const hidden = store.save()
+  finish({ ok: true, value: { kind: 'saved' } }); await hidden
+  assert.equal(saved.selected.id, 'new'); assert.equal(store.getSnapshot().draft, null)
+  assert.equal(store.getSnapshot().refresh, 1); assert.equal(saved.query, 'find'); assert.equal(saved.top, 152)
+  const confirmation = { sessionId: 'root', scope: 'project', topic: 'notes', id: 'new', expected: 'token' }
+  store.update({ confirmation }); const beforeCancel = calls
+  store.update({ confirmation: null }); assert.equal(calls, beforeCancel)
+  store.update({ confirmation }); fail = true
+  assert.equal((await store.remove()).kind, 'error')
+  assert.equal(store.getSnapshot().confirmation.id, 'new'); assert.equal(saved.selected.id, 'new')
+  fail = false; assert.equal((await store.remove()).kind, 'removed')
+  assert.equal(saved.selected, null); assert.equal(store.getSnapshot().confirmation, null)
 })

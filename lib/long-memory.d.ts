@@ -15,6 +15,9 @@ export interface LongMemoryEntry {
         eventSeq: number;
         kind: 'tool';
         callSeq: number;
+    } | {
+        sessionId: string;
+        kind: 'manual';
     };
     sourceVersion?: string;
 }
@@ -55,6 +58,14 @@ export declare function memoryWorkspace(session: {
 export declare const GLOBAL_MEMORY_NAMESPACE: string;
 export declare const GLOBAL_PREFERENCES_TOPIC = "preferences";
 export declare function memoryGlobalNamespace(): string;
+/** Opaque current-content check; never stores a prior entry or a version history. */
+export declare function memoryEntryToken(entry: LongMemoryEntry): string;
+export type MemoryLibraryChange = {
+    kind: 'saved';
+    entry: LongMemoryEntry;
+} | {
+    kind: 'removed' | 'conflict' | 'missing' | 'full';
+};
 /** A single host-owned writer serializes topic creation and revision checks. */
 export declare class LongMemoryStore {
     private readonly table;
@@ -68,6 +79,13 @@ export declare class LongMemoryStore {
     read(workspace: string, topic: string): LongMemoryRead;
     private mutate;
     remember(workspace: string, topic: string, expectedRevision: number, entries: LongMemoryEntry[]): Promise<LongMemoryTopic>;
+    /** UI changes share the Agent writer queue and compare only the affected entry. */
+    edit(workspace: string, topic: string, entryId: string, expected: string, change: {
+        kind: 'save';
+        entry: LongMemoryEntry;
+    } | {
+        kind: 'remove';
+    }): Promise<MemoryLibraryChange>;
     forget(workspace: string, topic: string, expectedRevision: number, entryId: string): Promise<LongMemoryTopic>;
 }
 /** Bound context keeps the entry identity and historical status within 2 KiB. */

@@ -60,6 +60,20 @@ From 0.3.1 onward, “Settings” → **Super Code** shows the loaded plugin ver
 
 If versions differ, save the custom content you need, then confirm reinstallation. Directory hosts replace the user copy; declarative hosts replace this plugin's owned declaration. Both retain recovery backups. If refreshed versions still differ, check that the plugin update took effect and inspect host logs.
 
+## 内嵌前端 Skill · Bundled Frontend Skill
+
+插件携带 `super-code-frontend`，用于页面/组件开发、视觉调整、响应式布局、交互状态和浏览器验证。特别覆盖共同对齐轴、视觉与点击边界、控制位置稳定、操作距离和输入负担；通过空间关系与实际命中检查定位错位和难操作的问题，沿用产品自己的视觉语言。宿主向模型提供名称与短描述，匹配任务时由原生 `skill` 工具按需加载入口；视觉设计、状态交互和浏览器验证的参考文件再按需读取。也可以在请求中明确指定使用 `super-code-frontend`。它不依赖固定框架或新增工具，不把全文加入每轮提示。
+
+The plugin includes `super-code-frontend` for pages/components, visual refinement, responsive layout, interaction states, and browser validation. Guidance covers shared alignment anchors, painted and interactive boundaries, stable control positions, reach, and input effort. Geometry and real hit-area checks help diagnose misalignment and awkward interaction within the product's own visual language. Harness exposes its name and short description; the native `skill` tool loads the entry point when applicable, followed by only the references needed. You can explicitly ask to use `super-code-frontend`. It requires no particular framework or added tools and does not insert its full text into every turn.
+
+从 0.3.3 起，新安装或重装的 Super Code 预设包含此接入。已有用户副本或自定义声明需要先保留自己的调整，再通过“设置”→ **Super Code** 的重装流程更新；插件升级不会自动更新旧预设，设置页会显示其原有版本并提示差异。没有自动改写现有预设，也没有安装到全局 skills 目录。项目/用户同名 skill 仍按宿主原有优先级覆盖内置版本。
+
+From 0.3.3 onward, newly installed or reinstalled Super Code presets include this integration. Existing user copies or custom declarations need reinstallation through “Settings” → **Super Code** after saving any customizations. Updating the plugin preserves the old preset version, and Settings flags any mismatch. Existing presets and global skill directories are not rewritten automatically. Project/user skills with the same name retain their normal host precedence.
+
+浏览器验证方法会指导 Agent 复用可用会话，保留已完成步骤，并从实际失败阶段恢复。它是方法指导；本身不实现强制防循环，也不会自动写入长期记忆。是否提升前端成品质量需要单独的实际任务评测，不能用安装测试或 SWE 成绩代替。
+
+Browser guidance reuses working sessions and confirmed progress, recovering at the actual failed stage. It is workflow guidance, with no enforced loop detector or automatic long-term memory writes. Frontend quality improvements require separate real-task evaluation; installation checks or SWE scores do not establish them.
+
 ## 名称与语言 · Names and Language
 
 0.3.1 的名称同步和自定义安装名称同时支持目录式与声明式预设。
@@ -94,9 +108,9 @@ Declarative hosts verify a bundle source marker or matching installation record,
 
 ## Agent 执行树 · Agent Execution Tree
 
-右侧执行树显示当前会话中各 Agent 的状态、用量和缓存率。拖动空白处平移，滚轮或按钮缩放；点一个节点，就能在侧栏新标签查看详情，主对话不会切换。界面跟随 Harness 的中英文语言设置。
+打开右侧栏，选择“Super Code”，同一页面包含执行树和记忆库，默认展开执行树。点击任一区域的标题切换展开内容；两者互斥，始终保持一个展开，切换后保留阅读位置、筛选和编辑草稿。执行树显示当前会话中各 Agent 的状态、用量和缓存率。拖动空白处平移，滚轮或按钮缩放；点一个节点，就能在侧栏新标签查看详情，主对话不会切换。界面跟随 Harness 的中英文语言设置。
 
-The Agent tree on the right shows status, usage, and cache hit rate for each Agent in the current session. Drag empty space to pan, zoom with the wheel or buttons, and click a node to open its details in a new sidebar tab. The main conversation stays put. The interface follows Harness's Chinese/English language setting.
+Open the right sidebar and choose “Super Code” for the Agent tree and memory library on one page. The tree is expanded by default. Click either section heading to switch; exactly one section stays expanded, while reading positions, filters, and edit drafts are retained. The tree shows status, usage, and cache hit rate for each Agent in the current session. Drag empty space to pan, zoom with the wheel or buttons, and click a node to open its details in a new sidebar tab. The main conversation stays put. The interface follows Harness's Chinese/English language setting.
 
 [执行树截图](images/agent-tree.png)来自安装 0.3.2 包的隔离 Harness 网页宿主，展示主 Agent 和记忆读取子 Agent 的真实会话记录。模型响应由本地确定性验收程序提供，用于检查界面与记忆功能，不代表外部模型效果或评测成绩。
 
@@ -112,9 +126,9 @@ Agent details use a chat list with distinct user tasks, replies, and expandable 
 
 ## 记忆库 · Memory Library
 
-打开右侧栏，点新标签页中的“记忆库”。先选“当前项目”或“全局偏好”，再从主题目录选择主题，或搜索主题、摘要与标识符；点一条记忆查看详情、来源和记录时的代码版本。返回列表时会保留搜索和滚动位置。主题筛选与搜索可以同时使用，详情列出同主题条目。列表采用虚拟滚动，详情按需加载。
+在“Super Code”页面点击“记忆库”标题展开。先选“当前项目”或“全局偏好”，再从主题目录选择主题，或搜索主题、摘要与标识符；点一条记忆查看详情与来源。返回列表时会保留搜索和滚动位置。主题筛选与搜索可以同时使用，详情列出同主题条目。列表采用虚拟滚动，详情按需加载。
 
-Open the right sidebar and choose “Memory library” on its new-tab page. Select “This project” or “Global preferences”, choose a topic or search by topic, summary, or identifier, and open an entry for its details, source, and recorded code version. Search and scroll position are retained when you return. Topic filtering and search can be combined; details include related entries from the same topic. The list is virtualized; details load on demand.
+Click the “Memory library” heading on the “Super Code” page to expand it. Select “This project” or “Global preferences”, choose a topic or search by topic, summary, or identifier, and open an entry for its details and source. Search and scroll position are retained when you return. Topic filtering and search can be combined; details include related entries from the same topic. The list is virtualized; details load on demand.
 
 记忆分三层，各管一件事：
 
@@ -126,9 +140,9 @@ Memory has three distinct roles:
 | 项目记忆 / Project memory | 有来源的项目事实、经验与约定 / Sourced facts, experience, and agreements | 同一规范化工作区路径，并按任务主题区分 / Canonical workspace path, organized by task topic |
 | 全局偏好 / Global preferences | 用户明确要求跨项目遵守的偏好 / Explicit cross-project user preferences | 同一 Harness 存储根目录 / Same Harness storage root |
 
-想长期保留某个约定，直接告诉 Agent 即可；是否保存以工具成功结果和记忆库为准。项目事实与经验必须关联真实工具结果和记录时版本，全局偏好必须有用户原文和明确的跨项目意图。不同路径的项目或 Git worktree 不会自动共享项目记忆。
+想长期保留某个约定，直接告诉 Agent 即可；是否保存以工具成功结果和记忆库为准。Agent 保存的项目事实与经验必须关联真实工具结果和记录时版本，全局偏好必须有用户原文和明确的跨项目意图；在记忆库中直接维护的条目使用“手动维护”来源。不同路径的项目或 Git worktree 不会自动共享项目记忆。
 
-Tell the Agent when an agreement should be kept. Check the successful tool result or memory library to confirm it was saved. Facts and experience require a real tool-result source and recorded version; global preferences require a user quote and explicit cross-project intent. Different project or Git worktree paths do not automatically share project memory.
+Tell the Agent when an agreement should be kept. Check the successful tool result or memory library to confirm it was saved. Agent-saved facts and experience require a real tool-result source and recorded version; global preferences require a user quote and explicit cross-project intent. Entries edited directly in the library use a manual source. Different project or Git worktree paths do not automatically share project memory.
 
 记忆存储在宿主本地，不写入项目文件，也不会整库送给模型。当前任务主题和全局偏好各最多自动带入 4 条摘要，分别受 2 KiB、1 KiB 上限约束；详情需要主动读取。记忆不代替当前指令、不授予权限，也不能证明代码仍然保持记录时的状态。
 
@@ -136,14 +150,14 @@ Memory lives in local host storage, not project files, and the full library is n
 
 ## 每个 Agent 用了什么 · Per-Agent Memory Activity
 
-在执行树中点一个节点，展开顶部“详情”，再展开“记忆使用记录”。这里区分“带入上下文”“读取摘要”“读取详情”“保存”和“删除”，并标明项目/全局、主题与修订号；点记录可在侧栏记忆库查看当前条目，不切换主对话。
+在执行树中点一个节点，展开顶部“详情”，再展开“记忆使用记录”。这里区分“带入上下文”“读取摘要”“读取详情”“保存”和“删除”，并标明项目/全局与主题；点记录会回到同一个“Super Code”页面并打开记忆条目，不新增记忆库页，也不切换主对话。
 
-Click an Agent node, then open “Details”, then expand “Memory activity” at the top of its details. Actions distinguish context inclusion, summary reads, detail reads, saves, and removals, with scope, topic, and revision. Click a record to open the current entry in the sidebar without switching the main conversation.
+Click an Agent node, then open “Details”, then expand “Memory activity” at the top of its details. Actions distinguish context inclusion, summary reads, detail reads, saves, and removals, with scope and topic. Click a record to return to the same “Super Code” page and open the current entry without creating another memory tab or switching the main conversation.
 
 这些是宿主实际记录的动作，不代表模型一定理解或遵守了记忆。子 Agent 不会把继承的父会话历史算成自己的读取；失败调用也不显示为成功读取。界面最多显示最近 100 条不同动作，原始完整记录仍在会话日志中。条目后来修改或删除时，历史使用记录仍保留，但记忆库展示当前内容，不伪装成旧版本快照。
 
 These are recorded host actions, not proof that the model understood or followed the memory. Inherited parent history is not counted as a child's own read, and failed calls are not shown as successful reads. The UI keeps the latest 100 distinct actions; full history stays in the session log. Activity survives later edits or removals, but the library shows the current entry—not a reconstructed snapshot of an older revision.
 
-历史会话的记忆可直接查看，不需要恢复 Agent 或再次调用模型。当前记忆库是只读页面；需要修改或删除时，通过对话明确告诉 Agent，并核对执行结果。
+历史会话的记忆可直接查看，不需要恢复 Agent 或再次调用模型。记忆库支持新增、编辑、取消、保存和删除。编辑时可修改类型、标题和内容；取消不保存，删除需要确认。手动保存的条目标为“手动维护”，仅保留当前内容，不保留版本历史。
 
-You can browse memory from stored conversations without resuming an Agent or making another model call. The library is currently read-only; ask the Agent to change or remove a memory and check the result.
+You can browse memory from stored conversations without resuming an Agent or making another model call. The library supports Add, Edit, Cancel, Save, and Delete. Edit the type, title, and content; Cancel discards the draft, and Delete asks for confirmation. Manually saved entries are marked accordingly. Only current content is kept, with no version history.

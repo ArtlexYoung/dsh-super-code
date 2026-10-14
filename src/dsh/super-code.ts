@@ -287,8 +287,8 @@ read resume default; full explicit. history/archives/evidence are paged or recor
         const entry = found.value.entries.find(item => item.id === args.id)
         if (!entry) throw new Error(`Unknown memory ${args.id}`)
         const sourceSession = ctx.sessions.get(SessionId(entry.source.sessionId))
-        let sourceAvailability: 'session-not-live' | 'available' | 'unavailable' = 'session-not-live'
-        if (sourceSession) {
+        let sourceAvailability: 'session-not-live' | 'available' | 'unavailable' | 'manual' = entry.source.kind === 'manual' ? 'manual' : 'session-not-live'
+        if (sourceSession && entry.source.kind !== 'manual') {
           try {
             if (entry.source.kind === 'user') {
               assertSource(sourceSession, { seq: entry.source.eventSeq, quote: entry.source.quote })

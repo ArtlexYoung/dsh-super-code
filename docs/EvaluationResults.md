@@ -67,8 +67,8 @@ The separate [Batch.3 per-task data](../eval/results/swebench-pro-final-100/Batc
 
 ## 如何理解 · How to Read These Results
 
-- **同题比较：** 固定题集标识为 `swebench-pro-hard-100-ddd22492f1c38839`，使用同一开发测试模型、`high` 推理等级、原生 DSH Web RPC 和官方评分器。这是按既有难度方法选出的历史 100 题，不是官方认定的“最难 100 题”，也不是未接触过的盲测集。
-  **Same tasks:** The frozen selection is `swebench-pro-hard-100-ddd22492f1c38839`, using the same development test model, `high` reasoning, native DSH Web RPC, and the official grader. It is a historically exposed selection from the existing difficulty-ranking method—not an official hardest-100 designation or a fresh blind test.
+- **同题比较：** 固定题集标识为 `swebench-pro-hard-100-ddd22492f1c38839`，使用同一开发测试模型、`high` 思考等级、原生 DSH Web RPC 和官方评分器。这 100 题按既有难度方法选出，并非官方认定的“最难 100 题”；用于候选冻结后的效果评测及 bug 排查，不参与效果调优。版本迭代的效果优化使用从 SWE-bench 官方 dev 集筛选的 33 道有效困难题。
+  **Same tasks:** The frozen selection is `swebench-pro-hard-100-ddd22492f1c38839`, using the same development test model, `high` reasoning, native DSH Web RPC, and the official grader. These 100 tasks were selected using the existing difficulty-ranking method, rather than an official hardest-100 designation. They are used to evaluate frozen candidates and investigate bugs, not for performance tuning. Version iterations use 33 valid difficult tasks selected from the official SWE-bench dev split for optimization.
 - **时间：** 统一采用每题 Web RPC 回答耗时，不计官方评分、下载镜像和复评分；中位数取第 50、51 项均值，P90 取排序后的第 90 项。旧文档 0.0.9 的 16.27 分钟使用不同口径，现统一为 16.46 分钟。
   **Time:** Per-task Web RPC response time excludes grading, image downloads, and regrading. The median averages the 50th and 51st values; P90 is the 90th ordered value. The older 16.27-minute figure for 0.0.9 used a different timing convention; the consistent figure is 16.46 minutes.
 - **用量：** 纳入每题最终评分尝试的已记录调用，先逐题合计再对 100 题取平均。输入包含缓存读取；缓存率为全部缓存输入除以全部输入，而非逐题缓存率的平均。未返回用量的请求不估算，因此 token 不代表完整账单费用，也不包括先前被放弃的尝试成本。

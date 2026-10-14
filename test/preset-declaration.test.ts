@@ -70,6 +70,21 @@ test('declarative installation persists a marked preset, follows language and su
   assert.match(f.settings.get().declaration!.token, /^[0-9a-f-]{36}$/)
 })
 
+test('declarative installation and renamed reinstallation retain deferred bundled skill resolution', async t => {
+  const f = await fixture(t, false), installer = f.create()
+  assert.equal((await installer.install('frontend-code')).ok, true)
+  const template = (yaml.load(await readFile(f.bundlePath, 'utf8'), { schema: declarationSchema }) as any[])[0].insert[0]
+  const expected = template.config.plugins.find((row: any) => row.id === 'skill-super-code-bundled')
+  assert.ok(expected.config.bundledSkillDir.__jsExpr)
+  for (const id of ['frontend-code', 'renamed-frontend']) {
+    await f.host.reload()
+    const document = await f.registry.readDocument(id)
+    const rows = yaml.load(document.content, { schema: declarationSchema }) as any[]
+    assert.deepEqual(rows.find(row => row.id === expected.id), expected)
+    if (id === 'frontend-code') assert.equal((await installer.reinstall(id, 'renamed-frontend')).ok, true)
+  }
+})
+
 test('marked bundled presets support confirmed renamed reinstallation and recovery backup', async t => {
   const f = await fixture(t), installer = f.create()
   assert.equal((await installer.status()).reinstallable, true)

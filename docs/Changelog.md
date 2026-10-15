@@ -1,5 +1,8 @@
 # 版本记录 · Changelog
 
+- **0.3.4 · 2026-10-15**：补充官方预设在同一批 100 题上的成绩、用量与耗时核算说明；新增 README 致谢表格和[详细致谢文档](Acknowledgements.md)，说明宿主、界面设计、Skill、无障碍资料、评测项目与运行依赖的贡献和借鉴范围，并将文档纳入 npm 包。
+  **0.3.4 · 2026-10-15**: Adds official preset results on the same 100 tasks, with usage and timing methodology. Adds a README acknowledgements table and [detailed acknowledgements](Acknowledgements.md) covering the host, UI design, Skills, accessibility resources, evaluation projects, and runtime dependencies; includes the document in the npm package.
+
 - **0.3.3 · 2026-10-14**：执行树与记忆库合并为单个 Super Code 侧栏，默认展开执行区，两区互斥且始终保留一个展开；切换后保留树状态、筛选、搜索、阅读位置与草稿，记忆记录同页定位。记忆支持新增、编辑、取消、保存和确认删除，手动条目标明来源，只保留当前内容，失败保留输入并防止并发覆盖。保留圆形节点，增强运行环动画，修复节点光环、文字与连线重叠。内嵌按需加载的前端 Skill，覆盖布局对齐、操作舒适度、响应式、交互状态和浏览器验证；旧预设需要确认重装。整理双语安装、评测用途、版本规则及简短更新说明；[验证范围](Compatibility.md)。
   **0.3.3 · 2026-10-14**: Combines the Agent tree and memory library in one Super Code sidebar, with the tree open by default and exactly one section expanded. Switching preserves tree state, filters, search, reading position, and drafts; memory activity links open in the same page. Adds memory creation, editing, cancellation, saving, and confirmed deletion. Manual entries are labeled; only current content is stored, failed writes preserve input, and concurrent changes are protected. Retains circular nodes, makes running animation clearer, and fixes halo, label, and connector overlap. Bundles an on-demand frontend Skill for alignment, comfortable controls, responsive layout, interaction states, and browser validation; existing presets require confirmed reinstallation. Clarifies bilingual installation, evaluation methodology, version rules, and concise update notes; [validation scope](Compatibility.md).
 

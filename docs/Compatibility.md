@@ -1,5 +1,15 @@
 # 宿主兼容性 · Host Compatibility
 
+## 0.3.4 · 2026-10-15
+
+本次更新评测文档、公开结果快照与致谢，宿主依赖和运行行为不变。构建后 112 个运行文件与 0.3.3 发布包逐字节一致，两份预设组合仅将版本标记更新为 0.3.4；此前 0.3.3 的宿主验收记录继续适用，本轮未重跑 Web / 原生 Desktop 界面，也未新增模型效果评测。
+
+This release updates evaluation documentation, the public results snapshot, and acknowledgements, with unchanged host dependencies and runtime behavior. After building, 112 runtime files are byte-for-byte identical to the 0.3.3 release package; the two preset compositions only update their version marker to 0.3.4. The 0.3.3 host-validation records below remain applicable. Web/native Desktop UI checks and new model-quality evaluations were not rerun for this release.
+
+171 项测试、类型检查、构建及客户端语法检查通过；另核对评测快照汇总、文档链接、版本一致性和打包范围。
+
+All 171 tests, type checking, build, and client syntax checks passed. Additional checks cover evaluation-snapshot aggregates, documentation links, version consistency, and package contents.
+
 ## 0.3.3 · 2026-10-14
 
 支持下限保持 `0.1.5-alpha.1`，依赖范围不变。本次核对官方 npm `latest`/`next` 为 `0.2.0-rc.2`，`alpha` 为 `0.2.1-alpha.2`。以下三个宿主使用固定并审计的依赖和隔离 profile，真实安装 0.3.3 组合候选包；其他版本保留此前逐版记录，本次没有全部重测。

@@ -17,7 +17,7 @@
           - id: super-code
             name: dsh-super-code/super-code
             config:
-              presetVersion: 0.3.4
+              presetVersion: 0.3.5
               presetInstallation: bundle:dsh-super-code
           - id: compaction
             name: cordis:group

@@ -14,15 +14,21 @@ On the same SWE-bench Pro hard-100 set, the evaluation candidate for 0.3.0 uses 
 
 Extensive testing and regression checks are needed to verify each release's effectiveness. This takes time, so release cycles may be longer.
 
-版本号采用 **主版本.效果优化版本.维护版本**，例如 `0.3.4`：
+版本号采用 **主版本.效果优化版本.维护版本**，例如 `0.3.5`：
 
-Version numbers follow **major.performance-improvement.maintenance**, for example `0.3.4`:
+Version numbers follow **major.performance-improvement.maintenance**, for example `0.3.5`:
 
 | 位置 / Position | 含义 / Meaning |
 |---|---|
 | 第一位 / First (`0`) | 主版本，仅在大范围重构时调整。 / Major version; changes only for extensive refactoring. |
 | 第二位 / Second (`3`) | 效果优化版本，记录编码效果、效率等方面的优化。 / Performance-improvement version; tracks improvements to coding results, efficiency, and related capabilities. |
-| 第三位 / Third (`4`) | 维护版本，记录问题修复、UI 优化、兼容性适配等更新。 / Maintenance version; tracks bug fixes, UI improvements, compatibility updates, and similar changes. |
+| 第三位 / Third (`5`) | 维护版本，记录问题修复、UI 优化、兼容性适配等更新。 / Maintenance version; tracks bug fixes, UI improvements, compatibility updates, and similar changes. |
+
+## 0.3.5 · What's New
+
+适配 Harness `0.2.1-rc.2`，修复 v4 会话日志升级后旧任务记录不可见的问题。[更新详情](docs/Changelog.md)
+
+Supports Harness `0.2.1-rc.2` and restores legacy task records after v4 session-log upgrades. [Changelog](docs/Changelog.md)
 
 ## 0.3.4 · What's New
 
@@ -56,17 +62,17 @@ Adds batched tool calls and parallel reads to reduce model round trips. [Changel
 
 # 2 开始使用 · Get Started
 
-请使用[已验证的 Harness 版本](docs/Compatibility.md)，按所用客户端选择安装方式。
+支持 Harness `0.1.5-alpha.1` 至 `0.2.1-rc.2`，按所用客户端选择安装方式；[各版本与客户端的验证范围](docs/Compatibility.md)。
 
-Use a [verified Harness version](docs/Compatibility.md) and choose the installation method for your client.
+Supports Harness `0.1.5-alpha.1` through `0.2.1-rc.2`. Choose the installation method for your client; see [validation coverage by version and client](docs/Compatibility.md).
 
 ## 2.1 安装 · Install
 
 ### 官方桌面版 · Official Desktop
 
-打开左侧 **插件 → 添加插件**，在“包名或地址”中输入 `dsh-super-code`，点击 **安装**，完成后按提示重新加载或重启。桌面版自带运行环境，无需另外安装 Node.js。
+打开左侧 **插件 → 添加插件**，在“包名或地址”中输入 `dsh-super-code`，点击 **安装**。新版安装完成后点击 **立即启用**；其他版本按提示重新加载或重启。桌面版自带运行环境，无需另外安装 Node.js。
 
-Open **Plugins → Add plugin**, enter `dsh-super-code` in “Package name or address”, and click **Install**. Reload or restart if prompted. The desktop app includes its runtime; no separate Node.js installation is needed.
+Open **Plugins → Add plugin**, enter `dsh-super-code` in “Package name or address”, and click **Install**. On newer hosts, click **Enable now** when installation finishes; on other versions, reload or restart if prompted. The desktop app includes its runtime; no separate Node.js installation is needed.
 
 ### Web / 命令行版 · Web / CLI
 
@@ -87,7 +93,7 @@ dsh plugin --profile web add dsh-super-code
 Download a `.tgz` package from [GitHub Releases](https://github.com/ArtlexYoung/dsh-super-code/releases). On desktop, enter its full path in “Package name or address”. For Web, run the command below with the filename you downloaded.
 
 ```bash
-dsh plugin --profile web add ./dsh-super-code-0.3.4.tgz
+dsh plugin --profile web add ./dsh-super-code-0.3.5.tgz
 ```
 
 </details>

@@ -19,3 +19,20 @@ test('renamed package reads both current and persisted legacy task records', () 
   }
   assert.deepEqual(taskMemoryEventOf(message('another-plugin/task-memory/v1', '{broken')), { kind: 'unrelated' })
 })
+
+test('v4 migrated producer sources retain task history without accepting unrelated plugins', () => {
+  for (const plugin of [TASK_MEMORY_SOURCE, 'dsh-super-agent/task-memory/v1']) {
+    for (const kind of [plugin, `plugin:${plugin}`]) {
+      const event = message(plugin)
+      event.data.source = { kind } as typeof event.data.source
+      assert.deepEqual(taskMemoryEventOf(event), { kind: 'record', record: { kind: 'focus', id: 'task-1' } })
+      event.data.content = [{ type: 'text', text: '{broken' }]
+      assert.throws(() => taskMemoryEventOf(event), 'Owned corrupt records must remain visible failures')
+    }
+  }
+  for (const kind of ['plugin:another-plugin/task-memory/v1', `plugin:plugin:${TASK_MEMORY_SOURCE}`, `${TASK_MEMORY_SOURCE}-other`]) {
+    const event = message(kind, '{broken')
+    event.data.source = { kind } as typeof event.data.source
+    assert.deepEqual(taskMemoryEventOf(event), { kind: 'unrelated' })
+  }
+})

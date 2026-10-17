@@ -30,13 +30,15 @@ declare module '@deepseek-ai/dsh-llm' {
 }
 // Persisted records from before the package rename must remain readable.
 const LEGACY_TASK_MEMORY_SOURCE = 'dsh-super-agent/task-memory/v1'
+const taskMemorySources = new Set([TASK_MEMORY_SOURCE, LEGACY_TASK_MEMORY_SOURCE])
 
-/** Known host message vocabulary keeps external plugin records resumable. */
+/** V4 prefixes migrated plugin wrappers; native producer kinds remain unchanged. */
 export function taskMemoryEventOf(event: SessionEvent): { kind: 'record'; record: TaskMemoryEvent } | { kind: 'unrelated' } {
   if (event.type !== 'user/message') return { kind: 'unrelated' }
   const source = event.data.source as { kind: string; plugin?: string }
-  if (![TASK_MEMORY_SOURCE, LEGACY_TASK_MEMORY_SOURCE].includes(source.kind)
-    && !(source.kind === 'plugin' && [TASK_MEMORY_SOURCE, LEGACY_TASK_MEMORY_SOURCE].includes(source.plugin ?? ''))) return { kind: 'unrelated' }
+  const producer = source.kind === 'plugin' ? source.plugin ?? ''
+    : source.kind.startsWith('plugin:') ? source.kind.slice('plugin:'.length) : source.kind
+  if (!taskMemorySources.has(producer)) return { kind: 'unrelated' }
   const content = event.data.content
   if (content.length !== 1 || content[0]?.type !== 'text') throw new Error('Malformed task-memory record')
   return { kind: 'record', record: taskMemoryEventSchema.parse(JSON.parse(content[0].text)) }
@@ -50,7 +52,8 @@ declare module '@deepseek-ai/dsh-session-projection/types' {
 export const taskMemoryProjection: ProjectionDefinition<'superCodeTasks', TaskMemoryState> & {
   wire: NonNullable<ProjectionDefinition<'superCodeTasks', TaskMemoryState>['wire']>
 } = {
-  key: 'superCodeTasks', stateVersion: 1, stateSchema: taskMemoryStateSchema,
+  // Rebuild checkpoints that previously skipped v4 migrated plugin sources.
+  key: 'superCodeTasks', stateVersion: 2, stateSchema: taskMemoryStateSchema,
   init: () => emptyTaskMemory(),
   apply: (state, event) => {
     const record = taskMemoryEventOf(event)

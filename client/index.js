@@ -1057,7 +1057,7 @@ function detailRecord(entry, t = key => zh[key] || key) {
   }
   if (event.type === 'tool/result') {
     const blocks = (data.message?.content || []).filter(block => block.type === 'tool-result')
-    // Older journals store a direct tool message; newer ones nest its content.
+    // Harness journals use both direct tool messages (v4) and nested results.
     const direct = data.message?.role === 'tool'
     if (!blocks.length && !direct) return { kind: 'skip' }
     const failed = direct ? data.message.isError : blocks.some(block => block.isError)

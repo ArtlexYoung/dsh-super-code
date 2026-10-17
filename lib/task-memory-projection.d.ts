@@ -28,7 +28,7 @@ declare module '@deepseek-ai/dsh-llm' {
         };
     }
 }
-/** Known host message vocabulary keeps external plugin records resumable. */
+/** V4 prefixes migrated plugin wrappers; native producer kinds remain unchanged. */
 export declare function taskMemoryEventOf(event: SessionEvent): {
     kind: 'record';
     record: TaskMemoryEvent;

@@ -1,7 +1,8 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { Context } from '@deepseek-ai/cordis'
-import { SessionStore, SessionId } from '@deepseek-ai/dsh-session'
+import { SessionStore, SessionId, SessionLogOffset } from '@deepseek-ai/dsh-session'
+import type { SessionEvent, SessionSeqCursor } from '@deepseek-ai/dsh-session'
 import { SessionProjectionRegistry } from '@deepseek-ai/dsh-session-projection'
 import { TaskMemoryStore } from '../src/task-memory-store.js'
 import { taskMemoryProjection, taskMemoryView } from '../src/task-memory-projection.js'
@@ -52,4 +53,32 @@ test('wire summaries do not transmit source, requirements or historical evidence
   assert.doesNotMatch(JSON.stringify(view), /private source|sourceVersion|requirements|evidence/)
   assert.equal(state.tasks.a.source.quote, 'private source')
   assert.deepEqual(taskMemoryView({ ...state, focus: { kind: 'none' } }).current, { kind: 'none' })
+})
+
+test('cold v4 replay replaces stale task checkpoints and preserves saves, archives and focus', async t => {
+  const ctx = new Context(); new SessionStore(ctx); new SessionProjectionRegistry(ctx)
+  ctx.sessionProjections.register(taskMemoryProjection)
+  t.after(() => ctx.fiber.dispose())
+  const session = ctx.sessions.create(SessionId('v4-task-replay'))
+  const completed = { ...task, status: 'completed', revision: 2 }
+  const active = { ...task, id: 'b', title: 'B' }
+  const events = [
+    { kind: 'save', task }, { kind: 'save', task: completed }, { kind: 'archive', task: completed },
+    { kind: 'save', task: active }, { kind: 'focus', id: 'b' },
+  ].map((change, seq) => ({
+    type: 'user/message', seq, time: seq, surfaceOp: 'append',
+    data: { id: `m${seq}`, role: 'user', source: { kind: `plugin:dsh-super-${seq % 2 ? 'agent' : 'code'}/task-memory/v1` },
+      content: [{ type: 'text', text: JSON.stringify(change) }] },
+  })) as SessionEvent[]
+  const stale = { superCodeTasks: { ver: 1, seq: (events.length - 1) as SessionSeqCursor,
+    val: { tasks: {}, recentSources: [], focus: { kind: 'none' } } } }
+  assert.equal(ctx.sessionProjections.restoreFloor(stale), 0)
+  assert.deepEqual(ctx.sessionProjections.viewCheckpoint(stale), {})
+  const replay = ctx.sessionProjections.restore(stale, events, SessionLogOffset(0), session.header, SessionLogOffset(0))
+  assert.deepEqual(replay.snapshot.values.superCodeTasks, {
+    tasks: [{ id: 'b', title: 'B', status: 'active' }],
+    current: { kind: 'task', id: 'b', title: 'B', goal: 'Build', status: 'active', next: 'Check' },
+  })
+  const tail = ctx.sessionProjections.restore(replay.checkpoint, events.slice(-1), SessionLogOffset(events.length - 1), session.header, SessionLogOffset(0))
+  assert.deepEqual(tail.snapshot.values, replay.snapshot.values)
 })

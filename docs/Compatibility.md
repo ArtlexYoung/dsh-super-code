@@ -1,5 +1,49 @@
 # 宿主兼容性 · Host Compatibility
 
+## 0.3.5 · Harness 0.2.1-rc.2 · 2026-10-18
+
+兼容范围扩展至 `0.2.1-rc.2`，最低保持 `0.1.5-alpha.1`。本次基于主干 0.3.4，逐版固定并审计宿主依赖，在独立 profile 中真实安装和运行。现有 peer 依赖范围已覆盖这些预发布版本；补充 v4 日志迁移检查后，修复旧插件来源记录的识别及投影缓存失效，未增加依赖，发布版本为 0.3.5。
+
+Compatibility extends through `0.2.1-rc.2`, with the minimum remaining `0.1.5-alpha.1`. Based on main at plugin version 0.3.4, candidates were installed and run in isolated profiles, with each host's dependency graph pinned and audited. Existing peer ranges already cover these prereleases. Additional v4 migration checks identified and fixed legacy plugin-source recognition and projection-cache invalidation without adding dependencies. The release version is 0.3.5.
+
+| Harness | Web/CLI 与真实浏览器 / Web/CLI and real browser | 原生 Skill 加载 / Native Skill loading |
+|---|---|---|
+| `0.2.1-alpha.3` | 通过 / Pass | 组合与持久化 profile 均通过 / Bundle and persisted profile pass |
+| `0.2.1-alpha.4` | 通过 / Pass | 组合与持久化 profile 均通过 / Bundle and persisted profile pass |
+| `0.2.1-alpha.5` | 通过 / Pass | 组合与持久化 profile 均通过 / Bundle and persisted profile pass |
+| `0.2.1-rc.1` | 通过 / Pass | 组合与持久化 profile 均通过 / Bundle and persisted profile pass |
+| `0.2.1-rc.2` | 通过 / Pass | 组合与持久化 profile 均通过 / Bundle and persisted profile pass |
+
+五版均验证原生 PTC、主/子 Agent、任务记忆、项目/全局记忆与归属、跨工作区隔离及冷重启后无需恢复会话的历史读取。真实浏览器覆盖执行树运行/完成动画、节点间距、减弱动态效果、320/400/560px 与缩放、互斥侧栏及状态恢复、记忆新增/编辑/取消/保存/删除、详情页记忆定位、中英文和明暗主题切换。十条 Skill 路径覆盖摘要目录、按需正文与三份参考文件读取、用户/项目同名覆盖。
+
+All five passed native PTC, main/child Agents, task memory, project/global memory and attribution, workspace isolation, and historical reads after a cold restart without resuming the session. Real-browser checks cover running/completed tree animation, node spacing, reduced motion, 320/400/560px widths and zoom, exclusive sidebar sections and retained state, memory creation/editing/cancellation/saving/deletion, memory links from Agent details, and Chinese/English and light/dark switching. Ten Skill paths cover summary catalogs, on-demand content and three reference reads, and user/project overrides.
+
+最低版本 `0.1.5-alpha.1` 另通过同一候选包的目录预设安装、主/子 Agent、PTC、记忆归属/隔离/重启和真实浏览器回归。171 项测试、类型检查、构建、客户端语法检查通过。
+
+The minimum `0.1.5-alpha.1` also passed directory-preset installation, main/child Agents, PTC, memory attribution/isolation/restart, and real-browser regression with the same candidate. All 171 tests, type checking, build, and client syntax checks passed.
+
+官方 macOS arm64 Desktop `0.2.1-rc.2` 从[官方下载地址](https://download.deepseek.com/dsh-desk/bin/mac-arm64/deepseek-harness-0.2.1-rc.2-mac-arm64.zip)获取，并按官方更新源校验 SHA-512。在独立应用身份、DSH_HOME 和 userData 中，通过原生插件页安装并点击“立即启用”；设置页验证未安装预设的安装、重装确认/取消、从清单移除、按新标识符和中文名称重装、旧预设移除与恢复备份。真实原生主/子 Agent 的 PTC 和记忆流程、执行树动画、统一侧栏、记忆维护及中英文/明暗切换通过，保留截图；冷启动后确认改名预设、自定义名称与项目/全局记忆保留，历史子会话无需恢复即可读取记忆。正式应用和日常配置未修改。
+
+Official macOS arm64 Desktop `0.2.1-rc.2` was obtained from the [official download](https://download.deepseek.com/dsh-desk/bin/mac-arm64/deepseek-harness-0.2.1-rc.2-mac-arm64.zip) and SHA-512 verified against its update feed. In an isolated app identity, DSH_HOME, and userData, the native plugin page installed and enabled the plugin. Settings checks cover missing-preset installation, reinstall confirmation/cancellation, removing confirmation rows, reinstallation with a new identifier and Chinese name, removal of the old preset, and recovery backups. Real native main/child PTC and memory flows, tree animation, unified sections, memory maintenance, and Chinese/English and light/dark switching passed with screenshots. A cold start preserved the renamed preset, custom name, and project/global memory, with historical child memory readable without resuming the session. The official app and daily configuration were not changed.
+
+截至本次检查，官方 npm `latest` 为 `0.2.0-rc.2`、`alpha` 为 `0.2.1-alpha.5`、`next` 为 `0.2.1-rc.2`；桌面 nightly 同为 `0.2.1-rc.2`。[官方发布说明](https://github.com/deepseek-ai/deepseek-harness/releases/tag/dsh-v0.2.1-rc.2)。本次模型响应由本地确定性程序提供，没有调用外部模型、没有新增 SWE-bench 成绩，也不代表 Windows、macOS x64 或其他新增版本的原生桌面已复验；其他版本保留以下历史记录。
+
+At this check, official npm tags point to `latest: 0.2.0-rc.2`, `alpha: 0.2.1-alpha.5`, and `next: 0.2.1-rc.2`; Desktop nightly is also `0.2.1-rc.2`. [Official release notes](https://github.com/deepseek-ai/deepseek-harness/releases/tag/dsh-v0.2.1-rc.2). A local deterministic fixture supplied model responses, without external model calls or new SWE-bench scores. This does not establish native Desktop revalidation on Windows, macOS x64, or the other newly covered versions; earlier records remain below.
+
+### v4 会话日志补充验证 · 2026-10-18
+
+物理日志解压、格式迁移、分页与游标由 Harness 的 Session 和官方 journal API 处理；插件不直接解析用户的日志文件。v4 会把旧的 `{kind: "plugin", plugin: "…"}` 来源迁移为 `{kind: "plugin:…"}`。原读取器会跳过其中的任务记录，导致升级后的任务状态、历史与归档不可见。现已识别新旧包名对应的精确来源，同时保留原有直接来源和旧包装形式；任务投影版本由 1 提升到 2，使此前遗漏记录的缓存重新回放。无需为此依赖实验性的 plugin-record API，仍兼容旧宿主。
+
+Harness Session and official journal APIs own physical decompression, migration, pagination, and cursors; the plugin does not parse users' log files directly. V4 migrates `{kind: "plugin", plugin: "…"}` to `{kind: "plugin:…"}`. The previous reader skipped these task records, hiding task state, history, and archives after an upgrade. It now recognizes the exact current and legacy package sources while preserving direct sources and old wrappers. The task projection version increases from 1 to 2 to replay caches that previously missed those records. This does not require the experimental plugin-record API or remove older-host support.
+
+使用官方 rc.2 格式迁移器与真实 v3 会话（含历史子会话事实）验证直接来源、新包名旧包装、旧包名旧包装三条路径；对照原生 v4 日志，核对任务状态、11 对工具证据、9 条记忆使用记录、按模型用量和历史详情。另验证旧空缓存失效、全量重建及后续尾部回放，并增加任务保存、归档、聚焦与无关插件隔离回归；173 项测试、类型检查、构建和客户端语法检查通过。本补充不代表已遍历所有历史损坏或中断日志；上方五版和原生桌面界面记录来自首轮候选包。
+
+The official rc.2 format migrator restored real v3 sessions with historical child facts for direct sources and wrappers using both current and legacy package names. Comparisons with native v4 logs cover task state, 11 tool-evidence pairs, nine memory-usage rows, per-model usage, and historical details. Checks also cover invalidating stale empty caches, full replay, and subsequent tail replay. Added regressions cover task saving, archiving, focus, and unrelated-plugin isolation. All 173 tests, type checking, build, and client syntax checks passed. This supplement does not cover every damaged or interrupted historical log; the five-version and native Desktop UI records above used the initial candidate.
+
+修复后的安装包另在 `0.1.5-alpha.1` 和 `0.2.1-rc.2` 中通过真实安装、激活、主/子 Agent、PTC、记忆归属、工作区隔离和冷重启历史读取回归；实际安装的任务投影实现与候选包一致。本补充未重跑浏览器及原生桌面界面，客户端仅更正日志格式注释。
+
+The fixed package also passed real installation, activation, main/child Agents, PTC, memory attribution, workspace isolation, and historical reads after a cold restart on `0.1.5-alpha.1` and `0.2.1-rc.2`. The installed task projection matches the candidate. This supplement did not rerun browser or native Desktop UI checks; the client change only corrects a log-format comment.
+
 ## 0.3.4 · 2026-10-15
 
 本次更新评测文档、公开结果快照与致谢，宿主依赖和运行行为不变。构建后 112 个运行文件与 0.3.3 发布包逐字节一致，两份预设组合仅将版本标记更新为 0.3.4；此前 0.3.3 的宿主验收记录继续适用，本轮未重跑 Web / 原生 Desktop 界面，也未新增模型效果评测。

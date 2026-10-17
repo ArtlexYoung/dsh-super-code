@@ -1,5 +1,8 @@
 # 版本记录 · Changelog
 
+- **0.3.5 · 2026-10-18**：适配 Harness `0.2.1-rc.2`，修复 v4 日志迁移后旧任务记录不可见的问题，保留 `0.1.5-alpha.1` 起的兼容性，并补齐官方桌面安装说明。[验证范围](Compatibility.md)
+  **0.3.5 · 2026-10-18**: Supports Harness `0.2.1-rc.2`, restores legacy task records after v4 log migration, retains support from `0.1.5-alpha.1`, and clarifies official Desktop installation. [Validation coverage](Compatibility.md)
+
 - **0.3.4 · 2026-10-15**：补充官方预设在同一批 100 题上的成绩、用量与耗时核算说明；新增 README 致谢表格和[详细致谢文档](Acknowledgements.md)，说明宿主、界面设计、Skill、无障碍资料、评测项目与运行依赖的贡献和借鉴范围，并将文档纳入 npm 包。
   **0.3.4 · 2026-10-15**: Adds official preset results on the same 100 tasks, with usage and timing methodology. Adds a README acknowledgements table and [detailed acknowledgements](Acknowledgements.md) covering the host, UI design, Skills, accessibility resources, evaluation projects, and runtime dependencies; includes the document in the npm package.
 

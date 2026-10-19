@@ -24,6 +24,57 @@ The default guidance calls for parallel reads when useful, ordered writes, tests
 
 Batching reduces round trips between the model and tools. It does not guarantee that every operation runs faster or change model, permission, or memory settings.
 
+## 运行预算 · Runtime Budgets
+
+打开设置中的“Super Code 模式”（部分版本位于“插件”→“插件配置”）。顶部“预设状态”用于查看和安装预设；“上下文配置”用于调整预算。插件默认已使用此前 Pro 测试中的旧预算，无需手动填写。界面使用百分数和秒；括号内仍显示当前宿主的默认值，便于与输入框中的实际配置比较。
+
+Open “Super Code” in Settings (under “Plugins” → “Plugin configuration” in some versions). “Preset status” shows and installs the preset; “Context settings” contains the budgets. The plugin already uses the older Pro-test budgets without manual setup. The form uses percentages and seconds; parentheses still show the current host defaults for comparison with the effective values in the inputs.
+
+| 类型 / Type | 配置 / Settings | 生效范围 / Applies to |
+|---|---|---|
+| 通用预算 / Common budgets | 压缩比例、摘要上限、PTC 时限及重试次数 / Compression ratios, summary limit, PTC deadlines, and retries | 默认仅 Super Code；打开“同时应用到官方预设”后，也用于标准、PTC、极简、创造模式 / Super Code by default; also Standard, PTC, Minimal, and Create when “Also apply to official presets” is enabled |
+| Super Code 专属预算 / Super Code budgets | 活跃任务记录上限、任务记忆上下文容量 / Active task record limit and task-memory context capacity | 始终仅 Super Code / Always Super Code only |
+
+官方预设开关默认关闭，不影响自定义预设；开启后也只修改通用预算，不改变官方预设的工具和提示词。修改保存后对新建 Agent 生效，运行中的 Agent 保留原配置。切换顶部标签不会丢失尚未保存的输入。
+
+The official-preset switch is off by default and leaves custom presets untouched. When enabled, it changes only common budgets, preserving official tools and prompts. Saved changes apply to new Agents; running Agents keep their configuration. Switching tabs retains unsaved input.
+
+留空沿用插件默认预算；“恢复默认”会清除界面的覆盖，回到插件加载配置，未配置的字段使用旧预算。用户已保存的配置优先生效。保存失败时保留输入，若提示预算已在别处修改，先重新读取再调整。
+
+Leave fields blank to inherit plugin defaults. “Reset to defaults” clears UI overrides and restores the plugin configuration, using the older budgets for unconfigured fields. Saved user values take precedence. Failed saves retain your input. If budgets changed elsewhere, reload before editing again.
+
+也可以通过插件的 `budgets` 配置调整通用预算；将 `applyToOfficialPresets` 设为 `true` 可同时应用到上述四种官方预设。保存预算不会重启 Agent。
+
+You can also set common budgets in the plugin's `budgets` configuration. Set `applyToOfficialPresets: true` to include the four official presets above. Saving budgets does not restart Agents.
+
+旧宿主未提供 `ptcRuntime` 时，“批量工具执行”的时限输入框会禁用；压缩预算和任务记忆容量仍可设置。
+
+On older hosts without `ptcRuntime`, batch-tool deadline inputs are disabled; compression and task-memory budgets remain configurable.
+
+下面是插件已默认使用的旧预算，无需再将它手动添加到 `name: dsh-super-code` 的加载配置中。需要自定义时，可以在界面或加载项的 `config.budgets` 中修改对应字段。
+
+The plugin already uses these older budgets by default; there is no need to add them manually to the `dsh-super-code` entry. Customize individual fields in the UI or the entry's `config.budgets` when needed.
+
+```yaml
+budgets:
+  pressureBasis: window
+  thresholdRatio: 0.8
+  retainRatio: 0.16
+  summaryMaxTokens: 8192
+  compactionRetries: 1
+  maxOverflowRetries: 1
+  ptcTimeoutMs: 600000
+  ptcMaxTimeoutMs: 600000
+```
+
+`pressureBasis: window` 为插件默认，按完整上下文窗口计算；选择 `host` 则按当前宿主策略计算。`retainRatio` 必须小于 `thresholdRatio`。PTC 两项的单位是毫秒，包含工具等待时间；显式更短的调用期限仍然生效，上限不会超过宿主允许值。PTC 时间覆盖需要提供 `ptcRuntime` 的新版宿主；旧版的 CPU 忙碌计时与新版总耗时计时不能等同。这些配置不改变执行后端、权限或取消行为。
+
+`pressureBasis: window` is the plugin default and uses the full context window; choose `host` to follow the current host budget policy. `retainRatio` must be lower than `thresholdRatio`. PTC values are milliseconds, including tool waits; explicit shorter call deadlines still apply, and the host ceiling remains authoritative. PTC overrides require a newer host with `ptcRuntime`. The old busy-CPU timer and the new elapsed timer are different. These settings preserve the host execution backend, permissions, and cancellation.
+
+Super Code 专属的 `maxTasks`（默认 32）和 `maxContextBytes`（默认 32,768），分别控制会话中活跃任务记录数量和任务记忆上下文的字节预算。增加预算会占用更多上下文；通常保持默认即可。
+
+Super Code also has `maxTasks` (default 32) and `maxContextBytes` (default 32,768), which bound the active task records and task-memory context bytes per conversation. Larger budgets use more context; the defaults are usually sufficient.
+
 ## 找不到预设 · Can't Find the Preset?
 
 先确认插件已启用，并按[兼容矩阵](Compatibility.md)核对宿主版本与实际依赖。插件按宿主提供的预设机制选择以下两条路径。

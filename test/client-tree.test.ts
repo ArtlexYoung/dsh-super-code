@@ -214,7 +214,7 @@ test('plugin settings stay expanded, compare versions in both languages and reta
   const reinstalls: string[][] = []
   const api = { reinstallPreset: async (...args: string[]) => { reinstalls.push(args); return { ok: false } }, installPreset: async (...args: string[]) => {
     submissions.push(args)
-    return { ok: true, value: { ok: false, error: 'name-taken', status: state[0] } }
+    return { ok: true, value: { ok: false, error: 'name-taken', status: state[1] } }
   } }
   const render = (translate = t) => { cursor = 0; refCursor = 0; effects.length = 0; return Settings!({ api, t: translate }) }
   const find = (node: unknown, predicate: (element: Element) => boolean): Element[] => {
@@ -228,7 +228,7 @@ test('plugin settings stay expanded, compare versions in both languages and reta
   assert.equal(find(card, element => element.type === 'form').length, 0)
   assert.equal(find(card, element => element.props.className === 'dsh-super-code-settings-body').length, 1)
   assert.equal(find(card, element => element.type === 'header').length, 1)
-  state[3] = false
+  state[4] = false
   const strings = (node: unknown): string => {
     if (typeof node === 'string') return node
     if (!node || typeof node !== 'object' || !('children' in node)) return ''
@@ -237,7 +237,7 @@ test('plugin settings stay expanded, compare versions in both languages and reta
   for (const currentLanguage of ['zh', 'en']) {
     const translate = (key: string) => dictionaries[currentLanguage][key]!
     for (const [presetVersion, expected] of [['0.3.1', 'match'], ['0.3.0', 'mismatch'], [undefined, 'unknown']]) {
-      state[0] = { authorable: false, delivery: 'declaration', state: 'available', id: 'super-code', pluginVersion: '0.3.1', presetVersion }
+      state[1] = { authorable: false, delivery: 'declaration', state: 'available', id: 'super-code', pluginVersion: '0.3.1', presetVersion }
       card = render(translate)
       const versions = find(card, element => element.type === 'dd')
       assert.equal(versions[0]?.children[0], '0.3.1')
@@ -249,18 +249,18 @@ test('plugin settings stay expanded, compare versions in both languages and reta
       if (expected === 'mismatch') assert.ok(strings(card).includes(translate('preset.versionReloadHint')))
     }
     for (const unavailable of ['missing', 'broken']) {
-      state[0] = { authorable: false, delivery: 'declaration', state: unavailable, id: 'super-code', pluginVersion: '0.3.1' }
+      state[1] = { authorable: false, delivery: 'declaration', state: unavailable, id: 'super-code', pluginVersion: '0.3.1' }
       card = render(translate)
       assert.ok(strings(card).includes(translate('preset.unavailableHint')))
       assert.ok(!strings(card).includes(translate('preset.installHint')))
       assert.ok(!strings(card).includes(translate('preset.availableHint')))
       if (unavailable === 'missing') assert.equal(find(card, element => element.type === 'dd')[1]?.children[0], translate('preset.versionMissing'))
     }
-    state[0] = { authorable: true, delivery: 'directory', state: 'installed', id: 'super-code', pluginVersion: '0.3.1', presetVersion: '0.3.0' }
+    state[1] = { authorable: true, delivery: 'directory', state: 'installed', id: 'super-code', pluginVersion: '0.3.1', presetVersion: '0.3.0' }
     card = render(translate)
     assert.ok(strings(card).includes(translate('preset.versionReinstallHint')))
     for (const installed of ['missing', 'installed', 'broken']) {
-      state[0] = { authorable: true, delivery: 'declaration', state: installed, reinstallable: installed !== 'missing',
+      state[1] = { authorable: true, delivery: 'declaration', state: installed, reinstallable: installed !== 'missing',
         id: 'super-code', name: translate('preset.title'), pluginVersion: '0.3.1', presetVersion: '0.3.0' }
       card = render(translate)
       assert.equal(find(card, element => element.type === 'form').length, 1)
@@ -271,7 +271,7 @@ test('plugin settings stay expanded, compare versions in both languages and reta
       assert.ok(strings(card).includes(translate('preset.declaredNameHint')))
     }
   }
-  state[0] = { authorable: true, state: 'missing' }
+  state[1] = { authorable: true, state: 'missing' }
   card = render()
   const display = () => find(card, element => element.props.id === 'super-code-display-name')[0]!
   assert.equal(display().props.value, 'Super Code 模式')
@@ -282,7 +282,7 @@ test('plugin settings stay expanded, compare versions in both languages and reta
   language = 'zh'; card = render()
   assert.equal(display().props.value, 'My team')
   display().props.onChange({ target: { value: 'Super Code 模式' } })
-  state[3] = false // Status loading has completed.
+  state[4] = false // Status loading has completed.
   card = render()
   assert.equal(display().props.pattern, undefined)
   assert.equal(find(card, element => element.props.type === 'submit')[0]?.props.disabled, false)
@@ -291,12 +291,12 @@ test('plugin settings stay expanded, compare versions in both languages and reta
   assert.deepEqual(submissions, [['super-code', 'Super Code 模式']])
   await new Promise(resolve => setImmediate(resolve))
   display().props.onChange({ target: { value: '   ' } })
-  state[3] = false
+  state[4] = false
   card = render()
   assert.equal(find(card, element => element.props.type === 'submit')[0]?.props.disabled, true)
-  state[0] = { authorable: true, state: 'installed', id: 'old-code', name: '旧名称' }
-  state[1] = null; state[2] = null
-  state[3] = false
+  state[1] = { authorable: true, state: 'installed', id: 'old-code', name: '旧名称' }
+  state[2] = null; state[3] = null
+  state[4] = false
   card = render()
   assert.equal(display().props.value, '旧名称')
   assert.equal(find(card, element => element.props.id === 'super-code-preset-name')[0]?.props.value, 'old-code')

@@ -1,5 +1,47 @@
 # 宿主兼容性 · Host Compatibility
 
+## 0.3.6 · 旧预算默认配置 · Legacy Budget Defaults · 2026-10-20
+
+0.3.6 默认使用此前 Pro 测试的旧预算：完整上下文窗口、80% 压缩触发、16% 原文保留、8,192 Token 摘要、压缩追加与溢出重试各 1 次；提供新版 PTC 的宿主默认/上限为 600 秒，仍受宿主上限约束。用户保存值和加载配置优先，运行中的 Agent 保留快照，恢复默认会回到旧预算。括号内宿主默认值提示保持不变，官方预设仍默认不应用。
+
+Version 0.3.6 uses the older Pro-test budgets by default: full-context-window accounting, compression at 80%, 16% verbatim retention, an 8,192-token summary cap, and one additional compression attempt and overflow retry. Hosts with the newer PTC provider use 600-second default/maximum deadlines within the host ceiling. Saved values and plugin configuration take precedence; running Agents retain their snapshots, and reset restores the older budgets. Host-default hints in parentheses remain unchanged, and official presets remain opt-in.
+
+对下方同一组 **20 个 Web、5 个官方 macOS arm64 Desktop 和 DSH NEXT** 完成默认策略的增量复验，每个目标通过 6 项页面/实际 Agent 检查和 1 项进程冷重启检查，135 个运行文件与新候选逐字节一致。195 项测试、类型、构建和客户端语法检查通过；20 个实际 Web 宿主与 NEXT 各 11 项引擎检查通过。旧宿主无 `ptcRuntime` 时不会补入不支持的时限字段。客户端源文件字节未变。
+
+The same **20 Web versions, five official macOS arm64 Desktop versions, and DSH NEXT** listed below passed incremental checks for the new default policy: six UI/actual-Agent checks and one cold-process-restart check per target, with all 135 runtime files matching the new candidate. All 195 tests, type checking, build, and client syntax checks passed, along with 11 engine checks on each actual Web host and NEXT. Older hosts without `ptcRuntime` receive no unsupported deadline fields. The client source remains byte-identical.
+
+本次复制此前隔离 profile 并加载新候选，未重跑未变的安装器或全部语言/冲突/布局组合；下方完整矩阵保留为上一候选的历史证据。平台限制不变，测试使用本地确定性模型，无外部模型调用或新增 SWE-bench 成绩。上述验收候选标记为 `0.3.5`；发布包改为 `0.3.6`，运行文件仅更新包版本与两种预设版本标记，其余运行内容逐文件核对一致。
+
+This delta run cloned prior isolated profiles and loaded the new candidate. It did not rerun the unchanged installer or every language/conflict/layout combination; the complete matrix below remains evidence for the preceding candidate. Platform limits are unchanged. Tests use a local deterministic model with no external model calls or new SWE-bench scores. The tested candidate was labeled `0.3.5`. The `0.3.6` release changes only the package version and both preset-version markers; all other runtime content is verified file by file as identical.
+
+## 运行预算 · Runtime Budgets · 2026-10-19
+
+页面优化后已重新打包，对此前支持的 **20 个官方 Web 版本、5 个官方 macOS arm64 Desktop 版本及 DSH NEXT** 完成同一候选包复验。每个目标均通过 11 项页面功能检查、6 项真实会话检查和 3 项进程冷启动检查；安装副本的 133 个运行文件与冻结候选逐字节一致。该轮测试使用当时尚未发布、版本标记为 `0.3.5` 的开发候选。
+
+After the settings-page changes, the same packaged candidate passed revalidation on **20 supported official Web versions, five official macOS arm64 Desktop versions, and DSH NEXT**. Each target passed 11 UI behavior checks, six real-conversation checks, and three cold-process-restart checks. All 133 installed runtime files match the frozen candidate. That run used the then-unreleased development candidate labeled `0.3.5`.
+
+| 宿主 / Host | 本轮通过版本 / Versions revalidated |
+|---|---|
+| 官方 Web / Official Web | `0.1.5-alpha.1`、`alpha.2`、`rc.1`、`rc.2`、`rc.3`；`0.1.6-alpha.1`、`alpha.2`；`0.1.7-alpha.1`、`alpha.2`、`rc.1`、`rc.2`；`0.2.0-rc.1`、`rc.2`；`0.2.1-alpha.1`、`alpha.2`、`alpha.3`、`alpha.4`、`alpha.5`、`rc.1`、`rc.2` |
+| 官方 Desktop / Official Desktop | `0.1.7-rc.1`、`0.1.7-rc.2`、`0.2.0-rc.1`、`0.2.0-rc.2`、`0.2.1-rc.2` |
+| DSH NEXT | `2.0.17-next`（内置 Harness / bundled Harness `0.2.0-rc.2`）|
+
+全部 20 个 Web 在 800px 宽窗口追加控件边界、滚动可见性和指针命中检查，均通过。440px 宽时宿主固定侧栏仅给插件留下 156px 内容区，不计入可用性通过范围；最低、最高版不加载插件的通用设置也存在相同限制。原先仅检查内部 scrollWidth 的第 12 项已剔除，避免误称窄窗口可用。
+
+All 20 Web versions also pass control-boundary, scroll-visibility, and pointer-hit checks at an 800px viewport. At 440px the host navigation leaves only 156px for plugin content; narrow-window usability is not accepted. Plugin-free baselines on the earliest and latest hosts show the same settings-layout limitation. The original internal-scrollWidth check is excluded from the acceptance count.
+
+覆盖“预设状态 / 上下文配置”标签页、按需读取、键盘切换、草稿保留、实际宿主默认值和单位、自定义选择器、保存、无效输入、并发修改冲突、重新读取、恢复默认、中英文、重载与冷启动持久化。官方预设开关默认关闭，开启与关闭后的新旧 Agent 预算隔离通过真实 Standard 会话验证，Super Code 的任务容量限制通过实际 PTC 工具调用验证；标准、PTC、极简和创造四种预设的选择、压缩、并发及卸载边界另由每版 10 项引擎专项覆盖。
+
+Checks cover the Preset status / Context settings tabs, lazy reads, keyboard navigation, retained drafts, actual host defaults and units, custom selectors, save, invalid input, concurrent-edit conflicts, reload, reset, Chinese/English, and cold-start persistence. The official-preset switch defaults off. Real Standard conversations verify opt-in and creation-time snapshots; actual PTC calls verify Super Code task-capacity limits. Ten engine checks per Web version separately cover selection, compaction, concurrency, and disposal for Standard, PTC, Minimal, and Create.
+
+本轮修复语言偏好尚未保存时插件提前重载、导致语言回退的问题。192 项测试、类型检查、构建及客户端语法检查通过；20 个 Web 宿主各 10 项压缩专项、NEXT 10 项压缩专项通过。15 个 Web 宿主及 NEXT 的实际 Node PTC 均验证默认预算与显式较短时限；`0.1.5` 五版没有新版 `ptcRuntime`，页面正确禁用这些时限字段，其余预算和旧版 run_code 正常使用。
+
+A fix waits for the accepted language preference before preset synchronization can reload the page, preventing optimistic language changes from being lost. All 192 tests, type checking, build, and client syntax checks pass, along with ten compaction checks on each Web version and ten on NEXT. Actual Node PTC tests on 15 Web hosts and NEXT verify the plugin default and an explicit shorter deadline. The five `0.1.5` hosts lack the newer `ptcRuntime`; their deadline fields are correctly disabled while other budgets and legacy run_code remain usable.
+
+官方桌面使用应用内插件页安装、启用，未修改日常应用或配置。测试使用本地确定性模型，没有外部模型调用或新增 SWE-bench 成绩。原生实测范围为 macOS arm64，Web 使用 Chromium；未覆盖原生 Windows/macOS x64 或 Safari 专属行为。逐宿主真实官方会话为 Standard，专项组合测试不代表所有内置工具、权限和终端场景均已逐一实测。
+
+Official Desktop packages were installed and enabled through their native plugin pages without changing daily apps or profiles. A local deterministic model supplied responses, with no external model calls or new SWE-bench scores. Native testing covers macOS arm64 and Web testing uses Chromium; Windows/macOS x64 native apps and Safari-specific behavior were not checked. Per-host real official-preset conversations use Standard; the engine composition checks do not establish every built-in tool, permission, or terminal scenario.
+
 ## 0.3.5 · Harness 0.2.1-rc.2 · 2026-10-18
 
 兼容范围扩展至 `0.2.1-rc.2`，最低保持 `0.1.5-alpha.1`。本次基于主干 0.3.4，逐版固定并审计宿主依赖，在独立 profile 中真实安装和运行。现有 peer 依赖范围已覆盖这些预发布版本；补充 v4 日志迁移检查后，修复旧插件来源记录的识别及投影缓存失效，未增加依赖，发布版本为 0.3.5。

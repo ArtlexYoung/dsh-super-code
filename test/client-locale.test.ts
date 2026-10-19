@@ -45,11 +45,29 @@ test('preset settings registration does not wait on the Remote mount lifecycle',
   })
   assert.equal(injected, true)
   assert.equal(mounts.length, 1, 'The registry accepts one contribution per package')
-  assert.deepEqual([...new Set(mounts[0].descriptors.map((row: any) => row.namespace))].sort(), ['superCodeMemory', 'superCodePresets'])
+  assert.deepEqual([...new Set(mounts[0].descriptors.map((row: any) => row.namespace))].sort(), ['superCodeBudgets', 'superCodeMemory', 'superCodePresets'])
   for (const descriptor of mounts[0].descriptors) for (const parameter of descriptor.parameters) {
     assert.equal(parameter.codec.create().parse('valid'), 'valid')
     assert.equal(parameter.codec.schema.parse('legacy'), 'legacy')
     assert.throws(() => parameter.codec.create().parse(42))
+  }
+})
+
+test('budget fields round-trip units, retain blank defaults and reject contradictory limits', () => {
+  const { plugin } = fixture()
+  const config = { applyToOfficialPresets: true, maxTasks: 48, maxContextBytes: 65536, budgets: { pressureBasis: 'window',
+    thresholdRatio: 0.8, retainRatio: 0.16, summaryMaxTokens: 8192, compactionRetries: 0,
+    ptcTimeoutMs: 123, ptcMaxTimeoutMs: 600000 } }
+  const draft = plugin.budgetDraft(config)
+  assert.equal(draft.thresholdRatio, '80')
+  assert.equal(draft.ptcTimeoutMs, '0.123')
+  assert.equal(draft.ptcMaxTimeoutMs, '600')
+  assert.equal(draft.compactionRetries, '0')
+  assert.deepEqual(JSON.parse(JSON.stringify(plugin.budgetConfiguration(draft))), { ok: true, configuration: config })
+  assert.deepEqual(JSON.parse(JSON.stringify(plugin.budgetConfiguration(plugin.budgetDraft({})))), { ok: true, configuration: { applyToOfficialPresets: false } })
+  for (const [key, value, error] of [['retainRatio', '90', 'retain'], ['ptcTimeoutMs', '601', 'ptc-order'],
+    ['summaryMaxTokens', '-1', 'invalid'], ['maxTasks', '1.5', 'invalid'], ['thresholdRatio', 'NaN', 'invalid'], ['applyToOfficialPresets', 'true', 'invalid']]) {
+    assert.equal(plugin.budgetConfiguration({ ...draft, [key!]: value }).error, error)
   }
 })
 
@@ -244,9 +262,33 @@ test('preset display waits for the host preference instead of rewriting a provis
   assert.deepEqual(calls, ['zh'])
   active = 'en'; localeChanged()
   await new Promise(resolve => setImmediate(resolve))
+  assert.deepEqual(calls, ['zh'], 'optimistic locale changes wait for the host preference write')
+  preference = { preference: 'en' }; preferenceChanged()
+  await new Promise(resolve => setImmediate(resolve))
   assert.deepEqual(calls, ['zh', 'en'])
   stop()
   assert.equal(detached, 2)
+})
+
+test('display synchronization waits for the first language preference write before reloading', async () => {
+  const { plugin } = fixture()
+  let active = 'zh', accepted: string | undefined, localeChanged = () => {}, preferenceChanged = () => {}, reloads = 0
+  const calls: string[] = []
+  const stop = plugin.synchronizePresetDisplay({ synchronize: async (language: string) => {
+    calls.push(language); return { ok: true, value: { changed: language === 'en' } }
+  } }, { getSnapshot: () => ({ active }), subscribe: (listener: () => void) => { localeChanged = listener; return () => {} } },
+  () => { reloads++ }, (error: unknown) => { throw error }, {
+    getSnapshot: () => ({ status: 'ready', mode: 'host', value: { preference: accepted } }),
+    subscribe: (listener: () => void) => { preferenceChanged = listener; return () => {} },
+  })
+  await new Promise(resolve => setImmediate(resolve))
+  active = 'en'; localeChanged()
+  await new Promise(resolve => setImmediate(resolve))
+  assert.deepEqual(calls, ['zh']); assert.equal(reloads, 0)
+  accepted = 'en'; preferenceChanged()
+  await new Promise(resolve => setImmediate(resolve))
+  assert.deepEqual(calls, ['zh', 'en']); assert.equal(reloads, 1)
+  stop()
 })
 
 test('preset settings declare the available host preference service before reading it', () => {
@@ -275,7 +317,7 @@ test('preset settings declare the available host preference service before readi
       },
       slots: { inject: () => {} }, sidebarRightTabs: { register: () => () => {} }, sessions: {}, sidebarRight: {},
     })
-    assert.deepEqual([...dependencies[0]!], ['remote.superCodePresets', service])
+    assert.deepEqual([...dependencies[0]!], ['remote.superCodePresets', 'remote.superCodeBudgets', service])
     assert.deepEqual(registered, ['super-code'])
   }
 })

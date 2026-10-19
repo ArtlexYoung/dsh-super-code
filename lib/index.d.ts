@@ -1,9 +1,13 @@
 /** Package-root registration lets Harness discover the browser contribution. */
 import type { Context } from '@deepseek-ai/cordis';
+import { configurationSchema } from './dsh/budgets.js';
+import type { Configuration } from './dsh/budgets.js';
+export declare const Config: typeof configurationSchema;
 declare const harnessPlugin: {
     readonly name: string;
     readonly inject: readonly string[];
-    readonly apply: (ctx: Context) => Promise<void>;
+    readonly Config: typeof Config;
+    readonly apply: (ctx: Context, config?: Configuration) => Promise<void>;
 };
 export default harnessPlugin;
 export * from './core/teams.js';

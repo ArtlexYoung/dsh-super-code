@@ -256,6 +256,29 @@ const ActionButton = React.forwardRef(function ActionButton({ children, title, .
 
 const LOCALE_NS = 'dshSuperCode'
 const zh = {
+  'settings.presetTab': '预设状态', 'settings.contextTab': '上下文配置', 'settings.tabs': 'Super Code 配置',
+  'budget.common': '通用预算', 'budget.superCode': 'Super Code 专属预算',
+  'budget.applyToOfficialPresets': '同时应用到官方预设', 'budget.officialHint': '开启后，通用预算也用于标准、PTC、极简和创造模式；不包含下方的 Super Code 专属预算。',
+  'budget.superCodeHint': '仅用于 Super Code 的任务记录和任务记忆，始终不影响官方预设。',
+  'budget.defaultValue': '（默认：{value}）', 'budget.off': '关闭', 'budget.managed': '宿主管理',
+  'budget.title': '上下文配置', 'budget.scope': '保存后对新建 Agent 生效，运行中的任务保留原配置。',
+  'budget.defaults': '留空沿用默认值，括号内显示默认值；通用预算随宿主版本变化。恢复默认会清除这里的覆盖，回到插件加载配置；未配置时跟随宿主。',
+  'budget.context': '上下文压缩', 'budget.execution': '批量工具执行', 'budget.advanced': '更多预算',
+  'budget.pressureBasis': '压缩预算基准', 'budget.inherit': '跟随默认', 'budget.host': '宿主策略', 'budget.window': '完整上下文窗口',
+  'budget.thresholdRatio': '压缩触发比例（%）', 'budget.retainRatio': '最近原文保留比例（%）', 'budget.summaryMaxTokens': '摘要输出上限（Token）',
+  'budget.compactionRetries': '压缩追加尝试次数', 'budget.maxOverflowRetries': '上下文溢出重试次数',
+  'budget.ptcTimeoutMs': '默认执行时限（秒）', 'budget.ptcMaxTimeoutMs': '执行时限上限（秒）',
+  'budget.maxTasks': '活跃任务记录上限', 'budget.maxContextBytes': '任务记忆上下文（字节）',
+  'budget.contextHint': '保留比例需小于触发比例。较大的预算会占用更多上下文。',
+  'budget.ptcHint': '包含工具等待时间；默认时限不能超过上限，也不能超过宿主允许值。',
+  'budget.ptcUnavailable': '此宿主的 PTC 计时由宿主管理；其他预算仍可配置。', 'budget.ptcCeiling': '宿主允许的最长时限：{seconds} 秒。',
+  'budget.save': '保存预算', 'budget.reset': '恢复默认', 'budget.reload': '重新读取', 'budget.saving': '正在保存…',
+  'budget.saved': '已保存，对新建 Agent 生效。', 'budget.resetDone': '已恢复默认，对新建 Agent 生效。',
+  'budget.error.connection': '暂时无法读取预算，请重试。', 'budget.error.invalid': '请检查数值范围、保留比例和执行时限。',
+  'budget.error.retain': '保留比例必须小于压缩触发比例；未填写时分别按 16% 和 80% 校验。', 'budget.error.ptc-order': '默认执行时限不能超过执行时限上限。',
+  'budget.error.conflict': '预算已在别处修改。草稿已保留，请重新读取后再修改。', 'budget.error.read-only': '当前宿主的设置只读，无法保存。',
+  'budget.error.ptc-unavailable': '此宿主不支持覆盖 PTC 总执行时限。', 'budget.error.ptc-ceiling': '执行时限超过了宿主允许的上限。',
+  'budget.error.save-failed': '保存失败，草稿已保留，请重试。',
   'memory.add': '新增记忆', 'memory.edit': '编辑', 'memory.cancel': '取消', 'memory.save': '保存', 'memory.delete': '删除', 'memory.deleting': '正在删除…', 'memory.saving': '正在保存…',
   'memory.topic': '主题', 'memory.kind': '类型', 'memory.summaryLabel': '标题', 'memory.detailLabel': '内容', 'memory.manual': '手动维护',
   'memory.topicHint': '字母、数字、点、下划线或短横线，最多 96 个字符。',
@@ -326,6 +349,29 @@ const zh = {
   'detail.path': 'Agent 路径', 'detail.title': 'Agent 详情', 'detail.refresh': '刷新对话详情', 'detail.task': '任务', 'detail.agent': 'Agent', 'detail.interrupted': 'Agent · 已中断', 'detail.error': '执行错误', 'detail.incomplete': '执行未完成，请稍后重试。', 'detail.input': '输入', 'detail.output': '输出', 'detail.cacheRead': '缓存读取', 'detail.cacheWrite': '缓存写入', 'detail.total': 'Token 总量', 'detail.hitRate': '缓存命中率', 'detail.moreUsage': '用量详情', 'detail.unavailable': '未提供', 'detail.reading': '正在读取对话…', 'detail.read': '读取中…', 'detail.older': '加载更早记录', 'detail.latest': '回到最新', 'detail.empty': '暂无执行内容', 'detail.new': '有新内容 · 查看最新', 'detail.loadError': '对话详情读取失败', 'detail.connection': '连接中断，正在重连', 'detail.historyError': '历史记录读取失败', 'detail.open': '展开全文', 'detail.noAccess': '无法打开详情，请重试', 'tree.loadError': '部分执行记录读取失败，请刷新重试', 'detail.unknown': '用量未知', 'main.agent': '主 Agent', 'tree.open': '点击查看详情', 'tree.expand': '展开', 'tree.collapse': '收起', 'image': '[图片]'
 }
 const en = {
+  'settings.presetTab': 'Preset status', 'settings.contextTab': 'Context settings', 'settings.tabs': 'Super Code settings',
+  'budget.common': 'Common budgets', 'budget.superCode': 'Super Code budgets',
+  'budget.applyToOfficialPresets': 'Also apply to official presets', 'budget.officialHint': 'Apply common budgets to Standard, PTC, Minimal and Create. Super Code task and memory limits below remain exclusive to Super Code.',
+  'budget.superCodeHint': 'Task records and task memory for Super Code. These limits never affect official presets.',
+  'budget.defaultValue': '(default: {value})', 'budget.off': 'off', 'budget.managed': 'host-managed',
+  'budget.title': 'Context settings', 'budget.scope': 'Changes apply to new Agents. Running tasks keep their current settings.',
+  'budget.defaults': 'Leave fields blank to inherit defaults. Parentheses show defaults; common budgets follow the host version. Reset clears overrides and restores the plugin configuration, or host defaults when unconfigured.',
+  'budget.context': 'Context compression', 'budget.execution': 'Batched tool execution', 'budget.advanced': 'More budgets',
+  'budget.pressureBasis': 'Compression budget basis', 'budget.inherit': 'Inherit default', 'budget.host': 'Host policy', 'budget.window': 'Full context window',
+  'budget.thresholdRatio': 'Compress at (%)', 'budget.retainRatio': 'Keep recent context (%)', 'budget.summaryMaxTokens': 'Summary output limit (tokens)',
+  'budget.compactionRetries': 'Additional compression attempts', 'budget.maxOverflowRetries': 'Context overflow retries',
+  'budget.ptcTimeoutMs': 'Default deadline (seconds)', 'budget.ptcMaxTimeoutMs': 'Maximum deadline (seconds)',
+  'budget.maxTasks': 'Active task record limit', 'budget.maxContextBytes': 'Task-memory context (bytes)',
+  'budget.contextHint': 'Retention must be below the compression threshold. Larger budgets use more context.',
+  'budget.ptcHint': 'Includes tool waits. The default deadline must fit within both the configured maximum and the host ceiling.',
+  'budget.ptcUnavailable': 'This host manages PTC timing. Other budgets remain configurable.', 'budget.ptcCeiling': 'Host deadline ceiling: {seconds} seconds.',
+  'budget.save': 'Save budgets', 'budget.reset': 'Reset to defaults', 'budget.reload': 'Reload settings', 'budget.saving': 'Saving…',
+  'budget.saved': 'Saved. New Agents will use these settings.', 'budget.resetDone': 'Defaults restored for new Agents.',
+  'budget.error.connection': 'Budgets could not be loaded. Try again.', 'budget.error.invalid': 'Check the ranges, retention ratio, and deadlines.',
+  'budget.error.retain': 'Retention must be below the compression threshold. Blank values are checked as 16% and 80%, respectively.', 'budget.error.ptc-order': 'The default deadline must not exceed the maximum deadline.',
+  'budget.error.conflict': 'Budgets changed elsewhere. Your draft is retained; reload before editing again.', 'budget.error.read-only': 'This host has read-only settings.',
+  'budget.error.ptc-unavailable': 'This host cannot override PTC elapsed deadlines.', 'budget.error.ptc-ceiling': 'The deadline exceeds the host ceiling.',
+  'budget.error.save-failed': 'Save failed. Your draft is retained; try again.',
   'memory.add': 'Add memory', 'memory.edit': 'Edit', 'memory.cancel': 'Cancel', 'memory.save': 'Save', 'memory.delete': 'Delete', 'memory.deleting': 'Deleting…', 'memory.saving': 'Saving…',
   'memory.topic': 'Topic', 'memory.kind': 'Type', 'memory.summaryLabel': 'Title', 'memory.detailLabel': 'Content', 'memory.manual': 'Manually maintained',
   'memory.topicHint': 'Letters, digits, dots, underscores or hyphens; up to 96 characters.',
@@ -1533,27 +1579,178 @@ const memoryRemoteContribution = {
   })),
 }
 
+// Budget settings use the same public Remote transport as the preset settings.
+const budgetRemoteContribution = {
+  package: 'dsh-super-code', descriptors: ['readConfig', 'saveConfig', 'resetConfig'].map(method => ({
+    id: `dsh-super-code:superCodeBudgets/${method}`, service: 'superCodeBudgets', namespace: 'superCodeBudgets', method, invocation: { kind: 'direct' },
+    parameters: (method === 'saveConfig' ? ['content', 'expected'] : method === 'resetConfig' ? ['expected'] : [])
+      .map(name => ({ name, wire: name, source: 'json', codec: remoteStringCodec })), result: { mode: 'src-json' },
+  })),
+}
+
+const budgetFields = [
+  { key: 'thresholdRatio', group: 'context', factor: 0.01, min: 1, max: 100, step: 'any' },
+  { key: 'retainRatio', group: 'context', factor: 0.01, min: 0, max: 100, step: 'any' },
+  { key: 'summaryMaxTokens', group: 'context', factor: 1, min: 1, step: 1 },
+  { key: 'ptcTimeoutMs', group: 'execution', factor: 1000, min: 0.001, step: 0.001 },
+  { key: 'ptcMaxTimeoutMs', group: 'execution', factor: 1000, min: 0.001, step: 0.001 },
+  { key: 'compactionRetries', group: 'advanced', factor: 1, min: 0, max: 10, step: 1 },
+  { key: 'maxOverflowRetries', group: 'advanced', factor: 1, min: 0, max: 10, step: 1 },
+  { key: 'maxTasks', group: 'superCode', root: true, factor: 1, min: 1, max: 128, step: 1 },
+  { key: 'maxContextBytes', group: 'superCode', root: true, factor: 1, min: 1024, max: 262144, step: 1 },
+]
+function budgetDraft(configuration) {
+  return Object.fromEntries([['applyToOfficialPresets', configuration.applyToOfficialPresets ?? false], ['pressureBasis', configuration.budgets?.pressureBasis ?? ''],
+    ...budgetFields.map(field => {
+      const value = field.root ? configuration[field.key] : configuration.budgets?.[field.key]
+      return [field.key, value === undefined ? '' : String(value / field.factor)]
+    })])
+}
+function budgetConfiguration(draft) {
+  const config = {}, budgets = {}
+  if (draft.applyToOfficialPresets !== undefined) {
+    if (typeof draft.applyToOfficialPresets !== 'boolean') return { ok: false, error: 'invalid' }
+    config.applyToOfficialPresets = draft.applyToOfficialPresets
+  }
+  if (draft.pressureBasis) {
+    if (!['host', 'window'].includes(draft.pressureBasis)) return { ok: false, error: 'invalid' }
+    budgets.pressureBasis = draft.pressureBasis
+  }
+  for (const field of budgetFields) {
+    const input = draft[field.key]?.trim()
+    if (!input) continue
+    const value = Number(input)
+    if (!Number.isFinite(value) || value < field.min || (field.max !== undefined && value > field.max)) return { ok: false, error: 'invalid' }
+    const scaled = value * field.factor
+    const selected = field.step === 'any' ? scaled : Math.round(scaled)
+    if (field.step !== 'any' && (Math.abs(selected - scaled) > 1e-7 || !Number.isSafeInteger(selected))) return { ok: false, error: 'invalid' }
+    ;(field.root ? config : budgets)[field.key] = selected
+  }
+  if ((budgets.retainRatio ?? 0.16) >= (budgets.thresholdRatio ?? 0.8)) return { ok: false, error: 'retain' }
+  if (budgets.ptcTimeoutMs !== undefined && budgets.ptcMaxTimeoutMs !== undefined && budgets.ptcTimeoutMs > budgets.ptcMaxTimeoutMs) return { ok: false, error: 'ptc-order' }
+  if (Object.keys(budgets).length) config.budgets = budgets
+  return { ok: true, configuration: config }
+}
+
+function BudgetSettings({ api, t, active }) {
+  const [snapshot, setSnapshot] = useState(null)
+  const [draft, setDraft] = useState(() => budgetDraft({})), [busy, setBusy] = useState(false)
+  const [error, setError] = useState(''), [notice, setNotice] = useState('')
+  const alive = useRef(false), pending = useRef(false)
+  const receive = value => { setSnapshot(value); setDraft(budgetDraft(value.configuration)) }
+  const read = async () => {
+    if (pending.current) return
+    pending.current = true; setBusy(true); setError(''); setNotice('')
+    try {
+      const response = await api.readConfig()
+      if (!response.ok) throw new Error('Remote unavailable')
+      if (alive.current) receive(response.value)
+    } catch { if (alive.current) setError('connection') }
+    finally { pending.current = false; if (alive.current) setBusy(false) }
+  }
+  useEffect(() => { alive.current = true; return () => { alive.current = false } }, [api])
+  useEffect(() => { if (active && !snapshot && !error) read() }, [api, active])
+  const save = async reset => {
+    if (pending.current || !snapshot?.writable) return
+    const parsed = reset ? { ok: true } : budgetConfiguration(draft)
+    if (!parsed.ok) { setError(parsed.error); setNotice(''); return }
+    pending.current = true; setBusy(true); setError(''); setNotice('')
+    try {
+      const response = reset ? await api.resetConfig(String(snapshot.revision))
+        : await api.saveConfig(JSON.stringify(parsed.configuration), String(snapshot.revision))
+      if (!response.ok) throw new Error('Remote unavailable')
+      if (!alive.current) return
+      if (response.value.ok) { receive(response.value.snapshot); setNotice(reset ? 'resetDone' : 'saved') }
+      else setError(response.value.error)
+    } catch { if (alive.current) setError('save-failed') }
+    finally { pending.current = false; if (alive.current) setBusy(false) }
+  }
+  const disabled = busy || !snapshot?.writable
+  const dirty = snapshot && JSON.stringify(draft) !== JSON.stringify(budgetDraft(snapshot.configuration))
+  const edit = (key, value) => { setDraft(current => ({ ...current, [key]: value })); setError(''); setNotice('') }
+  const defaultLabel = (key, field) => {
+    const value = field?.root ? snapshot?.defaults?.[key] : snapshot?.defaults?.budgets?.[key]
+    const shown = key === 'pressureBasis' ? t('budget.host') : value === undefined ? t('budget.managed') : Number(value / field.factor).toLocaleString('en-US', { maximumFractionDigits: 3 })
+    return React.createElement('span', { className: 'dsh-super-code-budget-default' }, text(t, 'budget.defaultValue', { value: shown }))
+  }
+  const fields = group => budgetFields.filter(field => field.group === group).map(field => {
+    const id = `super-code-budget-${field.key}`
+    return React.createElement('div', { className: 'dsh-super-code-settings-field', key: field.key },
+      React.createElement('label', { htmlFor: id }, t(`budget.${field.key}`), ' ', defaultLabel(field.key, field)),
+      React.createElement('input', { id, type: 'number', inputMode: 'decimal', value: draft[field.key],
+        min: field.min, max: group === 'execution' && snapshot?.ptcMaxTimeoutMs ? snapshot.ptcMaxTimeoutMs / 1000 : field.max,
+        step: field.step, placeholder: t('budget.inherit'), disabled: disabled || (group === 'execution' && snapshot?.ptcMaxTimeoutMs === false),
+        onChange: event => edit(field.key, event.target.value) }))
+  })
+  return React.createElement('section', { className: 'dsh-super-code-budgets' },
+    React.createElement('form', { 'aria-label': t('budget.title'), 'aria-busy': busy, onSubmit: event => { event.preventDefault(); save(false) } },
+      React.createElement('p', { className: 'dsh-super-code-budget-hint' }, t('budget.scope')),
+      React.createElement('section', { className: 'dsh-super-code-budget-group', 'aria-labelledby': 'super-code-common-title' },
+      React.createElement('h3', { id: 'super-code-common-title' }, t('budget.common')),
+      React.createElement('label', { className: 'dsh-super-code-budget-switch' },
+        React.createElement('input', { type: 'checkbox', role: 'switch', checked: draft.applyToOfficialPresets, disabled,
+          'aria-describedby': 'super-code-official-hint', onChange: event => edit('applyToOfficialPresets', event.target.checked) }),
+        React.createElement('span', null, t('budget.applyToOfficialPresets'), ' ', React.createElement('span', { className: 'dsh-super-code-budget-default' }, text(t, 'budget.defaultValue', { value: t('budget.off') })))),
+      React.createElement('p', { id: 'super-code-official-hint', className: 'dsh-super-code-budget-hint' }, t('budget.officialHint')),
+      React.createElement('p', { className: 'dsh-super-code-budget-hint' }, t('budget.defaults')),
+      React.createElement('fieldset', null, React.createElement('legend', null, t('budget.context')),
+        React.createElement('div', { className: 'dsh-super-code-budget-grid' },
+          React.createElement('div', { className: 'dsh-super-code-settings-field' },
+            React.createElement('label', { id: 'super-code-budget-basis-label' }, t('budget.pressureBasis'), ' ', defaultLabel('pressureBasis')),
+            React.createElement(SelectControl, { id: 'super-code-budget-basis', label: t('budget.pressureBasis'), value: draft.pressureBasis,
+              choices: [['', t('budget.inherit')], ['host', t('budget.host')], ['window', t('budget.window')]], disabled,
+              onChange: value => edit('pressureBasis', value) })), fields('context')),
+        React.createElement('small', null, t('budget.contextHint'))),
+      React.createElement('fieldset', null, React.createElement('legend', null, t('budget.execution')),
+        React.createElement('div', { className: 'dsh-super-code-budget-grid' }, fields('execution')),
+        React.createElement('small', null, t(snapshot?.ptcMaxTimeoutMs === false ? 'budget.ptcUnavailable' : 'budget.ptcHint')),
+        snapshot?.ptcMaxTimeoutMs && React.createElement('small', null, text(t, 'budget.ptcCeiling', { seconds: snapshot.ptcMaxTimeoutMs / 1000 }))),
+      React.createElement('details', { className: 'dsh-super-code-budget-more' },
+        React.createElement('summary', null, t('budget.advanced')),
+        React.createElement('div', { className: 'dsh-super-code-budget-grid' }, fields('advanced')))),
+      React.createElement('section', { className: 'dsh-super-code-budget-group dsh-super-code-budget-exclusive', 'aria-labelledby': 'super-code-exclusive-title' },
+        React.createElement('h3', { id: 'super-code-exclusive-title' }, t('budget.superCode')),
+        React.createElement('p', { className: 'dsh-super-code-budget-hint' }, t('budget.superCodeHint')),
+        React.createElement('div', { className: 'dsh-super-code-budget-grid' }, fields('superCode'))),
+      !busy && snapshot && !snapshot.writable && React.createElement('small', null, t('budget.error.read-only')),
+      error && React.createElement('p', { role: 'alert' }, t(`budget.error.${error}`)),
+      notice && React.createElement('p', { role: 'status', className: 'dsh-super-code-budget-hint' }, t(`budget.${notice}`)),
+      React.createElement('div', { className: 'dsh-super-code-settings-form-actions' },
+        error && React.createElement(ActionButton, { type: 'button', disabled: busy, onClick: read }, t('budget.reload')),
+        React.createElement(ActionButton, { type: 'button', disabled, onClick: () => save(true) }, t('budget.reset')),
+        React.createElement(ActionButton, { type: 'submit', className: 'dsh-super-code-primary-button', disabled: disabled || !dirty }, t(busy ? 'budget.saving' : 'budget.save')))))
+}
+
 // Old hosts render file metadata. Synchronize through our own Remote, then
 // reload their cached roster only when a managed field actually changed.
 function synchronizePresetDisplay(api, locale, reload, onError, preferenceScope) {
   let disposed = false, running = false, pending = '', last = '', needsReload = false
+  let observed = locale.getSnapshot().active, awaitingPreference = false, settled = false
   const changed = () => {
-    // A provisional browser locale can precede the host's saved preference.
-    // Do not rewrite the preset or reload while that public scope is loading.
-    if (preferenceScope?.getSnapshot().status === 'loading') return
-    pending = locale.getSnapshot().active
-    if (running || pending === last) return
+    const language = locale.getSnapshot().active
+    if (language !== observed) { observed = language; awaitingPreference = !!preferenceScope }
+    const preference = preferenceScope?.getSnapshot()
+    // Locale publishes optimistically, before its host write starts. A reload
+    // must wait for that preference to appear in the accepted public snapshot.
+    settled = preference?.status !== 'loading'
+    if (preference?.status === 'ready' && preference.mode !== 'memory') {
+      if (preference.value?.preference === language) awaitingPreference = false
+      else if (awaitingPreference || preference.value?.preference !== undefined) settled = false
+    }
+    if (!settled) return
+    pending = language
+    if (running || (pending === last && !needsReload)) return
     running = true
     void (async () => {
       try {
-        while (!disposed && pending !== last) {
+        while (!disposed && settled && pending !== last) {
           const language = pending
           const result = await api.synchronize(language)
           if (!result.ok) throw new Error('Preset display synchronization failed')
           last = language
           needsReload ||= result.value.changed
-          if (!disposed && needsReload && pending === language) { reload(); return }
         }
+        if (!disposed && settled && needsReload && pending === last) reload()
       } catch (error) { if (!disposed) onError(error) }
       finally { running = false }
     })()
@@ -1564,7 +1761,8 @@ function synchronizePresetDisplay(api, locale, reload, onError, preferenceScope)
   return () => { disposed = true; unsubscribe(); unsubscribePreference() }
 }
 
-function PresetSettings({ api, t }) {
+function PresetSettings({ api, budgetApi, t }) {
+  const [tab, setTab] = useState('preset')
   const [status, setStatus] = useState(null), [customId, setCustomId] = useState(null)
   const reinstall = status?.reinstallable ?? status?.state === 'installed'
   const name = customId ?? (reinstall ? status.id : 'super-code')
@@ -1630,12 +1828,22 @@ function PresetSettings({ api, t }) {
   const available = status && ['available', 'installed'].includes(status.state)
   const versionState = status?.presetVersion ? status.presetVersion === status.pluginVersion ? 'match' : 'mismatch' : 'unknown'
   return React.createElement('section', { className: 'dsh-super-code-settings' },
-    React.createElement('header', { className: 'dsh-super-code-settings-header' },
-      React.createElement('span', { className: 'dsh-super-code-settings-mark', 'aria-hidden': true }, React.createElement(Glyph, { type: 'code' })),
-      React.createElement('div', { className: 'dsh-super-code-settings-head-text' },
-        React.createElement('h2', { className: 'dsh-super-code-settings-name' }, t('preset.title')),
-        React.createElement('p', { className: 'dsh-super-code-settings-description' }, t('preset.description')))),
+    React.createElement('div', { className: 'dsh-super-code-settings-tabs', role: 'tablist', 'aria-label': t('settings.tabs'), onKeyDown: event => {
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
+      event.preventDefault()
+      const selected = event.key === 'Home' ? 'preset' : event.key === 'End' ? 'context' : tab === 'preset' ? 'context' : 'preset'
+      setTab(selected)
+      event.currentTarget.querySelector(`#super-code-tab-${selected}`)?.focus()
+    } }, ...['preset', 'context'].map(value => React.createElement('button', { key: value, type: 'button', role: 'tab',
+      id: `super-code-tab-${value}`, 'aria-selected': tab === value, 'aria-controls': `super-code-panel-${value}`,
+      tabIndex: tab === value ? 0 : -1, onClick: () => setTab(value) }, t(`settings.${value}Tab`)))),
     React.createElement('div', { className: 'dsh-super-code-settings-body' },
+      React.createElement('div', { role: 'tabpanel', id: 'super-code-panel-preset', 'aria-labelledby': 'super-code-tab-preset', hidden: tab !== 'preset' },
+      React.createElement('header', { className: 'dsh-super-code-settings-header' },
+        React.createElement('span', { className: 'dsh-super-code-settings-mark', 'aria-hidden': true }, React.createElement(Glyph, { type: 'code' })),
+        React.createElement('div', { className: 'dsh-super-code-settings-head-text' },
+          React.createElement('h2', { className: 'dsh-super-code-settings-name' }, t('preset.title')),
+          React.createElement('p', { className: 'dsh-super-code-settings-description' }, t('preset.description')))),
       React.createElement('div', { className: 'dsh-super-code-settings-summary' },
         React.createElement('div', { className: 'dsh-super-code-settings-status-row' },
           status ? React.createElement('p', { className: 'dsh-super-code-preset-status', role: 'status', 'data-available': available },
@@ -1672,6 +1880,8 @@ function PresetSettings({ api, t }) {
         status?.delivery === 'declaration' && !status.authorable && React.createElement('p', { role: 'note' }, t('preset.declaredReadonly')),
         status?.delivery === 'directory' && !status.authorable && React.createElement('p', { role: 'note' }, t('preset.readonly'))),
       error && React.createElement('p', { role: 'alert' }, t(error))),
+      React.createElement('div', { role: 'tabpanel', id: 'super-code-panel-context', 'aria-labelledby': 'super-code-tab-context', hidden: tab !== 'context' },
+        React.createElement(BudgetSettings, { api: budgetApi, t, active: tab === 'context' }))),
     confirmation && React.createElement('dialog', { ref: dialog, className: 'dsh-super-code-confirm',
       'aria-labelledby': 'super-code-confirm-title', 'aria-describedby': 'super-code-confirm-hint',
       onKeyDown: event => { if (event.key === 'Escape') event.stopPropagation() },
@@ -1709,20 +1919,20 @@ function apply(ctx) {
   // $mount creates a lifecycle effect on this same fiber; awaiting it from
   // another effect would stall the namespace and the settings contribution.
   void ctx.remote.$mount({ package: 'dsh-super-code', descriptors: [
-    ...presetRemoteContribution.descriptors, ...memoryRemoteContribution.descriptors,
+    ...presetRemoteContribution.descriptors, ...memoryRemoteContribution.descriptors, ...budgetRemoteContribution.descriptors,
   ] }).catch(error => console.warn('Super Code Remote:', error))
   const memoryStates = new WeakMap(), workspaceStates = new WeakMap()
   // Locale already requires its host's preference service. Declare that same
   // service here: Cordis rejects even optional reads without an injection.
   const preferenceService = 'configForms' in ctx ? 'configForms' : 'settingsScope'
-  ctx.inject(['remote.superCodePresets', preferenceService], ready => {
+  ctx.inject(['remote.superCodePresets', 'remote.superCodeBudgets', preferenceService], ready => {
     const preferenceScope = preferenceService === 'configForms'
       ? ready.configForms.get('locale') : ready.settingsScope.bind({ namespace: 'locale' })
     ready.effect(() => synchronizePresetDisplay(ready.remote.superCodePresets, locale,
       () => window.location.reload(), error => console.warn('Super Code preset display:', error), preferenceScope), 'super-code: preset display')
     ready.slots.inject('settings.section', () => ready.slots.register({
       name: 'settings.section', id: 'super-code', order: 120, label: () => t('preset.title'), locale: LOCALE_NS,
-      inject: () => ({ api: ready.remote.superCodePresets }),
+      inject: () => ({ api: ready.remote.superCodePresets, budgetApi: ready.remote.superCodeBudgets }),
     }, PresetSettings))
   })
   ctx.effect(() => {
@@ -1766,7 +1976,7 @@ function apply(ctx) {
 
 /* Settings. */
 .dsh-super-code-settings{container-type:inline-size;border:1px solid var(--sc-line);border-radius:12px;background:var(--sc-bg);overflow:hidden}
-.dsh-super-code-settings-header{display:flex;align-items:center;gap:12px;padding:20px 24px;border-bottom:1px solid var(--sc-line)}
+.dsh-super-code-settings-header{display:flex;align-items:center;gap:12px;padding-bottom:20px;margin-bottom:20px;border-bottom:1px solid var(--sc-line)}
 .dsh-super-code-settings-mark{display:grid;place-items:center;flex:none;width:40px;height:40px;background:var(--sc-surface);border:1px solid var(--sc-line);border-radius:10px}
 .dsh-super-code-settings-mark svg{width:22px;height:22px;color:var(--sc-text)}
 .dsh-super-code-settings-head-text{display:grid;gap:4px;min-width:0}
@@ -1803,8 +2013,29 @@ function apply(ctx) {
 .dsh-super-code-settings-guidance:empty{display:none}
 .dsh-super-code-settings-guidance{margin-top:20px;padding-top:12px;border-top:1px solid var(--sc-line);color:var(--sc-muted);font-size:12px}
 .dsh-super-code-settings-guidance p{margin:0 0 4px}
+.dsh-super-code-settings-tabs{display:flex;gap:24px;padding:0 24px;border-bottom:1px solid var(--sc-line)}
+.dsh-super-code-settings-tabs>[role=tab]{border:0;border-bottom:2px solid transparent;background:none;color:var(--sc-muted);padding:12px 0;font-size:13px;cursor:pointer}
+.dsh-super-code-settings-tabs>[role=tab][aria-selected=true]{border-bottom-color:var(--sc-text);color:var(--sc-text);font-weight:600}
+.dsh-super-code-settings-tabs>[role=tab]:focus-visible{outline:2px solid var(--sc-active);outline-offset:3px;border-radius:2px}
+.dsh-super-code-settings [role=tabpanel][hidden]{display:none}
+.dsh-super-code-budgets form{gap:24px}
+.dsh-super-code-budget-hint{margin:0;color:var(--sc-muted);font-size:12px;line-height:1.65}
+.dsh-super-code-budget-group{display:flex;flex-direction:column;gap:16px;min-width:0}
+.dsh-super-code-budget-group h3{margin:0;font-size:14px;font-weight:600}
+.dsh-super-code-budget-exclusive{border-top:1px solid var(--sc-line);padding-top:24px}
+.dsh-super-code-budget-switch{display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer}
+.dsh-super-code-budget-switch input{width:30px;height:17px;flex:none;accent-color:var(--sc-active);cursor:pointer}
+.dsh-super-code-budget-default{color:var(--sc-muted);font-weight:400;font-size:12px}
+.dsh-super-code-budgets fieldset{min-width:0;margin:0;border:0;padding:0}
+.dsh-super-code-budgets legend{font-size:13px;font-weight:500;margin-bottom:12px;padding:0}
+.dsh-super-code-budget-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 16px}
+.dsh-super-code-budgets fieldset>small{margin-top:8px}
+.dsh-super-code-budget-more>summary{cursor:pointer;color:var(--sc-muted);font-size:13px;margin-bottom:12px}
+.dsh-super-code-budgets .dsh-super-code-settings-form-actions>button{margin-left:0}
+.dsh-super-code-budgets .dsh-super-code-settings-form-actions{border-top:1px solid var(--sc-line);padding-top:16px}
+@container(max-width:420px){.dsh-super-code-budget-grid{grid-template-columns:1fr}.dsh-super-code-settings-tabs{padding:0 16px}}
 .dsh-super-code-settings [role=alert],.dsh-super-code-detail [role=alert],.dsh-super-code-tree-error{font-size:13px;color:var(--sc-error);overflow-wrap:anywhere}
-@container(max-width:420px){.dsh-super-code-settings-header{padding:16px}.dsh-super-code-settings-body{padding:16px}.dsh-super-code-settings-summary{padding:12px}.dsh-super-code-settings-status-row{gap:8px}.dsh-super-code-preset-status{flex-basis:100%}.dsh-super-code-settings-form-actions>small{min-width:0;flex-basis:100%}}
+@container(max-width:420px){.dsh-super-code-settings-header{padding-bottom:16px;margin-bottom:16px}.dsh-super-code-settings-body{padding:16px}.dsh-super-code-settings-summary{padding:12px}.dsh-super-code-settings-status-row{gap:8px}.dsh-super-code-preset-status{flex-basis:100%}.dsh-super-code-settings-form-actions>small{min-width:0;flex-basis:100%}}
 
 /* Confirmation. */
 .dsh-super-code-confirm{width:min(520px,calc(100vw - 32px));max-height:calc(100dvh - 48px);overflow:auto;border:1px solid var(--sc-line);border-radius:16px;padding:24px;background:var(--sc-bg);box-shadow:0 12px 48px #0003}
@@ -2173,5 +2404,5 @@ function apply(ctx) {
   ctx.effect(() => disposeMemoryType, 'super-code: memory library tab')
 }
 
-return { inject, apply, synchronizePresetDisplay, agentSessionState, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector, agentHistoryRange, agentHistoryRows, agentHistoryWindow, memoryLibraryAddress, memoryLibraryTarget, memoryLibraryNavigation, memoryLibraryWindow, createMemoryEditor }
+return { inject, apply, budgetDraft, budgetConfiguration, synchronizePresetDisplay, agentSessionState, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector, agentHistoryRange, agentHistoryRows, agentHistoryWindow, memoryLibraryAddress, memoryLibraryTarget, memoryLibraryNavigation, memoryLibraryWindow, createMemoryEditor }
 } })

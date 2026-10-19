@@ -1,12 +1,17 @@
 /** Package-root registration lets Harness discover the browser contribution. */
 import type { Context } from '@deepseek-ai/cordis'
+import { configurationSchema } from './dsh/budgets.js'
+import type { Configuration } from './dsh/budgets.js'
 
-const harnessPlugin: { readonly name: string; readonly inject: readonly string[]; readonly apply: (ctx: Context) => Promise<void> } = {
+export const Config: typeof configurationSchema = configurationSchema
+
+const harnessPlugin: { readonly name: string; readonly inject: readonly string[]; readonly Config: typeof Config; readonly apply: (ctx: Context, config?: Configuration) => Promise<void> } = {
   name: 'super-code',
   inject: [],
-  async apply(ctx) {
+  Config,
+  async apply(ctx, config = {}) {
     const adapter = await import('./dsh/index.js')
-    await adapter.apply(ctx)
+    await adapter.apply(ctx, config)
   },
 }
 

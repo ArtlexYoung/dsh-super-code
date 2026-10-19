@@ -14,15 +14,21 @@ On the same SWE-bench Pro hard-100 set, the evaluation candidate for 0.3.0 uses 
 
 Extensive testing and regression checks are needed to verify each release's effectiveness. This takes time, so release cycles may be longer.
 
-版本号采用 **主版本.效果优化版本.维护版本**，例如 `0.3.5`：
+版本号采用 **主版本.效果优化版本.维护版本**，例如 `0.3.6`：
 
-Version numbers follow **major.performance-improvement.maintenance**, for example `0.3.5`:
+Version numbers follow **major.performance-improvement.maintenance**, for example `0.3.6`:
 
 | 位置 / Position | 含义 / Meaning |
 |---|---|
 | 第一位 / First (`0`) | 主版本，仅在大范围重构时调整。 / Major version; changes only for extensive refactoring. |
 | 第二位 / Second (`3`) | 效果优化版本，记录编码效果、效率等方面的优化。 / Performance-improvement version; tracks improvements to coding results, efficiency, and related capabilities. |
-| 第三位 / Third (`5`) | 维护版本，记录问题修复、UI 优化、兼容性适配等更新。 / Maintenance version; tracks bug fixes, UI improvements, compatibility updates, and similar changes. |
+| 第三位 / Third (`6`) | 维护版本，记录问题修复、UI 优化、兼容性适配等更新。 / Maintenance version; tracks bug fixes, UI improvements, compatibility updates, and similar changes. |
+
+## 0.3.6 · What's New
+
+针对新版 Harness 预算收紧后的效果退化，新增预算配置并默认恢复此前效果更好的旧预算，无需手动填写。[更新详情](docs/Changelog.md)
+
+Adds configurable budgets and restores the older, better-performing budgets without manual setup to address regressions observed after newer Harness versions reduced them. [Changelog](docs/Changelog.md)
 
 ## 0.3.5 · What's New
 
@@ -93,7 +99,7 @@ dsh plugin --profile web add dsh-super-code
 Download a `.tgz` package from [GitHub Releases](https://github.com/ArtlexYoung/dsh-super-code/releases). On desktop, enter its full path in “Package name or address”. For Web, run the command below with the filename you downloaded.
 
 ```bash
-dsh plugin --profile web add ./dsh-super-code-0.3.5.tgz
+dsh plugin --profile web add ./dsh-super-code-0.3.6.tgz
 ```
 
 </details>

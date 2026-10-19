@@ -2,7 +2,7 @@
 - id: super-code
   name: dsh-super-code/super-code
   config:
-    presetVersion: 0.3.5
+    presetVersion: 0.3.6
 # Reuse the host backend in an agent-local realm, as shipped Harness presets do.
 # The token meter remains host-owned; each agent owns its compaction lifecycle.
 - id: compaction
@@ -12,7 +12,7 @@
     compaction: true
   config:
     - id: compaction-basic
-      name: '@deepseek-ai/dsh-compaction-basic'
+      name: dsh-super-code/compaction
     - id: command-compact
       name: '@deepseek-ai/dsh-command-compact'
 - id: agent-instructions

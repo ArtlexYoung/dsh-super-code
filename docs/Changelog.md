@@ -1,5 +1,9 @@
 # 版本记录 · Changelog
 
+README 仅保留最近三个版本，完整记录见本页；[评测说明](EvaluationResults.md) 列出各组 DSH、插件与模型版本，以及 GLM 迁移和新版预算对照。
+
+README shows the three most recent releases; this page retains the full history. The [evaluation report](EvaluationResults.md) identifies DSH, plugin, and model versions, with GLM transfer and newer-host budget comparisons.
+
 - **0.3.6 · 2026-10-20**：排查发现新版 Harness 预算收紧后出现效果退化，因此增加插件内预算配置，并默认使用此前 Pro 测试中效果更好的旧预算，无需用户手动填写：按完整上下文窗口计算、80% 触发压缩、保留最近 16% 原文、摘要上限 8,192 Token，压缩追加尝试与溢出重试各 1 次，支持新版 PTC 的宿主默认执行时限和上限均为 600 秒。保留原有宿主默认值提示、用户自定义覆盖及运行中 Agent 的配置快照；旧宿主按能力禁用时限覆盖，始终遵守宿主时限上限。官方预设仍需手动开启应用。该修复不代表新增或改写历史评测成绩。[预算设置](UsageGuide.md#运行预算--runtime-budgets)
   **0.3.6 · 2026-10-20**: Investigation found regressions after newer Harness versions reduced their budgets. Adds in-plugin budget settings and defaults to the older budgets that performed better in the Pro tests, without manual setup: full-context-window accounting, compression at 80%, 16% recent verbatim retention, an 8,192-token summary cap, one additional compression attempt and one overflow retry, and 600-second default/maximum deadlines on hosts with the newer PTC provider. Preserves host-default hints, user overrides, and running Agents' configuration snapshots. Older hosts disable unsupported deadline overrides, and host ceilings always apply. Official presets remain opt-in. This fix does not add or revise historical evaluation scores. [Budget settings](UsageGuide.md#运行预算--runtime-budgets)
 

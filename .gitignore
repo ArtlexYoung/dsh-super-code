@@ -25,6 +25,13 @@ VALIDATION.md
 !/eval/results/
 /eval/results/*
 !/eval/results/swebench-pro-final-100/
+!/eval/glm/
+/eval/glm/*
+!/eval/glm/*.mjs
+!/eval/glm/*.ts
+!/eval/glm/*.py
+!/eval/glm/README.md
+!/eval/glm/ScriptProvenance.json
 
 # Local package/build state.
 node_modules/

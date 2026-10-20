@@ -1,0 +1,1338 @@
+{
+  "schema": 1,
+  "snapshot_at": "2026-10-16T16:52:24+08:00",
+  "new_model_calls": 0,
+  "policy": {
+    "network_failures": "Regrade the original patch; require two consistent clean official scores. Pending grades are excluded from valid-score aggregates.",
+    "identifier_failures": "Passed includes verified test-name corrections only when every missing required name maps exactly to a passing test and all raw tests pass. Original grader verdicts, patch evidence, model usage and timing are preserved.",
+    "historical_coverage": "All 400 published historical-version records bind to original summary hashes and raw grading logs. All 3296 preserved primary records have reparsed logs. Two legacy rescore directories were located. One old Graph parsed summary is stale; another old Graph smoke summary copied patch, runtime and usage metadata from a different task. Independent original-task evidence confirms both failures; original summaries are retained. These legacy cases are outside the five published runs and do not change published scores or model metrics.",
+    "metrics": "Original per-answer usage, model calls and response time are unchanged. Means can change while pending grades are excluded."
+  },
+  "dependency_cache_repair": {
+    "scope": "Per-grading-attempt cache of official Node headers; candidate, official tests and image filesystem unchanged.",
+    "versions": [
+      "16.20.2",
+      "18.20.8"
+    ],
+    "checksums": "Verified against official SHASUMS256.txt",
+    "receipt_sha256": "91eaf5d0178e1e7070fd5daa9d9040b649edba6afd0693c40738dbf1fb9ef520"
+  },
+  "environment_regrades": [
+    {
+      "group": "plugin/fastctx-prompt-only-20261014",
+      "task_index": 257,
+      "instance_id": "instance_tutao__tutanota-fb32e5f9d9fc152a00144d56dd0af01760a2d4dc-vc4e41fd0029957297843cb9dec4a25c7c756f029",
+      "status": "scored",
+      "reason": "node_headers_download_failure",
+      "original_passed": false,
+      "original_summary_sha256": "b0d3744805bfd75802215be788afcfeae7d80a1ad40e65f06d85ee5616af525e",
+      "patch_sha256": "8cfed54483fde9e3dbe816873a4a5007dbb8c704643e68f6754b258929d56e63",
+      "new_model_calls": 0,
+      "model_metrics_unchanged": true,
+      "response_time_unchanged": true,
+      "grading_attempts": 4,
+      "clean_observations": [
+        {
+          "passed": true,
+          "summary_sha256": "0c5a7218ccc3b8b3351ca3e1224e91aca026f399fcc471e9536531f69d5af57e"
+        },
+        {
+          "passed": true,
+          "summary_sha256": "0e866770030300f260272844d65e3394b7812f395aa5924d9978cbc22e8db50b"
+        }
+      ],
+      "passed": true,
+      "corrected_summary_sha256": "bad12e81a3c3e18c5ce533d98ec3f9230d8a5cbb3bec128c423d5b646e119201"
+    },
+    {
+      "group": "plugin/fastctx-prompt-only-20261014",
+      "task_index": 456,
+      "instance_id": "instance_tutao__tutanota-40e94dee2bcec2b63f362da283123e9df1874cc1-vc4e41fd0029957297843cb9dec4a25c7c756f029",
+      "status": "scored",
+      "reason": "node_headers_download_failure",
+      "original_passed": false,
+      "original_summary_sha256": "9bb3a7387f4a38297a9e3db9b6c2e9a59b7afeb8f47947031bf9633a3b0718da",
+      "patch_sha256": "2c2dacc967543798fe013e8346cbf4bb1070131de5e24f40bac7039e8d36df47",
+      "new_model_calls": 0,
+      "model_metrics_unchanged": true,
+      "response_time_unchanged": true,
+      "grading_attempts": 4,
+      "clean_observations": [
+        {
+          "passed": true,
+          "summary_sha256": "300696ab84333af238bcad6061bb59384e60793daed596c4b27affa4743d89af"
+        },
+        {
+          "passed": true,
+          "summary_sha256": "4464824e57579886a90c8e043306c6dd8036f336411892b7c4e48299943d67b3"
+        }
+      ],
+      "passed": true,
+      "corrected_summary_sha256": "500e6e4c984cd0a8afef414f9f7c1945dc5368b2b20fd87e9115211f352511f5"
+    },
+    {
+      "group": "plugin/fastctx-prompt-only-20261014",
+      "task_index": 175,
+      "instance_id": "instance_tutao__tutanota-f373ac3808deefce8183dad8d16729839cc330c1-v2939aa9f4356f0dc9f523ee5ce19d09e08ab979b",
+      "status": "scored",
+      "reason": "node_headers_download_failure",
+      "original_passed": false,
+      "original_summary_sha256": "021d0f6b5744e03d2bbd1fb2091a60253179b61944ec8d435d5c190841dee82a",
+      "patch_sha256": "11962c5b9187d9ed6d8e788143d4aa858c25d3e6f9cc50eef63fdd8b7358e825",
+      "new_model_calls": 0,
+      "model_metrics_unchanged": true,
+      "response_time_unchanged": true,
+      "grading_attempts": 2,
+      "clean_observations": [
+        {
+          "passed": true,
+          "summary_sha256": "67af2f6934f92d00b19776830e1126519ccd0a900d80f44c2872d75c9d5dfcc6"
+        },
+        {
+          "passed": true,
+          "summary_sha256": "e2c013a82e45e1a44cb46d424937e59d04db4d39932fc008498efd483c108b7d"
+        }
+      ],
+      "passed": true,
+      "corrected_summary_sha256": "840105deee9731439e3474856ae4712703b966692c6058de46e51f9d1c3bee6c"
+    },
+    {
+      "group": "official/minimal-max",
+      "task_index": 257,
+      "instance_id": "instance_tutao__tutanota-fb32e5f9d9fc152a00144d56dd0af01760a2d4dc-vc4e41fd0029957297843cb9dec4a25c7c756f029",
+      "status": "scored",
+      "reason": "node_headers_download_failure",
+      "original_passed": false,
+      "original_summary_sha256": "1729bc9129cfb1cec118dd659747906b3962748c5c0a0c468abf5e7864fb71e0",
+      "patch_sha256": "38d1e02904830be6840ce29a9d04f8e418afc78fed8bebf643c2de8a3b990d8c",
+      "new_model_calls": 0,
+      "model_metrics_unchanged": true,
+      "response_time_unchanged": true,
+      "grading_attempts": 2,
+      "clean_observations": [
+        {
+          "passed": true,
+          "summary_sha256": "f51016d56dc9d954e6facecaf1a11a31de5469e6cdefc469ba77a01508a9a065"
+        },
+        {
+          "passed": true,
+          "summary_sha256": "ce04170dd48e91c390d911134023f13d538bc0ac3a727886a3c67bd62d1fa9e7"
+        }
+      ],
+      "passed": true,
+      "corrected_summary_sha256": "60a5eae4f5423386bad2aac482fe9b016c69be8d110da4f2b571b3066f179588"
+    },
+    {
+      "group": "official/cordis-high",
+      "task_index": 257,
+      "instance_id": "instance_tutao__tutanota-fb32e5f9d9fc152a00144d56dd0af01760a2d4dc-vc4e41fd0029957297843cb9dec4a25c7c756f029",
+      "status": "scored",
+      "reason": "node_headers_download_failure",
+      "original_passed": false,
+      "original_summary_sha256": "e40848fe8607695b6d0b44f5bef51acbfddde52a9f0c8bf9d930a5afb3eda248",
+      "patch_sha256": "746bec4b3473c31872753e56a2100ef999303b036b77cbb0f08924c616364ecd",
+      "new_model_calls": 0,
+      "model_metrics_unchanged": true,
+      "response_time_unchanged": true,
+      "grading_attempts": 2,
+      "clean_observations": [
+        {
+          "passed": false,
+          "summary_sha256": "bf843685456a3d7417f96670e5b41905fe5a3bc3345f8ec950ff625921226a41"
+        },
+        {
+          "passed": false,
+          "summary_sha256": "eeb6d19e4fb4aca089ac7f774d0c9cbb5a4f4c27cf54334ed3884f03590ec0b0"
+        }
+      ],
+      "passed": false,
+      "corrected_summary_sha256": "4dcf9740379628f9cb1ba4d4f29a590ebfcd925b2926948b0fd921166afc9c68"
+    },
+    {
+      "group": "official/cordis-high",
+      "task_index": 456,
+      "instance_id": "instance_tutao__tutanota-40e94dee2bcec2b63f362da283123e9df1874cc1-vc4e41fd0029957297843cb9dec4a25c7c756f029",
+      "status": "scored",
+      "reason": "node_headers_download_failure",
+      "original_passed": false,
+      "original_summary_sha256": "c7a99066c46e38718da2d52da8c62475aec1e7bd263db330c2eeca3e6403e597",
+      "patch_sha256": "02125ad40bc9b7a328ce5f7b05e66767743a586ff8e1c47e71876034bf370143",
+      "new_model_calls": 0,
+      "model_metrics_unchanged": true,
+      "response_time_unchanged": true,
+      "grading_attempts": 3,
+      "clean_observations": [
+        {
+          "passed": true,
+          "summary_sha256": "f5509e9916e79a3583cf77a6a730b9349b53ab1be8d2a13f2884a26a09f20c80"
+        },
+        {
+          "passed": true,
+          "summary_sha256": "fd459802018e0d279b3efa352cfb0ad6d4dfac7898c56d8e8b45623700808c30"
+        }
+      ],
+      "passed": true,
+      "corrected_summary_sha256": "27ebeee66a1fdc2ab6be671ad8d5ff2d96228b19b1643fa8ff9f230d1743755c"
+    },
+    {
+      "group": "official/cordis-high",
+      "task_index": 175,
+      "instance_id": "instance_tutao__tutanota-f373ac3808deefce8183dad8d16729839cc330c1-v2939aa9f4356f0dc9f523ee5ce19d09e08ab979b",
+      "status": "scored",
+      "reason": "node_headers_download_failure",
+      "original_passed": false,
+      "original_summary_sha256": "edb3d425fa94d746996afe6d323d3017bbf6fab459afe2dbf751c9a0b3481fb0",
+      "patch_sha256": "62262261598766f4524d8375891779434996f7b20920fcaabaf6ee4dd3db4638",
+      "new_model_calls": 0,
+      "model_metrics_unchanged": true,
+      "response_time_unchanged": true,
+      "grading_attempts": 2,
+      "clean_observations": [
+        {
+          "passed": true,
+          "summary_sha256": "e5eb4dd9a4b11026a4824ed27ec767c78d1d2765837ca55f7d9b9d4344def59d"
+        },
+        {
+          "passed": true,
+          "summary_sha256": "c9e7e045be1458bdfac2198a45b2806944d073bccd15b162c9165d21d23d866a"
+        }
+      ],
+      "passed": true,
+      "corrected_summary_sha256": "ec58bbaab59b847eb42a6ebca12bceabe0af12a5b7a30b0f6dd23f2103890ec0"
+    },
+    {
+      "group": "official/standard-max",
+      "task_index": 175,
+      "instance_id": "instance_tutao__tutanota-f373ac3808deefce8183dad8d16729839cc330c1-v2939aa9f4356f0dc9f523ee5ce19d09e08ab979b",
+      "status": "scored",
+      "reason": "node_headers_download_failure",
+      "original_passed": false,
+      "original_summary_sha256": "feb0a4752f5695dc5fd194048ab96f16373bc45b589708fedcab3e84f2428d19",
+      "patch_sha256": "7ee1408944fe0c672c910f8c5dd5dc35ecdfa4ba4b59ea0d3f746739e5052fe4",
+      "new_model_calls": 0,
+      "model_metrics_unchanged": true,
+      "response_time_unchanged": true,
+      "grading_attempts": 2,
+      "clean_observations": [
+        {
+          "passed": true,
+          "summary_sha256": "586ae911dbc6d93502a0eee2ad57ca6a6bed834fcd65611f86997f862312cb1e"
+        },
+        {
+          "passed": true,
+          "summary_sha256": "3f24ba24203082e03e889533789664ac9cb08605d1ddcd8c98b67b7855f2dfcf"
+        }
+      ],
+      "passed": true,
+      "corrected_summary_sha256": "52c7ea2a74365b141f1c601e5ba96d7268af708c87e63b465e337a7d5c6cea2a"
+    },
+    {
+      "group": "official/standard-max",
+      "task_index": 456,
+      "instance_id": "instance_tutao__tutanota-40e94dee2bcec2b63f362da283123e9df1874cc1-vc4e41fd0029957297843cb9dec4a25c7c756f029",
+      "status": "scored",
+      "reason": "node_headers_download_failure",
+      "original_passed": false,
+      "original_summary_sha256": "6ea5889f7470e1e1027f0dd0ae1c2d6be43f3ef5d8aace5fc4f2965bb23224aa",
+      "patch_sha256": "4cd98a5ce651d32d3bf28a25c15bb3f6df9ac81c557171dceb1bbd771505f6b2",
+      "new_model_calls": 0,
+      "model_metrics_unchanged": true,
+      "response_time_unchanged": true,
+      "grading_attempts": 2,
+      "clean_observations": [
+        {
+          "passed": true,
+          "summary_sha256": "8fd41e6ef8146606d00286a8c102daa9e8df792bc75e08d7fe3f8e5b1d24cacd"
+        },
+        {
+          "passed": true,
+          "summary_sha256": "65d7bea0bf29d479b44551db14c7a50c9cbe973a206c39ab7eb8335888f5decb"
+        }
+      ],
+      "passed": true,
+      "corrected_summary_sha256": "946b242dcf3fc2e67c5e358d38656db07bf99c1086967fbb792f156d290636f6"
+    },
+    {
+      "group": "official/standard-max",
+      "task_index": 257,
+      "instance_id": "instance_tutao__tutanota-fb32e5f9d9fc152a00144d56dd0af01760a2d4dc-vc4e41fd0029957297843cb9dec4a25c7c756f029",
+      "status": "scored",
+      "reason": "node_headers_download_failure",
+      "original_passed": false,
+      "original_summary_sha256": "8d8c9775f525b9021f2c4da93fbc9b861113adc8baef513e99b5aacf854f2a8b",
+      "patch_sha256": "66c1a48607bab32374e62c4061a9840a1b3d80834f6aca7f59214ecf16b263e1",
+      "new_model_calls": 0,
+      "model_metrics_unchanged": true,
+      "response_time_unchanged": true,
+      "grading_attempts": 2,
+      "clean_observations": [
+        {
+          "passed": true,
+          "summary_sha256": "11821fd4330e9e616541e517ec0bd28c2f0aca39a7bde658e0eb203f131c49d3"
+        },
+        {
+          "passed": true,
+          "summary_sha256": "6a2037313dbf7c631d6e77e29645d2b9c519ddf82d32320dc915fb97acaa5a75"
+        }
+      ],
+      "passed": true,
+      "corrected_summary_sha256": "e83d3c232037761b6ee96edaa78f96fb307a61021f93efdc98c3b42705386279"
+    },
+    {
+      "group": "official/standard-high",
+      "task_index": 257,
+      "instance_id": "instance_tutao__tutanota-fb32e5f9d9fc152a00144d56dd0af01760a2d4dc-vc4e41fd0029957297843cb9dec4a25c7c756f029",
+      "status": "scored",
+      "reason": "node_headers_download_failure",
+      "original_passed": false,
+      "original_summary_sha256": "9bb259e9550830fb4f580438856051747829beaf7fdfd431b830b3106316f0e7",
+      "patch_sha256": "96e7d80f34dc20e25eb61ebeb1af8eb540de2f32d13cff183142ad3530de0d62",
+      "new_model_calls": 0,
+      "model_metrics_unchanged": true,
+      "response_time_unchanged": true,
+      "grading_attempts": 2,
+      "clean_observations": [
+        {
+          "passed": true,
+          "summary_sha256": "c7ddde8cc0c6544a477966dcc967263384fa2ed5f9da3070e55bb044a3ffb204"
+        },
+        {
+          "passed": true,
+          "summary_sha256": "f80b59c31d7725f0bc010bee35ecb04f6191ed6a7740838e207fc353d9e361c7"
+        }
+      ],
+      "passed": true,
+      "corrected_summary_sha256": "4e900015cc24b37f57f0a75fa3aa371a47bd8ecbc1db94092af5301e9cd4d387"
+    },
+    {
+      "group": "official/ptc-high",
+      "task_index": 257,
+      "instance_id": "instance_tutao__tutanota-fb32e5f9d9fc152a00144d56dd0af01760a2d4dc-vc4e41fd0029957297843cb9dec4a25c7c756f029",
+      "status": "scored",
+      "reason": "node_headers_download_failure",
+      "original_passed": false,
+      "original_summary_sha256": "ab14f434bb10e8c7f9ba5ad2bb4dd1071a9acf340395281d76cb532bcb855d71",
+      "patch_sha256": "00bdd6c7607ba5fb0790da89f1ce701e3b75a37cfefebe13c86728b3ab790b5c",
+      "new_model_calls": 0,
+      "model_metrics_unchanged": true,
+      "response_time_unchanged": true,
+      "grading_attempts": 2,
+      "clean_observations": [
+        {
+          "passed": true,
+          "summary_sha256": "3d3bc174f63e576f600144154f5cdac32dd7f822ca8d54b5cc187f21c2bc0b43"
+        },
+        {
+          "passed": true,
+          "summary_sha256": "fea921c1cbb3f43a45861c5508ed5656971e583038f3066eabeb89988e0a0976"
+        }
+      ],
+      "passed": true,
+      "corrected_summary_sha256": "6dc11c87de745b069f87f4146c693681bf1af9b1f02da508791de2ebe347908e"
+    }
+  ],
+  "identifier_reviews": [
+    {
+      "group": "history/native-retrieval-afb4490",
+      "task_index": 450,
+      "instance_id": "instance_NodeBB__NodeBB-00c70ce7b0541cfc94afe567921d7668cdc8f4ac-vnan",
+      "official_passed": false,
+      "reviewed_passed": true,
+      "reason": "frozen_test_name_suffixes",
+      "required_tests": 681,
+      "parsed_tests": 714,
+      "raw_test_totals": {
+        "passed": 714,
+        "failed": 0
+      },
+      "exact_identifier_mappings": {
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"day": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"day\"",
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"off": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"off\"",
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"week": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"week\"",
+        "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should work with big arrays (length > 100)": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should work with big arrays (length > 100) "
+      },
+      "patch_sha256": "161322354122b6758ef3ca600c0ab4cd892c8f96a12027fdaac5c0215408ae15",
+      "original_summary_sha256": "1942cc5c5338131ae0778632d552cde3d891d434d7a18b4cffe32aa326f7c395",
+      "stdout_sha256": "9d7a0aa18aa28ce2a62909f7660fb2ae0368ddb5079feff674c684d19c639515",
+      "stderr_sha256": "6cd4dfb526296f85fe34658b005de948b7e77c75f8896db9c89927dec6b0ae64"
+    },
+    {
+      "group": "history/native-retrieval-afb4490",
+      "task_index": 485,
+      "instance_id": "instance_internetarchive__openlibrary-b112069e31e0553b2d374abb5f9c5e05e8f3dbbe-ve8c8d62a2b60610a3c4631f5f23ed866bada9818",
+      "official_passed": false,
+      "reviewed_passed": true,
+      "reason": "dynamic_year_test_names",
+      "required_tests": 67,
+      "parsed_tests": 67,
+      "raw_test_totals": {
+        "passed": 92,
+        "failed": 0
+      },
+      "exact_identifier_mappings": {
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2025-True]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-True]",
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-False]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2027-False]"
+      },
+      "patch_sha256": "90c055519fc24c625253511842c5ff57fb204b7ba7a6c2107b337c3575fa1bba",
+      "original_summary_sha256": "a31881299c5cc13d82577b83d10caf49e18df8d0abf7ced915188fdb986882df",
+      "stdout_sha256": "10d850219abc3904fcb42b6b2d67bec0d78484f7db1bf8bdd8cc776fc50d6438",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "group": "history/batch-hierarchy",
+      "task_index": 450,
+      "instance_id": "instance_NodeBB__NodeBB-00c70ce7b0541cfc94afe567921d7668cdc8f4ac-vnan",
+      "official_passed": false,
+      "reviewed_passed": true,
+      "reason": "frozen_test_name_suffixes",
+      "required_tests": 681,
+      "parsed_tests": 714,
+      "raw_test_totals": {
+        "passed": 714,
+        "failed": 0
+      },
+      "exact_identifier_mappings": {
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"day": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"day\"",
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"off": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"off\"",
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"week": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"week\"",
+        "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should work with big arrays (length > 100)": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should work with big arrays (length > 100) "
+      },
+      "patch_sha256": "372efd8573b367e356ec058b75f626edfe202add9bbd61cf4894633570f0206a",
+      "original_summary_sha256": "17f9f8264ca960bfb4f40faf73fbfdcbeca38ed604eb8ddd01102fd22db6003f",
+      "stdout_sha256": "746926bfa32b58e9bfa2745cbafcf6d3bd6143d3a4f2273ee5c3943e709c1fdf",
+      "stderr_sha256": "6cd4dfb526296f85fe34658b005de948b7e77c75f8896db9c89927dec6b0ae64"
+    },
+    {
+      "group": "history/batch-hierarchy",
+      "task_index": 485,
+      "instance_id": "instance_internetarchive__openlibrary-b112069e31e0553b2d374abb5f9c5e05e8f3dbbe-ve8c8d62a2b60610a3c4631f5f23ed866bada9818",
+      "official_passed": false,
+      "reviewed_passed": true,
+      "reason": "dynamic_year_test_names",
+      "required_tests": 67,
+      "parsed_tests": 67,
+      "raw_test_totals": {
+        "passed": 92,
+        "failed": 0
+      },
+      "exact_identifier_mappings": {
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2025-True]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-True]",
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-False]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2027-False]"
+      },
+      "patch_sha256": "f532b80a229a2a385df5e6bc81f2c5a8efe8056bd896d6e5c78701930c863d71",
+      "original_summary_sha256": "33416846ce7e0f10ef93112aaa8c79a3688c3c683142a4c4ef01d1c4b5e7680e",
+      "stdout_sha256": "f6b7a49b2da0f595351776b2979bb2579547287705cc15eab2b0ab7c695bcda0",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "group": "history/batch-memory-combined",
+      "task_index": 450,
+      "instance_id": "instance_NodeBB__NodeBB-00c70ce7b0541cfc94afe567921d7668cdc8f4ac-vnan",
+      "official_passed": false,
+      "reviewed_passed": true,
+      "reason": "frozen_test_name_suffixes",
+      "required_tests": 681,
+      "parsed_tests": 714,
+      "raw_test_totals": {
+        "passed": 714,
+        "failed": 0
+      },
+      "exact_identifier_mappings": {
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"day": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"day\"",
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"off": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"off\"",
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"week": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"week\"",
+        "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should work with big arrays (length > 100)": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should work with big arrays (length > 100) "
+      },
+      "patch_sha256": "bbdfb171653ec47c75392ef6ad2235efb66f74ca0e2bd7e3a344aacb0896d60e",
+      "original_summary_sha256": "27896dccea43ae8c2556353b3d8990e529a6b4d29ea67b8f041fbacf1eab34da",
+      "stdout_sha256": "48b1f7d1f090326069c4c99d2090430f42ce92197c5d46075d28469143633f01",
+      "stderr_sha256": "6cd4dfb526296f85fe34658b005de948b7e77c75f8896db9c89927dec6b0ae64"
+    },
+    {
+      "group": "history/general-batch",
+      "task_index": 450,
+      "instance_id": "instance_NodeBB__NodeBB-00c70ce7b0541cfc94afe567921d7668cdc8f4ac-vnan",
+      "official_passed": false,
+      "reviewed_passed": true,
+      "reason": "frozen_test_name_suffixes",
+      "required_tests": 681,
+      "parsed_tests": 714,
+      "raw_test_totals": {
+        "passed": 714,
+        "failed": 0
+      },
+      "exact_identifier_mappings": {
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"day": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"day\"",
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"off": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"off\"",
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"week": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"week\"",
+        "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should work with big arrays (length > 100)": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should work with big arrays (length > 100) "
+      },
+      "patch_sha256": "6c571577befa42188ec81211a0837c6c1fa0a299e3dbcbb4acd017bd17f17ee4",
+      "original_summary_sha256": "c3f9921d365b98d65484cfb253a63f7ebf521b1ac132a43d7c08e054d79f0328",
+      "stdout_sha256": "07c1313bd67222b98354299f60defbd2904efde97ad227651dce56d37a5479e8",
+      "stderr_sha256": "6cd4dfb526296f85fe34658b005de948b7e77c75f8896db9c89927dec6b0ae64"
+    },
+    {
+      "group": "history/general-batch",
+      "task_index": 485,
+      "instance_id": "instance_internetarchive__openlibrary-b112069e31e0553b2d374abb5f9c5e05e8f3dbbe-ve8c8d62a2b60610a3c4631f5f23ed866bada9818",
+      "official_passed": false,
+      "reviewed_passed": true,
+      "reason": "dynamic_year_test_names",
+      "required_tests": 67,
+      "parsed_tests": 67,
+      "raw_test_totals": {
+        "passed": 92,
+        "failed": 0
+      },
+      "exact_identifier_mappings": {
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2025-True]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-True]",
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-False]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2027-False]"
+      },
+      "patch_sha256": "25e9c0867ed4a0f0d2d3e52439b193582726a653f80b4e502109c14e0f5ccb33",
+      "original_summary_sha256": "d5f1afdebc2fde5b07c1ca3bc85c07fe195f3bc2426ee7f281cc523c4fa374b6",
+      "stdout_sha256": "de5eee2c599c61e71b79d0d70b754bfb6b8b46e23e1b940ff758052120df386c",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "group": "version/0.2.0",
+      "task_index": 450,
+      "instance_id": "instance_NodeBB__NodeBB-00c70ce7b0541cfc94afe567921d7668cdc8f4ac-vnan",
+      "official_passed": false,
+      "reviewed_passed": true,
+      "reason": "frozen_test_name_suffixes",
+      "required_tests": 681,
+      "parsed_tests": 714,
+      "raw_test_totals": {
+        "passed": 714,
+        "failed": 0
+      },
+      "exact_identifier_mappings": {
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"day": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"day\"",
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"off": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"off\"",
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"week": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"week\"",
+        "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should work with big arrays (length > 100)": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should work with big arrays (length > 100) "
+      },
+      "patch_sha256": "084e21a910d8d7fdcd3c5fe7e8ebab4c6ccaecc133b836fb922c4c358e66181a",
+      "original_summary_sha256": "2b17b23fb85c9a34c11baa5a259167a79f6cb6196b4941c7a00f413ed6860e7c",
+      "stdout_sha256": "97809745865ac32eaf664d233e15c7acebcb54c68628898049f70dafe9209654",
+      "stderr_sha256": "6cd4dfb526296f85fe34658b005de948b7e77c75f8896db9c89927dec6b0ae64"
+    },
+    {
+      "group": "version/0.2.0",
+      "task_index": 485,
+      "instance_id": "instance_internetarchive__openlibrary-b112069e31e0553b2d374abb5f9c5e05e8f3dbbe-ve8c8d62a2b60610a3c4631f5f23ed866bada9818",
+      "official_passed": false,
+      "reviewed_passed": true,
+      "reason": "dynamic_year_test_names",
+      "required_tests": 67,
+      "parsed_tests": 67,
+      "raw_test_totals": {
+        "passed": 92,
+        "failed": 0
+      },
+      "exact_identifier_mappings": {
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2025-True]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-True]",
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-False]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2027-False]"
+      },
+      "patch_sha256": "297951ef8a56c5bb268908f91d723591faff5c4357ac815a4f10d84c902e4bb5",
+      "original_summary_sha256": "69936855fe202c5fd72d206676dc463147b1328c4a2e2514d32ab53aace8e995",
+      "stdout_sha256": "ebee1e06ea5dbd52af9c401b2faaf23bf237e683f8e050fd2f1393c499c9a4ab",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "group": "history/graph-runtime",
+      "task_index": 450,
+      "instance_id": "instance_NodeBB__NodeBB-00c70ce7b0541cfc94afe567921d7668cdc8f4ac-vnan",
+      "official_passed": false,
+      "reviewed_passed": true,
+      "reason": "frozen_test_name_suffixes",
+      "required_tests": 681,
+      "parsed_tests": 714,
+      "raw_test_totals": {
+        "passed": 714,
+        "failed": 0
+      },
+      "exact_identifier_mappings": {
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"day": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"day\"",
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"off": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"off\"",
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"week": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"week\"",
+        "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should work with big arrays (length > 100)": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should work with big arrays (length > 100) "
+      },
+      "patch_sha256": "44db30083af41db725a340411a35f625bf541c0e2c9df1bf57ab45f8c74a80c1",
+      "original_summary_sha256": "3cb36dd884326ee089ddc6b056984d970cfa6df6a4c110aa0a1a0db8218e62ac",
+      "stdout_sha256": "1543c36e2674444e61e045ec7d779b48a32975a9a6e6708486e4068c44ecf2af",
+      "stderr_sha256": "6cd4dfb526296f85fe34658b005de948b7e77c75f8896db9c89927dec6b0ae64"
+    },
+    {
+      "group": "history/graph-runtime",
+      "task_index": 485,
+      "instance_id": "instance_internetarchive__openlibrary-b112069e31e0553b2d374abb5f9c5e05e8f3dbbe-ve8c8d62a2b60610a3c4631f5f23ed866bada9818",
+      "official_passed": false,
+      "reviewed_passed": true,
+      "reason": "dynamic_year_test_names",
+      "required_tests": 67,
+      "parsed_tests": 67,
+      "raw_test_totals": {
+        "passed": 92,
+        "failed": 0
+      },
+      "exact_identifier_mappings": {
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2025-True]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-True]",
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-False]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2027-False]"
+      },
+      "patch_sha256": "4be5ed7b7ae9f00bf28f21e832e87fc123f61c5a3d44314a421976164833c758",
+      "original_summary_sha256": "5ff4e904e3e9c9241782c014b76ff4f6d374435dbe9952f79c50e6a869b136a1",
+      "stdout_sha256": "126d3e3c45b4cb940e16a15354c10371f45fd2b3bbd9db60521d4c553d96c522",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "group": "version/0.1.2",
+      "task_index": 485,
+      "instance_id": "instance_internetarchive__openlibrary-b112069e31e0553b2d374abb5f9c5e05e8f3dbbe-ve8c8d62a2b60610a3c4631f5f23ed866bada9818",
+      "official_passed": false,
+      "reviewed_passed": true,
+      "reason": "dynamic_year_test_names",
+      "required_tests": 67,
+      "parsed_tests": 67,
+      "raw_test_totals": {
+        "passed": 92,
+        "failed": 0
+      },
+      "exact_identifier_mappings": {
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2025-True]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-True]",
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-False]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2027-False]"
+      },
+      "patch_sha256": "3c1ffdd66bd0ddedf124ab3dac46e967f033015550130efcf016da3a2846dddf",
+      "original_summary_sha256": "67306123b2d2412a47d218cfb0354ed6e417059a2b851fc4b9c0446bd8ca4d3b",
+      "stdout_sha256": "2579a689187ca8bf4cfcdf3cbd7762f1ac85c4bb79780e6174a91cb3d1261d99",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "group": "history/scope",
+      "task_index": 450,
+      "instance_id": "instance_NodeBB__NodeBB-00c70ce7b0541cfc94afe567921d7668cdc8f4ac-vnan",
+      "official_passed": false,
+      "reviewed_passed": true,
+      "reason": "frozen_test_name_suffixes",
+      "required_tests": 681,
+      "parsed_tests": 714,
+      "raw_test_totals": {
+        "passed": 714,
+        "failed": 0
+      },
+      "exact_identifier_mappings": {
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"day": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"day\"",
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"off": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"off\"",
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"week": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"week\"",
+        "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should work with big arrays (length > 100)": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should work with big arrays (length > 100) "
+      },
+      "patch_sha256": "3495b5449827f3ef95d066c29d09e14d352600b850077f9388fda3d64ad9aee4",
+      "original_summary_sha256": "34681f706c54310901b5f1c010797ae5743a911b8d7cb541af728f15faaaa34b",
+      "stdout_sha256": "8d677177ea497c92bf67a5bc93eb79df5d482ea6cc3f30a8edf20e52ce21064d",
+      "stderr_sha256": "6cd4dfb526296f85fe34658b005de948b7e77c75f8896db9c89927dec6b0ae64"
+    },
+    {
+      "group": "plugin/fastctx-prompt-only-20261014",
+      "task_index": 485,
+      "instance_id": "instance_internetarchive__openlibrary-b112069e31e0553b2d374abb5f9c5e05e8f3dbbe-ve8c8d62a2b60610a3c4631f5f23ed866bada9818",
+      "official_passed": false,
+      "reviewed_passed": true,
+      "reason": "dynamic_year_test_names",
+      "required_tests": 67,
+      "parsed_tests": 67,
+      "raw_test_totals": {
+        "passed": 92,
+        "failed": 0
+      },
+      "exact_identifier_mappings": {
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2025-True]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-True]",
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-False]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2027-False]"
+      },
+      "patch_sha256": "8523d51347810e9afd8ab55678d3af6d54c5714d11bba2f0b3445971f1a69adf",
+      "original_summary_sha256": "8c0b695645b4a742ecdccec8ea6fc3b64fd766c63332e691c98cd0aa746f4c20",
+      "stdout_sha256": "d92e3a446aafe0b6b9eeb9a6300960ee0d0ca5a850fa5f8ea3677258ea87edd2",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "group": "official/cordis-high",
+      "task_index": 485,
+      "instance_id": "instance_internetarchive__openlibrary-b112069e31e0553b2d374abb5f9c5e05e8f3dbbe-ve8c8d62a2b60610a3c4631f5f23ed866bada9818",
+      "official_passed": false,
+      "reviewed_passed": true,
+      "reason": "dynamic_year_test_names",
+      "required_tests": 67,
+      "parsed_tests": 67,
+      "raw_test_totals": {
+        "passed": 92,
+        "failed": 0
+      },
+      "exact_identifier_mappings": {
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2025-True]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-True]",
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-False]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2027-False]"
+      },
+      "patch_sha256": "5ec2976d298077e23200660e1781cf55e161e5b4d60dccbc0432eb0f08463d1d",
+      "original_summary_sha256": "da0011ecabf05d44d71332af87103d5b45a9110f025841cfff20de222fb91b50",
+      "stdout_sha256": "d669779e27715946f6a5f0df91f58fd03fbf0b198d981e1653fe002854d74405",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "group": "official/minimal-max",
+      "task_index": 485,
+      "instance_id": "instance_internetarchive__openlibrary-b112069e31e0553b2d374abb5f9c5e05e8f3dbbe-ve8c8d62a2b60610a3c4631f5f23ed866bada9818",
+      "official_passed": false,
+      "reviewed_passed": true,
+      "reason": "dynamic_year_test_names",
+      "required_tests": 67,
+      "parsed_tests": 67,
+      "raw_test_totals": {
+        "passed": 92,
+        "failed": 0
+      },
+      "exact_identifier_mappings": {
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2025-True]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-True]",
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-False]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2027-False]"
+      },
+      "patch_sha256": "c2a64de697c6060345c11d414d229fe0155cc3c22c118297a3703d32709905af",
+      "original_summary_sha256": "e81ff1446519a3e2f543f2ff219379a80a4f9c4583a75e895624ff82766baee7",
+      "stdout_sha256": "83b58eb4a1763e9855134c53ed0e1e79b62580fbe510cee3842439295c108b94",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "group": "official/ptc-high",
+      "task_index": 450,
+      "instance_id": "instance_NodeBB__NodeBB-00c70ce7b0541cfc94afe567921d7668cdc8f4ac-vnan",
+      "official_passed": false,
+      "reviewed_passed": true,
+      "reason": "frozen_test_name_suffixes",
+      "required_tests": 681,
+      "parsed_tests": 714,
+      "raw_test_totals": {
+        "passed": 714,
+        "failed": 0
+      },
+      "exact_identifier_mappings": {
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"day": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"day\"",
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"off": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"off\"",
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"week": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"week\"",
+        "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should work with big arrays (length > 100)": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should work with big arrays (length > 100) "
+      },
+      "patch_sha256": "935580d24fac4d16f09e80c89effd4dc8bf0160d233b79a67062c432dc8c4fab",
+      "original_summary_sha256": "9c950dd4026b146768f1d4938726caa90291432f752715e25137b500319ee762",
+      "stdout_sha256": "27404883a0fb5ae0a0b24cb5774d0df58940d8e7a63388986ab4170ed988bbdd",
+      "stderr_sha256": "6cd4dfb526296f85fe34658b005de948b7e77c75f8896db9c89927dec6b0ae64"
+    },
+    {
+      "group": "official/ptc-high",
+      "task_index": 485,
+      "instance_id": "instance_internetarchive__openlibrary-b112069e31e0553b2d374abb5f9c5e05e8f3dbbe-ve8c8d62a2b60610a3c4631f5f23ed866bada9818",
+      "official_passed": false,
+      "reviewed_passed": true,
+      "reason": "dynamic_year_test_names",
+      "required_tests": 67,
+      "parsed_tests": 67,
+      "raw_test_totals": {
+        "passed": 92,
+        "failed": 0
+      },
+      "exact_identifier_mappings": {
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2025-True]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-True]",
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-False]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2027-False]"
+      },
+      "patch_sha256": "25543d7854d4efcc027f69ade9be0defbfe52e3751ebf6d5c6d68b94bae772d2",
+      "original_summary_sha256": "bd06efeee057975d26cd094727f8b3e686c383c0ec1786abb3f8f7e1e01e0b3f",
+      "stdout_sha256": "d3e3838c0573b2530781b8a774a95cd04b9e2356705ec0cfe517f827d4f065b7",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "group": "official/standard-high",
+      "task_index": 485,
+      "instance_id": "instance_internetarchive__openlibrary-b112069e31e0553b2d374abb5f9c5e05e8f3dbbe-ve8c8d62a2b60610a3c4631f5f23ed866bada9818",
+      "official_passed": false,
+      "reviewed_passed": true,
+      "reason": "dynamic_year_test_names",
+      "required_tests": 67,
+      "parsed_tests": 67,
+      "raw_test_totals": {
+        "passed": 92,
+        "failed": 0
+      },
+      "exact_identifier_mappings": {
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2025-True]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-True]",
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-False]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2027-False]"
+      },
+      "patch_sha256": "5ad6b283f4d31b3f0e0f206a74d2e29360dc175a0a581da69b803e143930bdc5",
+      "original_summary_sha256": "ffd51924515b1066e7915b7780c1de2165903c729b0c0c292a79bf6bb4d30a4c",
+      "stdout_sha256": "a9d27991f6af44dd498caf70b7ec7d60dd72fc3159a536abcc5a8e29a9f27153",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "group": "official/standard-max",
+      "task_index": 485,
+      "instance_id": "instance_internetarchive__openlibrary-b112069e31e0553b2d374abb5f9c5e05e8f3dbbe-ve8c8d62a2b60610a3c4631f5f23ed866bada9818",
+      "official_passed": false,
+      "reviewed_passed": true,
+      "reason": "dynamic_year_test_names",
+      "required_tests": 67,
+      "parsed_tests": 67,
+      "raw_test_totals": {
+        "passed": 92,
+        "failed": 0
+      },
+      "exact_identifier_mappings": {
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2025-True]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-True]",
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-False]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2027-False]"
+      },
+      "patch_sha256": "598cd388bdb7964c4f8037fdac8c4ca2456cc57b1827f0d7a9061bb5e08527d6",
+      "original_summary_sha256": "4bdae01c189516931c2b30989f483fa696861eccdc8956e3f124427f9a4d317e",
+      "stdout_sha256": "05668478e90ac21c4ecdc2703e176014c215654ddf7acbce802ebc920efd82bf",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "group": "pro/batch.3-hard100",
+      "task_index": 450,
+      "instance_id": "instance_NodeBB__NodeBB-00c70ce7b0541cfc94afe567921d7668cdc8f4ac-vnan",
+      "official_passed": false,
+      "reviewed_passed": true,
+      "reason": "frozen_test_name_suffixes",
+      "required_tests": 681,
+      "parsed_tests": 714,
+      "raw_test_totals": {
+        "passed": 714,
+        "failed": 0
+      },
+      "exact_identifier_mappings": {
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"day": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"day\"",
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"off": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"off\"",
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"week": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"week\"",
+        "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should work with big arrays (length > 100)": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should work with big arrays (length > 100) "
+      },
+      "patch_sha256": "8d91ee520545f64675f4a9524511dcc9e66a8b4e76f30f9800a1ab9dd0ce7323",
+      "original_summary_sha256": "9a3b3514beab9d24a10c78de38b174f44fdebc5ddc7f6472803c6087363dff0f",
+      "stdout_sha256": "8482c0f55ef4dbbf4b4ff3a3202204ea6b40fe784a9410c2fde0bb2f3e71f40a",
+      "stderr_sha256": "6cd4dfb526296f85fe34658b005de948b7e77c75f8896db9c89927dec6b0ae64"
+    },
+    {
+      "group": "pro/batch.3-hard100",
+      "task_index": 485,
+      "instance_id": "instance_internetarchive__openlibrary-b112069e31e0553b2d374abb5f9c5e05e8f3dbbe-ve8c8d62a2b60610a3c4631f5f23ed866bada9818",
+      "official_passed": false,
+      "reviewed_passed": true,
+      "reason": "dynamic_year_test_names",
+      "required_tests": 67,
+      "parsed_tests": 67,
+      "raw_test_totals": {
+        "passed": 92,
+        "failed": 0
+      },
+      "exact_identifier_mappings": {
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2025-True]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-True]",
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-False]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2027-False]"
+      },
+      "patch_sha256": "283465541c09be1606c922c2a35a1837698d4eafd9a0b695a70806f337800be3",
+      "original_summary_sha256": "960cf578ea51d7ca4fbe3825356d863173b104fcf2d8c5ea879426e4babc4101",
+      "stdout_sha256": "70bbcba8986e44732e0dac2ef5353d4dc08d6c014a69ff843f4b8780f3a4d099",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "group": "pro/batch.5-hard100",
+      "task_index": 450,
+      "instance_id": "instance_NodeBB__NodeBB-00c70ce7b0541cfc94afe567921d7668cdc8f4ac-vnan",
+      "official_passed": false,
+      "reviewed_passed": true,
+      "reason": "frozen_test_name_suffixes",
+      "required_tests": 681,
+      "parsed_tests": 714,
+      "raw_test_totals": {
+        "passed": 714,
+        "failed": 0
+      },
+      "exact_identifier_mappings": {
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"day": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"day\"",
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"off": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"off\"",
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"week": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"week\"",
+        "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should work with big arrays (length > 100)": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should work with big arrays (length > 100) "
+      },
+      "patch_sha256": "6fcf11ccb8e650618ee8a63338f9d85ee7a1694d611f029bbe52b3d15704597a",
+      "original_summary_sha256": "0b250dc6f4ea953548e8fb9cf0b961b5c84238a7ce3531add10ee3fd12c081ae",
+      "stdout_sha256": "0a400c04b36f39df8ebfa2b79a1a096c1d9e6958d4378030bf36beedeccc505e",
+      "stderr_sha256": "6cd4dfb526296f85fe34658b005de948b7e77c75f8896db9c89927dec6b0ae64"
+    },
+    {
+      "group": "pro/batch.5-hard100",
+      "task_index": 485,
+      "instance_id": "instance_internetarchive__openlibrary-b112069e31e0553b2d374abb5f9c5e05e8f3dbbe-ve8c8d62a2b60610a3c4631f5f23ed866bada9818",
+      "official_passed": false,
+      "reviewed_passed": true,
+      "reason": "dynamic_year_test_names",
+      "required_tests": 67,
+      "parsed_tests": 67,
+      "raw_test_totals": {
+        "passed": 92,
+        "failed": 0
+      },
+      "exact_identifier_mappings": {
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2025-True]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-True]",
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-False]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2027-False]"
+      },
+      "patch_sha256": "441a309913fe657a9d37401b74100e8bac8f1117bd9f2a4693ef863d7a436b20",
+      "original_summary_sha256": "9d447b4dfa242e17ac2076eb9d22cb68865782e411eae7c67ccc770bb14ce2fb",
+      "stdout_sha256": "e841ebfec33bc542126322ed5fff00c1ae74cda5393831906f4853ca884b39fc",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "group": "pro/evidence.5-hard100",
+      "task_index": 450,
+      "instance_id": "instance_NodeBB__NodeBB-00c70ce7b0541cfc94afe567921d7668cdc8f4ac-vnan",
+      "official_passed": false,
+      "reviewed_passed": true,
+      "reason": "frozen_test_name_suffixes",
+      "required_tests": 681,
+      "parsed_tests": 714,
+      "raw_test_totals": {
+        "passed": 714,
+        "failed": 0
+      },
+      "exact_identifier_mappings": {
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"day": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"day\"",
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"off": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"off\"",
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"week": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"week\"",
+        "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should work with big arrays (length > 100)": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should work with big arrays (length > 100) "
+      },
+      "patch_sha256": "3df268c810f18e4d6a32dfd5c7a6a080defc9a3be6982da2025c06db0b51ae47",
+      "original_summary_sha256": "a962a9f123ceec084a785710d0c042e3f1e7fd9a05aaf8f947cedff28bc9c692",
+      "stdout_sha256": "30456aed651a57a1378b934d8a6f36abbed6e13fb2091e6323486cb515583f8d",
+      "stderr_sha256": "6cd4dfb526296f85fe34658b005de948b7e77c75f8896db9c89927dec6b0ae64"
+    },
+    {
+      "group": "pro/graph-runtime.3-hard100",
+      "task_index": 450,
+      "instance_id": "instance_NodeBB__NodeBB-00c70ce7b0541cfc94afe567921d7668cdc8f4ac-vnan",
+      "official_passed": false,
+      "reviewed_passed": true,
+      "reason": "frozen_test_name_suffixes",
+      "required_tests": 681,
+      "parsed_tests": 714,
+      "raw_test_totals": {
+        "passed": 714,
+        "failed": 0
+      },
+      "exact_identifier_mappings": {
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"day": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"day\"",
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"off": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"off\"",
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"week": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"week\"",
+        "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should work with big arrays (length > 100)": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should work with big arrays (length > 100) "
+      },
+      "patch_sha256": "c9b3ebf5ff31e8e62c4dcf3b4ae025d08cfee8676056d28ca92ec64c1e87e8d8",
+      "original_summary_sha256": "77401ce5777530c1b2004f6ab6010982b11879fed04650236be4caa5e2809085",
+      "stdout_sha256": "33bbf27a9a10d95140c499d1a5d82fe2eae26193b03a18f19c72fb3045449f8a",
+      "stderr_sha256": "6cd4dfb526296f85fe34658b005de948b7e77c75f8896db9c89927dec6b0ae64"
+    },
+    {
+      "group": "official/minimal-high",
+      "task_index": 485,
+      "instance_id": "instance_internetarchive__openlibrary-b112069e31e0553b2d374abb5f9c5e05e8f3dbbe-ve8c8d62a2b60610a3c4631f5f23ed866bada9818",
+      "official_passed": false,
+      "reviewed_passed": true,
+      "reason": "dynamic_year_test_names",
+      "required_tests": 67,
+      "parsed_tests": 67,
+      "raw_test_totals": {
+        "passed": 92,
+        "failed": 0
+      },
+      "exact_identifier_mappings": {
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2025-True]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-True]",
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-False]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2027-False]"
+      },
+      "patch_sha256": "5ed875d4dde4c7136a7641804f035bae822ccd2cd5bb0b54f7a3107cf456c8c7",
+      "original_summary_sha256": "d7fd8f744d023a6e1caf01e2ac417cb9b71093916dfd8d28ece62ad390314858",
+      "stdout_sha256": "70bbcba8986e44732e0dac2ef5353d4dc08d6c014a69ff843f4b8780f3a4d099",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "group": "official/minimal-high",
+      "task_index": 450,
+      "instance_id": "instance_NodeBB__NodeBB-00c70ce7b0541cfc94afe567921d7668cdc8f4ac-vnan",
+      "official_passed": false,
+      "reviewed_passed": true,
+      "reason": "frozen_test_name_suffixes",
+      "required_tests": 681,
+      "parsed_tests": 714,
+      "raw_test_totals": {
+        "passed": 714,
+        "failed": 0
+      },
+      "exact_identifier_mappings": {
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"day": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"day\"",
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"off": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"off\"",
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"week": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"week\"",
+        "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should work with big arrays (length > 100)": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should work with big arrays (length > 100) "
+      },
+      "patch_sha256": "f608c848ed5923bba54b959ee494a17e559087e2725045c0f4e96db69ab06d7a",
+      "original_summary_sha256": "441b3fc0de44a233940e9bfa221150c36a22d21add48cb418696303dc5dab489",
+      "stdout_sha256": "d77cb16534eac1f1755aeb6536ab0a72440a37870c72985886d61628d6bf5559",
+      "stderr_sha256": "64735083507357ae509423d0062376c5e81689e1542548c3e64346af3eaa72c1"
+    },
+    {
+      "group": "history/0.0.8",
+      "task_index": 450,
+      "instance_id": "instance_NodeBB__NodeBB-00c70ce7b0541cfc94afe567921d7668cdc8f4ac-vnan",
+      "official_passed": false,
+      "reviewed_passed": true,
+      "reason": "frozen_test_name_suffixes",
+      "required_tests": 681,
+      "parsed_tests": 714,
+      "raw_test_totals": {
+        "passed": 714,
+        "failed": 0
+      },
+      "exact_identifier_mappings": {
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"day": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"day\"",
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"off": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"off\"",
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"week": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"week\"",
+        "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should work with big arrays (length > 100)": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should work with big arrays (length > 100) "
+      },
+      "patch_sha256": "6bcf3301dacdd8c9f274fa151c1d31a6d4241305c8c0b90b7307b02a93cf7503",
+      "original_summary_sha256": "8771c01e58c57829a2e74c12ff6f04d8c31b50d9f24ea7463e221154dd1a723b",
+      "stdout_sha256": "596060c3caab5286aa0fbd56b58b0f6b5996fafc3e833963634e1fd9dea1dc82",
+      "stderr_sha256": "6cd4dfb526296f85fe34658b005de948b7e77c75f8896db9c89927dec6b0ae64"
+    },
+    {
+      "group": "version/0.0.9",
+      "task_index": 450,
+      "instance_id": "instance_NodeBB__NodeBB-00c70ce7b0541cfc94afe567921d7668cdc8f4ac-vnan",
+      "official_passed": false,
+      "reviewed_passed": true,
+      "reason": "frozen_test_name_suffixes",
+      "required_tests": 681,
+      "parsed_tests": 714,
+      "raw_test_totals": {
+        "passed": 714,
+        "failed": 0
+      },
+      "exact_identifier_mappings": {
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"day": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"day\"",
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"off": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"off\"",
+        "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"week": "test/user.js | User Digest.getSubscribers should accurately build digest list given ACP default \"week\"",
+        "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should work with big arrays (length > 100)": "test/database.js | Test database test/database/sorted.js::Sorted Set methods test/database/sorted.js::getSortedSetRange() should work with big arrays (length > 100) "
+      },
+      "patch_sha256": "c5b843f2f80d7c48fb39294b4bf2d0bad972e0a71ff4cde2259ae0b91095da9e",
+      "original_summary_sha256": "db64cc2cd010de898518b9a4881bd0862630d5135ab57bb0aa1da7694f7e2261",
+      "stdout_sha256": "01f9064b6f276e5d057b3a20c8009b54834767c9eafbe5285eee3b71246d9cfb",
+      "stderr_sha256": "6cd4dfb526296f85fe34658b005de948b7e77c75f8896db9c89927dec6b0ae64"
+    },
+    {
+      "group": "version/0.0.9",
+      "task_index": 485,
+      "instance_id": "instance_internetarchive__openlibrary-b112069e31e0553b2d374abb5f9c5e05e8f3dbbe-ve8c8d62a2b60610a3c4631f5f23ed866bada9818",
+      "official_passed": false,
+      "reviewed_passed": true,
+      "reason": "dynamic_year_test_names",
+      "required_tests": 67,
+      "parsed_tests": 67,
+      "raw_test_totals": {
+        "passed": 92,
+        "failed": 0
+      },
+      "exact_identifier_mappings": {
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2025-True]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-True]",
+        "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2026-False]": "openlibrary/catalog/add_book/tests/test_add_book.py::TestNormalizeImportRecord::test_future_publication_dates_are_deleted[2027-False]"
+      },
+      "patch_sha256": "bdd21ff8b9b4e50eb690705f2b208d027449bdaafb9eed6ccd69f881829d4000",
+      "original_summary_sha256": "7e8f998400df4a827b5be38fc1582c3d16a26fc88c3ca55897f4bc2e927decb1",
+      "stdout_sha256": "3792c7993a3afaca85495f3f03de24e3527322fba74ffa246dbb92bd40630b38",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "all_results_review": {
+    "snapshot_at": "2026-10-16T16:25:48+08:00",
+    "records": 3296,
+    "record_note": "Preserved primary records, including historical batches; not unique tasks.",
+    "kinds": {
+      "pro": 2084,
+      "dev": 1212
+    },
+    "raw_logs_reparsed": 3296,
+    "raw_logs_unavailable": 0,
+    "legacy_rescore_logs_located": 2,
+    "patch_receipt_conflicts": 1,
+    "patch_receipt_conflicts_resolved_by_original_task_evidence": 1,
+    "stale_parsed_summary_records": 1,
+    "cross_task_metadata_records": 1,
+    "dev_base_gold_gates_verified": 1212,
+    "published_historical_records_sha_bound": 400,
+    "additional_historical_environment_regrades": {
+      "tasks": 7,
+      "status": "complete",
+      "completed": 7,
+      "pending": 0,
+      "recovered_passes": 3,
+      "confirmed_failures": 4,
+      "new_model_calls": 0,
+      "metadata_repair": "Required-test field aliases were normalized for official aggregation. Existing raw test outputs were retained unchanged; no candidate or official test edits.",
+      "policy": "Original patches only; require two consistent clean official grades; no best-of-retry selection."
+    }
+  },
+  "historical_environment_regrades": [
+    {
+      "group": "history/native-retrieval-afb4490",
+      "task_index": 697,
+      "instance_id": "instance_element-hq__element-web-aeabf3b18896ac1eb7ae9757e66ce886120f8309-vnan",
+      "original_summary_sha256": "ca3d1382ba410846ca92c5a928e4e2d14afd24e0b8eef3f25b6c5575549a057c",
+      "patch_sha256": "e89fb31fd41ecd85dff9422a64d56c9d11bc2c1d1343a5236ff83011dc812dc2",
+      "original_passed": false,
+      "status": "scored",
+      "new_model_calls": 0,
+      "model_metrics_unchanged": true,
+      "response_time_unchanged": true,
+      "clean_observations": [
+        {
+          "summary_sha256": "9e59c769f9c4a0257a919f0877b1f26da354ba9cac5dc9515cbdaec8df3f4d50",
+          "passed": false,
+          "executed_patch_sha256": "e89fb31fd41ecd85dff9422a64d56c9d11bc2c1d1343a5236ff83011dc812dc2"
+        },
+        {
+          "summary_sha256": "9325a4fdde15bae9b939bdf137d511ff0f9899e311b7c6a8fb8843fd83d0c8a6",
+          "passed": false,
+          "executed_patch_sha256": "e89fb31fd41ecd85dff9422a64d56c9d11bc2c1d1343a5236ff83011dc812dc2"
+        }
+      ],
+      "passed": false
+    },
+    {
+      "group": "history/native-retrieval-afb4490",
+      "task_index": 83,
+      "instance_id": "instance_tutao__tutanota-da4edb7375c10f47f4ed3860a591c5e6557f7b5c-vbc0d9ba8f0071fbe982809910959a6ff8884dbbf",
+      "original_summary_sha256": "bc340c52540358d47f0ce8fc9639ee396bd1354b1301fd69a701d3d99400f51a",
+      "patch_sha256": "de7a042e6de1a9ea63bd5a242c947abe21bd0669cd29f092ac0f12b4bc97489d",
+      "original_passed": false,
+      "status": "scored",
+      "new_model_calls": 0,
+      "model_metrics_unchanged": true,
+      "response_time_unchanged": true,
+      "clean_observations": [
+        {
+          "summary_sha256": "d557fbcd7948b05884e5cb7e2ccc47fe1db887f1318621d7363f786464152542",
+          "passed": true,
+          "executed_patch_sha256": "de7a042e6de1a9ea63bd5a242c947abe21bd0669cd29f092ac0f12b4bc97489d"
+        },
+        {
+          "summary_sha256": "d557fbcd7948b05884e5cb7e2ccc47fe1db887f1318621d7363f786464152542",
+          "passed": true,
+          "executed_patch_sha256": "de7a042e6de1a9ea63bd5a242c947abe21bd0669cd29f092ac0f12b4bc97489d"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "group": "history/scope",
+      "task_index": 456,
+      "instance_id": "instance_tutao__tutanota-40e94dee2bcec2b63f362da283123e9df1874cc1-vc4e41fd0029957297843cb9dec4a25c7c756f029",
+      "original_summary_sha256": "82698043a40260f4031980fab288794f3d021be2425a74df39107c06438f5fcd",
+      "patch_sha256": "af51c6731dba8d59b367730a65d0d071a2fe0495d9214914bdba679932f29ab9",
+      "original_passed": false,
+      "status": "scored",
+      "new_model_calls": 0,
+      "model_metrics_unchanged": true,
+      "response_time_unchanged": true,
+      "clean_observations": [
+        {
+          "summary_sha256": "7104f3cc5a81298906fbc4081f06023b931508a543e0bdbae675e701d69bd51f",
+          "passed": true,
+          "executed_patch_sha256": "af51c6731dba8d59b367730a65d0d071a2fe0495d9214914bdba679932f29ab9"
+        },
+        {
+          "summary_sha256": "7104f3cc5a81298906fbc4081f06023b931508a543e0bdbae675e701d69bd51f",
+          "passed": true,
+          "executed_patch_sha256": "af51c6731dba8d59b367730a65d0d071a2fe0495d9214914bdba679932f29ab9"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "group": "history/scope",
+      "task_index": 697,
+      "instance_id": "instance_element-hq__element-web-aeabf3b18896ac1eb7ae9757e66ce886120f8309-vnan",
+      "original_summary_sha256": "cfc7bc8b3b82f7f0c19ca0b5c0747989cc7f029a0d58e1d0f19af83a83ec9aa9",
+      "patch_sha256": "01cbcd9de66fba2d205f8abc006814153c5ddfe10ddfe421d3e89e08155eebc1",
+      "original_passed": false,
+      "status": "scored",
+      "new_model_calls": 0,
+      "model_metrics_unchanged": true,
+      "response_time_unchanged": true,
+      "clean_observations": [
+        {
+          "summary_sha256": "9d9425584f3c1ea2c0aa03465141db940e2e5c5b95d988d5c9738af5bcaa0f35",
+          "passed": false,
+          "executed_patch_sha256": "01cbcd9de66fba2d205f8abc006814153c5ddfe10ddfe421d3e89e08155eebc1"
+        },
+        {
+          "summary_sha256": "06b191bedd981be4f5f7c10a7627f13c9154024bae37b08e8910f2493f2473e9",
+          "passed": false,
+          "executed_patch_sha256": "01cbcd9de66fba2d205f8abc006814153c5ddfe10ddfe421d3e89e08155eebc1"
+        }
+      ],
+      "passed": false
+    },
+    {
+      "group": "history/pruner-smoke",
+      "task_index": 687,
+      "instance_id": "instance_element-hq__element-web-aec454dd6feeb93000380523cbb0b3681c0275fd-vnan",
+      "original_summary_sha256": "db5a6809f3e7b66c992bc10c93382717023c3874213d041ae0d60bb03157f966",
+      "patch_sha256": "e41f35df60726c73d0112dbe2a9cc6a00a9fc8cb7baea66f0c2bce2f85273edd",
+      "original_passed": false,
+      "status": "scored",
+      "new_model_calls": 0,
+      "model_metrics_unchanged": true,
+      "response_time_unchanged": true,
+      "clean_observations": [
+        {
+          "summary_sha256": "d96ad5e5bb52f1b86cc49f9b562ee54afde0d88e511ddfa27ba29f458ff36035",
+          "passed": false,
+          "executed_patch_sha256": "e41f35df60726c73d0112dbe2a9cc6a00a9fc8cb7baea66f0c2bce2f85273edd"
+        },
+        {
+          "summary_sha256": "0f19d44c7cb74e89ce10c41ac1027e5ea1c78de68b2bf92fffd6611ae951a4a1",
+          "passed": false,
+          "executed_patch_sha256": "e41f35df60726c73d0112dbe2a9cc6a00a9fc8cb7baea66f0c2bce2f85273edd"
+        }
+      ],
+      "passed": false
+    },
+    {
+      "group": "history/dynamic-graph-smoke",
+      "task_index": 687,
+      "instance_id": "instance_element-hq__element-web-aec454dd6feeb93000380523cbb0b3681c0275fd-vnan",
+      "original_summary_sha256": "70c5e3cfc013524b8312fc33ca5a90b6a2fcd483651bbb8297c01cf8443ba4b7",
+      "patch_sha256": "b0d3d1a6a2f61000268b2903ffd6346b4c78812cc51b27b6ca560071ca6778ab",
+      "original_passed": false,
+      "status": "scored",
+      "new_model_calls": 0,
+      "model_metrics_unchanged": true,
+      "response_time_unchanged": true,
+      "clean_observations": [
+        {
+          "summary_sha256": "5a280d2111cbe98798a861ef4d3e17813963ebc9555770ab8587153f94112882",
+          "passed": false,
+          "executed_patch_sha256": "b0d3d1a6a2f61000268b2903ffd6346b4c78812cc51b27b6ca560071ca6778ab"
+        },
+        {
+          "summary_sha256": "68f1f9f982f9260c26c2ffddea2168b42a480b7bd32a83bfe4c60d1e2debc877",
+          "passed": false,
+          "executed_patch_sha256": "b0d3d1a6a2f61000268b2903ffd6346b4c78812cc51b27b6ca560071ca6778ab"
+        }
+      ],
+      "passed": false
+    },
+    {
+      "group": "history/0.0.8",
+      "task_index": 66,
+      "instance_id": "instance_element-hq__element-web-a692fe21811f88d92e8f7047fc615e4f1f986b0f-vnan",
+      "original_summary_sha256": "ecfe05e1d17a5c58eab2a36c6a48f8332718b80deff513702c21c4268ddcda18",
+      "patch_sha256": "69f23092fa1e274459e417cf39f09719f914463cb63864b12beb6688644006bc",
+      "original_passed": false,
+      "status": "scored",
+      "new_model_calls": 0,
+      "model_metrics_unchanged": true,
+      "response_time_unchanged": true,
+      "clean_observations": [
+        {
+          "summary_sha256": "9c6ccb8c55582794b876d3470a2808cab9591ababf76d102f492d3c195a3ca32",
+          "passed": true,
+          "executed_patch_sha256": "69f23092fa1e274459e417cf39f09719f914463cb63864b12beb6688644006bc"
+        },
+        {
+          "summary_sha256": "9c6ccb8c55582794b876d3470a2808cab9591ababf76d102f492d3c195a3ca32",
+          "passed": true,
+          "executed_patch_sha256": "69f23092fa1e274459e417cf39f09719f914463cb63864b12beb6688644006bc"
+        }
+      ],
+      "passed": true
+    }
+  ],
+  "legacy_evidence_resolutions": [
+    {
+      "task_index": 4,
+      "instance_id": "instance_ansible__ansible-f327e65d11bb905ed9f15996024f857a95592629-vba6da65a0f3baefda7a058ebbd0a8dcafb8512f5",
+      "original_summary_sha256": "fccb8fd35f9da270f504210fa420ec391f5f7cb3c213232f514e3bcc7f1b3dd7",
+      "resolution": "legacy_rescore_directory_located; original pass fully supported",
+      "passed": true,
+      "required_tests": 175,
+      "raw_test_count": 175,
+      "raw_test_statuses": {
+        "PASSED": 175
+      },
+      "missing_required_tests": 0,
+      "executed_patch_sha256": "47d42606cf6804e54795938cdd46fd1ab3021923e152aa8dbfe16c0479924481",
+      "original_patch_sha256": "47d42606cf6804e54795938cdd46fd1ab3021923e152aa8dbfe16c0479924481",
+      "evidence_sha256": [
+        "00d84fd57f2805f7d09102a245fc8ac3ca0c1776a752311fba59a7d898a08142",
+        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "0c50fd3603c3f249dbe71f7dcd36b35425e871519c6c0c829d70db5d0bbfdf15",
+        "af473cef13e9ea17702f3b3ebc7872f6f623665f5fe45dc84747c161754bef2a"
+      ],
+      "contaminated_fields": [],
+      "published_scores_or_metrics_changed": false,
+      "new_model_calls": 0
+    },
+    {
+      "task_index": 623,
+      "instance_id": "instance_element-hq__element-web-fe14847bb9bb07cab1b9c6c54335ff22ca5e516a-vnan",
+      "original_summary_sha256": "494e42818057a1ee0d7462ee17bb9388573a525171b5a8129c21acc146e51887",
+      "resolution": "legacy_rescore_directory_located; stale summary parsed details; failure unchanged",
+      "passed": false,
+      "required_tests": 108,
+      "raw_test_count": 93,
+      "raw_test_statuses": {
+        "PASSED": 93
+      },
+      "missing_required_tests": 15,
+      "executed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "evidence_sha256": [
+        "6a5f593d14c15170086d5e7660423310ab0bfa2028fcd4408702760d9ed48270",
+        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "f65bf5ca0575a4f73560ea036e8dc17275f12359328661aed1bef45ca889ca6f",
+        "31804cd4a3aa93b4ef6fe465598493c477e3d609b9bd24e8e07b10637d849683"
+      ],
+      "contaminated_fields": [],
+      "published_scores_or_metrics_changed": false,
+      "new_model_calls": 0
+    },
+    {
+      "task_index": 99,
+      "instance_id": "instance_future-architect__vuls-6eff6a9329a65cc412e79b8f82444dfa3d0f0b5a",
+      "original_summary_sha256": "e008752714e777381850029bbc906731dde16947aee5ed827562404e6df8b39c",
+      "resolution": "cross-task summary metadata; original task patch and official failure verified",
+      "passed": false,
+      "required_tests": 37,
+      "raw_test_count": 43,
+      "raw_test_statuses": {
+        "PASSED": 26,
+        "FAILED": 17
+      },
+      "missing_required_tests": 17,
+      "executed_patch_sha256": "2d82fca4d972a5d353c1468fdad84beddf6d5d033efd90ea77abd7772289811d",
+      "original_patch_sha256": "9adeebd5589fe0bb4aaca9e4b31758bf9a05c302f497f72b7d7d85d339e6983d",
+      "evidence_sha256": [
+        "9eaa8fcc34e769067205ec50adfc1b5694b9a992d7eb6479ad13b8daa13994bc",
+        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "45778e512e579c39cd5a598757c6b87489acd94b68983a4daabde47c41ff51c7",
+        "dd638a5bd5de95bd1853d01ad6d8c0183440dfb25cb95887c43e8950c41258b9",
+        "0802cfe97a2fa39552d0965cfda9642afa0560c5f8606cf2f222bbe0ed2c5584",
+        "3a175cdff05a80bc898c3ab56f7aa65c4170606f6ee3a5510e41e5b6f0debef4",
+        "61a2920a3dfa5ca047bc7a89e25c4d549ca1b333ea1f3f9a1b4e1d9da5c43a16",
+        "ff346808be1dd6ca2042dd0583f98e4c32a1df43fb8810c3fb084bb769157852"
+      ],
+      "contaminated_fields": [
+        "page_runtime",
+        "metrics",
+        "patch"
+      ],
+      "published_scores_or_metrics_changed": false,
+      "new_model_calls": 0,
+      "usage_limit": "Archived main-session usage is source-bound, not a complete all-agent or billing audit."
+    }
+  ]
+}

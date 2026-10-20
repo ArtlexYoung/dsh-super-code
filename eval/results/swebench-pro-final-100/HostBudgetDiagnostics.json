@@ -1,0 +1,144 @@
+{
+  "at": "2026-10-19T02:26:31.819054+00:00",
+  "scope": "synthetic real-service integration only; no Pro trajectories",
+  "external_model_calls": 0,
+  "compaction_cases": 20,
+  "ptc_cases": 20,
+  "budget_cases": 3,
+  "compaction_threshold_tokens": [
+    800000,
+    550464
+  ],
+  "retention_budget_tokens": [
+    160000,
+    98560
+  ],
+  "summary_max_tokens": [
+    8192,
+    65536
+  ],
+  "summary_instruction_identical": true,
+  "ptc_contract_outcomes_equal_in_10_cases": true,
+  "fairness": {
+    "same_node": true,
+    "old_host": "locally available 0.1.5-rc.2 built packages",
+    "new_host": "installed 0.2.1-rc.2 built packages",
+    "summary_adapter": "deterministic local generator, no quality inference",
+    "ptc": "actual registry + actual worker/process runtime, agentless dispatch in this fixture",
+    "ptc_main_limits": "both 10s wall, 256KiB output, parallel cap4; old CPU cap5s",
+    "ptc_policy": "new per-call/danger-full-access; no retained REPL or sandbox-denial test",
+    "budget_control": "Scaled timing control: old 100ms busy-time plus 1500ms wall; new 100ms elapsed, then explicit 1000ms elapsed. These are distinct budget semantics, not equal wall limits.",
+    "timing": "single local smoke observation, not a performance benchmark"
+  },
+  "validation_limit": "Does not show whether Pro triggered compaction/timeouts or explain score changes causally.",
+  "evidence_sha256": {
+    "compaction.mjs": "caadb705e07e29647b372da832f5b3ebda2b42fb86e0044debda516f43fb2c2b",
+    "ptc.mjs": "68f110108e3b5b9c871ca82a4c661324deac2e1a87ed32bd501d77eb7b38908a",
+    "report.py": "089fc7c7157a71471160f03720e3951284739618ac82564940dfc02e393ea100",
+    "Compaction-0.1.5-rc.2.json": "ac5fd9eccb9910c2efe1fd00416515c0427d714ebee58337b3ded97633d2ae4f",
+    "Compaction-0.2.1-rc.2.json": "56416ea0f0cb49d7dfd2dd35ce9b3591b1a0df07f6323357ddcd705fca35914f",
+    "Ptc-0.1.5-rc.2.json": "32a327a14ed463cb5d2323442a38e27cd9aac777c4adbbc17334d9a0cf8fae03",
+    "Ptc-0.2.1-rc.2.json": "b4015e380ffc062de914b91c244ef8e2ec135e421b3144c7695c7ac3903f998b",
+    "Ptc-budget-0.1.5-rc.2.json": "b92d5698a29ac4d46f9a6654b12b3de496fc901fb370973c6454dd76211d4a5c",
+    "Ptc-budget-0.2.1-rc.2.json": "c3dafce607d7742a52c6054fa50421c0784c38ab96eac8a781f96c93b1bf25fb"
+  },
+  "loaded_package_versions": [
+    {
+      "name": "@deepseek-ai/cordis",
+      "version": "4.0.2"
+    },
+    {
+      "name": "@deepseek-ai/dsh-llm",
+      "version": "0.1.5-rc.2"
+    },
+    {
+      "name": "@deepseek-ai/dsh-session",
+      "version": "0.1.5-rc.2"
+    },
+    {
+      "name": "@deepseek-ai/dsh-session-projection",
+      "version": "0.1.5-rc.2"
+    },
+    {
+      "name": "@deepseek-ai/dsh-token-meter",
+      "version": "0.1.5-rc.2"
+    },
+    {
+      "name": "@deepseek-ai/dsh-compaction-basic",
+      "version": "0.1.5-rc.2"
+    },
+    {
+      "name": "@deepseek-ai/dsh-agent",
+      "version": "0.1.5-rc.2"
+    },
+    {
+      "name": "@deepseek-ai/cordis",
+      "version": "4.0.5"
+    },
+    {
+      "name": "@deepseek-ai/dsh-llm",
+      "version": "0.2.1-rc.2"
+    },
+    {
+      "name": "@deepseek-ai/dsh-session",
+      "version": "0.2.1-rc.2"
+    },
+    {
+      "name": "@deepseek-ai/dsh-session-projection",
+      "version": "0.2.1-rc.2"
+    },
+    {
+      "name": "@deepseek-ai/dsh-token-meter",
+      "version": "0.2.1-rc.2"
+    },
+    {
+      "name": "@deepseek-ai/dsh-compaction-basic",
+      "version": "0.2.1-rc.2"
+    },
+    {
+      "name": "@deepseek-ai/dsh-agent",
+      "version": "0.2.1-rc.2"
+    },
+    {
+      "name": "@deepseek-ai/dsh-system-prompt",
+      "version": "0.1.5-rc.2"
+    },
+    {
+      "name": "@deepseek-ai/dsh-tools",
+      "version": "0.1.5-rc.2"
+    },
+    {
+      "name": "@deepseek-ai/dsh-code-runtime-worker-thread",
+      "version": "0.1.5-rc.2"
+    },
+    {
+      "name": "@deepseek-ai/dsh-system-prompt",
+      "version": "0.2.1-rc.2"
+    },
+    {
+      "name": "@deepseek-ai/dsh-tools",
+      "version": "0.2.1-rc.2"
+    },
+    {
+      "name": "@deepseek-ai/dsh-fs-local",
+      "version": "0.2.1-rc.2"
+    },
+    {
+      "name": "@deepseek-ai/dsh-subprocess-local",
+      "version": "0.2.1-rc.2"
+    },
+    {
+      "name": "@deepseek-ai/dsh-sandbox-local",
+      "version": "0.2.1-rc.2"
+    },
+    {
+      "name": "@deepseek-ai/dsh-sandbox-policy",
+      "version": "0.2.1-rc.2"
+    },
+    {
+      "name": "@deepseek-ai/dsh-ptc-runtime-node",
+      "version": "0.2.1-rc.2"
+    }
+  ],
+  "source_report_sha256": "47a6350aa129e055c667ff768cf12f629c55831c6e4a8247c3e537ccf7b55237"
+}

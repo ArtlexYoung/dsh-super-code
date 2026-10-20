@@ -14,11 +14,11 @@
   },
   "baseline": {
     "file": "CorrectedFourVersions.json",
-    "sha256": "7a197a34000c3a62e155aa656335e45d9822dbcfc2ebbec336cc0f7cd4ab8c53"
+    "sha256": "a6e312ba568b7668244be85443d51d3baad73617343b982d459b1cde98b8ae3d"
   },
   "summary": {
     "valid_scores": 100,
-    "passed": 54,
+    "passed": 56,
     "average_minutes": 13.460769166666667,
     "median_minutes": 12.196725,
     "p90_minutes": 21.38135,
@@ -67,11 +67,13 @@
         "average_accumulated_minutes_per_task": 5.4913835
       },
       "output_tokens_per_second": 260.86834010686493
-    }
+    },
+    "identifier_review_additional_passes": 2,
+    "grader_passed": 54
   },
   "comparisons": {
     "minimal": {
-      "accuracy_change_percentage_points": 10,
+      "accuracy_change_percentage_points": 10.0,
       "relative_changes_percent": {
         "average_minutes": -47.592934573783616,
         "median_minutes": -53.337384463871885,
@@ -106,7 +108,7 @@
       ]
     },
     "0.2.0": {
-      "accuracy_change_percentage_points": 2,
+      "accuracy_change_percentage_points": 2.0,
       "relative_changes_percent": {
         "average_minutes": -11.137363113862852,
         "median_minutes": -9.722822758177852,
@@ -323,7 +325,7 @@
       "model_calls": 61,
       "tool_calls": 79,
       "requests_without_usage": 0,
-      "passed": false,
+      "passed": true,
       "response_ms": 650640,
       "timing_ms": {
         "first_token": {
@@ -366,7 +368,13 @@
       "original_evidence_sha256": "9a3b3514beab9d24a10c78de38b174f44fdebc5ddc7f6472803c6087363dff0f",
       "patch_sha256": "8d91ee520545f64675f4a9524511dcc9e66a8b4e76f30f9800a1ab9dd0ce7323",
       "official_evaluator_commit": "ca10a60a5fcae51e6948ffe1485d4153d421e6c5",
-      "grading_observation_kind": "scored"
+      "grading_observation_kind": "scored",
+      "identifier_review": {
+        "reviewed_passed": true,
+        "reason": "frozen_test_name_suffixes",
+        "evidence_summary_sha256": "9a3b3514beab9d24a10c78de38b174f44fdebc5ddc7f6472803c6087363dff0f"
+      },
+      "grader_passed": false
     },
     {
       "task_index": 49,
@@ -2660,7 +2668,7 @@
       "model_calls": 65,
       "tool_calls": 64,
       "requests_without_usage": 0,
-      "passed": false,
+      "passed": true,
       "response_ms": 624387,
       "timing_ms": {
         "first_token": {
@@ -2703,7 +2711,13 @@
       "original_evidence_sha256": "960cf578ea51d7ca4fbe3825356d863173b104fcf2d8c5ea879426e4babc4101",
       "patch_sha256": "283465541c09be1606c922c2a35a1837698d4eafd9a0b695a70806f337800be3",
       "official_evaluator_commit": "ca10a60a5fcae51e6948ffe1485d4153d421e6c5",
-      "grading_observation_kind": "scored"
+      "grading_observation_kind": "scored",
+      "identifier_review": {
+        "reviewed_passed": true,
+        "reason": "dynamic_year_test_names",
+        "evidence_summary_sha256": "960cf578ea51d7ca4fbe3825356d863173b104fcf2d8c5ea879426e4babc4101"
+      },
+      "grader_passed": false
     },
     {
       "task_index": 42,
@@ -5840,5 +5854,11 @@
       "official_evaluator_commit": "ca10a60a5fcae51e6948ffe1485d4153d421e6c5",
       "grading_observation_kind": "scored"
     }
-  ]
+  ],
+  "grading_review": {
+    "file": "GradingReviewResults.json",
+    "sha256": "3dd7eb80822a0ae96ab2a940150716c1008ef9c23f4bb5af113fc499f577d2df",
+    "grader_verdicts_preserved": true,
+    "policy": "Passed includes verified test-name corrections only when every missing required name maps exactly to a passing test and all raw tests pass. Original grader verdicts, patch evidence, model usage and timing are preserved."
+  }
 }

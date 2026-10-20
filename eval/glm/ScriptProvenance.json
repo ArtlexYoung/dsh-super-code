@@ -1,0 +1,94 @@
+{
+  "schema": 1,
+  "scope": "Execution-layer scripts archived from the completed GLM comparison. External task preparation, private provider relay, official datasets, binaries and raw sessions are not included.",
+  "files": [
+    {
+      "file": "dsh-page-driver.ts",
+      "original_sha256": "b5d9f70371a1290b43e7cd0dbef50ef7ca2efea00761f741dbddf598387563f8",
+      "published_sha256": "e8bbac5f7ef95528756b391fb24edb0a63f2b9bcb56e073335982a72b8c85c9b",
+      "adaptation": "relative imports, externally configured provider URL, provider host derived for local proxy bypass"
+    },
+    {
+      "file": "zcode-driver.mjs",
+      "original_sha256": "de255d5d07e6f1d6d9c699063721cb4abb71add6a5e1a0f531f1898ff3c04df4",
+      "published_sha256": "90eddac721935eedbdb582e9ba566f80d7d5e22fec4003faee5c86e9b3153db8",
+      "adaptation": "native candidate directory supplied in task input; complete CLI, manifest verification, prompt and resume behavior unchanged"
+    },
+    {
+      "file": "native-resume.mjs",
+      "original_sha256": "cfb4ecec2eadc82f8f4b387e3c7d55a895482c74307455c670e8d4e537bef0ce",
+      "published_sha256": "cfb4ecec2eadc82f8f4b387e3c7d55a895482c74307455c670e8d4e537bef0ce",
+      "adaptation": "unchanged"
+    },
+    {
+      "file": "wire-observer.mjs",
+      "original_sha256": "61533224a8d4f1851612d774492cf1ed69b3d5944e6d1657b6978af1993ec6b4",
+      "published_sha256": "61533224a8d4f1851612d774492cf1ed69b3d5944e6d1657b6978af1993ec6b4",
+      "adaptation": "unchanged"
+    },
+    {
+      "file": "wire_metrics.py",
+      "original_sha256": "2cb22da430f0ebd329a7e5299b835dfb57d483d401e43ceb56538f1df434c8b2",
+      "published_sha256": "2cb22da430f0ebd329a7e5299b835dfb57d483d401e43ceb56538f1df434c8b2",
+      "adaptation": "unchanged"
+    },
+    {
+      "file": "test_native_resume.mjs",
+      "original_sha256": "11e2130e29dd158cb57784bbf03d2954cce579142673b98bddb3955317abab02",
+      "published_sha256": "11e2130e29dd158cb57784bbf03d2954cce579142673b98bddb3955317abab02",
+      "adaptation": "unchanged"
+    },
+    {
+      "file": "test_transport_metrics.py",
+      "original_sha256": "d6a7759818e02c718542a195ac9bdbdacd60514d3d56d0e4a6cb9e4a51891179",
+      "published_sha256": "d6a7759818e02c718542a195ac9bdbdacd60514d3d56d0e4a6cb9e4a51891179",
+      "adaptation": "unchanged"
+    },
+    {
+      "file": "boot-inspector.mjs",
+      "original_sha256": "51ef9e92b301921e1be2d89904518909b569786a68d54b4271c0f3e55054ac6b",
+      "published_sha256": "51ef9e92b301921e1be2d89904518909b569786a68d54b4271c0f3e55054ac6b",
+      "adaptation": "unchanged"
+    },
+    {
+      "file": "candidate-identity.mjs",
+      "original_sha256": "9245b799dd89e90fdcb5132c035cf09f37ebae316cdc2b723130deab6f27e43c",
+      "published_sha256": "9245b799dd89e90fdcb5132c035cf09f37ebae316cdc2b723130deab6f27e43c",
+      "adaptation": "unchanged"
+    },
+    {
+      "file": "session-outcome.mjs",
+      "original_sha256": "6fd8ff18e64224fa4dad0f31edde0abb5f8b99260c2ecffecb1d28dfa9611257",
+      "published_sha256": "5ee6c3f3f9f67639fbaa1353a313e98e818c3ecaecb2eb82d86333a799d3720c",
+      "adaptation": "relative imports and externally configured provider URL"
+    },
+    {
+      "file": "candidate-outcome.mjs",
+      "original_sha256": "d5a09779dbb1c3b105dc2dbf18290893983026a9010cb2b21dfacefd7e590325",
+      "published_sha256": "100d300dfe24f8ce85cb1db0138799ef229785b77e84c8abf164fb80965a8c3f",
+      "adaptation": "relative imports and externally configured provider URL"
+    },
+    {
+      "file": "request-accounting.mjs",
+      "original_sha256": "703b97970ba9e2c61d63f754e9da14975c86d6d19853670e3b4bcbb36a15e026",
+      "published_sha256": "703b97970ba9e2c61d63f754e9da14975c86d6d19853670e3b4bcbb36a15e026",
+      "adaptation": "unchanged"
+    },
+    {
+      "file": "evaluation-tool-guard.mjs",
+      "original_sha256": "f28b613ee033b86cada3f627a21e66b7e5734b807db72d75e58eed0c84d71386",
+      "published_sha256": "f28b613ee033b86cada3f627a21e66b7e5734b807db72d75e58eed0c84d71386",
+      "adaptation": "unchanged"
+    },
+    {
+      "file": "export-results.mjs",
+      "published_sha256": "0fd040ef89cadbb0b745495f40a4ef2459bff61ad33f6bb3c7e57730cac2a2bd",
+      "adaptation": "new sanitized canonical-result exporter; performs no model calls"
+    },
+    {
+      "file": "test_export_results.mjs",
+      "published_sha256": "0b8bd906f8ec19de2f760bcc3aab34e913f947c55f1c89864dfbc6b0bcc20702",
+      "adaptation": "new offline public-result verification"
+    }
+  ]
+}

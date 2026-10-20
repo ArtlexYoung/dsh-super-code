@@ -9,7 +9,7 @@
       "version": "minimal",
       "summary": {
         "valid_scores": 100,
-        "passed": 44,
+        "passed": 46,
         "original_passed": 41,
         "regraded_tasks": 4,
         "average_minutes": 25.685027499999997,
@@ -23,7 +23,10 @@
         "average_output_tokens": 100876.95,
         "average_total_tokens": 11578046.9,
         "cache_hit_rate": 0.9936335498804738,
-        "requests_without_usage": 7
+        "requests_without_usage": 7,
+        "identifier_review_additional_passes": 2,
+        "identifier_review_status": "all_original_grading_logs_reviewed",
+        "grader_passed": 44
       },
       "rows": [
         {
@@ -85,7 +88,7 @@
           "instance_id": "instance_NodeBB__NodeBB-00c70ce7b0541cfc94afe567921d7668cdc8f4ac-vnan",
           "repo": "NodeBB/NodeBB",
           "original_passed": false,
-          "passed": false,
+          "passed": true,
           "response_ms": 1307920,
           "model_calls": 102,
           "tool_calls": 125,
@@ -96,7 +99,13 @@
           "total_tokens": 5897107,
           "requests_without_usage": 0,
           "original_evidence_sha256": "441b3fc0de44a233940e9bfa221150c36a22d21add48cb418696303dc5dab489",
-          "patch_sha256": "f608c848ed5923bba54b959ee494a17e559087e2725045c0f4e96db69ab06d7a"
+          "patch_sha256": "f608c848ed5923bba54b959ee494a17e559087e2725045c0f4e96db69ab06d7a",
+          "identifier_review": {
+            "reviewed_passed": true,
+            "reason": "frozen_test_name_suffixes",
+            "evidence_summary_sha256": "441b3fc0de44a233940e9bfa221150c36a22d21add48cb418696303dc5dab489"
+          },
+          "grader_passed": false
         },
         {
           "task_index": 49,
@@ -837,7 +846,7 @@
           "instance_id": "instance_internetarchive__openlibrary-b112069e31e0553b2d374abb5f9c5e05e8f3dbbe-ve8c8d62a2b60610a3c4631f5f23ed866bada9818",
           "repo": "internetarchive/openlibrary",
           "original_passed": false,
-          "passed": false,
+          "passed": true,
           "response_ms": 987471,
           "model_calls": 162,
           "tool_calls": 161,
@@ -848,7 +857,13 @@
           "total_tokens": 19566662,
           "requests_without_usage": 0,
           "original_evidence_sha256": "d7fd8f744d023a6e1caf01e2ac417cb9b71093916dfd8d28ece62ad390314858",
-          "patch_sha256": "5ed875d4dde4c7136a7641804f035bae822ccd2cd5bb0b54f7a3107cf456c8c7"
+          "patch_sha256": "5ed875d4dde4c7136a7641804f035bae822ccd2cd5bb0b54f7a3107cf456c8c7",
+          "identifier_review": {
+            "reviewed_passed": true,
+            "reason": "dynamic_year_test_names",
+            "evidence_summary_sha256": "d7fd8f744d023a6e1caf01e2ac417cb9b71093916dfd8d28ece62ad390314858"
+          },
+          "grader_passed": false
         },
         {
           "task_index": 42,
@@ -1888,7 +1903,7 @@
       "version": "0.0.9",
       "summary": {
         "valid_scores": 100,
-        "passed": 48,
+        "passed": 50,
         "original_passed": 46,
         "regraded_tasks": 3,
         "average_minutes": 16.458154166666667,
@@ -1902,7 +1917,10 @@
         "average_output_tokens": 97900.99,
         "average_total_tokens": 9623216.52,
         "cache_hit_rate": 0.993350971965125,
-        "requests_without_usage": 8
+        "requests_without_usage": 8,
+        "identifier_review_additional_passes": 2,
+        "identifier_review_status": "all_original_grading_logs_reviewed",
+        "grader_passed": 48
       },
       "rows": [
         {
@@ -1964,7 +1982,7 @@
           "instance_id": "instance_NodeBB__NodeBB-00c70ce7b0541cfc94afe567921d7668cdc8f4ac-vnan",
           "repo": "NodeBB/NodeBB",
           "original_passed": false,
-          "passed": false,
+          "passed": true,
           "response_ms": 488277,
           "model_calls": 97,
           "tool_calls": 129,
@@ -1975,7 +1993,13 @@
           "total_tokens": 7449506,
           "requests_without_usage": 0,
           "original_evidence_sha256": "db64cc2cd010de898518b9a4881bd0862630d5135ab57bb0aa1da7694f7e2261",
-          "patch_sha256": "c5b843f2f80d7c48fb39294b4bf2d0bad972e0a71ff4cde2259ae0b91095da9e"
+          "patch_sha256": "c5b843f2f80d7c48fb39294b4bf2d0bad972e0a71ff4cde2259ae0b91095da9e",
+          "identifier_review": {
+            "reviewed_passed": true,
+            "reason": "frozen_test_name_suffixes",
+            "evidence_summary_sha256": "db64cc2cd010de898518b9a4881bd0862630d5135ab57bb0aa1da7694f7e2261"
+          },
+          "grader_passed": false
         },
         {
           "task_index": 49,
@@ -2730,7 +2754,7 @@
           "instance_id": "instance_internetarchive__openlibrary-b112069e31e0553b2d374abb5f9c5e05e8f3dbbe-ve8c8d62a2b60610a3c4631f5f23ed866bada9818",
           "repo": "internetarchive/openlibrary",
           "original_passed": false,
-          "passed": false,
+          "passed": true,
           "response_ms": 1078476,
           "model_calls": 129,
           "tool_calls": 139,
@@ -2741,7 +2765,13 @@
           "total_tokens": 17540450,
           "requests_without_usage": 0,
           "original_evidence_sha256": "7e8f998400df4a827b5be38fc1582c3d16a26fc88c3ca55897f4bc2e927decb1",
-          "patch_sha256": "bdd21ff8b9b4e50eb690705f2b208d027449bdaafb9eed6ccd69f881829d4000"
+          "patch_sha256": "bdd21ff8b9b4e50eb690705f2b208d027449bdaafb9eed6ccd69f881829d4000",
+          "identifier_review": {
+            "reviewed_passed": true,
+            "reason": "dynamic_year_test_names",
+            "evidence_summary_sha256": "7e8f998400df4a827b5be38fc1582c3d16a26fc88c3ca55897f4bc2e927decb1"
+          },
+          "grader_passed": false
         },
         {
           "task_index": 42,
@@ -3771,7 +3801,7 @@
       "version": "0.1.2",
       "summary": {
         "valid_scores": 100,
-        "passed": 52,
+        "passed": 53,
         "original_passed": 49,
         "regraded_tasks": 4,
         "average_minutes": 16.011225500000002,
@@ -3785,7 +3815,10 @@
         "average_output_tokens": 97793.48,
         "average_total_tokens": 9938176.21,
         "cache_hit_rate": 0.9934368721449108,
-        "requests_without_usage": 1
+        "requests_without_usage": 1,
+        "identifier_review_additional_passes": 1,
+        "identifier_review_status": "all_original_grading_logs_reviewed",
+        "grader_passed": 52
       },
       "rows": [
         {
@@ -4599,7 +4632,7 @@
           "instance_id": "instance_internetarchive__openlibrary-b112069e31e0553b2d374abb5f9c5e05e8f3dbbe-ve8c8d62a2b60610a3c4631f5f23ed866bada9818",
           "repo": "internetarchive/openlibrary",
           "original_passed": false,
-          "passed": false,
+          "passed": true,
           "response_ms": 873967,
           "model_calls": 108,
           "tool_calls": 143,
@@ -4610,7 +4643,13 @@
           "total_tokens": 13178682,
           "requests_without_usage": 0,
           "original_evidence_sha256": "67306123b2d2412a47d218cfb0354ed6e417059a2b851fc4b9c0446bd8ca4d3b",
-          "patch_sha256": "3c1ffdd66bd0ddedf124ab3dac46e967f033015550130efcf016da3a2846dddf"
+          "patch_sha256": "3c1ffdd66bd0ddedf124ab3dac46e967f033015550130efcf016da3a2846dddf",
+          "identifier_review": {
+            "reviewed_passed": true,
+            "reason": "dynamic_year_test_names",
+            "evidence_summary_sha256": "67306123b2d2412a47d218cfb0354ed6e417059a2b851fc4b9c0446bd8ca4d3b"
+          },
+          "grader_passed": false
         },
         {
           "task_index": 42,
@@ -5674,7 +5713,7 @@
       "integration_package_rebenchmarked": false,
       "summary": {
         "valid_scores": 100,
-        "passed": 52,
+        "passed": 54,
         "original_passed": 48,
         "regraded_tasks": 5,
         "average_minutes": 15.147839,
@@ -5688,7 +5727,10 @@
         "average_output_tokens": 96519.57,
         "average_total_tokens": 9299093.84,
         "cache_hit_rate": 0.9934183079404802,
-        "requests_without_usage": 1
+        "requests_without_usage": 1,
+        "identifier_review_additional_passes": 2,
+        "identifier_review_status": "all_original_grading_logs_reviewed",
+        "grader_passed": 52
       },
       "rows": [
         {
@@ -5750,7 +5792,7 @@
           "instance_id": "instance_NodeBB__NodeBB-00c70ce7b0541cfc94afe567921d7668cdc8f4ac-vnan",
           "repo": "NodeBB/NodeBB",
           "original_passed": false,
-          "passed": false,
+          "passed": true,
           "response_ms": 508597,
           "model_calls": 68,
           "tool_calls": 99,
@@ -5761,7 +5803,13 @@
           "total_tokens": 4437707,
           "requests_without_usage": 0,
           "original_evidence_sha256": "2b17b23fb85c9a34c11baa5a259167a79f6cb6196b4941c7a00f413ed6860e7c",
-          "patch_sha256": "084e21a910d8d7fdcd3c5fe7e8ebab4c6ccaecc133b836fb922c4c358e66181a"
+          "patch_sha256": "084e21a910d8d7fdcd3c5fe7e8ebab4c6ccaecc133b836fb922c4c358e66181a",
+          "identifier_review": {
+            "reviewed_passed": true,
+            "reason": "frozen_test_name_suffixes",
+            "evidence_summary_sha256": "2b17b23fb85c9a34c11baa5a259167a79f6cb6196b4941c7a00f413ed6860e7c"
+          },
+          "grader_passed": false
         },
         {
           "task_index": 49,
@@ -6502,7 +6550,7 @@
           "instance_id": "instance_internetarchive__openlibrary-b112069e31e0553b2d374abb5f9c5e05e8f3dbbe-ve8c8d62a2b60610a3c4631f5f23ed866bada9818",
           "repo": "internetarchive/openlibrary",
           "original_passed": false,
-          "passed": false,
+          "passed": true,
           "response_ms": 802454,
           "model_calls": 113,
           "tool_calls": 148,
@@ -6513,7 +6561,13 @@
           "total_tokens": 12869593,
           "requests_without_usage": 0,
           "original_evidence_sha256": "69936855fe202c5fd72d206676dc463147b1328c4a2e2514d32ab53aace8e995",
-          "patch_sha256": "297951ef8a56c5bb268908f91d723591faff5c4357ac815a4f10d84c902e4bb5"
+          "patch_sha256": "297951ef8a56c5bb268908f91d723591faff5c4357ac815a4f10d84c902e4bb5",
+          "identifier_review": {
+            "reviewed_passed": true,
+            "reason": "dynamic_year_test_names",
+            "evidence_summary_sha256": "69936855fe202c5fd72d206676dc463147b1328c4a2e2514d32ab53aace8e995"
+          },
+          "grader_passed": false
         },
         {
           "task_index": 42,
@@ -7585,5 +7639,11 @@
         "token_change": -0.19683398069496505
       }
     }
-  ]
+  ],
+  "grading_review": {
+    "file": "GradingReviewResults.json",
+    "sha256": "3dd7eb80822a0ae96ab2a940150716c1008ef9c23f4bb5af113fc499f577d2df",
+    "grader_verdicts_preserved": true,
+    "policy": "Passed includes verified test-name corrections only when every missing required name maps exactly to a passing test and all raw tests pass. Original grader verdicts, patch evidence, model usage and timing are preserved."
+  }
 }

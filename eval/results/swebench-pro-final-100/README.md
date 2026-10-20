@@ -1,12 +1,32 @@
-# SWE-bench Pro hard-100 结果
+# SWE-bench Pro hard-100 结果 · Results
 
-固定模型 `deepseek-v4.1-flash`，reasoning `high`，原生 DSH Web RPC，官方 SWE-bench Pro 评分器。
+最新成绩和统计口径见[评测说明](../../../docs/EvaluationResults.md)。DSH 经原生 Web RPC 作答，ZCode 使用完整原生 CLI，均使用官方 SWE-bench Pro 评分器；宿主、模型和思考等级在各组数据中标明。
 
-本目录为脱敏后的公开结果，不是运行配置。模型名采用公开展示名称；开发提供方、请求路由、环境配置、机器路径和原始工具诊断仅保留在本地证据中。JSON 中的 `public_export` 标记说明了这一边界；评分、请求用量及耗时数值保持不变。
+See the [evaluation report](../../../docs/EvaluationResults.md) for current scores and methodology. DSH uses native Web RPC and ZCode uses its complete native CLI; both use the official SWE-bench Pro grader. Each run identifies its host, model, and reasoning effort.
 
-| preset | 有效评分 | 通过 | 正确率 |
-|---|---:|---:|---:|
-| minimal | 100/100 | 41 | 41% |
-| super-code 0.0.9 | 100/100 | 46 | 46% |
+| 文件 / File | 内容 / Contents |
+|---|---|
+| [CorrectedFourVersions.json](CorrectedFourVersions.json) | minimal、0.0.9、0.1.2、0.2.0 的历史环境复评结果。 / Historical environmental regrades for four versions. |
+| [Batch3Results.json](Batch3Results.json) | 0.3.0 冻结候选的逐题成绩。 / Per-task results for the frozen 0.3.0 candidate. |
+| [OfficialPresetResults.json](OfficialPresetResults.json) | 官方预设成绩、用量、净耗时及待复评记录。 / Official presets, usage, net timing, and pending regrades. |
+| [GradingReviewResults.json](GradingReviewResults.json) | 构建依赖网络异常复评分、全量 Pro / Dev 复核覆盖，以及31 条测试名称修正依据。 / Dependency-network regrades, full Pro / Dev review coverage, and evidence for 31 test-name corrections. |
+| [GLMComparison.json](GLMComparison.json) | GLM / max 下 Super Code 与完整原生 ZCode 的两组 100 题；[执行脚本](../../glm/README.md)。 / Two 100-task GLM / max runs, with [execution scripts](../../glm/README.md). |
+| [ZCodeNativeCandidate.json](ZCodeNativeCandidate.json) | 原生 ZCode 版本与完整包文件哈希，不含第三方源码或二进制。 / Native ZCode versions and package-file hashes, without third-party sources or binaries. |
+| [HarnessRc2Results.json](HarnessRc2Results.json) | DSH 0.2.1-rc.2、新 Flash / high 的四组正式预设与预算对照，不含开发分支。 / Four released-preset and budget controls on DSH 0.2.1-rc.2 with the newer Flash / high; no development branches. |
+| [HostBudgetDiagnostics.json](HostBudgetDiagnostics.json) | 压缩与 PTC 预算的宿主集成探针摘要。 / Host integration probe summary for compression and PTC budgets. |
 
-`index.json` 提供每题编号、instance ID、通过状态和明细文件。
+`index.json`、`all-summary.json` 等早期文件保留最初的原始结果，不代表最新校正成绩。环境异常未完成复评前不计入有效评分；已核实的测试名称差异修正计入通过数，原始判分留作追溯。
+
+Earlier files such as `index.json` and `all-summary.json` retain the original results, rather than the latest corrected scores. Environmental failures are excluded from valid scores until regraded. Verified test-name corrections are included in pass counts, with original verdicts retained for review.
+
+四个历史版本的 400 条记录及 Batch.3 的 100 条记录均已复核原始评分日志。`passed` 为包含测试名称修正的通过结果；发生修正的记录用 `grader_passed` 保留评分器原判，`identifier_review` 保存修正依据。原始 Token、调用次数和耗时不变；关联的复核文件以 SHA-256 绑定。
+
+Original grading logs have been reviewed for all 400 historical-version records and all 100 Batch.3 records. `passed` includes verified test-name corrections. Corrected records retain the original grader verdict in `grader_passed` and correction evidence in `identifier_review`. Original tokens, call counts, and timing are unchanged. Linked review data is bound by SHA-256.
+
+这里只保存脱敏结果，运行配置和详细诊断留在本地。复评分不重新调用模型，保留每条原作答的补丁、用量和耗时。
+
+This directory contains sanitized results; runtime configuration and detailed diagnostics remain local. Regrading adds no model calls and preserves each answer's patch, usage, and timing.
+
+旧版本及旧官方预设表使用 DSH `0.1.5-rc.2` / `deepseek-v4.1-flash`。新版 Flash 显示名 `deepseek-v4.1-flash-1017` 对应此次测试的调用标识 `deepseek/deepseek-flash`。0.3.6 恢复的默认预算由 0.3.5 + 显式覆盖组验证，未另跑 0.3.6 发布包的 100 题。GLM 对照比较完整系统，不能分离插件作用。
+
+Historical version and official-preset tables use DSH `0.1.5-rc.2` / `deepseek-v4.1-flash`. The newer Flash label `deepseek-v4.1-flash-1017` identifies the tested API route `deepseek/deepseek-flash`. The defaults restored in 0.3.6 were evaluated with 0.3.5 plus explicit budget overrides; no separate 100-task run of the 0.3.6 package is claimed. GLM compares complete systems, without isolating the plugin.

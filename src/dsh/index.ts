@@ -7,8 +7,13 @@ import { LongMemoryStore, longMemoryDomainSpec } from '../long-memory.js'
 import type { DomainFacility } from '@deepseek-ai/dsh-storage-domain'
 import { memoryUsageProjection } from '../memory-usage-projection.js'
 import { SuperCodeMemory } from './memory-library.js'
+import { configurationSchema } from './budgets.js'
+import type { Configuration } from './budgets.js'
+import { applyBudgetSettings } from './budget-settings.js'
+import { applyOfficialBudgets } from './official-budgets.js'
 
 export const name = 'super-code'
+export const Config: typeof configurationSchema = configurationSchema
 
 async function installLongMemory(ctx: Context): Promise<void> {
   await ctx.inject(['storageDomain'], async owner => {
@@ -24,7 +29,9 @@ async function installLongMemory(ctx: Context): Promise<void> {
   })
 }
 
-export async function apply(ctx: Context): Promise<void> {
+export async function apply(ctx: Context, config: Configuration = {}): Promise<void> {
+  applyBudgetSettings(ctx, config)
+  applyOfficialBudgets(ctx)
   applyPresetInstallation(ctx)
   ctx.inject(['superCodeLongMemory', 'sessions'], owner => {
     new SuperCodeMemory(owner, owner.get('superCodeLongMemory') as LongMemoryStore)

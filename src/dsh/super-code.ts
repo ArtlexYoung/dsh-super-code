@@ -4,7 +4,7 @@ import z from '@deepseek-ai/schemastery'
 import { defineTool } from '@deepseek-ai/dsh-tools'
 import { SessionId, SessionSeq } from '@deepseek-ai/dsh-session'
 import type { Session } from '@deepseek-ai/dsh-session'
-import type {} from '@deepseek-ai/dsh-agent'
+import type { Agent } from '@deepseek-ai/dsh-agent'
 import { PERSONA_PREFIX_SECTION } from '@deepseek-ai/dsh-system-prompt'
 import { TEAM_NAMES, METHODS, SUPER_CODE_INSTRUCTIONS, readTeamMethod } from '../core/teams.js'
 import type { MethodName } from '../core/teams.js'
@@ -22,13 +22,15 @@ import { scanSessionPage } from '../core/session-scan.js'
 import { TaskMemoryStore } from '../task-memory-store.js'
 import { LongMemoryStore, longMemoryContext, longMemoryEntrySchema, memoryWorkspace, memoryGlobalNamespace, GLOBAL_PREFERENCES_TOPIC } from '../long-memory.js'
 import { batchSafety, classifyMemoryAction, classifyTaskAction } from '../core/batch-policy.js'
+import { configurationOf, validateConfiguration } from './budgets.js'
+import { applyPtcBudget } from './ptc-budget.js'
 
 export const name = 'super-code'
 export const inject: readonly string[] = ['tools', 'systemPrompt', 'sessions', 'sessionProjections']
 export interface Config { readonly maxTasks?: number; readonly maxContextBytes?: number; readonly guidedRoutes?: GuidedRoute[]; readonly presetVersion?: string; readonly presetInstallation?: string }
 export const Config: z<Config> = z.object({
-  maxTasks: z.number().step(1).min(1).max(128).default(32),
-  maxContextBytes: z.number().step(1).min(1024).max(262144).default(32768),
+  maxTasks: z.number().step(1).min(1).max(128),
+  maxContextBytes: z.number().step(1).min(1024).max(262144),
   guidedRoutes: z.array(z.object({ provider: z.string().required(), model: z.string().required() })),
   presetVersion: z.string(),
   presetInstallation: z.string(),
@@ -73,12 +75,22 @@ function assertActionFields(args: { action: string; [key: string]: unknown }): v
 
 /** Installs no agent loop and starts no model calls. */
 export function apply(ctx: Context, config: Config = {}): void {
-  const maxTasks = config.maxTasks ?? 32
-  const maxContextBytes = config.maxContextBytes ?? 32768
+  validateConfiguration({ maxTasks: config.maxTasks, maxContextBytes: config.maxContextBytes })
+  const resources = new WeakMap<Agent, { memory: TaskMemoryStore; maxTasks: number; maxContextBytes: number }>()
+  const resourcesFor = (agent: Agent) => {
+    let value = resources.get(agent)
+    if (!value) {
+      const inherited = configurationOf(ctx, agent)
+      const maxTasks = config.maxTasks ?? inherited.maxTasks ?? 32
+      const maxContextBytes = config.maxContextBytes ?? inherited.maxContextBytes ?? 32768
+      value = { memory: new TaskMemoryStore(ctx, maxContextBytes), maxTasks, maxContextBytes }
+      resources.set(agent, value)
+    }
+    return value
+  }
+  applyPtcBudget(ctx, agent => configurationOf(ctx, agent).budgets ?? {})
   const selectGuidance = createGuidanceSelector(config.guidedRoutes)
-  if (!Number.isSafeInteger(maxTasks) || maxTasks < 1 || maxTasks > 128 || !Number.isSafeInteger(maxContextBytes) || maxContextBytes < 1024 || maxContextBytes > 262144) throw new Error('Invalid super-code capacity')
   ctx.sessionProjections.register(taskMemoryProjection)
-  const memory = new TaskMemoryStore(ctx, maxContextBytes)
   ctx.systemPrompt.section({ name: PERSONA_PREFIX_SECTION, order: ctx.systemPrompt.getSectionOrder('DEPLOYMENT_PERSONA_PREFIX'), text: SUPER_CODE_INSTRUCTIONS })
   // Wrap the host selection waterfall: providers run before its model snapshot is resolved.
   ctx.on('system-prompt/assemble', async (_assembly, _context, next) => {
@@ -89,11 +101,13 @@ export function apply(ctx: Context, config: Config = {}): void {
   }, { prepend: true })
   ctx.systemPrompt.context({ name: 'super-code:tasks', order: 80, text: ({ agent }) => {
     if (agent === undefined) return ''
+    const { memory, maxContextBytes } = resourcesFor(agent)
     if (memory.isPending(agent.session)) return 'The last task-memory checkpoint is unconfirmed. Use super_code_task read to retry persistence before relying on it.'
     return taskMemoryContext(memory.current(agent.session), maxContextBytes)
   } })
   ctx.systemPrompt.context({ name: 'super-code:project-memory', order: 81, text: ({ agent }) => {
     if (!agent) return ''
+    const { memory } = resourcesFor(agent)
     if (memory.isPending(agent.session)) return ''
     const state = memory.current(agent.session)
     const task = state.focus.kind === 'task' ? state.tasks[state.focus.id] : undefined
@@ -107,7 +121,9 @@ export function apply(ctx: Context, config: Config = {}): void {
     return found.kind === 'found' ? longMemoryContext(found.value, 2048, task.sourceVersion) : ''
   } })
   ctx.systemPrompt.context({ name: 'super-code:global-memory', order: 82, text: ({ agent }) => {
-    if (!agent || memory.isPending(agent.session)) return ''
+    if (!agent) return ''
+    const { memory } = resourcesFor(agent)
+    if (memory.isPending(agent.session)) return ''
     const longMemory = ctx.get('superCodeLongMemory') as LongMemoryStore | undefined
     if (!longMemory) return ''
     const found = longMemory.read(memoryGlobalNamespace(), GLOBAL_PREFERENCES_TOPIC)
@@ -144,6 +160,7 @@ read resume default; full explicit. history/archives/evidence are paged or recor
     execute: async (args, exec) => {
       try {
         if (exec.agent === undefined) throw new Error('super-code requires an agent-owned session')
+        const { memory, maxTasks, maxContextBytes } = resourcesFor(exec.agent)
         assertActionFields(args)
         const session = exec.agent.session
         if (args.action === 'evidence') {
@@ -257,6 +274,7 @@ read resume default; full explicit. history/archives/evidence are paged or recor
     isConcurrencySafe: args => batchSafety(classifyMemoryAction(args.action)) === 'parallel',
     execute: async (args, exec) => {
       if (!exec.agent) throw new Error('Long memory requires an agent-owned session')
+      const { memory } = resourcesFor(exec.agent)
       const session = exec.agent.session
       const longMemory = ctx.get('superCodeLongMemory') as LongMemoryStore | undefined
       if (!longMemory) throw new Error('Long memory storage is unavailable')

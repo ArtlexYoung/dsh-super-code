@@ -1,5 +1,11 @@
 # 版本记录 · Changelog
 
+- **0.3.6 · 2026-10-20**：排查发现新版 Harness 预算收紧后出现效果退化，因此增加插件内预算配置，并默认使用此前 Pro 测试中效果更好的旧预算，无需用户手动填写：按完整上下文窗口计算、80% 触发压缩、保留最近 16% 原文、摘要上限 8,192 Token，压缩追加尝试与溢出重试各 1 次，支持新版 PTC 的宿主默认执行时限和上限均为 600 秒。保留原有宿主默认值提示、用户自定义覆盖及运行中 Agent 的配置快照；旧宿主按能力禁用时限覆盖，始终遵守宿主时限上限。官方预设仍需手动开启应用。该修复不代表新增或改写历史评测成绩。[预算设置](UsageGuide.md#运行预算--runtime-budgets)
+  **0.3.6 · 2026-10-20**: Investigation found regressions after newer Harness versions reduced their budgets. Adds in-plugin budget settings and defaults to the older budgets that performed better in the Pro tests, without manual setup: full-context-window accounting, compression at 80%, 16% recent verbatim retention, an 8,192-token summary cap, one additional compression attempt and one overflow retry, and 600-second default/maximum deadlines on hosts with the newer PTC provider. Preserves host-default hints, user overrides, and running Agents' configuration snapshots. Older hosts disable unsupported deadline overrides, and host ceilings always apply. Official presets remain opt-in. This fix does not add or revise historical evaluation scores. [Budget settings](UsageGuide.md#运行预算--runtime-budgets)
+
+  设置页按“预设状态 / 上下文配置”分组，预算支持保存、恢复默认和并发编辑冲突检查；修复语言偏好尚未保存时提前重载导致语言回退的问题。完成 20 个 Web 版本、5 个官方 macOS arm64 Desktop 版本与 DSH NEXT 的兼容复验；[验证范围与限制](Compatibility.md)。
+  Groups settings into Preset status / Context settings, with budget saving, reset, and concurrent-edit conflict checks. Fixes language changes being lost when the page reloads before the host saves the preference. Revalidated 20 Web versions, five official macOS arm64 Desktop versions, and DSH NEXT; [coverage and limits](Compatibility.md).
+
 - **0.3.5 · 2026-10-18**：适配 Harness `0.2.1-rc.2`，修复 v4 日志迁移后旧任务记录不可见的问题，保留 `0.1.5-alpha.1` 起的兼容性，并补齐官方桌面安装说明。[验证范围](Compatibility.md)
   **0.3.5 · 2026-10-18**: Supports Harness `0.2.1-rc.2`, restores legacy task records after v4 log migration, retains support from `0.1.5-alpha.1`, and clarifies official Desktop installation. [Validation coverage](Compatibility.md)
 

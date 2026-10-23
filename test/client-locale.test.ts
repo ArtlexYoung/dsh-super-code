@@ -55,7 +55,7 @@ test('preset settings registration does not wait on the Remote mount lifecycle',
 
 test('budget fields round-trip units, retain blank defaults and reject contradictory limits', () => {
   const { plugin } = fixture()
-  const config = { applyToOfficialPresets: true, maxTasks: 48, maxContextBytes: 65536, budgets: { pressureBasis: 'window',
+  const config = { deletionProtection: 'strict', deletionProtectionForOfficialPresets: false, applyToOfficialPresets: true, maxTasks: 48, maxContextBytes: 65536, budgets: { pressureBasis: 'window',
     thresholdRatio: 0.8, retainRatio: 0.16, summaryMaxTokens: 8192, compactionRetries: 0,
     ptcTimeoutMs: 123, ptcMaxTimeoutMs: 600000 } }
   const draft = plugin.budgetDraft(config)
@@ -64,11 +64,32 @@ test('budget fields round-trip units, retain blank defaults and reject contradic
   assert.equal(draft.ptcMaxTimeoutMs, '600')
   assert.equal(draft.compactionRetries, '0')
   assert.deepEqual(JSON.parse(JSON.stringify(plugin.budgetConfiguration(draft))), { ok: true, configuration: config })
-  assert.deepEqual(JSON.parse(JSON.stringify(plugin.budgetConfiguration(plugin.budgetDraft({})))), { ok: true, configuration: { applyToOfficialPresets: false } })
+  assert.deepEqual(JSON.parse(JSON.stringify(plugin.budgetConfiguration(plugin.budgetDraft({})))), { ok: true, configuration: { deletionProtection: 'relaxed', deletionProtectionForOfficialPresets: false, applyToOfficialPresets: false } })
   for (const [key, value, error] of [['retainRatio', '90', 'retain'], ['ptcTimeoutMs', '601', 'ptc-order'],
     ['summaryMaxTokens', '-1', 'invalid'], ['maxTasks', '1.5', 'invalid'], ['thresholdRatio', 'NaN', 'invalid'], ['applyToOfficialPresets', 'true', 'invalid']]) {
     assert.equal(plugin.budgetConfiguration({ ...draft, [key!]: value }).error, error)
   }
+})
+
+test('deletion modes default to relaxed and preserve legacy choices and independent opt-ins', () => {
+  const { plugin, dictionaries } = fixture()
+  const draft = plugin.budgetDraft({ applyToOfficialPresets: true })
+  assert.equal(draft.deletionProtection, 'relaxed')
+  assert.equal(draft.deletionProtectionForOfficialPresets, false)
+  assert.equal(plugin.budgetDraft({ deletionProtection: true }).deletionProtection, 'strict')
+  assert.equal(plugin.budgetDraft({ deletionProtection: false }).deletionProtection, 'off')
+  for (const mode of ['off', 'relaxed', 'strict']) {
+    const parsed = JSON.parse(JSON.stringify(plugin.budgetConfiguration({ ...draft, deletionProtection: mode, deletionProtectionForOfficialPresets: true })))
+    assert.deepEqual(parsed, { ok: true, configuration: { deletionProtection: mode, deletionProtectionForOfficialPresets: true, applyToOfficialPresets: true } })
+  }
+  for (const value of ['true', '', 'invalid', 1, true, false]) {
+    assert.equal(plugin.budgetConfiguration({ ...draft, deletionProtection: value }).error, 'invalid')
+  }
+  assert.equal(plugin.budgetConfiguration({ ...draft, deletionProtectionForOfficialPresets: 'true' }).error, 'invalid')
+  assert.match(dictionaries.zh['delete.hint.relaxed'], /脚本.*建议.*明确要求.*rm/)
+  assert.match(dictionaries.en['delete.hint.relaxed'], /scripts.*Explicit user requests.*rm/)
+  assert.match(dictionaries.zh['delete.hint.strict'], /脚本.*禁止.*rm/)
+  assert.match(dictionaries.en['delete.hint.strict'], /scripts.*must not.*rm/)
 })
 
 test('all plugin labels have both languages and sidebar slots subscribe to locale changes', () => {

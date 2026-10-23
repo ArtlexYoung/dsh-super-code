@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { Context } from '@deepseek-ai/cordis'
 import { SettingsProvider } from '@deepseek-ai/dsh-settings'
 import type { SettingsNamespace } from '@deepseek-ai/dsh-settings'
-import { configurationSchema, settingsConfigurationSchema, configurationOf, configurationValues, validateConfiguration } from '../src/dsh/budgets.js'
+import { configurationSchema, settingsConfigurationSchema, configurationOf, configurationValues, validateConfiguration, deletionProtectionMode } from '../src/dsh/budgets.js'
 import type { Configuration } from '../src/dsh/budgets.js'
 import { BudgetSettings, applyBudgetSettings } from '../src/dsh/budget-settings.js'
 import { scopeTarget } from '@deepseek-ai/dsh-scope'
@@ -57,6 +57,39 @@ test('budget UI settings persist, restore composition defaults and reject stale 
   assert.equal(reset.ok, true)
   assert.deepEqual(scope.get(), first.configuration)
   assert.deepEqual(settings.stored['super-code-budgets'], {})
+})
+
+test('deletion settings persist independently of budgets and reset to relaxed with official opt-in off', async t => {
+  const { api, settings } = await fixture(t)
+  const initial = api.read()
+  const saved = await api.save(JSON.stringify({ deletionProtection: false, deletionProtectionForOfficialPresets: true,
+    applyToOfficialPresets: false, budgets: { summaryMaxTokens: 4096 } }), String(initial.revision))
+  assert.equal(saved.ok, true)
+  assert.equal(api.read().configuration.deletionProtection, false)
+  assert.equal(api.read().configuration.deletionProtectionForOfficialPresets, true)
+  assert.equal(api.read().configuration.applyToOfficialPresets, false)
+  assert.equal((settings.stored['super-code-budgets'] as Configuration).deletionProtection, false)
+  for (const input of ['{"deletionProtection":"false"}', '{"deletionProtectionForOfficialPresets":1}']) {
+    assert.deepEqual(await api.save(input, String(api.read().revision)), { ok: false, error: 'invalid' })
+  }
+  assert.equal((await api.reset(String(api.read().revision))).ok, true)
+  assert.equal(deletionProtectionMode(api.read().configuration), 'relaxed')
+  assert.equal(api.read().configuration.deletionProtectionForOfficialPresets ?? false, false)
+})
+
+test('all deletion modes persist and validate through both host and JSON schemas', async t => {
+  const { api, settings } = await fixture(t)
+  for (const mode of ['off', 'relaxed', 'strict', false, true] as const) {
+    assert.equal((await api.save(JSON.stringify({ deletionProtection: mode }), String(api.read().revision))).ok, true)
+    assert.equal(api.read().configuration.deletionProtection, mode)
+    assert.equal((settings.stored['super-code-budgets'] as Configuration).deletionProtection, mode)
+    assert.equal(configurationValues({ deletionProtection: mode }).deletionProtection, mode)
+    assert.equal(settingsConfigurationSchema({ deletionProtection: mode }).deletionProtection, mode)
+    assert.equal(deletionProtectionMode(api.read().configuration), mode === true ? 'strict' : mode === false ? 'off' : mode)
+  }
+  for (const value of ['unknown', 1, null, []]) {
+    assert.deepEqual(await api.save(JSON.stringify({ deletionProtection: value }), String(api.read().revision)), { ok: false, error: 'invalid' })
+  }
 })
 
 test('invalid, over-ceiling, unavailable, read-only and failed writes preserve the prior budget', async t => {

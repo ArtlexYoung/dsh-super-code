@@ -7,6 +7,13 @@ interface Row { id: string; level: number }
 interface Node { id: string; parentId?: string; mode?: string; title?: string; running?: boolean; unavailable?: boolean }
 interface View { root: string; nodes: Map<string, Node>; children: Map<string, string[]>; ancestors: Set<string> }
 interface Client {
+  taskFeedbackRows(view: View): any
+  feedbackStatus(row: any): { tone: string; label: string }
+  feedbackListItems(model: any, root: string, partial: boolean): any[]
+  feedbackListLayout(items: any[], heights?: Map<string, any>): any
+  feedbackListIndex(layout: any, top: number): number
+  feedbackListWindow(layout: any, top: number, height: number): { top: number; start: number; end: number }
+  feedbackListAnchor(previous: any, next: any, top: number, height: number): number
   agentHistoryRange(range: string, from?: string, to?: string, now?: number): { start: number; end: number; valid: boolean }
   agentHistoryRows(view: View, hidden: string[], totals: Map<string, object>, options?: object): { id: string; time: number; tokens: number; partial: boolean }[]
   agentHistoryWindow(count: number, scrollTop: number, height: number): { top: number; start: number; end: number; height: number }
@@ -695,7 +702,7 @@ test('a resumed recent page retains overlapping displayed records instead of shi
 
 function workspaceFixture() {
   const react = {
-    createElement: (type: unknown, props: any, ...children: any[]) => ({ type, props, children }),
+    createElement: (type: unknown, props: any, ...children: any[]) => ({ type, props, children: children.flat() }),
     useMemo: (read: () => any) => read(), useState: (value: any) => [typeof value === 'function' ? value() : value, () => {}],
     useRef: (value: any) => ({ current: value }), useEffect: () => {}, useLayoutEffect: () => {},
     useSyncExternalStore: (_subscribe: Function, read: Function) => read(),
@@ -720,28 +727,28 @@ function workspaceFixture() {
   return { props, tab, render: () => slot.component(props) }
 }
 
-test('workspace defaults to execution and title toggles keep exactly one section expanded', () => {
+test('workspace defaults to task status first and keeps exactly one of three sections open', () => {
   const { props, tab, render } = workspaceFixture()
   let layout = render().children[0]
-  assert.equal(layout.props['data-active-section'], 'tree')
-  assert.equal(layout.children[0].props.key, 'tree')
-  assert.equal(layout.children[1].props.key, 'memory-collapsed')
-  let title = layout.children[1].children[0].type(layout.children[1].children[0].props)
-  assert.equal(title.props['aria-expanded'], false)
-  title.props.onClick()
+  assert.equal(layout.props['data-active-section'], 'tasks')
+  assert.deepEqual(layout.children.map((node: any) => node.props.key), ['tasks', 'tree-collapsed', 'memory-collapsed'])
+  assert.equal(layout.props.style.gridTemplateRows, 'minmax(280px, 1fr) 44px 44px')
+  const click = (index: number) => {
+    const item = render().children[0].children[index]
+    if (item.props.onToggle) item.props.onToggle(); else item.children[0].props.onToggle()
+  }
+  click(1)
+  assert.equal(render().children[0].props['data-active-section'], 'tree')
+  click(2)
   layout = render().children[0]
   assert.equal(layout.props['data-active-section'], 'memory')
-  assert.equal(layout.children[0].props.key, 'tree-collapsed')
-  assert.equal(layout.children[1].props.key, 'memory')
-  assert.equal(props.workspaceStates.get(tab.signal).active, 'memory', 'remount retains the chosen section')
-  layout.children[1].props.onToggle()
-  layout = render().children[0]
-  assert.equal(layout.props['data-active-section'], 'tree', 'clicking the open heading opens the other section')
-  layout.children[0].props.onToggle()
-  layout = render().children[0]
-  assert.equal(layout.props['data-active-section'], 'memory', 'the other open heading also cannot leave both closed')
-  layout.children[0].children[0].props.onToggle()
-  assert.equal(render().children[0].props['data-active-section'], 'tree', 'a collapsed heading opens its section')
+  assert.equal(props.workspaceStates.get(tab.signal).active, 'memory')
+  click(2)
+  assert.equal(render().children[0].props['data-active-section'], 'tasks', 'closing memory returns to tasks')
+  click(0)
+  assert.equal(render().children[0].props['data-active-section'], 'tree', 'closing tasks still keeps a section open')
+  click(0)
+  assert.equal(render().children[0].props['data-active-section'], 'tasks')
 })
 
 test('memory links expand their section once and repeated explicit navigation reopens it', () => {
@@ -750,8 +757,8 @@ test('memory links expand their section once and repeated explicit navigation re
   tab.navigation = { revision: 2, params: { memory: 'dsh-resource://super-code-memory/root?topic=notes&id=entry' } }
   let layout = render().children[0]
   assert.equal(layout.props['data-active-section'], 'memory')
-  layout.children[1].props.onToggle()
-  assert.equal(render().children[0].props['data-active-section'], 'tree', 'unchanged link does not undo a user toggle')
+  layout.children[2].props.onToggle()
+  assert.equal(render().children[0].props['data-active-section'], 'tasks', 'unchanged link does not undo a user toggle')
   tab.navigation.revision++
   assert.equal(render().children[0].props['data-active-section'], 'memory')
   tab.signal = new AbortController().signal
@@ -761,14 +768,15 @@ test('memory links expand their section once and repeated explicit navigation re
   tab.signal = new AbortController().signal
   tab.contentId = 'sidebar://super-agent-agents'
   tab.navigation = { revision: 1, params: { memory: 'invalid' } }
-  assert.equal(render().children[0].props['data-active-section'], 'tree', 'invalid links preserve the default')
+  assert.equal(render().children[0].props['data-active-section'], 'tasks', 'invalid links preserve the default')
   assert.notEqual(props.workspaceStates.get(tab.signal).active, 'memory')
 })
 
 test('hidden workspace remount after memory navigation keeps the editor attached to its current tab state', async () => {
   const { props, tab, render } = workspaceFixture()
-  render().children[0].children[1].children[0].props.onToggle()
-  const memory = render().children[0].children[1]
+  render().children[0].children[2].children[0].props.onToggle()
+  const memory = render().children[0].children[2]
+  tab.navigation = { revision: 1, params: { memory: 'dsh-resource://super-code-memory/root?topic=notes&id=first' } }
   memory.type(memory.props)
   const original = props.memoryStates.get(tab.signal)
   tab.navigation = { revision: 2, params: { memory: 'dsh-resource://super-code-memory/root?topic=notes&id=existing' } }
@@ -776,11 +784,117 @@ test('hidden workspace remount after memory navigation keeps the editor attached
   assert.equal(props.memoryStates.get(tab.signal), original, 'navigation must not replace the state captured by pending operations')
   original.editorStore.update({ draft: { sessionId: 'root', scope: 'project', topic: 'notes', id: 'new', expected: '',
     kind: 'constraint', summary: 'Title', detail: 'Content' } })
-  render().children[0].children[1].props.onToggle()
-  assert.equal(render().children[0].props['data-active-section'], 'tree')
-  render().children[0].children[1].children[0].props.onToggle()
+  render().children[0].children[2].props.onToggle()
+  assert.equal(render().children[0].props['data-active-section'], 'tasks')
+  render().children[0].children[2].children[0].props.onToggle()
   assert.equal(render().children[0].props['data-active-section'], 'memory')
   assert.equal(props.memoryStates.get(tab.signal).editorStore.getSnapshot().draft.summary, 'Title', 'collapse retains the draft')
   await original.editorStore.save()
   assert.equal(props.memoryStates.get(tab.signal).selected.id, 'new', 'saving after tab navigation opens the saved entry')
+})
+
+
+test('task feedback keeps goals, literal progress and ownership under each Agent root', () => {
+  const facts = (request: string, path: string) => ({ request, latestRequest: request, goal: { kind: 'none' }, phase: 'idle',
+    todos: [{ content: 'Check', status: 'completed' }, { content: 'Verify', status: 'pending' }], files: [{ path, operation: 'edit', seq: 2, tool: 'edit' }],
+    activities: [], omittedTodos: 0, omittedFiles: 0 })
+  const view = plugin.buildAgentView({ current: 'root', byId: {
+    root: { id: 'root', title: 'Coordinator', running: false, projectionValues: { superCodeFeedback: facts('Build UI', '/p/app.ts') } },
+    child: { id: 'child', title: 'UI Engineer', parentId: 'root', running: false, projectionValues: { superCodeFeedback: facts('Verify UI', '/p/app.ts') } },
+    foreign: { id: 'foreign', title: 'Other', projectionValues: { superCodeFeedback: facts('Other work', '/p/foreign.ts') } },
+  } })
+  const model = plugin.taskFeedbackRows(view)
+  assert.equal(model.tasks.length, 2)
+  assert.equal(model.tasks[0].owner, 'Coordinator')
+  assert.equal(model.tasks[1].owner, 'UI Engineer')
+  assert.equal(model.tasks[1].done, 1)
+  assert.equal(model.tasks[1].total, 2)
+  assert.equal(model.tasks[1].source, 'request')
+  assert.equal(model.files.length, 1)
+  assert.equal(model.files[0].sources.length, 2)
+  assert.equal(plugin.feedbackStatus({ ...model.tasks[0], root: view.root }).label, '待命', 'idle must not be labeled completed')
+})
+
+test('task feedback degrades for unknown tools, missing records and new host projections', () => {
+  const view = plugin.buildAgentView({ current: 'root', byId: { root: { id: 'root', running: true,
+    projectionValues: { futureOptimization: { value: 1 } } } } })
+  const model = plugin.taskFeedbackRows(view)
+  assert.equal(model.tasks[0].source, 'none')
+  assert.equal(model.tasks[0].total, 0)
+  assert.equal(model.partial, true)
+  assert.equal(plugin.feedbackStatus(model.tasks[0]).label, '运行中')
+  assert.equal(plugin.feedbackStatus({ node: { running: true }, facts: { phase: 'waiting' } }).label, '等待确认')
+})
+
+
+test('feedback file labels keep full identity and shorten only a workspace path boundary', () => {
+  const paths = ['/project/src/sidebar.ts', '/project/client/sidebar.ts', '/project-other/sidebar.ts']
+  const view = plugin.buildAgentView({ current: 'root', byId: {
+    root: { id: 'root', running: false, cwd: '/project', projectionValues: { superCodeFeedback: { files: paths.map(path => ({ path, operation: 'edit', seq: 1, tool: 'edit' })) } } },
+    win: { id: 'win', parentId: 'root', running: false, projectionValues: { workingDirectory: 'C:\\project\\', superCodeFeedback: {
+      files: [{ path: 'C:\\project\\src\\sidebar.ts', operation: 'edit', seq: 2, tool: 'edit' }],
+    } } },
+  } })
+  const files = plugin.taskFeedbackRows(view).files
+  assert.equal(files.length, 4, 'same basenames must retain separate file records')
+  const file = (path: string) => files.find((value: any) => value.path === path)
+  assert.equal(file('/project/src/sidebar.ts').name, 'sidebar.ts')
+  assert.equal(file('/project/src/sidebar.ts').directory, 'src')
+  assert.equal(file('/project/client/sidebar.ts').directory, 'client')
+  assert.equal(file('/project-other/sidebar.ts').directory, '/project-other')
+  assert.equal(file('C:\\project\\src\\sidebar.ts').directory, 'src')
+})
+
+test('expanded feedback includes every loaded descendant, step, activity and file without artificial paging', () => {
+  const nodes = Array.from({ length: 260 }, (_, index) => ({ id: 'agent' + index, parentId: index ? 'agent0' : undefined,
+    title: 'Agent ' + index, running: false, projectionValues: { superCodeFeedback: { request: 'Task ' + index,
+      todos: Array.from({ length: 12 }, (_, step) => ({ content: 'Step ' + step, status: step < 6 ? 'completed' : 'pending' })),
+      activities: Array.from({ length: 80 }, (_, seq) => ({ seq, callId: 'call' + seq, description: 'Action ' + seq, tool: 'bash', status: 'succeeded' })),
+      files: [{ path: '/project/agent' + index + '.ts', operation: 'edit', seq: 1, tool: 'edit' }],
+    } } }))
+  const view = plugin.buildAgentView({ current: 'agent0', byId: Object.fromEntries(nodes.map(node => [node.id, node])) })
+  const model = plugin.taskFeedbackRows(view), items = plugin.feedbackListItems(model, view.root, false)
+  assert.equal(model.tasks.length, 260)
+  assert.equal(items.filter(item => item.kind === 'task').length, 260)
+  assert.equal(items.filter(item => item.kind === 'step').length, 260 * 12)
+  assert.equal(items.filter(item => item.kind === 'activity').length, 260 * 80)
+  assert.equal(items.filter(item => item.kind === 'file').length, 260)
+  assert.equal(new Set(items.map(item => item.key)).size, items.length)
+  const first = items.filter(item => item.row?.id === 'agent0')
+  assert.equal(first.map(item => item.kind).join(','), ['task', ...Array(12).fill('step'), ...Array(80).fill('activity'), 'open'].join(','))
+  assert.equal(first.filter(item => item.kind === 'activity').map(item => item.activity.seq).join(','), Array.from({ length: 80 }, (_, i) => i).join(','))
+  assert.ok(items.every(item => item.signature.length < 1500), 'measurement identity must not serialize whole session projections')
+})
+
+test('variable-height feedback windows cover viewport, bound DOM, clamp shrinking/empty lists and reject stale measurements', () => {
+  const items = Array.from({ length: 100000 }, (_, index) => ({ kind: 'step', key: String(index), signature: 'step' }))
+  const heights = new Map([['10', { height: 900, signature: 'step' }], ['12', { height: 500, signature: 'old' }]])
+  const layout = plugin.feedbackListLayout(items, heights)
+  assert.equal(layout.height, 100000 * 28 + 900 - 28)
+  assert.equal(layout.offsets[11] - layout.offsets[10], 900)
+  assert.equal(layout.offsets[13] - layout.offsets[12], 28)
+  for (const top of [0, 260, 300, 950, 9999, 300000, 2800000, 999999999]) {
+    const range = plugin.feedbackListWindow(layout, top, 600)
+    assert.ok(range.end - range.start <= 42, JSON.stringify(range))
+    assert.ok(layout.offsets[range.start] <= range.top)
+    assert.ok(layout.offsets[range.end] >= Math.min(layout.height, range.top + 600))
+    assert.ok(range.top <= Math.max(0, layout.height - 600))
+  }
+  const empty = plugin.feedbackListWindow(plugin.feedbackListLayout([]), 100, 600)
+  assert.equal([empty.start, empty.end, empty.top].join(','), '0,0,0')
+  const tiny = plugin.feedbackListWindow(plugin.feedbackListLayout(items.slice(0, 2)), 999999, 600)
+  assert.equal([tiny.start, tiny.end, tiny.top].join(','), '0,2,0')
+})
+
+test('feedback anchors preserve the visible fact through measurement, insertions and content changes', () => {
+  const items = Array.from({ length: 100 }, (_, index) => ({ kind: 'step', key: String(index), signature: 'text' }))
+  const previous = { items, layout: plugin.feedbackListLayout(items) }, top = 50 * 28 + 7
+  const resized = { items, layout: plugin.feedbackListLayout(items, new Map([['0', { signature: 'text', height: 128 }]])) }
+  assert.equal(plugin.feedbackListAnchor(previous, resized, top, 400), top + 100)
+  const insertedItems = [{ kind: 'step', key: 'inserted', signature: 'new' }, ...items]
+  const inserted = { items: insertedItems, layout: plugin.feedbackListLayout(insertedItems) }
+  assert.equal(plugin.feedbackListAnchor(previous, inserted, top, 400), top + 28)
+  const removed = { items: items.slice(0, 5), layout: plugin.feedbackListLayout(items.slice(0, 5)) }
+  assert.equal(plugin.feedbackListAnchor(previous, removed, top, 400), 0)
+  assert.equal(plugin.feedbackListAnchor(previous, { items: [], layout: plugin.feedbackListLayout([]) }, top, 400), 0)
 })

@@ -14,15 +14,21 @@ On the same SWE-bench Pro hard-100 set, the evaluation candidate for 0.3.0 uses 
 
 Extensive testing and regression checks are needed to verify each release's effectiveness. This takes time, so release cycles may be longer.
 
-版本号采用 **主版本.效果优化版本.维护版本**，例如 `0.3.6`：
+版本号采用 **主版本.效果优化版本.维护版本**，例如 `0.3.7`：
 
-Version numbers follow **major.performance-improvement.maintenance**, for example `0.3.6`:
+Version numbers follow **major.performance-improvement.maintenance**, for example `0.3.7`:
 
 | 位置 / Position | 含义 / Meaning |
 |---|---|
 | 第一位 / First (`0`) | 主版本，仅在大范围重构时调整。 / Major version; changes only for extensive refactoring. |
 | 第二位 / Second (`3`) | 效果优化版本，记录编码效果、效率等方面的优化。 / Performance-improvement version; tracks improvements to coding results, efficiency, and related capabilities. |
-| 第三位 / Third (`6`) | 维护版本，记录问题修复、UI 优化、兼容性适配等更新。 / Maintenance version; tracks bug fixes, UI improvements, compatibility updates, and similar changes. |
+| 第三位 / Third (`7`) | 维护版本，记录问题修复、UI 优化、兼容性适配等更新。 / Maintenance version; tracks bug fixes, UI improvements, compatibility updates, and similar changes. |
+
+## 0.3.7 · What's New
+
+新增默认宽松的三档删除保护，以及全展开、虚拟滚动的任务状态侧栏。[更新详情](docs/Changelog.md)
+
+Adds three deletion-protection modes, defaulting to Relaxed, and a fully expanded task-status sidebar with virtual scrolling. [Changelog](docs/Changelog.md)
 
 ## 0.3.6 · What's New
 
@@ -35,12 +41,6 @@ Adds configurable budgets and restores the older, better-performing budgets with
 适配 Harness `0.2.1-rc.2`，修复 v4 会话日志升级后旧任务记录不可见的问题。[更新详情](docs/Changelog.md)
 
 Supports Harness `0.2.1-rc.2` and restores legacy task records after v4 session-log upgrades. [Changelog](docs/Changelog.md)
-
-## 0.3.4 · What's New
-
-补充官方预设评测结果，新增致谢表格与详细来源说明。[更新详情](docs/Changelog.md)
-
-Adds official preset evaluation results, an acknowledgements table, and detailed source attribution. [Changelog](docs/Changelog.md)
 
 [查看完整版本记录 · Full changelog](docs/Changelog.md)
 
@@ -77,7 +77,7 @@ dsh plugin --profile web add dsh-super-code
 Download a `.tgz` package from [GitHub Releases](https://github.com/ArtlexYoung/dsh-super-code/releases). On desktop, enter its full path in “Package name or address”. For Web, run the command below with the filename you downloaded.
 
 ```bash
-dsh plugin --profile web add ./dsh-super-code-0.3.6.tgz
+dsh plugin --profile web add ./dsh-super-code-0.3.7.tgz
 ```
 
 </details>
@@ -100,9 +100,9 @@ Can't find the preset? Open “Settings” → **Super Code**. Older plugin vers
 
 [![Super Code 配置入口 · Super Code settings](docs/images/preset-settings-preview.png)](docs/images/preset-settings.png)
 
-右侧 **Super Code** 页面统一展示执行树与记忆库，默认展开执行区，点击标题切换。执行树显示各 Agent 的状态、用量和缓存率，支持平移、缩放和节点详情；记忆库可查看、新增、编辑和删除当前项目记忆及全局偏好。[界面与记忆说明](docs/UsageGuide.md)
+右侧 **Super Code** 页面依次展示任务状态、协作执行和记忆库，默认展开任务状态，点击标题切换。任务、步骤和已加载动作直接展开，虚拟滚动保持长列表流畅；保留圆圈 Agent 执行树及记忆的查看、新增、编辑和删除。任务状态只读取现有记录，不改变提示词或模型行为。[界面与记忆说明](docs/UsageGuide.md)
 
-The **Super Code** sidebar combines the Agent tree and memory library. The tree opens by default; click a section heading to switch. View Agent status, usage, and cache hit rate, pan and zoom, or open node details. Browse, add, edit, and delete project memories and global preferences in the library. [Interface and memory guide](docs/UsageGuide.md)
+The **Super Code** sidebar contains Task status, Agent execution, and Memory library, with Task status open by default. Tasks, steps, and loaded activity stay expanded in a virtualized list. The circular Agent graph and memory browsing, creation, editing, and deletion remain available. Task status reads existing records without changing prompts or model behavior. [Interface and memory guide](docs/UsageGuide.md)
 
 [![Agent 执行树 · Agent execution tree](docs/images/agent-tree-preview.png)](docs/images/agent-tree.png)
 

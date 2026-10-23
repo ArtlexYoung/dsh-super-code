@@ -18,8 +18,11 @@ export interface Budgets {
     readonly ptcTimeoutMs?: number;
     readonly ptcMaxTimeoutMs?: number;
 }
+export type DeletionProtectionMode = 'off' | 'relaxed' | 'strict';
 export interface Configuration {
     readonly applyToOfficialPresets?: boolean;
+    readonly deletionProtection?: DeletionProtectionMode | boolean;
+    readonly deletionProtectionForOfficialPresets?: boolean;
     readonly budgets?: Budgets;
     readonly maxTasks?: number;
     readonly maxContextBytes?: number;
@@ -28,6 +31,8 @@ export declare const budgetSchema: z<Budgets>;
 export declare const settingsConfigurationSchema: z<Configuration>;
 export declare const configurationSchema: z<Configuration>;
 export declare function validateConfiguration(config: Configuration): Configuration;
+/** Preserve saved boolean choices while new installations default to prompt-only guidance. */
+export declare function deletionProtectionMode(config: Pick<Configuration, 'deletionProtection'>): DeletionProtectionMode;
 /** Newer Loader schemas expose volatile fields as references; older hosts return plain values. */
 export declare function configurationValues(config: Configuration): Configuration;
 export declare function configurationOf(ctx: Context, agent?: object): Configuration;

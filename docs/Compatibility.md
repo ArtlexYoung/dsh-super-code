@@ -1,5 +1,19 @@
 # 宿主兼容性 · Host Compatibility
 
+## 0.3.7 · 删除保护与任务状态 · Deletion Protection and Task Status · 2026-10-24
+
+正式发布候选保留稳定记忆库，未包含开发中的版本化记忆或任务 skills。229 项测试、类型检查、构建和客户端语法检查通过。下方相同的 20 个 Web、5 个官方 macOS arm64 Desktop 与 DSH NEXT，均在真实宿主组件上通过 25 项删除保护/任务投影检查，包含旧设置、官方预设隔离、逐次确认、旧/新日志、嵌套 PTC、文件归属和任务状态不干预模型请求的回归。
+
+The release candidate retains the stable memory library and excludes experimental versioned memory and task skills. All 229 tests, type checking, build, and client syntax checks pass. The same 20 Web versions, five official macOS arm64 Desktop versions, and DSH NEXT listed below pass 25 deletion-protection/task-projection checks each against actual host components, including legacy settings, official-preset isolation, per-call approval, old/new journals, nested PTC, file attribution, and regression checks that task feedback leaves model requests unchanged.
+
+页面增量复验覆盖最低 Web `0.1.5-alpha.1`、已适配最高 Web `0.2.1-rc.2`、官方 Desktop `0.2.1-rc.2` 和 NEXT `2.0.17-next`。每端通过 7 项任务状态检查，涵盖全部展开、实时更新、原圆圈树、减少动态效果、长文本、失败状态、373/374 行列表的滚动/键盘访问/锚点与缩短数据；仅挂载视口附近行。每端另通过 6 项删除保护设置检查，包含三档切换、独立官方开关、保存重载、旧布尔配置和恢复默认。
+
+Incremental UI checks cover minimum Web `0.1.5-alpha.1`, latest adapted Web `0.2.1-rc.2`, official Desktop `0.2.1-rc.2`, and NEXT `2.0.17-next`. Each passes seven task-status checks covering expansion, live updates, the circular graph, reduced motion, wrapped text, failures, and scrolling/keyboard access/anchors/shrinking data across 373/374 rows while mounting only nearby rows. Each also passes six deletion-settings checks covering modes, independent official opt-in, save/reload, legacy booleans, and reset.
+
+任务状态页面使用真实宿主 API 和构造日志，不新增模型调用，不将夹具文件记录当作真实文件编辑。运行环和暗色主题 tokens 已检查，不宣称所有宿主主题设置组合或十万行真实浏览器性能已测。严格删除确认的引擎检查由测试驱动器答复真实宿主审批服务，不等同人工点击原生确认对话框。NEXT 测试外壳已知的两条 ready 诊断另列，任务页面插件异常和其他控制台错误/警告为零。未重跑未变的安装器或扩展平台范围；中间版本页面沿用既有验证记录，Windows/Linux 原生客户端仍未验收。
+
+Task-status UI uses real host APIs with constructed journals, with no new model calls or claims of real file edits. Running indicators and dark-theme tokens are checked; this is not every host theme-setting combination or a 100,000-row browser benchmark. Strict-deletion engine checks answer the real host approval service through the driver, not manual clicks in native approval dialogs. Two known NEXT test-shell ready diagnostics are recorded separately; task pages have no plugin exceptions or other console errors/warnings. Unchanged installers and additional platforms were not retested; intermediate-version pages retain prior evidence, and native Windows/Linux clients remain unvalidated.
+
 ## 0.3.6 · 旧预算默认配置 · Legacy Budget Defaults · 2026-10-20
 
 0.3.6 默认使用此前 Pro 测试的旧预算：完整上下文窗口、80% 压缩触发、16% 原文保留、8,192 Token 摘要、压缩追加与溢出重试各 1 次；提供新版 PTC 的宿主默认/上限为 600 秒，仍受宿主上限约束。用户保存值和加载配置优先，运行中的 Agent 保留快照，恢复默认会回到旧预算。括号内宿主默认值提示保持不变，官方预设仍默认不应用。

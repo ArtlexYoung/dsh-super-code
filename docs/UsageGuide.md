@@ -24,6 +24,58 @@ The default guidance calls for parallel reads when useful, ordered writes, tests
 
 Batching reduces round trips between the model and tools. It does not guarantee that every operation runs faster or change model, permission, or memory settings.
 
+## 任务状态 · Task Status
+
+Super Code 侧边栏依次显示“任务状态”“协作执行”“记忆库”。任务状态默认展开，三项互斥且始终保留一项展开；原圆圈 Agent 执行树保留在“协作执行”中。每个 Agent 的任务树根节点显示其名字，步骤、动作、文件条目不重复标注名字。
+
+The Super Code sidebar contains Task status, Agent execution, and Memory library in that order. Task status opens by default; exactly one section stays open. The original circular Agent graph remains under Agent execution. Each Agent's name appears at its task-tree root only.
+
+任务状态只读取已有会话记录：目标取已有任务/目标记录，缺少时展示用户原文；步骤取模型已经写入的待办，进度显示已完成数/总数；动作与结果取工具日志。运行结束不会被当作任务完成。没有步骤时不会补造计划、百分比或阶段说明。
+
+This view reads existing journal facts: recorded objectives or the user's original request, existing todos and their completed/total counts, and tool activity and results. A stopped run is not treated as a completed objective. Missing plans or progress are not invented.
+
+任务、步骤、已加载动作和补充要求都直接展开，不需要逐项点击。任务状态使用单一虚拟滚动列表，只渲染视口附近的行；长文本按实际高度显示，滚动即可查看所有已加载记录和文件，无需点击“更多”。切换侧栏区块后保留阅读位置。运行环遵循系统的“减少动态效果”设置。
+
+Tasks, steps, loaded activity, and follow-up requests are fully expanded. One virtualized list renders rows near the viewport and measures wrapped text at its actual height. Scroll through every loaded record and file without a More button. Switching sections retains the reading position, and running indicators respect reduced-motion preferences.
+
+文件变更记录列出已成功执行并能从工具参数或结果 diff 元数据确认的文件操作，包含普通和 PTC 嵌套调用。它不是当前工作区的完整 Git diff：终端或外部脚本的间接修改可能缺失，历史操作也不代表文件当前仍有净修改。未完成、失败、只读操作及子 Agent 继承的历史不会被计作本次成功修改。
+
+File operations show successful mutations identifiable from tool arguments or result diff metadata, including native and nested PTC calls. This is not a complete current Git diff: indirect terminal/script changes may be absent, and historical operations do not establish a current net change. Pending, failed, read-only, and fork-inherited operations are not counted as that Agent's successful changes.
+
+此功能不增加提示词、模型请求、工具定义或执行钩子，也不向模型上下文写入界面内容；不要求使用特定模型、预设、Skill 或固定步骤。未知工具仍显示其调用与结果，缺少结构化记录时只减少相应展示，不影响模型继续工作。记录有显示上限，未加载或超出范围时会提示；完整执行内容可打开详情查看。
+
+This feature adds no instructions, model requests, tool definitions, or execution hooks, and never writes display data into model context. It requires no specific model, preset, Skill, or workflow. Unknown tools retain their activity and results; absent structured facts reduce the displayed detail only. Bounded or unloaded records are labeled, with full execution content available in details.
+
+## 删除保护 · Deletion Protection
+
+“上下文配置”中的“删除保护”支持三种模式，**默认宽松**。
+
+| 模式 / Mode | 行为 / Behavior |
+| --- | --- |
+| 关闭 / Off | 不添加删除保护提示，不额外拦截命令。No deletion instructions or extra command interception. |
+| 宽松 / Relaxed（默认 / default） | 默认使用 `trash`，脚本中也建议使用；用户明确要求时可使用 `rm`，无需本插件额外二次确认。Prefer recoverable trash, including in scripts; explicit user requests may use `rm` without additional plugin confirmation. |
+| 严格 / Strict | 脚本也禁止直接使用 `rm`；识别到永久删除命令时，仅临时文件或构建产物清理可经用户逐次二次确认放行。Scripts must also avoid `rm`; recognized permanent deletion requires one-time confirmation for each temporary-file or build-artifact cleanup. |
+
+宽松模式保留指令：**删除文件或目录默认用 `trash <path>`（可恢复）；仅清理临时文件、构建产物且我已确认时才用 `rm`。** 脚本、内联脚本和间接调用中也建议使用回收站。用户明确说明使用 `rm` 时，该要求可作为确认，并按用户指定范围执行；宽松依靠指令引导，不增加命令拦截，宿主原有权限检查仍然有效。
+
+Relaxed mode instructs Agents to use recoverable `trash <path>` by default and prefer it in scripts and indirect calls. An explicit request to use `rm` counts as confirmation within the requested scope. Guidance is prompt-based; host permission checks still apply.
+
+默认只保护 Super Code。“同时应用到官方预设”开关默认关闭，与预算的同名开关独立；开启后，所选模式也应用到标准、PTC、极简、创造预设。关闭模式时保留此开关的选择。保存后作用于后续命令。旧配置 `true` 保留为严格，`false` 保留为关闭；缺省配置及恢复默认使用宽松。
+
+Only Super Code is protected by default. “Also apply to official presets” defaults off, independently of official-preset budgets, and applies the chosen mode to Standard, PTC, Minimal, and Create. Off retains this preference. Saved changes affect subsequent calls. Legacy `true` maps to Strict and `false` to Off; missing settings and reset use Relaxed.
+
+极简预设通过可记录、可回放的插件消息接收规则，模式变化时明确替代先前规则，兼容 v4 会话日志。
+
+Minimal receives rules through logged, replayable plugin messages compatible with v4 session logs; mode changes explicitly replace earlier rules.
+
+严格模式在终端执行前识别 `rm`、常见包装、内联 shell 脚本及 PowerShell 删除别名（如 `Remove-Item`），PTC 内的终端调用也适用。宿主对当前命令和工作目录请求一次性确认；拒绝、取消、确认不可用或出错均拦截。此确认不授予后续调用权限，也不代替宿主其他权限检查。缺少 `trash` 时应使用其他可恢复方式或停止。
+
+Strict mode checks terminal calls, including those nested in PTC, for `rm`, common wrappers, inline shell scripts, and PowerShell deletion aliases such as `Remove-Item`. Only a real one-time host approval for the current command and working directory proceeds. Rejection, cancellation, unavailable approval, and errors block execution. If trash is unavailable, use another recoverable mechanism or stop.
+
+严格模式的命令识别并非操作系统沙箱：不解析外部脚本文件或任意混淆程序，不覆盖所有语言的文件删除 API；脚本仍须遵守指令，需要进程级隔离时继续使用宿主沙箱。
+
+Strict command recognition is not an OS sandbox: it does not inspect external script files, arbitrary obfuscated programs, or every language's deletion API. Scripts must follow the instructions; use the host sandbox for process-level isolation.
+
 ## 运行预算 · Runtime Budgets
 
 打开设置中的“Super Code 模式”（部分版本位于“插件”→“插件配置”）。顶部“预设状态”用于查看和安装预设；“上下文配置”用于调整预算。插件默认已使用此前 Pro 测试中的旧预算，无需手动填写。界面使用百分数和秒；括号内仍显示当前宿主的默认值，便于与输入框中的实际配置比较。

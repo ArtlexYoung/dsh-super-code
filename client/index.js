@@ -256,12 +256,53 @@ const ActionButton = React.forwardRef(function ActionButton({ children, title, .
 
 const LOCALE_NS = 'dshSuperCode'
 const zh = {
+  'feedback.title': '任务状态',
+  'feedback.refresh': '刷新任务状态',
+  'feedback.noGoal': '尚无目标记录',
+  'feedback.source.record': '任务记录',
+  'feedback.source.request': '用户原文',
+  'feedback.latest': '本轮要求',
+  'feedback.progress': '步骤 {done} / {total}',
+  'feedback.progressPartial': '已记录步骤 {done} / {total}',
+  'feedback.steps': '步骤进度',
+  'feedback.todo.pending': '待处理',
+  'feedback.todo.in_progress': '进行中',
+  'feedback.todo.completed': '已完成',
+  'feedback.activity.running': '执行中',
+  'feedback.activity.succeeded': '执行成功',
+  'feedback.activity.failed': '执行失败',
+  'feedback.activity.interrupted': '已中断',
+  'feedback.waiting': '等待确认',
+  'feedback.error': '执行出错',
+  'feedback.interrupted': '已中断',
+  'feedback.noSteps': '未记录步骤或工具动作',
+  'feedback.loading': '正在读取记录…',
+  'feedback.recentOnly': '仅展示最近动作，完整记录见详情',
+  'feedback.open': '查看执行记录',
+  'feedback.openFileRecord': '查看文件操作记录',
+  'feedback.files': '文件变更记录',
+  'feedback.filesHint': '仅含已记录的成功操作，终端修改可能缺失',
+  'feedback.filesEmpty': '暂无已确认的文件操作',
+  'feedback.filesUnknown': '文件记录尚不完整',
+  'feedback.file.write': '写入',
+  'feedback.file.edit': '编辑',
+  'feedback.file.create': '新增',
+  'feedback.file.patch': '补丁',
+  'feedback.partial': '部分 Agent 或历史记录尚未加载，当前显示已知信息。',
+  'feedback.agentsPartial': '任务条目超过显示上限，可在动作执行中查看其他 Agent。',
+  'status.blocked': '受阻',
+
   'settings.presetTab': '预设状态', 'settings.contextTab': '上下文配置', 'settings.tabs': 'Super Code 配置',
   'budget.common': '通用预算', 'budget.superCode': 'Super Code 专属预算',
   'budget.applyToOfficialPresets': '同时应用到官方预设', 'budget.officialHint': '开启后，通用预算也用于标准、PTC、极简和创造模式；不包含下方的 Super Code 专属预算。',
   'budget.superCodeHint': '仅用于 Super Code 的任务记录和任务记忆，始终不影响官方预设。',
   'budget.defaultValue': '（默认：{value}）', 'budget.off': '关闭', 'budget.managed': '宿主管理',
-  'budget.title': '上下文配置', 'budget.scope': '保存后对新建 Agent 生效，运行中的任务保留原配置。',
+  'delete.title': '删除保护', 'delete.mode': '保护模式', 'delete.off': '关闭', 'delete.relaxed': '宽松', 'delete.strict': '严格', 'delete.official': '同时应用到官方预设',
+  'delete.hint.off': '不添加删除保护提示，不额外拦截命令。宿主原有权限检查仍然有效。',
+  'delete.hint.relaxed': '默认使用 trash，脚本中也建议使用；用户明确要求时可以使用 rm，无需插件额外确认。',
+  'delete.hint.strict': '默认使用 trash，脚本也禁止直接使用 rm。识别到永久删除命令时，仅清理临时文件或构建产物可经用户逐次二次确认放行。',
+  'delete.officialHint': '默认仅保护 Super Code。此开关独立于预算的官方预设开关；保存后立即作用于后续命令。',
+  'budget.title': '上下文配置', 'budget.scope': '预算保存后对新建 Agent 生效，运行中的任务保留原配置。',
   'budget.defaults': '留空沿用默认值，括号内显示默认值；通用预算随宿主版本变化。恢复默认会清除这里的覆盖，回到插件加载配置；未配置时跟随宿主。',
   'budget.context': '上下文压缩', 'budget.execution': '批量工具执行', 'budget.advanced': '更多预算',
   'budget.pressureBasis': '压缩预算基准', 'budget.inherit': '跟随默认', 'budget.host': '宿主策略', 'budget.window': '完整上下文窗口',
@@ -272,8 +313,8 @@ const zh = {
   'budget.contextHint': '保留比例需小于触发比例。较大的预算会占用更多上下文。',
   'budget.ptcHint': '包含工具等待时间；默认时限不能超过上限，也不能超过宿主允许值。',
   'budget.ptcUnavailable': '此宿主的 PTC 计时由宿主管理；其他预算仍可配置。', 'budget.ptcCeiling': '宿主允许的最长时限：{seconds} 秒。',
-  'budget.save': '保存预算', 'budget.reset': '恢复默认', 'budget.reload': '重新读取', 'budget.saving': '正在保存…',
-  'budget.saved': '已保存，对新建 Agent 生效。', 'budget.resetDone': '已恢复默认，对新建 Agent 生效。',
+  'budget.save': '保存设置', 'budget.reset': '恢复默认', 'budget.reload': '重新读取', 'budget.saving': '正在保存…',
+  'budget.saved': '已保存。删除保护立即生效，预算对新建 Agent 生效。', 'budget.resetDone': '已恢复默认。删除保护立即生效，预算对新建 Agent 生效。',
   'budget.error.connection': '暂时无法读取预算，请重试。', 'budget.error.invalid': '请检查数值范围、保留比例和执行时限。',
   'budget.error.retain': '保留比例必须小于压缩触发比例；未填写时分别按 16% 和 80% 校验。', 'budget.error.ptc-order': '默认执行时限不能超过执行时限上限。',
   'budget.error.conflict': '预算已在别处修改。草稿已保留，请重新读取后再修改。', 'budget.error.read-only': '当前宿主的设置只读，无法保存。',
@@ -285,7 +326,7 @@ const zh = {
   'memory.deleteTitle': '删除记忆', 'memory.deleteHint': '确定删除“{summary}”吗？删除后无法恢复。',
   'memory.writeError': '操作失败，内容已保留，请重试。', 'memory.conflict': '这条记忆已在别处更改，请取消后刷新再编辑。',
   'memory.missingEdit': '这条记忆已被删除，输入内容已保留。', 'memory.full': '该主题或记忆库已满，请删除不再需要的条目。',
-  'workspace.title': 'Super Code', 'workspace.description': 'Agent 执行树与记忆库', 'workspace.resize': '调整执行树与记忆库高度',
+  'workspace.title': 'Super Code', 'workspace.description': '任务状态、Agent 执行树与记忆库', 'workspace.resize': '调整执行树与记忆库高度',
   'tree.collapsedLabel': '已收起', 'tree.organizeLabel': '自动整理',
   'detail.toolCall': '工具调用', 'detail.toolResult': '工具结果', 'detail.toolError': '工具失败',
   'detail.cache': '缓存', 'detail.info': '详情', 'tree.countCompact': '{shown}/{total} · 运行 {running}',
@@ -349,12 +390,53 @@ const zh = {
   'detail.path': 'Agent 路径', 'detail.title': 'Agent 详情', 'detail.refresh': '刷新对话详情', 'detail.task': '任务', 'detail.agent': 'Agent', 'detail.interrupted': 'Agent · 已中断', 'detail.error': '执行错误', 'detail.incomplete': '执行未完成，请稍后重试。', 'detail.input': '输入', 'detail.output': '输出', 'detail.cacheRead': '缓存读取', 'detail.cacheWrite': '缓存写入', 'detail.total': 'Token 总量', 'detail.hitRate': '缓存命中率', 'detail.moreUsage': '用量详情', 'detail.unavailable': '未提供', 'detail.reading': '正在读取对话…', 'detail.read': '读取中…', 'detail.older': '加载更早记录', 'detail.latest': '回到最新', 'detail.empty': '暂无执行内容', 'detail.new': '有新内容 · 查看最新', 'detail.loadError': '对话详情读取失败', 'detail.connection': '连接中断，正在重连', 'detail.historyError': '历史记录读取失败', 'detail.open': '展开全文', 'detail.noAccess': '无法打开详情，请重试', 'tree.loadError': '部分执行记录读取失败，请刷新重试', 'detail.unknown': '用量未知', 'main.agent': '主 Agent', 'tree.open': '点击查看详情', 'tree.expand': '展开', 'tree.collapse': '收起', 'image': '[图片]'
 }
 const en = {
+  'feedback.title': 'Task status',
+  'feedback.refresh': 'Refresh task status',
+  'feedback.noGoal': 'No recorded objective',
+  'feedback.source.record': 'Recorded objective',
+  'feedback.source.request': 'User request',
+  'feedback.latest': 'Latest request',
+  'feedback.progress': 'Steps {done} / {total}',
+  'feedback.progressPartial': 'Recorded steps {done} / {total}',
+  'feedback.steps': 'Step progress',
+  'feedback.todo.pending': 'Pending',
+  'feedback.todo.in_progress': 'In progress',
+  'feedback.todo.completed': 'Completed',
+  'feedback.activity.running': 'Running',
+  'feedback.activity.succeeded': 'Succeeded',
+  'feedback.activity.failed': 'Failed',
+  'feedback.activity.interrupted': 'Interrupted',
+  'feedback.waiting': 'Awaiting approval',
+  'feedback.error': 'Execution error',
+  'feedback.interrupted': 'Interrupted',
+  'feedback.noSteps': 'No recorded steps or tool activity',
+  'feedback.loading': 'Loading records…',
+  'feedback.recentOnly': 'Recent activity only; open details for the full record.',
+  'feedback.open': 'View execution log',
+  'feedback.openFileRecord': 'View file operation log',
+  'feedback.files': 'File operations',
+  'feedback.filesHint': 'Recorded successful operations; terminal changes may be absent.',
+  'feedback.filesEmpty': 'No confirmed file operations yet',
+  'feedback.filesUnknown': 'File records are incomplete',
+  'feedback.file.write': 'Written',
+  'feedback.file.edit': 'Edited',
+  'feedback.file.create': 'Created',
+  'feedback.file.patch': 'Patched',
+  'feedback.partial': 'Some Agent or history records are not loaded; showing known facts.',
+  'feedback.agentsPartial': 'The task list reached its limit; view other Agents in the execution tree.',
+  'status.blocked': 'Blocked',
+
   'settings.presetTab': 'Preset status', 'settings.contextTab': 'Context settings', 'settings.tabs': 'Super Code settings',
   'budget.common': 'Common budgets', 'budget.superCode': 'Super Code budgets',
   'budget.applyToOfficialPresets': 'Also apply to official presets', 'budget.officialHint': 'Apply common budgets to Standard, PTC, Minimal and Create. Super Code task and memory limits below remain exclusive to Super Code.',
   'budget.superCodeHint': 'Task records and task memory for Super Code. These limits never affect official presets.',
   'budget.defaultValue': '(default: {value})', 'budget.off': 'off', 'budget.managed': 'host-managed',
-  'budget.title': 'Context settings', 'budget.scope': 'Changes apply to new Agents. Running tasks keep their current settings.',
+  'delete.title': 'Deletion protection', 'delete.mode': 'Protection mode', 'delete.off': 'Off', 'delete.relaxed': 'Relaxed', 'delete.strict': 'Strict', 'delete.official': 'Also apply to official presets',
+  'delete.hint.off': 'Adds no deletion instructions or command interception. Host permission checks still apply.',
+  'delete.hint.relaxed': 'Prefer trash, including in scripts. Explicit user requests may use rm without extra plugin confirmation.',
+  'delete.hint.strict': 'Prefer trash; scripts must not directly use rm. Recognized permanent deletion requires separate approval for each temporary-file or build-artifact cleanup.',
+  'delete.officialHint': 'Protects Super Code by default. This switch is independent of official-preset budgets; saved changes apply to subsequent commands immediately.',
+  'budget.title': 'Context settings', 'budget.scope': 'Budget changes apply to new Agents. Running tasks keep their current settings.',
   'budget.defaults': 'Leave fields blank to inherit defaults. Parentheses show defaults; common budgets follow the host version. Reset clears overrides and restores the plugin configuration, or host defaults when unconfigured.',
   'budget.context': 'Context compression', 'budget.execution': 'Batched tool execution', 'budget.advanced': 'More budgets',
   'budget.pressureBasis': 'Compression budget basis', 'budget.inherit': 'Inherit default', 'budget.host': 'Host policy', 'budget.window': 'Full context window',
@@ -365,8 +447,8 @@ const en = {
   'budget.contextHint': 'Retention must be below the compression threshold. Larger budgets use more context.',
   'budget.ptcHint': 'Includes tool waits. The default deadline must fit within both the configured maximum and the host ceiling.',
   'budget.ptcUnavailable': 'This host manages PTC timing. Other budgets remain configurable.', 'budget.ptcCeiling': 'Host deadline ceiling: {seconds} seconds.',
-  'budget.save': 'Save budgets', 'budget.reset': 'Reset to defaults', 'budget.reload': 'Reload settings', 'budget.saving': 'Saving…',
-  'budget.saved': 'Saved. New Agents will use these settings.', 'budget.resetDone': 'Defaults restored for new Agents.',
+  'budget.save': 'Save settings', 'budget.reset': 'Reset to defaults', 'budget.reload': 'Reload settings', 'budget.saving': 'Saving…',
+  'budget.saved': 'Saved. Deletion protection applies immediately; budgets apply to new Agents.', 'budget.resetDone': 'Defaults restored. Deletion protection applies immediately; budgets apply to new Agents.',
   'budget.error.connection': 'Budgets could not be loaded. Try again.', 'budget.error.invalid': 'Check the ranges, retention ratio, and deadlines.',
   'budget.error.retain': 'Retention must be below the compression threshold. Blank values are checked as 16% and 80%, respectively.', 'budget.error.ptc-order': 'The default deadline must not exceed the maximum deadline.',
   'budget.error.conflict': 'Budgets changed elsewhere. Your draft is retained; reload before editing again.', 'budget.error.read-only': 'This host has read-only settings.',
@@ -378,7 +460,7 @@ const en = {
   'memory.deleteTitle': 'Delete memory', 'memory.deleteHint': 'Delete “{summary}”? This cannot be undone.',
   'memory.writeError': 'The operation failed. Your input is retained; try again.', 'memory.conflict': 'This memory changed elsewhere. Cancel and refresh before editing again.',
   'memory.missingEdit': 'This memory was deleted. Your input is retained.', 'memory.full': 'This topic or library is full. Remove entries you no longer need.',
-  'workspace.title': 'Super Code', 'workspace.description': 'Agent tree and memory library', 'workspace.resize': 'Resize agent tree and memory library',
+  'workspace.title': 'Super Code', 'workspace.description': 'Task status, Agent tree and memory library', 'workspace.resize': 'Resize agent tree and memory library',
   'tree.collapsedLabel': 'Collapsed', 'tree.organizeLabel': 'Organize',
   'detail.toolCall': 'Tool call', 'detail.toolResult': 'Tool result', 'detail.toolError': 'Tool failed',
   'detail.cache': 'Cache', 'detail.info': 'Details', 'tree.countCompact': '{shown}/{total} · Running {running}',
@@ -763,12 +845,299 @@ function AgentTree({ useSessions, useSessionStatus, sessionId, useTabInfo, treeS
   return React.createElement(AgentTreeBody, { key: view.root, state, view, saved, openDetail, refresh, watchCatalog, onToggle, t })
 }
 
+/** Join only the selected conversation's known descendants; never infer a plan. */
+function taskFeedbackRows(view) {
+  const { rows, more } = visibleAgentRows(view, () => true, view.nodes.size)
+  const tasks = rows.map(row => {
+    const node = view.nodes.get(row.id), projections = node.projectionValues || {}, facts = projections.superCodeFeedback
+    const current = projections.superCodeTasks?.current
+    const recorded = current?.kind === 'task' ? current : undefined
+    const goal = recorded?.goal || (facts?.goal?.kind === 'recorded' ? facts.goal.text : '')
+    const title = recorded?.title || goal || facts?.request || ''
+    const todos = facts?.todos || projections.todos || []
+    return { ...row, node, facts, title, goal, source: recorded || facts?.goal?.kind === 'recorded' ? 'record' : facts?.request ? 'request' : 'none',
+      owner: node.title || node.displayTitle || '', todos, done: todos.filter(item => item.status === 'completed').length,
+      total: todos.length, complete: !facts?.omittedTodos, taskStatus: recorded?.status || (facts?.goal?.kind === 'recorded' ? facts.goal.status : '') }
+  })
+  const files = new Map()
+  // File identity remains independent of the virtual viewport.
+  for (const node of view.nodes.values()) for (const file of node.projectionValues?.superCodeFeedback?.files || []) {
+    const row = files.get(file.path) || { path: file.path, operations: new Set(), sources: [] }
+    row.operations.add(file.operation); row.sources.push({ node, seq: file.seq, tool: file.tool })
+    files.set(file.path, row)
+  }
+  return { tasks, more, files: [...files.values()].sort((a, b) => a.path.localeCompare(b.path)).map(file => ({ ...file, ...feedbackFileLabel(file) })),
+    partial: [...view.nodes.values()].some(node => !node.projectionValues?.superCodeFeedback || node.projectionValues.superCodeFeedback.omittedFiles) }
+}
+/** Presentation only: retain the full path while shortening workspace-owned labels. */
+function feedbackFileLabel(file) {
+  const path = file.path.replace(/\\/g, '/')
+  const cwd = file.sources.map(source => source.node.cwd || source.node.projectionValues?.workingDirectory || '')
+    .find(value => value && path.startsWith(value.replace(/\\/g, '/').replace(/\/$/, '') + '/'))
+  const relative = cwd ? path.slice(cwd.replace(/\\/g, '/').replace(/\/$/, '').length + 1) : path
+  const slash = relative.lastIndexOf('/')
+  return { name: relative.slice(slash + 1) || relative, directory: slash < 0 ? '' : relative.slice(0, slash) }
+}
+function FeedbackMark({ tone, label }) {
+  return React.createElement('span', { className: 'dsh-super-code-feedback-mark ' + tone, role: 'img', 'aria-label': label },
+    tone === 'success' && React.createElement('svg', { viewBox: '0 0 16 16', fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, 'aria-hidden': true },
+      React.createElement('path', { d: 'm3.5 8 3 3 6-6', strokeLinecap: 'round', strokeLinejoin: 'round' })),
+    tone === 'error' && React.createElement('span', { 'aria-hidden': true }, '!'))
+}
+function FeedbackActivity({ activity, t }) {
+  const tone = { running: 'active', failed: 'error', succeeded: 'success', interrupted: 'idle' }[activity.status] || 'idle'
+  return React.createElement('div', { className: 'dsh-super-code-feedback-activity', 'data-activity-state': activity.status },
+    React.createElement(FeedbackMark, { tone, label: text(t, 'feedback.activity.' + activity.status) }),
+    React.createElement('span', { className: 'dsh-super-code-feedback-activity-text', title: activity.description || activity.tool }, activity.description || activity.tool),
+    activity.description && React.createElement('small', { className: 'dsh-super-code-feedback-tool', title: activity.tool }, activity.tool),
+    ['failed', 'interrupted'].includes(activity.status) && React.createElement('small', null, text(t, 'feedback.activity.' + activity.status)))
+}
+/** Flatten presentation rows only; no task, step, or loaded activity is folded. */
+function feedbackListItems(model, root, partial) {
+  const items = []
+  const add = (kind, key, data = {}, row) => items.push({ kind, key: JSON.stringify(key), row, ...data,
+    signature: JSON.stringify([kind, data.content, data.todo, data.activity, data.label, data.count,
+      data.file && [data.file.name, data.file.directory, [...data.file.operations]], kind === 'task' &&
+      [row.title, row.owner, row.done, row.total, row.complete, row.taskStatus, row.facts?.phase, row.node.running]]) })
+  for (const row of model.tasks) {
+    const facts = row.facts
+    add('task', [row.id, 'task'], {}, row)
+    if (row.goal && row.goal !== row.title) add('text', [row.id, 'goal'], { content: row.goal }, row)
+    if (facts?.latestRequest && facts.latestRequest !== facts.request) add('request', [row.id, 'request'], { content: facts.latestRequest }, row)
+    row.todos.forEach((todo, index) => add('step', [row.id, 'step', index], { todo }, row))
+    for (const activity of facts?.activities || []) add('activity', [row.id, 'activity', activity.callId, activity.seq], { activity }, row)
+    if (!row.total && !facts?.activities?.length) add('note', [row.id, 'empty'], { label: facts ? 'feedback.noSteps' : 'feedback.loading' }, row)
+    if (facts?.omittedActivities) add('note', [row.id, 'recent'], { label: 'feedback.recentOnly' }, row)
+    add('open', [row.id, 'open'], { focusable: !row.node.unavailable }, row)
+  }
+  if (root) {
+    add('files', ['files'], { count: model.files.length })
+    add('note', ['filesHint'], { label: 'feedback.filesHint' })
+    if (!model.files.length) add('note', ['filesEmpty'], { label: partial ? 'feedback.filesUnknown' : 'feedback.filesEmpty' })
+    for (const file of model.files) add('file', ['file', file.path], { file, focusable: !file.sources[0].node.unavailable })
+  }
+  if (partial) add('note', ['partial'], { label: 'feedback.partial' })
+  return items
+}
+
+/** Prefix heights allow binary-search windows without mounting offscreen rows. */
+function feedbackListLayout(items, heights = new Map()) {
+  const estimates = { task: 64, text: 48, request: 70, step: 28, activity: 30, open: 34, files: 40, file: 30, note: 26 }
+  const offsets = [0], byKey = new Map()
+  items.forEach((item, index) => {
+    const measured = heights.get(item.key)
+    const height = measured?.signature === item.signature ? measured.height : estimates[item.kind]
+    offsets.push(offsets[index] + Math.max(1, height)); byKey.set(item.key, index)
+  })
+  return { offsets, byKey, height: offsets.at(-1) }
+}
+function feedbackListIndex(layout, top) {
+  let low = 0, high = layout.offsets.length - 1
+  while (low < high) {
+    const middle = Math.floor((low + high) / 2)
+    if (layout.offsets[middle + 1] <= top) low = middle + 1; else high = middle
+  }
+  return Math.min(low, Math.max(0, layout.offsets.length - 2))
+}
+function feedbackListWindow(layout, scrollTop, height) {
+  const top = Math.max(0, Math.min(scrollTop, Math.max(0, layout.height - height)))
+  return { top, start: feedbackListIndex(layout, Math.max(0, top - 240)),
+    end: layout.height ? Math.min(layout.offsets.length - 1, feedbackListIndex(layout, top + height + 240) + 1) : 0 }
+}
+/** Keep the same visible fact in place when earlier rows resize or arrive. */
+function feedbackListAnchor(previous, next, scrollTop, height) {
+  if (!previous || !previous.layout.height) return Math.max(0, Math.min(scrollTop, Math.max(0, next.layout.height - height)))
+  const index = feedbackListIndex(previous.layout, scrollTop), key = previous.items[index]?.key
+  const nextIndex = next.layout.byKey.get(key)
+  const top = nextIndex === undefined ? scrollTop : next.layout.offsets[nextIndex] + Math.min(
+    Math.max(0, scrollTop - previous.layout.offsets[index]), next.layout.offsets[nextIndex + 1] - next.layout.offsets[nextIndex] - 1)
+  return Math.max(0, Math.min(top, Math.max(0, next.layout.height - height)))
+}
+function FeedbackRowContent({ item, root, openDetail, t }) {
+  const row = item.row
+  if (item.kind === 'task') {
+    const status = feedbackStatus({ ...row, root }, t)
+    const progressLabel = text(t, row.complete ? 'feedback.progress' : 'feedback.progressPartial', { done: row.done, total: row.total })
+    return React.createElement('div', { className: 'dsh-super-code-feedback-task-heading' },
+      React.createElement('div', { className: 'dsh-super-code-feedback-heading' },
+        React.createElement('h3', { title: row.source === 'none' ? '' : text(t, 'feedback.source.' + row.source) }, row.title || text(t, 'feedback.noGoal')),
+        React.createElement('div', { className: 'dsh-super-code-feedback-meta' },
+          React.createElement('small', null, row.owner || (row.id === root ? text(t, 'main.agent') : row.id)),
+          React.createElement('span', { className: 'dsh-super-code-feedback-status', 'data-tone': status.tone }, status.label))),
+      row.total > 0 && React.createElement('span', { className: 'dsh-super-code-feedback-count', 'aria-label': progressLabel, title: progressLabel }, `${row.done}/${row.total}${row.complete ? '' : '+'}`),
+      row.total > 0 && row.complete && React.createElement('progress', { max: row.total, value: row.done, 'aria-label': text(t, 'feedback.steps') }))
+  }
+  if (item.kind === 'step') return React.createElement('div', { className: 'dsh-super-code-feedback-step', 'data-step-state': item.todo.status },
+    React.createElement(FeedbackMark, { tone: item.todo.status === 'completed' ? 'success' : item.todo.status === 'in_progress' ? 'active' : 'pending', label: text(t, 'feedback.todo.' + item.todo.status) }),
+    React.createElement('span', null, item.todo.content))
+  if (item.kind === 'activity') return React.createElement(FeedbackActivity, { activity: item.activity, t })
+  if (item.kind === 'open') return React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-feedback-open', disabled: !item.focusable,
+    title: text(t, 'feedback.open'), onClick: () => openDetail(row.node) }, text(t, 'feedback.open'), React.createElement(Glyph, { type: 'arrow' }))
+  if (item.kind === 'files') return React.createElement('h3', { className: 'dsh-super-code-feedback-files-heading' }, text(t, 'feedback.files'), React.createElement('span', null, item.count))
+  if (item.kind === 'file') {
+    const file = item.file
+    return React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-feedback-file', title: file.path,
+      'aria-label': text(t, 'feedback.openFileRecord') + ' ' + file.path, disabled: !item.focusable, onClick: () => openDetail(file.sources[0].node) },
+      React.createElement(Glyph, { type: 'code' }), React.createElement('strong', null, file.name),
+      file.directory && React.createElement('small', null, file.directory),
+      React.createElement('span', { className: 'dsh-super-code-feedback-file-operation' }, [...file.operations].map(operation => text(t, 'feedback.file.' + operation)).join(' · ')))
+  }
+  if (item.kind === 'note') return React.createElement('p', { className: 'dsh-super-code-feedback-muted', role: item.label === 'tree.loadError' ? 'alert' : undefined }, text(t, item.label))
+  return React.createElement('p', { className: 'dsh-super-code-feedback-text' },
+    item.kind === 'request' && React.createElement('small', null, text(t, 'feedback.latest')), item.content)
+}
+
+/** One measured, variable-height viewport for tasks, steps, activity and files. */
+function FeedbackVirtualList({ items, root, saved, openDetail, t, watchCatalog }) {
+  const viewport = useRef(null), list = useRef(null), previous = useRef(null), pendingFocus = useRef('')
+  const language = localeCode(t)
+  const [scroll, setScroll] = useState({ top: saved.feedbackTop || 0, height: 640, width: saved.feedbackWidth || 0 })
+  const measurements = useRef(saved.feedbackHeights || new Map())
+  const [heightRevision, setHeightRevision] = useState(0)
+  const [focused, setFocused] = useState('')
+  const layout = useMemo(() => feedbackListLayout(items, measurements.current), [items, heightRevision])
+  const range = feedbackListWindow(layout, scroll.top, scroll.height)
+  const indices = Array.from({ length: range.end - range.start }, (_, index) => range.start + index)
+  const focusIndex = layout.byKey.get(focused)
+  if (focusIndex !== undefined && !indices.includes(focusIndex)) indices.push(focusIndex)
+  indices.sort((a, b) => a - b)
+  const renderKey = indices.join(',')
+  const watched = new Set(root ? [root] : [])
+  for (const index of indices) if (items[index].row) watched.add(items[index].row.id)
+  useLayoutEffect(() => {
+    const element = viewport.current
+    const measure = () => {
+      const width = element.clientWidth
+      if (width !== saved.feedbackWidth || language !== saved.feedbackLanguage) {
+        saved.feedbackWidth = width; saved.feedbackLanguage = language
+        saved.feedbackHeights = new Map(); measurements.current = saved.feedbackHeights; setHeightRevision(value => value + 1)
+      }
+      setScroll(value => value.top === element.scrollTop && value.height === element.clientHeight && value.width === width
+        ? value : { top: element.scrollTop, height: element.clientHeight, width })
+    }
+    element.scrollTop = saved.feedbackTop || 0; measure()
+    const observer = new ResizeObserver(measure); observer.observe(element)
+    return () => observer.disconnect()
+  }, [saved, language])
+  useLayoutEffect(() => {
+    const element = viewport.current
+    const top = feedbackListAnchor(previous.current, { items, layout }, previous.current?.top ?? saved.feedbackTop ?? 0, element.clientHeight)
+    element.scrollTop = top; saved.feedbackTop = element.scrollTop
+    previous.current = { items, layout, top: element.scrollTop }
+    setScroll(value => value.top === element.scrollTop ? value : { ...value, top: element.scrollTop })
+    // Retain only current identities; long-running sessions must not leak measurements.
+    for (const key of measurements.current.keys()) if (!layout.byKey.has(key)) measurements.current.delete(key)
+    saved.feedbackHeights = measurements.current
+  }, [items, layout, saved])
+  useLayoutEffect(() => {
+    const rows = [...list.current.children]
+    let active = true
+    const measure = () => {
+      if (!active) return
+      const current = measurements.current
+      let next = current
+      for (const element of rows) {
+        const key = element.dataset.feedbackKey, item = items[layout.byKey.get(key)], height = element.getBoundingClientRect().height
+        if (!item || height <= 0 || current.get(key)?.signature === item.signature && Math.abs(current.get(key).height - height) < .5) continue
+        if (next === current) next = new Map(current)
+        next.set(key, { signature: item.signature, height })
+      }
+      if (next === current) return
+      measurements.current = next; saved.feedbackHeights = next
+      setHeightRevision(value => value + 1)
+    }
+    measure()
+    const observer = new ResizeObserver(measure); rows.forEach(element => observer.observe(element))
+    return () => { active = false; observer.disconnect() }
+  }, [items, renderKey, scroll.width, language, saved])
+  useLayoutEffect(() => {
+    if (!pendingFocus.current) return
+    const element = [...list.current.children].find(row => row.dataset.feedbackKey === pendingFocus.current)
+    const button = element?.querySelector('button')
+    if (button) { button.focus({ preventScroll: true }); pendingFocus.current = '' }
+  }, [renderKey, items, layout, focused])
+  const tab = event => {
+    if (event.key !== 'Tab') return
+    const current = layout.byKey.get(focused)
+    if (current === undefined) return
+    const direction = event.shiftKey ? -1 : 1
+    for (let index = current + direction; index >= 0 && index < items.length; index += direction) {
+      if (!items[index].focusable) continue
+      event.preventDefault(); pendingFocus.current = items[index].key; setFocused(items[index].key)
+      const top = Math.max(0, Math.min(layout.offsets[index], Math.max(0, layout.height - viewport.current.clientHeight)))
+      viewport.current.scrollTop = top; saved.feedbackTop = top
+      if (previous.current) previous.current.top = top
+      setScroll(value => ({ ...value, top })); return
+    }
+  }
+  return React.createElement('div', { ref: viewport, className: 'dsh-super-code-feedback-scroll', tabIndex: 0, 'aria-label': text(t, 'feedback.title'), onKeyDown: tab,
+    onScroll: event => {
+      const top = event.currentTarget.scrollTop; saved.feedbackTop = top
+      if (previous.current) previous.current.top = top
+      setScroll(value => value.top === top ? value : { ...value, top })
+    }, onFocusCapture: event => setFocused(event.target.closest('[data-feedback-key]')?.dataset.feedbackKey || ''),
+    onBlurCapture: event => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused('') } },
+    [...watched].map(id => React.createElement(AgentCatalogWatch, { key: id, id, watchCatalog })),
+    React.createElement('ol', { ref: list, className: 'dsh-super-code-feedback-list', 'aria-label': text(t, 'feedback.title'), style: { height: layout.height }, 'data-feedback-total': items.length },
+      indices.map(index => {
+        const item = items[index], row = item.row, header = item.kind === 'task'
+        const indent = row ? Math.min(Math.max(0, row.level - 1), 4) * 16 + (header ? 0 : 14) : 0
+        return React.createElement('li', { key: item.key, 'data-feedback-key': item.key, 'data-feedback-kind': item.kind,
+          'data-feedback-agent': row?.id, 'data-feedback-depth': row?.level, 'data-feedback-live': row ? row.node.running === true || row.facts?.phase === 'running' : undefined,
+          'aria-posinset': index + 1, 'aria-setsize': items.length,
+          style: { transform: `translateY(${layout.offsets[index]}px)`, paddingLeft: indent, '--sc-feedback-indent': indent + 'px' } }, React.createElement(FeedbackRowContent, { item, root, openDetail, t }))
+      })))
+}
+function feedbackStatus(row, t = key => zh[key] || key) {
+  if (row.node.unavailable) return { tone: 'unavailable', label: text(t, 'tree.legend.unavailable') }
+  const phase = row.facts?.phase
+  if (row.node.running === true) return { tone: 'active', label: text(t, phase === 'waiting' ? 'feedback.waiting' : 'tree.legend.active') }
+  if (phase === 'error' || phase === 'interrupted') return { tone: 'error', label: text(t, `feedback.${phase}`) }
+  if (['completed', 'cancelled', 'paused', 'blocked'].includes(row.taskStatus)) return { tone: row.taskStatus === 'completed' ? 'success' : 'idle', label: text(t, `status.${row.taskStatus}`) }
+  // Host inactivity or a completed turn does not establish task completion.
+  return agentExecutionStatus(row.node, row.id === row.root, t)
+}
+function TaskFeedback({ useSessions, useSessionStatus, sessionId, useTabInfo, treeStates, openDetail, refresh, watchCatalog, onToggle, t }) {
+  const catalog = useSessions(s => s), statuses = useSessionStatus ? useSessionStatus(s => s) : undefined
+  const state = useMemo(() => agentSessionState(catalog, sessionId, statuses), [catalog, sessionId, statuses])
+  const view = useMemo(() => buildAgentView(state), [state.byId, state.subagentsByParent, state.current, state.currentAddress])
+  const { tab } = useTabInfo()
+  const saved = useMemo(() => {
+    let value = treeStates.get(tab.signal)
+    if (!value || value.root !== view.root) { value = { root: view.root, limit: 200, focused: state.current, expanded: new Set(), collapsed: new Set() }; treeStates.set(tab.signal, value) }
+    return value
+  }, [treeStates, tab.signal, view.root])
+  const [busy, setBusy] = useState(false), [error, setError] = useState(false)
+  const model = useMemo(() => taskFeedbackRows(view), [view])
+  const partial = model.partial || Object.values(state.subagentsByParent || {}).some(value => value.state === 'error')
+  const items = useMemo(() => {
+    const rows = feedbackListItems(model, view.root, partial)
+    if (!view.root) rows.unshift({ kind: 'note', key: 'empty', label: 'tree.empty', signature: 'empty' })
+    if (error) rows.unshift({ kind: 'note', key: 'error', label: 'tree.loadError', signature: 'error' })
+    return rows
+  }, [model, view.root, partial, error])
+  const reload = async () => {
+    setBusy(true); setError(false)
+    try {
+      const ids = [...view.nodes.keys()]
+      for (let start = 0; start < ids.length; start += 20) await Promise.all(ids.slice(start, start + 20).map(id => refresh(id)))
+    }
+    catch { setError(true) }
+    finally { setBusy(false) }
+  }
+  return React.createElement('section', { className: 'dsh-super-code-feedback', 'data-task-feedback': true },
+    React.createElement('header', null,
+      React.createElement(WorkspaceSectionToggle, { section: 'tasks', expanded: true, onToggle, t }),
+      React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-icon-button', title: text(t, 'feedback.refresh'), 'aria-label': text(t, 'feedback.refresh'), disabled: busy || !view.root, onClick: () => void reload() }, React.createElement(IconRefreshOutline16))),
+    React.createElement(FeedbackVirtualList, { key: view.root, items, root: view.root, saved, openDetail, t, watchCatalog }))
+}
+
 function WorkspaceSectionToggle({ section, expanded, onToggle, children, t }) {
-  const label = text(t, section === 'tree' ? 'tree.title' : 'memory.title')
+  const label = text(t, section === 'tasks' ? 'feedback.title' : section === 'tree' ? 'tree.title' : 'memory.title')
   return React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-section-toggle',
     'data-workspace-section': section, 'aria-label': label, 'aria-expanded': expanded, onClick: onToggle },
     React.createElement(Glyph, { type: 'chevron' }),
-    React.createElement(Glyph, { type: section === 'tree' ? 'branch' : 'memory' }),
+    React.createElement(Glyph, { type: section === 'tasks' ? 'context' : section === 'tree' ? 'branch' : 'memory' }),
     React.createElement('strong', null, label), children)
 }
 
@@ -779,7 +1148,7 @@ function SuperCodeWorkspace(props) {
   const navigationKey = `${address}/${tab.navigation?.revision || 0}`
   const memoryTarget = memoryLibraryTarget(address, '')
   const saved = useMemo(() => {
-    const value = props.workspaceStates.get(tab.signal) || { active: 'tree' }
+    const value = props.workspaceStates.get(tab.signal) || { active: 'tasks' }
     if (value.navigationKey !== navigationKey) {
       value.navigationKey = navigationKey
       if (memoryTarget.id) value.active = 'memory'
@@ -787,10 +1156,10 @@ function SuperCodeWorkspace(props) {
     props.workspaceStates.set(tab.signal, value)
     return value
   }, [props.workspaceStates, tab.signal])
-  const [active, setActive] = useState(saved.active === 'memory' ? 'memory' : 'tree')
+  const [active, setActive] = useState(['tasks', 'tree', 'memory'].includes(saved.active) ? saved.active : 'tasks')
   const layout = useRef(null), focusSection = useRef('')
-  const toggle = () => {
-    const next = active === 'tree' ? 'memory' : 'tree'
+  const toggle = section => {
+    const next = active === section ? section === 'tasks' ? 'tree' : 'tasks' : section
     saved.active = next; focusSection.current = next; setActive(next)
   }
   useLayoutEffect(() => {
@@ -805,14 +1174,13 @@ function SuperCodeWorkspace(props) {
   }, [active])
   return React.createElement('section', { className: 'dsh-super-code-workspace', 'aria-label': text(props.t, 'workspace.title') },
     React.createElement('div', { ref: layout, className: 'dsh-super-code-workspace-layout', 'data-active-section': active, style: {
-      gridTemplateRows: active === 'tree' ? 'minmax(280px, 1fr) 44px' : '44px minmax(280px, 1fr)',
-    } },
-      active === 'tree' ? React.createElement(AgentTree, { ...props, key: 'tree', onToggle: toggle })
-        : React.createElement('header', { key: 'tree-collapsed', className: 'dsh-super-code-workspace-collapsed' },
-          React.createElement(WorkspaceSectionToggle, { section: 'tree', expanded: false, onToggle: toggle, t: props.t })),
-      active === 'memory' ? React.createElement(MemoryLibrary, { ...props, key: 'memory', onToggle: toggle })
-        : React.createElement('header', { key: 'memory-collapsed', className: 'dsh-super-code-workspace-collapsed' },
-          React.createElement(WorkspaceSectionToggle, { section: 'memory', expanded: false, onToggle: toggle, t: props.t }))))
+      gridTemplateRows: ['tasks', 'tree', 'memory'].map(section => active === section ? 'minmax(280px, 1fr)' : '44px').join(' '),
+    } }, ['tasks', 'tree', 'memory'].map(section => {
+      const onToggle = () => toggle(section)
+      return active === section ? React.createElement(section === 'tasks' ? TaskFeedback : section === 'tree' ? AgentTree : MemoryLibrary, { ...props, key: section, onToggle })
+        : React.createElement('header', { key: section + '-collapsed', className: 'dsh-super-code-workspace-collapsed' },
+          React.createElement(WorkspaceSectionToggle, { section, expanded: false, onToggle, t: props.t }))
+    })))
 }
 
 function AgentCatalogWatch({ id, watchCatalog }) {
@@ -1600,7 +1968,8 @@ const budgetFields = [
   { key: 'maxContextBytes', group: 'superCode', root: true, factor: 1, min: 1024, max: 262144, step: 1 },
 ]
 function budgetDraft(configuration) {
-  return Object.fromEntries([['applyToOfficialPresets', configuration.applyToOfficialPresets ?? false], ['pressureBasis', configuration.budgets?.pressureBasis ?? ''],
+  const deletion = configuration.deletionProtection
+  return Object.fromEntries([['deletionProtection', deletion === true ? 'strict' : deletion === false ? 'off' : deletion ?? 'relaxed'], ['deletionProtectionForOfficialPresets', configuration.deletionProtectionForOfficialPresets ?? false], ['applyToOfficialPresets', configuration.applyToOfficialPresets ?? false], ['pressureBasis', configuration.budgets?.pressureBasis ?? ''],
     ...budgetFields.map(field => {
       const value = field.root ? configuration[field.key] : configuration.budgets?.[field.key]
       return [field.key, value === undefined ? '' : String(value / field.factor)]
@@ -1608,6 +1977,14 @@ function budgetDraft(configuration) {
 }
 function budgetConfiguration(draft) {
   const config = {}, budgets = {}
+  if (draft.deletionProtection !== undefined) {
+    if (!['off', 'relaxed', 'strict'].includes(draft.deletionProtection)) return { ok: false, error: 'invalid' }
+    config.deletionProtection = draft.deletionProtection
+  }
+  if (draft.deletionProtectionForOfficialPresets !== undefined) {
+    if (typeof draft.deletionProtectionForOfficialPresets !== 'boolean') return { ok: false, error: 'invalid' }
+    config.deletionProtectionForOfficialPresets = draft.deletionProtectionForOfficialPresets
+  }
   if (draft.applyToOfficialPresets !== undefined) {
     if (typeof draft.applyToOfficialPresets !== 'boolean') return { ok: false, error: 'invalid' }
     config.applyToOfficialPresets = draft.applyToOfficialPresets
@@ -1684,6 +2061,19 @@ function BudgetSettings({ api, t, active }) {
   })
   return React.createElement('section', { className: 'dsh-super-code-budgets' },
     React.createElement('form', { 'aria-label': t('budget.title'), 'aria-busy': busy, onSubmit: event => { event.preventDefault(); save(false) } },
+      React.createElement('section', { className: 'dsh-super-code-budget-group', 'aria-labelledby': 'super-code-deletion-title' },
+        React.createElement('h3', { id: 'super-code-deletion-title' }, t('delete.title')),
+        React.createElement('div', { className: 'dsh-super-code-settings-field' },
+          React.createElement('label', { id: 'super-code-deletion-mode-label' }, t('delete.mode')),
+          React.createElement(SelectControl, { id: 'super-code-deletion-protection', label: t('delete.mode'), value: draft.deletionProtection,
+            choices: ['off', 'relaxed', 'strict'].map(mode => [mode, t(`delete.${mode}`)]), disabled,
+            onChange: value => edit('deletionProtection', value) })),
+        React.createElement('p', { id: 'super-code-deletion-hint', className: 'dsh-super-code-budget-hint' }, t(`delete.hint.${draft.deletionProtection}`)),
+        React.createElement('label', { className: 'dsh-super-code-budget-switch' },
+          React.createElement('input', { id: 'super-code-deletion-official', type: 'checkbox', role: 'switch', checked: draft.deletionProtectionForOfficialPresets, disabled: disabled || draft.deletionProtection === 'off',
+            'aria-describedby': 'super-code-deletion-official-hint', onChange: event => edit('deletionProtectionForOfficialPresets', event.target.checked) }),
+          React.createElement('span', null, t('delete.official'))),
+        React.createElement('p', { id: 'super-code-deletion-official-hint', className: 'dsh-super-code-budget-hint' }, t('delete.officialHint'))),
       React.createElement('p', { className: 'dsh-super-code-budget-hint' }, t('budget.scope')),
       React.createElement('section', { className: 'dsh-super-code-budget-group', 'aria-labelledby': 'super-code-common-title' },
       React.createElement('h3', { id: 'super-code-common-title' }, t('budget.common')),
@@ -2054,7 +2444,7 @@ function apply(ctx) {
 
 /* Exactly one section fills the pane; the other keeps its clickable heading. */
 .dsh-super-code-workspace{height:100%;min-height:0;overflow:auto;background:var(--sc-bg)}
-.dsh-super-code-workspace-layout{display:grid;height:100%;min-height:324px;min-width:0}
+.dsh-super-code-workspace-layout{display:grid;height:100%;min-height:368px;min-width:0}
 .dsh-super-code-workspace-collapsed{display:flex;align-items:center;border-block:1px solid var(--sc-line);background:var(--sc-bg);padding:0 12px}
 .dsh-super-code-section-toggle{display:flex;align-items:center;gap:6px;flex:1;min-width:0;width:100%;min-height:36px;border:0;border-radius:6px;background:transparent;padding:6px 8px;text-align:left}
 .dsh-super-code-section-toggle>.dsh-super-code-tree-count{margin-left:auto}
@@ -2064,6 +2454,66 @@ function apply(ctx) {
 .dsh-super-code-section-toggle[aria-expanded=false]>.dsh-super-code-glyph:first-child{transform:rotate(-90deg)}
 .dsh-super-code-section-toggle:hover{background:var(--sc-hover)}
 .dsh-super-code-workspace-collapsed>.dsh-super-code-section-toggle{width:100%;height:100%}
+
+
+/* Read-only journal feedback, independent of the graph camera and model context. */
+.dsh-super-code-feedback{height:100%;min-height:0;min-width:0;display:flex;flex-direction:column}
+.dsh-super-code-feedback>header{display:flex;align-items:center;gap:8px;padding:4px 12px;border-bottom:1px solid var(--sc-line)}
+.dsh-super-code-feedback-scroll{flex:1;min-height:0;overflow:auto;padding:8px 12px 12px;overscroll-behavior:contain;overflow-anchor:none}
+.dsh-super-code-feedback-list{position:relative;list-style:none;padding:0;margin:0}
+.dsh-super-code-feedback-list>li{position:absolute;top:0;left:0;width:100%;display:flow-root;min-width:0;font-size:12px;line-height:20px;overflow-wrap:anywhere}
+.dsh-super-code-feedback-list>li[data-feedback-agent]:not([data-feedback-kind=task]):before{content:"";position:absolute;left:calc(var(--sc-feedback-indent) - 10px);top:0;bottom:0;border-left:1px solid var(--sc-line)}
+.dsh-super-code-feedback-task-heading{display:flex;flex-wrap:wrap;align-items:flex-start;gap:2px 6px;padding:8px 4px 6px}
+.dsh-super-code-feedback-heading{flex:1;min-width:0}
+.dsh-super-code-feedback-heading h3{overflow-wrap:anywhere;font-size:13px;line-height:20px;font-weight:600;margin:0}
+.dsh-super-code-feedback small{color:var(--sc-muted);font-size:11px;line-height:18px}
+.dsh-super-code-feedback-meta{display:flex;align-items:center;gap:7px;min-width:0;margin-top:1px}
+.dsh-super-code-feedback-meta>small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dsh-super-code-feedback-status{display:flex;align-items:center;gap:5px;flex:none;font-size:11px;line-height:18px;color:var(--sc-muted)}
+.dsh-super-code-feedback-status:before{content:"";width:3px;height:3px;border-radius:50%;background:var(--sc-faint)}
+.dsh-super-code-feedback-status[data-tone=active]{color:var(--sc-accent)}
+.dsh-super-code-feedback-status[data-tone=error]{color:var(--sc-error)}
+.dsh-super-code-feedback-count{flex:none;font-size:11px;font-variant-numeric:tabular-nums;line-height:20px;color:var(--sc-muted);padding-inline:4px}
+.dsh-super-code-feedback-muted{font-size:11px;color:var(--sc-muted);line-height:18px;margin:3px 0;white-space:pre-wrap}
+.dsh-super-code-feedback-text{margin:3px 0;white-space:pre-wrap}
+.dsh-super-code-feedback-text>small{display:block}
+.dsh-super-code-feedback progress{display:block;flex-basis:100%;width:100%;height:2px;accent-color:var(--sc-accent);border:0;border-radius:8px;overflow:hidden;background:var(--sc-line);margin:4px 0 0;opacity:.8}
+.dsh-super-code-feedback progress::-webkit-progress-bar{background:var(--sc-line)}
+.dsh-super-code-feedback progress::-webkit-progress-value{background:var(--sc-accent);transition:width .3s ease}
+.dsh-super-code-feedback progress::-moz-progress-bar{background:var(--sc-accent)}
+.dsh-super-code-feedback-step{display:flex;align-items:flex-start;gap:7px;min-height:26px;padding:3px 5px;margin:1px 0;border-radius:5px;line-height:20px;transition:background .15s,color .15s}
+.dsh-super-code-feedback-step>span:last-child{flex:1;min-width:0;overflow-wrap:anywhere}
+.dsh-super-code-feedback-step[data-step-state=completed]{color:var(--sc-muted)}
+.dsh-super-code-feedback-step[data-step-state=completed]>span:last-child{text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--sc-muted) 40%,transparent)}
+.dsh-super-code-feedback-step[data-step-state=pending]{color:var(--sc-muted)}
+.dsh-super-code-feedback-step[data-step-state=in_progress]{background:color-mix(in srgb,var(--sc-accent) 7%,transparent);box-shadow:inset 2px 0 color-mix(in srgb,var(--sc-accent) 55%,transparent);color:var(--sc-text)}
+.dsh-super-code-feedback-mark{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;width:14px;height:14px;margin-top:3px;color:var(--sc-muted);font-size:11px;line-height:14px}
+.dsh-super-code-feedback-mark>svg{width:14px;height:14px}
+.dsh-super-code-feedback-mark.pending:before,.dsh-super-code-feedback-mark.idle:before,.dsh-super-code-feedback-mark.unavailable:before{content:"";width:7px;height:7px;border:1px solid var(--sc-faint);border-radius:50%}
+.dsh-super-code-feedback-mark.active:before{content:"";position:absolute;inset:2px;border:1.5px solid color-mix(in srgb,var(--sc-accent) 24%,transparent);border-top-color:var(--sc-accent);border-right-color:var(--sc-accent);border-radius:50%;animation:sc-feedback-spin .9s linear infinite}
+.dsh-super-code-feedback-mark.success{color:var(--sc-success)}
+.dsh-super-code-feedback-mark.error{color:var(--sc-error);border:1px solid currentColor;border-radius:50%;transform:scale(.8)}
+[data-feedback-live=false] .dsh-super-code-feedback-step .dsh-super-code-feedback-mark.active:before{animation:none}
+@keyframes sc-feedback-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.dsh-super-code-feedback-mark.active:before{animation:none!important}}
+.dsh-super-code-feedback-activity{display:flex;gap:7px;align-items:flex-start;min-height:28px;padding:4px 0;line-height:20px}
+.dsh-super-code-feedback-activity-text{min-width:0;flex:1;overflow-wrap:anywhere;white-space:pre-wrap}
+.dsh-super-code-feedback-activity>small{flex:none;font-size:10px;line-height:20px}
+.dsh-super-code-feedback-tool{max-width:84px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}
+.dsh-super-code-feedback-list>li[data-feedback-kind=open]{padding-bottom:8px}
+.dsh-super-code-feedback-open{display:inline-flex;align-items:center;gap:4px;min-height:24px;border:0;border-radius:4px;background:transparent;color:var(--sc-muted);font:inherit;font-size:11px;padding:2px 4px}
+.dsh-super-code-feedback-open>.dsh-super-code-glyph{width:12px;height:12px;transition:transform .15s}
+.dsh-super-code-feedback-open:hover{color:var(--sc-accent);background:var(--sc-hover)}
+.dsh-super-code-feedback-open:hover>.dsh-super-code-glyph{transform:translateX(2px)}
+.dsh-super-code-feedback-files-heading{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;margin:6px 0 0;padding:10px 0 3px;border-top:1px solid var(--sc-line)}
+.dsh-super-code-feedback-files-heading>span{font-size:11px;font-weight:400;color:var(--sc-muted);font-variant-numeric:tabular-nums}
+.dsh-super-code-feedback-file{display:flex;align-items:center;gap:7px;width:100%;min-height:30px;padding:4px;border:0;border-radius:5px;background:transparent;color:var(--sc-text);text-align:left;min-width:0;font:inherit;cursor:pointer}
+.dsh-super-code-feedback-file:hover{background:var(--sc-hover)}
+.dsh-super-code-feedback-file>.dsh-super-code-glyph{flex:none;width:14px;height:14px;color:var(--sc-muted)}
+.dsh-super-code-feedback-file strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:400}
+.dsh-super-code-feedback-file small{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dsh-super-code-feedback-file-operation{flex:none;margin-left:auto;font-size:10px;color:var(--sc-success)}
+.dsh-super-code-feedback button:focus-visible,.dsh-super-code-feedback-scroll:focus-visible{outline:2px solid var(--sc-accent);outline-offset:-2px}
 
 /* Memory library: geometry stays at 76px per row. */
 .dsh-super-code-memory{height:100%;min-height:0;display:flex;flex-direction:column;container-type:inline-size}
@@ -2404,5 +2854,5 @@ function apply(ctx) {
   ctx.effect(() => disposeMemoryType, 'super-code: memory library tab')
 }
 
-return { inject, apply, budgetDraft, budgetConfiguration, synchronizePresetDisplay, agentSessionState, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector, agentHistoryRange, agentHistoryRows, agentHistoryWindow, memoryLibraryAddress, memoryLibraryTarget, memoryLibraryNavigation, memoryLibraryWindow, createMemoryEditor }
+return { inject, apply, taskFeedbackRows, feedbackStatus, feedbackListItems, feedbackListLayout, feedbackListIndex, feedbackListWindow, feedbackListAnchor, budgetDraft, budgetConfiguration, synchronizePresetDisplay, agentSessionState, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector, agentHistoryRange, agentHistoryRows, agentHistoryWindow, memoryLibraryAddress, memoryLibraryTarget, memoryLibraryNavigation, memoryLibraryWindow, createMemoryEditor }
 } })

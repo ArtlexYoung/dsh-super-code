@@ -2,6 +2,7 @@
 import { applyPresetInstallation } from './preset-installation.js'
 import type { Context } from '@deepseek-ai/cordis'
 import { superAgentUsageProjectionDefinition } from '../super-agent-usage.js'
+import { taskFeedbackProjection } from '../task-feedback-projection.js'
 import { taskMemoryProjection } from '../task-memory-projection.js'
 import { LongMemoryStore, longMemoryDomainSpec } from '../long-memory.js'
 import type { DomainFacility } from '@deepseek-ai/dsh-storage-domain'
@@ -11,6 +12,7 @@ import { configurationSchema } from './budgets.js'
 import type { Configuration } from './budgets.js'
 import { applyBudgetSettings } from './budget-settings.js'
 import { applyOfficialBudgets } from './official-budgets.js'
+import { applyDeletionProtection } from './deletion-protection.js'
 
 export const name = 'super-code'
 export const Config: typeof configurationSchema = configurationSchema
@@ -32,6 +34,7 @@ async function installLongMemory(ctx: Context): Promise<void> {
 export async function apply(ctx: Context, config: Configuration = {}): Promise<void> {
   applyBudgetSettings(ctx, config)
   applyOfficialBudgets(ctx)
+  applyDeletionProtection(ctx)
   applyPresetInstallation(ctx)
   ctx.inject(['superCodeLongMemory', 'sessions'], owner => {
     new SuperCodeMemory(owner, owner.get('superCodeLongMemory') as LongMemoryStore)
@@ -39,6 +42,7 @@ export async function apply(ctx: Context, config: Configuration = {}): Promise<v
   ctx.inject(['sessionProjections'], projectionCtx => {
     projectionCtx.sessionProjections.register(superAgentUsageProjectionDefinition)
     projectionCtx.sessionProjections.register(taskMemoryProjection)
+    projectionCtx.sessionProjections.register(taskFeedbackProjection)
     projectionCtx.sessionProjections.register(memoryUsageProjection)
   })
   await installLongMemory(ctx)

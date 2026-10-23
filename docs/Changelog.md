@@ -1,5 +1,11 @@
 # 版本记录 · Changelog
 
+- **0.3.7 · 2026-10-24**：新增关闭、宽松、严格三档删除保护，默认宽松：提示优先使用可恢复的 `trash`，脚本中同样建议使用，用户明确要求时可用 `rm`；严格模式识别永久删除命令并逐次请求确认，官方预设另设开关且默认关闭。兼容旧布尔设置与 v4 日志。[删除保护](UsageGuide.md#删除保护--deletion-protection)
+  **0.3.7 · 2026-10-24**: Adds Off, Relaxed, and Strict deletion protection, defaulting to Relaxed: prefer recoverable `trash`, including in scripts, while honoring explicit `rm` requests. Strict mode recognizes permanent-deletion commands and requests per-call approval; official presets opt in separately. Supports legacy boolean settings and v4 journals. [Deletion protection](UsageGuide.md#删除保护--deletion-protection)
+
+  Super Code 侧栏新增只读任务状态并默认展开，从现有记录展示目标、步骤进度、动作和成功文件操作；Agent 名字只在任务根显示。任务、步骤、已加载动作全部展开，使用变高虚拟滚动，保留阅读位置、键盘导航和运行指示。保留原圆圈执行树与记忆库，三项互斥切换。任务状态不改提示词、模型请求、工具定义或执行行为；文件记录不等同完整 Git diff，缺失与截断明确提示。[任务状态](UsageGuide.md#任务状态--task-status)
+  Adds a read-only Task status section, open by default, showing recorded objectives, step counts, activity, and successful file operations. Agent names appear only at task roots. All loaded tasks, steps, and activity stay expanded in a variable-height virtual list with reading-position retention, keyboard navigation, and running indicators. Preserves the circular Agent graph and memory library with exclusive section switching. Task status changes no prompts, model requests, tool definitions, or execution behavior. File records are not a complete Git diff; missing or bounded data is labeled. [Task status](UsageGuide.md#任务状态--task-status)
+
 README 仅保留最近三个版本，完整记录见本页；[评测说明](EvaluationResults.md) 列出各组 DSH、插件与模型版本，以及 GLM 迁移和新版预算对照。
 
 README shows the three most recent releases; this page retains the full history. The [evaluation report](EvaluationResults.md) identifies DSH, plugin, and model versions, with GLM transfer and newer-host budget comparisons.

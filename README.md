@@ -50,6 +50,10 @@ Supports Harness `0.2.1-rc.2` and restores legacy task records after v4 session-
 
 Supports Harness `0.1.5-alpha.1` through `0.2.1-rc.2`. Choose the installation method for your client; see [validation coverage by version and client](docs/Compatibility.md).
 
+开发分支还提供默认关闭的 **MCP 连接**：首页集中显示预设、保护、连接及在线/历史对话数量，客户端与关联会话详情在“连接”页；在“连接”中勾选工作目录并启用，通过连接 Prompt 配置 MCP 客户端。外部会话新增目录需在 DSH 弹窗中同意，委派沿用宿主模型与权限。[连接配置、工具和恢复说明](docs/UsageGuide.md#mcp-连接--mcp-connection)
+
+The development branch also provides an opt-in **MCP connection** with a Home overview for presets, protection, connections and connected/past conversation counts; client and linked-session details are in Connection. Select directories and enable it under Connection, then configure an MCP client using the connection prompt. Additional directories require consent in a DSH dialog. Delegation uses the host model and permissions. [Setup, tools and recovery](docs/UsageGuide.md#mcp-连接--mcp-connection)
+
 ## 2.1 安装 · Install
 
 ### 官方桌面版 · Official Desktop

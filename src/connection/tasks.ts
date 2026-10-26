@@ -89,10 +89,12 @@ export class DelegatedTasks {
     })
     return this.view(task.id, 0)
   }
-  async send(input: { taskId: string; requestId: string; prompt: string; connectionId?: string }): Promise<TaskView> {
+  async send(input: { taskId: string; requestId: string; cwd?: string; prompt: string; connectionId?: string }): Promise<TaskView> {
     await this.exclusive(async () => {
       this.enabled()
       const task = this.owned(input.taskId), fingerprint = digest(input.prompt)
+      const cwd = await this.directory(input.cwd ?? task.cwd)
+      if (cwd !== task.cwd) throw new ConnectionError('task-directory-mismatch')
       const prior = Object.hasOwn(task.operations, input.requestId) ? task.operations[input.requestId] : false
       if (prior) {
         if (prior !== fingerprint) throw new ConnectionError('request-conflict')
@@ -100,7 +102,6 @@ export class DelegatedTasks {
         return
       }
       if (Object.keys(task.operations).length >= 128) throw new ConnectionError('task-operation-limit')
-      await this.directory(task.cwd)
       await this.refresh(task)
       if (task.status === 'cancelling' || task.status === 'waiting_confirmation') throw new ConnectionError('resolve-in-dsh-first')
       await this.capacity(task.cwd, task.id)
@@ -167,6 +168,25 @@ export class DelegatedTasks {
       const rows = [...this.records].reverse()
       return { tasks: rows.slice(cursor, cursor + 25).map(task => ({ taskId: task.id, sessionId: task.sessionId, cwd: task.cwd, client: task.client, status: task.status, updatedAt: task.updatedAt })),
         nextCursor: cursor + 25 < rows.length ? cursor + 25 : false }
+    })
+  }
+  async sessions(cwd: string, limit: number, status: { connections: number; maxConnections: number; ids: readonly string[] }): Promise<{
+    cwd: string; connections: number; maxConnections: number; availableConnections: number;
+    activeTasks: number; availableTasks: number;
+    sessions: { taskId: string; sessionId: string; cwd: string; client: string; status: TaskStatus; createdAt: number; updatedAt: number; connectionCount: number; reusable: boolean }[]
+  }> {
+    this.enabled()
+    const canonical = await this.directory(cwd)
+    return this.exclusive(async () => {
+      const rows = this.records.filter(task => task.cwd === canonical).sort((a, b) => b.updatedAt - a.updatedAt || b.createdAt - a.createdAt).slice(0, Math.min(Math.max(limit, 1), 25))
+      const reusable = new Set<TaskStatus>(['finished', 'failed', 'cancelled'])
+      const activeTasks = this.records.filter(task => activeTask(task.status) || task.status === 'interrupted').length
+      return { cwd: canonical, connections: status.connections, maxConnections: status.maxConnections,
+        availableConnections: Math.max(status.maxConnections - status.connections, 0),
+        activeTasks, availableTasks: Math.max(status.maxConnections - activeTasks, 0),
+        sessions: rows.map(task => ({ taskId: task.id, sessionId: task.sessionId, cwd: task.cwd, client: task.client, status: task.status,
+          createdAt: task.createdAt, updatedAt: task.updatedAt, connectionCount: task.connectionId && status.ids.includes(task.connectionId) ? 1 : 0,
+          reusable: reusable.has(task.status) })) }
     })
   }
   overview(): { taskId: string; sessionId: string; cwd: string; client: string; connectionId: string; status: TaskStatus; updatedAt: number }[] {

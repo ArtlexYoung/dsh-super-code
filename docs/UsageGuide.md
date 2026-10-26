@@ -282,15 +282,16 @@ Maximum connections counts MCP protocol sessions (default 3, maximum 32) and is 
 
 ### 连接 Prompt · Connection Prompt
 
-1. 在连接页复制“连接 Prompt”，交给支持 Streamable HTTP MCP 的客户端配置连接。提示词包含页面当前地址、认证方式、五项工具与任务状态约定，不包含真实凭证，也不绑定特定客户端。
+1. 在连接页复制“连接 Prompt”，交给支持 Streamable HTTP MCP 的客户端配置连接。提示词包含页面当前地址、认证方式、六项工具与任务状态约定，不包含真实凭证，也不绑定特定客户端。连接后先调用 `dsh_sessions` 按工作目录查看最近对话、状态和连接额度，再由调用方选择传 `taskId` 复用历史或传 `newConversation: true` 新建；不会默认复用最新对话。
 2. 单独复制连接凭证，在客户端安全保存并配置为 `Authorization: Bearer <连接凭证>`。不要把实际凭证写进仓库或共享提示词。
 3. 保持提供连接的 DSH Web 服务或桌面应用运行。更换凭证后同步更新客户端；旧凭证立即失效。客户端是否允许由提示词自动配置 MCP，取决于客户端自身能力；也可以使用页面地址和认证方式手动配置。
 
-Copy **Connection Prompt** from the Connection tab and give it to a client that supports Streamable HTTP MCP. It contains the current URL, authentication method, five tools and task-state conventions, without an actual token or client-specific command. Copy the token separately and securely configure `Authorization: Bearer <connection token>` in the client. Keep the serving DSH process running, and update the client after token rotation. Whether a prompt can configure MCP automatically depends on the client; manual setup using the shown URL and authentication is also supported. Never put actual credentials in repository files or shared prompts.
+Copy **Connection Prompt** from the Connection tab and give it to a client that supports Streamable HTTP MCP. It contains the current URL, authentication method, six tools and task-state conventions, without an actual token or client-specific command. After connecting, call `dsh_sessions` for the working directory to see recent conversations, statuses and connection capacity. Let the caller choose whether to pass `taskId` to reuse history or `newConversation: true` to create a new root; `dsh_run` never defaults to the latest conversation. Copy the token separately and securely configure `Authorization: Bearer <connection token>` in the client. Keep the serving DSH process running, and update the client after token rotation. Whether a prompt can configure MCP automatically depends on the client; manual setup using the shown URL and authentication is also supported. Never put actual credentials in repository files or shared prompts.
 
 | 工具 / Tool | 用途 / Behavior |
 |---|---|
-| `dsh_run` | 新建独立的 Super Code 根会话并提交任务；相同 `requestId` 与相同输入不会重复提交，输入不同会报冲突。 / Create a separate Super Code root session. Retrying identical input with the same request ID does not dispatch again; conflicting input is rejected. |
+| `dsh_sessions` | 连接后按允许的工作目录返回最近对话、状态、可复用标记、每条对话的连接数，以及当前/最大/剩余连接数和任务并发占用。调用方据此选择复用或新建。 / After connecting, list recent conversations for an allowed working directory with status, reuse availability, per-conversation connection count, current/maximum/available connections, and active task capacity. Use it to choose reuse or a new root. |
+| `dsh_run` | 传 `taskId` 精确复用历史根会话；传 `newConversation: true` 明确新建，未传时为兼容旧客户端也新建。相同 `requestId` 与相同输入不会重复提交，输入不同会报冲突。 / Pass `taskId` to reuse an exact history entry; pass `newConversation: true` to make a new root explicit. Omitting both also creates a new root for backward compatibility. Retrying identical input with the same request ID does not dispatch again; conflicting input is rejected. |
 | `dsh_wait` | 提供任务 ID 时读取状态、输出、工作区观察及游标后的事件，最长等待 30 秒；省略任务 ID 时分页列出本服务持有的任务。 / Read task state, output, workspace observations and events after a cursor, with waits bounded to 30 seconds; omit the task ID to list owned tasks. |
 | `dsh_send` | 在同一根会话补充要求或明确继续，使用新的请求 ID；不会代替用户批准宿主权限。 / Queue a follow-up or explicitly continue the same root session with a new request ID. Does not approve host permissions. |
 | `dsh_request_directory` | 申请新增工作目录，由 DSH 用户明确批准；重复请求查询审批状态。 / Request additional directory access with explicit consent in DSH; repeat to poll the decision. |
@@ -316,9 +317,9 @@ Tasks use the host’s default model, Super Code preset and permissions without 
 
 `waiting_confirmation` requires action in DSH. `finished` means the root and observed managed descendants have settled; it does not certify acceptance. Results carry `acceptance: not-verified`. File information is a bounded Git workspace observation relative to the starting baseline, including pre-existing dirty files, and does not establish exclusive attribution. Non-Git directories, exceeded observation limits and read failures are reported as unavailable.
 
-等待超时或客户端断线不会取消执行。关闭连接停止接收请求，已接收任务继续由 DSH 管理。重启或热重载后不自动重发 prompt；可通过任务列表找回 ID，先观察会话，再明确继续。无法确认状态时保留 `interrupted` 或 `unavailable`，避免误报完成；未确认停止的任务会继续占用并发额度。
+等待超时或客户端断线不会取消执行。关闭连接停止接收请求，已接收任务继续由 DSH 管理。重启或热重载后不自动重发 prompt；可通过 `dsh_sessions` 或任务列表找回 ID，先观察会话，再明确继续。无法确认状态时保留 `interrupted` 或 `unavailable`，避免误报完成；未确认停止的任务会继续占用并发额度。
 
-Wait timeouts and client disconnections do not cancel execution. Disabling the connection stops accepting requests while DSH continues managing accepted work. Restart and hot reload never automatically replay prompts. Recover task IDs through the listing, inspect the session, then explicitly continue. Unconfirmed tasks remain interrupted or unavailable and retain their concurrency reservation.
+Wait timeouts and client disconnections do not cancel execution. Disabling the connection stops accepting requests while DSH continues managing accepted work. Restart and hot reload never automatically replay prompts. Recover task IDs through `dsh_sessions` or the task listing, inspect the session, then explicitly continue. Unconfirmed tasks remain interrupted or unavailable and retain their concurrency reservation.
 
 任务记录、配置和凭证保存在当前 profile 的 `super-code-connection` 目录中，目录权限为 0700，文件为 0600；同一配置目录只允许一个服务实例持有。当前上限为 200 个任务记录、每任务 128 个补充操作和最近 200 条状态事件，输出保留最后 12,000 个字符。达到记录上限会明确拒绝新任务，不会悄悄丢弃幂等记录并重跑。
 

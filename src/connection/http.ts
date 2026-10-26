@@ -15,16 +15,28 @@ const prompt = z.string().trim().min(1).max(32000)
 const cursor = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).default(0)
 const waitMs = z.number().int().min(0).max(30000).default(0)
 type RequestDirectory = (input: DirectoryApplication, client: string) => Promise<DirectoryRequest>
-export function delegationMcpServer(tasks: DelegatedTasks, signal: (id: string | number) => AbortSignal, connectionId = '', requestDirectory?: (input: DirectoryApplication) => Promise<DirectoryRequest>): McpServer {
+type ClientName = () => string
+type ConnectionStatus = () => { connections: number; maxConnections: number; ids: readonly string[] }
+export function delegationMcpServer(tasks: DelegatedTasks, signal: (id: string | number) => AbortSignal, connectionId = '', requestDirectory?: (input: DirectoryApplication) => Promise<DirectoryRequest>, clientName: ClientName = () => 'mcp', connectionStatus: ConnectionStatus = () => ({ connections: connectionId ? 1 : 0, maxConnections: 1, ids: connectionId ? [connectionId] : [] })): McpServer {
   const server = new McpServer({ name: 'dsh-super-code', version: pluginVersion }, { maxToolInputElements: 64 })
   const result = async (run: () => Promise<unknown>): Promise<{ content: { type: 'text'; text: string }[]; isError?: boolean }> => {
     try { return { content: [{ type: 'text', text: JSON.stringify(await run()) }] } }
     catch (error) { return { isError: true, content: [{ type: 'text', text: error instanceof ConnectionError ? error.code : 'operation-unavailable' }] } }
   }
-  server.registerTool('dsh_run', { description: 'Delegate a task to a new DSH Super Code root session. Use a stable requestId for retries; conflicts do not dispatch. DSH permissions apply, independently of the caller sandbox. A finished turn is not verified acceptance.',
-    inputSchema: z.object({ requestId: identity, cwd: z.string().min(1).max(4096), prompt, client: z.string().min(1).max(80).optional() }).strict(),
+  server.registerTool('dsh_sessions', { description: 'List recent DSH conversations for an allowed working directory before choosing dsh_run. Each entry includes taskId, status, reuse availability and linked connection count; the response also includes current/max/available MCP connections and active/available task slots. Pass a listed taskId to dsh_run to reuse that conversation, or set newConversation=true to create a new root.',
+    inputSchema: z.object({ cwd: z.string().min(1).max(4096), limit: z.number().int().min(1).max(25).default(10) }).strict(),
+    annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  }, input => result(() => tasks.sessions(input.cwd, input.limit, connectionStatus())))
+  server.registerTool('dsh_run', { description: 'Delegate to DSH Super Code. Call dsh_sessions first and let the user choose a history entry. Pass taskId to reuse an exact conversation, or set newConversation=true to explicitly create a new root session. If neither is provided, a new root is created for backward compatibility. Use a stable requestId for retries; conflicts do not dispatch. DSH permissions apply independently of the caller sandbox. A finished turn is not verified acceptance.',
+    inputSchema: z.object({ requestId: identity, cwd: z.string().min(1).max(4096), prompt, client: z.string().min(1).max(80).optional(), taskId: identity.optional(), newConversation: z.boolean().optional() }).strict(),
     annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true },
-  }, input => result(() => tasks.run({ ...input, connectionId })))
+  }, input => result(() => {
+    if (input.taskId) {
+      if (input.newConversation) throw new ConnectionError('conflicting-session-options')
+      return tasks.send({ taskId: input.taskId, requestId: input.requestId, cwd: input.cwd, prompt: input.prompt, connectionId })
+    }
+    return tasks.run({ requestId: input.requestId, cwd: input.cwd, prompt: input.prompt, client: input.client ?? clientName(), connectionId })
+  }))
   server.registerTool('dsh_wait', { description: 'Omit taskId to list service-owned tasks (cursor is a list offset). With taskId, read bounded output, workspace observations and events after cursor. Long-poll up to 30 seconds; timeout/disconnect never cancels execution. waiting_confirmation must be resolved in DSH. finished means execution ended, not acceptance verified.',
     inputSchema: z.object({ taskId: identity.optional(), cursor, waitMs }).strict(),
     annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
@@ -95,7 +107,9 @@ export class ConnectionHttp {
     if (this.clients.size >= maxConnections) throw new ConnectionError('connection-limit')
     const id = randomUUID(), now = Date.now(), lifetime = new AbortController(), calls = new Map<string | number, AbortController>()
     const mcp = delegationMcpServer(this.tasks, requestId => calls.get(requestId)?.signal ?? lifetime.signal, id,
-      input => { if (!this.requestDirectory) throw new ConnectionError('unavailable'); return this.requestDirectory(input, this.clients.get(id)?.name ?? 'MCP client') })
+      input => { if (!this.requestDirectory) throw new ConnectionError('unavailable'); return this.requestDirectory(input, this.clients.get(id)?.name ?? 'MCP client') },
+      () => this.clients.get(id)?.name ?? 'mcp',
+      () => ({ connections: this.clients.size, maxConnections, ids: [...this.clients.keys()] }))
     const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: () => id, enableJsonResponse: true,
       onsessionclosed: () => { void this.disconnect(id) } })
     const client: ClientConnection = { id, name: 'MCP client', version: '', connectedAt: now, lastSeen: now, mcp, transport, lifetime, calls, active: 0 }

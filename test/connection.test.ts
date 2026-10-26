@@ -99,6 +99,54 @@ test('task concurrency follows maximum connections and stored legacy limits are 
   } finally { await tasks.close(); await store.close() }
 })
 
+test('conversation listing exposes reusable history and connection capacity', async t => {
+  const f = await setup(t)
+  const first = await f.tasks.run({ ...request(f.cwd), client: 'reuse-client', connectionId: 'conn-1' })
+  f.host.observation = { status: 'finished', output: 'first result', detail: 'finished' }
+  await f.tasks.wait(first.taskId, first.cursor, 0)
+  const listed = await f.tasks.sessions(f.cwd, 10, { connections: 2, maxConnections: 3, ids: ['conn-1'] })
+  assert.equal(listed.connections, 2)
+  assert.equal(listed.maxConnections, 3)
+  assert.equal(listed.availableConnections, 1)
+  assert.equal(listed.activeTasks, 0)
+  assert.equal(listed.availableTasks, 3)
+  assert.deepEqual(listed.sessions[0], { taskId: first.taskId, sessionId: first.sessionId, cwd: listed.cwd, client: 'reuse-client', status: 'finished', createdAt: listed.sessions[0]!.createdAt, updatedAt: listed.sessions[0]!.updatedAt, connectionCount: 1, reusable: true })
+  const fresh = await f.tasks.run({ cwd: f.cwd, requestId: 'fresh-request', prompt: 'Start a separate task', client: 'reuse-client' })
+  assert.notEqual(fresh.taskId, first.taskId)
+  assert.equal(f.host.created.length, 2)
+})
+
+test('explicit reuse checks the requested directory and respects revoked access', async t => {
+  const f = await setup(t), other = join(f.cwd, 'other'); await mkdir(other)
+  const first = await f.tasks.run(request(f.cwd))
+  const follow = { taskId: first.taskId, requestId: 'follow', prompt: 'Continue' }
+  await assert.rejects(f.tasks.send({ ...follow, cwd: other }), /task-directory-mismatch/)
+  assert.equal(f.host.prompts.length, 1)
+  await f.tasks.send(follow)
+  await assert.rejects(f.tasks.send({ ...follow, cwd: other }), /task-directory-mismatch/)
+  f.config.allowedDirectories = []
+  await assert.rejects(f.tasks.send({ ...follow, requestId: 'revoked' }), /directory-not-allowed/)
+  assert.equal(f.host.prompts.length, 2)
+})
+
+test('recent conversations use activity order and uncertain sessions are not reusable', async t => {
+  const f = await setup(t), other = join(f.cwd, 'other'); await mkdir(other)
+  const first = await f.tasks.run(request(f.cwd))
+  f.host.observation = { status: 'finished', output: 'done', detail: 'finished' }
+  await f.tasks.wait(first.taskId, 0, 0)
+  const second = await f.tasks.run({ ...request(f.cwd), requestId: 'second' })
+  await f.tasks.wait(second.taskId, 0, 0)
+  const records = JSON.parse(await readFile(join(f.directory, 'store/tasks.json'), 'utf8'))
+  records[0].updatedAt = records[1].updatedAt + 1000
+  records[1].status = 'unavailable'
+  await f.store.saveTasks(records)
+  const restored = new DelegatedTasks(f.store, f.host, () => f.config); await restored.initialize()
+  const listing = await restored.sessions(f.cwd, 10, { connections: 0, maxConnections: 3, ids: [] })
+  assert.deepEqual(listing.sessions.map(row => row.taskId), [first.taskId, second.taskId])
+  assert.equal(listing.sessions[1]!.reusable, false)
+  await restored.close()
+})
+
 test('wait timeout and caller abort do not cancel, approval is distinct, cancel reaches terminal state', async t => {
   const f = await setup(t), first = await f.tasks.run(request(f.cwd))
   assert.equal((await f.tasks.wait(first.taskId, first.cursor, 10)).status, 'running')
@@ -182,13 +230,26 @@ test('real MCP HTTP client covers disabled default, authentication, tools, token
   const client = new Client({ name: 'integration-test', version: '1' })
   await client.connect(new StreamableHTTPClientTransport(new URL(url), { requestInit: { headers: { authorization: `Bearer ${token}` } } }))
   t.after(() => client.close())
-  assert.deepEqual((await client.listTools()).tools.map(tool => tool.name).sort(), ['dsh_cancel', 'dsh_request_directory', 'dsh_run', 'dsh_send', 'dsh_wait'])
+  assert.deepEqual((await client.listTools()).tools.map(tool => tool.name).sort(), ['dsh_cancel', 'dsh_request_directory', 'dsh_run', 'dsh_send', 'dsh_sessions', 'dsh_wait'])
   const run = await client.callTool({ name: 'dsh_run', arguments: { ...request(root) } })
   assert.equal(run.isError, undefined)
   const task = JSON.parse((run.content as any)[0].text)
   assert.equal(task.status, 'running')
   const retry = await client.callTool({ name: 'dsh_run', arguments: request(root) })
   assert.equal(JSON.parse((retry.content as any)[0].text).taskId, task.taskId)
+  const sessions = await client.callTool({ name: 'dsh_sessions', arguments: { cwd: root } })
+  const sessionList = JSON.parse((sessions.content as any)[0].text)
+  assert.equal(sessionList.connections, 1)
+  assert.equal(sessionList.maxConnections, configuration.maxConnections)
+  assert.equal(sessionList.activeTasks, 1)
+  assert.equal(sessionList.availableTasks, configuration.maxConnections - 1)
+  assert.equal(sessionList.sessions[0].taskId, task.taskId)
+  assert.equal(sessionList.sessions[0].reusable, false)
+  host.observation = { status: 'finished', output: 'done', detail: 'finished' }
+  const reused = await client.callTool({ name: 'dsh_run', arguments: { ...request(root), requestId: 'reuse-history', taskId: task.taskId, prompt: 'Continue this history' } })
+  assert.equal(JSON.parse((reused.content as any)[0].text).taskId, task.taskId)
+  assert.equal(host.created.length, 1)
+  assert.equal(host.prompts.length, 2)
   const unknown = await client.callTool({ name: 'dsh_wait', arguments: { taskId: 'unknown', waitMs: 0 } })
   assert.equal(unknown.isError, true)
   assert.equal((await service.rotate('1')).ok, true)

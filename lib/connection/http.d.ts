@@ -2,7 +2,13 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { DelegatedTasks } from './tasks.js';
 import type { DirectoryApplication, DirectoryRequest } from './directories.js';
 type RequestDirectory = (input: DirectoryApplication, client: string) => Promise<DirectoryRequest>;
-export declare function delegationMcpServer(tasks: DelegatedTasks, signal: (id: string | number) => AbortSignal, connectionId?: string, requestDirectory?: (input: DirectoryApplication) => Promise<DirectoryRequest>): McpServer;
+type ClientName = () => string;
+type ConnectionStatus = () => {
+    connections: number;
+    maxConnections: number;
+    ids: readonly string[];
+};
+export declare function delegationMcpServer(tasks: DelegatedTasks, signal: (id: string | number) => AbortSignal, connectionId?: string, requestDirectory?: (input: DirectoryApplication) => Promise<DirectoryRequest>, clientName?: ClientName, connectionStatus?: ConnectionStatus): McpServer;
 export interface ConnectedClient {
     id: string;
     name: string;

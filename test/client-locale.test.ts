@@ -447,6 +447,7 @@ test('memory drafts, failed saves, hidden completion, and delete cancellation ha
     const prompt = dictionaries[language]!['connection.prompt']!
     assert.ok(prompt.includes('{url}'))
     for (const tool of ['dsh_run', 'dsh_wait', 'dsh_send', 'dsh_cancel']) assert.ok(prompt.includes(tool))
+    assert.ok(prompt.includes('dsh_sessions'))
     assert.equal(/codex/i.test(prompt), false)
   }
  })

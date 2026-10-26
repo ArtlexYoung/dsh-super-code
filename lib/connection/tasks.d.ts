@@ -27,6 +27,7 @@ export declare class DelegatedTasks {
     send(input: {
         taskId: string;
         requestId: string;
+        cwd?: string;
         prompt: string;
         connectionId?: string;
     }): Promise<TaskView>;
@@ -44,6 +45,29 @@ export declare class DelegatedTasks {
             updatedAt: number;
         }[];
         nextCursor: number | false;
+    }>;
+    sessions(cwd: string, limit: number, status: {
+        connections: number;
+        maxConnections: number;
+        ids: readonly string[];
+    }): Promise<{
+        cwd: string;
+        connections: number;
+        maxConnections: number;
+        availableConnections: number;
+        activeTasks: number;
+        availableTasks: number;
+        sessions: {
+            taskId: string;
+            sessionId: string;
+            cwd: string;
+            client: string;
+            status: TaskStatus;
+            createdAt: number;
+            updatedAt: number;
+            connectionCount: number;
+            reusable: boolean;
+        }[];
     }>;
     overview(): {
         taskId: string;

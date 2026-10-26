@@ -292,7 +292,47 @@ const zh = {
   'feedback.agentsPartial': '任务条目超过显示上限，可在动作执行中查看其他 Agent。',
   'status.blocked': '受阻',
 
-  'settings.presetTab': '预设状态', 'settings.contextTab': '上下文配置', 'settings.tabs': 'Super Code 配置',
+  'settings.homeTab': '首页', 'settings.presetTab': '预设配置', 'settings.protectionTab': '删除保护',
+  "connection.requestTitle": "请求访问工作目录",
+  "connection.requestHint": "外部 MCP 客户端申请访问以下目录及其子目录。同意后会加入允许列表，后续委派仍使用 DSH 的权限设置。",
+  "connection.requestClient": "请求客户端",
+  "connection.requestPath": "目录",
+  "connection.requestReason": "申请理由",
+  "connection.requestError": "操作失败，目录可能已变化或设置无法保存。请重试或拒绝。",
+  "connection.approveDirectory": "允许访问",
+  "connection.rejectDirectory": "拒绝",
+  "connection.error.directory-limit": "最多允许选择 32 个目录。",
+  "connection.error.picker-unavailable": "无法打开目录选择器，请重新读取后重试。",
+  'home.protection': '保护', 'home.extensions': '扩展', 'home.configure': '配置', 'home.managePreset': '配置预设',
+  'home.connectedSessions': '正在连接的对话', 'home.historySessions': '历史对话',
+  'home.connections': '已连接客户端', 'home.noConnections': '暂无客户端连接', 'home.sessions': '关联会话', 'home.noSessions': '暂无关联会话',
+  'home.disconnect': '断开', 'home.openSession': '打开会话', 'home.connected': '已连接', 'home.enabled': '已开启', 'home.disabled': '已关闭',
+  'home.mcp': 'MCP 服务', 'home.connectionCount': '{count} / {max} 个连接', 'home.setupConnection': '配置并启用',
+  'home.lastSeen': '最近活动', 'home.refresh': '刷新概览', 'home.error': '状态读取或操作失败，请刷新后重试。',
+  'connection.maxConnections': '最大连接数', 'connection.connectionsHint': '按 MCP 客户端会话计数。断开或空闲 10 分钟后释放连接；已接收任务继续执行。',
+  'connection.addDirectory': '添加目录', 'connection.noDirectories': '暂无目录，请通过文件管理器添加。',
+  'connection.workspaceDirectory': 'DSH 工作区', 'connection.customDirectory': '添加的目录', 'connection.directoryUnavailable': '目录不可用',
+  'connection.removeDirectory': '移除目录', 'connection.directoryRefresh': '刷新目录',
+  'connection.directoryBrowser': '选择目录', 'connection.selectDirectory': '选择此目录', 'connection.parentDirectory': '上一级',
+  'connection.emptyDirectory': '没有子目录', 'connection.browserError': '无法读取此目录，请重试或返回上一级。',
+  'connection.directoryLimit': '最多允许选择 32 个目录。',
+  'taskStatus.starting': '正在启动', 'taskStatus.running': '执行中', 'taskStatus.waiting_confirmation': '等待确认',
+  'taskStatus.cancelling': '正在取消', 'taskStatus.finished': '已结束', 'taskStatus.failed': '失败',
+  'taskStatus.cancelled': '已取消', 'taskStatus.interrupted': '已中断', 'taskStatus.unavailable': '状态不可用',
+  'settings.connectionTab': '连接', 'connection.title': '连接', 'connection.enabled': '启用 MCP 连接',
+  'connection.state.disabled': '连接已关闭', 'connection.state.listening': '正在监听', 'connection.state.error': '连接不可用', 'connection.state.loading': '正在读取…',
+  'connection.scope': '允许外部客户端委派任务到当前 DSH。仅监听本机，使用当前模型、Super Code 预设和宿主权限。关闭连接不会停止已接收的任务。',
+  'connection.autosave': '修改后自动保存', 'connection.saving': '正在保存…',
+  'connection.port': '本机端口', 'connection.directories': '允许的工作目录',
+  'connection.directoriesHint': '勾选允许的目录，包含其子目录。每次打开设置会同步 DSH 工作区，保留已保存的选择。',
+  'connection.save': '保存连接', 'connection.cancel': '取消修改', 'connection.reload': '重新读取', 'connection.saved': '已保存连接设置。',
+  'connection.client': '连接 Prompt', 'connection.copyCommand': '复制连接 Prompt', 'connection.showToken': '显示凭证', 'connection.hideToken': '隐藏凭证', 'connection.copyToken': '复制凭证', 'connection.token': '连接凭证', 'connection.rotate': '更换凭证',
+  'connection.prompt': '请配置并连接 DSH Super Code MCP 服务：\n地址：{url}\n传输：Streamable HTTP\n认证：Authorization: Bearer <连接凭证>，凭证由我单独提供，请妥善保存在客户端。\n连接后使用 dsh_run 委派任务、dsh_wait 查询状态或找回任务、dsh_send 补充要求、dsh_cancel 取消任务。使用稳定的 requestId 避免重复提交，只使用允许的绝对工作目录；新增目录请用 dsh_request_directory 提交申请，并等待用户在 DSH 中同意。权限确认需在 DSH 中处理；finished 仅表示执行结束，仍需验证结果。',
+  'connection.tokenHint': '请将凭证安全保存在客户端。更换凭证后，旧凭证立即失效。',
+  'connection.rotated': '已更换凭证，请更新客户端。', 'connection.copied': '已复制。',
+  'connection.error.unavailable': '连接服务尚未就绪或当前配置目录不可写，请重新读取。', 'connection.error.invalid': '请检查端口、最大连接数和目录。启用连接至少需要一个有效目录。',
+  'connection.error.conflict': '连接设置已在别处修改。草稿已保留，请重新读取。', 'connection.error.save-failed': '保存失败，草稿已保留。', 'connection.error.port-unavailable': '端口被占用或无法监听。请更换端口并保存。', 'connection.error.storage-unavailable': '任务状态保存失败，请检查配置目录。', 'connection.error.clipboard': '复制失败，请手动复制。',
+  'settings.contextTab': '上下文配置', 'settings.tabs': 'Super Code 配置',
   'budget.common': '通用预算', 'budget.superCode': 'Super Code 专属预算',
   'budget.applyToOfficialPresets': '同时应用到官方预设', 'budget.officialHint': '开启后，通用预算也用于标准、PTC、极简和创造模式；不包含下方的 Super Code 专属预算。',
   'budget.superCodeHint': '仅用于 Super Code 的任务记录和任务记忆，始终不影响官方预设。',
@@ -426,7 +466,47 @@ const en = {
   'feedback.agentsPartial': 'The task list reached its limit; view other Agents in the execution tree.',
   'status.blocked': 'Blocked',
 
-  'settings.presetTab': 'Preset status', 'settings.contextTab': 'Context settings', 'settings.tabs': 'Super Code settings',
+  'settings.homeTab': 'Home', 'settings.presetTab': 'Preset configuration', 'settings.protectionTab': 'Deletion protection',
+  "connection.requestTitle": "Working directory access request",
+  "connection.requestHint": "An external MCP client requests access to this directory and its descendants. Approval adds it to the allowlist. DSH permissions still apply to delegated tasks.",
+  "connection.requestClient": "Requesting client",
+  "connection.requestPath": "Directory",
+  "connection.requestReason": "Reason",
+  "connection.requestError": "Could not save this decision. The directory may have changed or settings may be unwritable. Retry or reject.",
+  "connection.approveDirectory": "Allow access",
+  "connection.rejectDirectory": "Reject",
+  "connection.error.directory-limit": "Select up to 32 directories.",
+  "connection.error.picker-unavailable": "Could not open the directory picker. Reload and try again.",
+  'home.protection': 'Protection', 'home.extensions': 'Extensions', 'home.configure': 'Configure', 'home.managePreset': 'Configure preset',
+  'home.connectedSessions': 'Connected conversations', 'home.historySessions': 'Past conversations',
+  'home.connections': 'Connected clients', 'home.noConnections': 'No clients connected', 'home.sessions': 'Linked sessions', 'home.noSessions': 'No linked sessions',
+  'home.disconnect': 'Disconnect', 'home.openSession': 'Open session', 'home.connected': 'Connected', 'home.enabled': 'On', 'home.disabled': 'Off',
+  'home.mcp': 'MCP service', 'home.connectionCount': '{count} / {max} connections', 'home.setupConnection': 'Set up connection',
+  'home.lastSeen': 'Last activity', 'home.refresh': 'Refresh overview', 'home.error': 'Could not read or update the status. Refresh and try again.',
+  'connection.maxConnections': 'Maximum connections', 'connection.connectionsHint': 'Counts MCP client sessions. Disconnect or 10 minutes of inactivity releases a connection; accepted tasks continue.',
+  'connection.addDirectory': 'Add directory', 'connection.noDirectories': 'No directories. Add one with the directory picker.',
+  'connection.workspaceDirectory': 'DSH workspace', 'connection.customDirectory': 'Added directory', 'connection.directoryUnavailable': 'Directory unavailable',
+  'connection.removeDirectory': 'Remove directory', 'connection.directoryRefresh': 'Refresh directories',
+  'connection.directoryBrowser': 'Choose directory', 'connection.selectDirectory': 'Select this directory', 'connection.parentDirectory': 'Parent directory',
+  'connection.emptyDirectory': 'No subdirectories', 'connection.browserError': 'Could not read this directory. Retry or return to its parent.',
+  'connection.directoryLimit': 'Select up to 32 directories.',
+  'taskStatus.starting': 'Starting', 'taskStatus.running': 'Running', 'taskStatus.waiting_confirmation': 'Waiting for confirmation',
+  'taskStatus.cancelling': 'Cancelling', 'taskStatus.finished': 'Finished', 'taskStatus.failed': 'Failed',
+  'taskStatus.cancelled': 'Cancelled', 'taskStatus.interrupted': 'Interrupted', 'taskStatus.unavailable': 'Unavailable',
+  'settings.connectionTab': 'Connection', 'connection.title': 'Connection', 'connection.enabled': 'Enable MCP connection',
+  'connection.state.disabled': 'Connection off', 'connection.state.listening': 'Listening', 'connection.state.error': 'Connection unavailable', 'connection.state.loading': 'Loading…',
+  'connection.scope': 'Let external clients delegate tasks to this DSH host using its model, Super Code preset and permissions. Listens on localhost only. Disabling the connection does not stop accepted tasks.',
+  'connection.autosave': 'Changes save automatically', 'connection.saving': 'Saving…',
+  'connection.port': 'Local port', 'connection.directories': 'Allowed working directories',
+  'connection.directoriesHint': 'Select allowed directories, including their subdirectories. Reopening settings refreshes DSH workspaces and retains saved selections.',
+  'connection.save': 'Save connection', 'connection.cancel': 'Cancel changes', 'connection.reload': 'Reload', 'connection.saved': 'Connection settings saved.',
+  'connection.client': 'Connection Prompt', 'connection.copyCommand': 'Copy connection prompt', 'connection.showToken': 'Show token', 'connection.hideToken': 'Hide token', 'connection.copyToken': 'Copy token', 'connection.token': 'Connection token', 'connection.rotate': 'Rotate token',
+  'connection.prompt': 'Configure and connect to the DSH Super Code MCP service:\nURL: {url}\nTransport: Streamable HTTP\nAuthentication: Authorization: Bearer <connection token>. I will supply the token separately; store it securely in the client.\nUse dsh_run to delegate tasks, dsh_wait to observe or recover tasks, dsh_send for follow-ups, and dsh_cancel to cancel. Use stable requestId values to avoid duplicate submissions and only allowed absolute working directories. Request additional access with dsh_request_directory and wait for user approval in DSH. Resolve permissions in DSH. A finished task still requires result verification.',
+  'connection.tokenHint': 'Store the token securely in the client. Rotation invalidates the previous token immediately.',
+  'connection.rotated': 'Token rotated. Update your client.', 'connection.copied': 'Copied.',
+  'connection.error.unavailable': 'The service is not ready or the profile directory is not writable. Reload to retry.', 'connection.error.invalid': 'Check the port, maximum connections and directories. Enabling requires at least one valid directory.',
+  'connection.error.conflict': 'Connection settings changed elsewhere. Your draft is retained; reload to continue.', 'connection.error.save-failed': 'Save failed. Your draft is retained.', 'connection.error.port-unavailable': 'The port is occupied or cannot be opened. Save with another port.', 'connection.error.storage-unavailable': 'Task state could not be saved. Check the profile directory.', 'connection.error.clipboard': 'Copy failed. Copy the text manually.',
+  'settings.contextTab': 'Context settings', 'settings.tabs': 'Super Code settings',
   'budget.common': 'Common budgets', 'budget.superCode': 'Super Code budgets',
   'budget.applyToOfficialPresets': 'Also apply to official presets', 'budget.officialHint': 'Apply common budgets to Standard, PTC, Minimal and Create. Super Code task and memory limits below remain exclusive to Super Code.',
   'budget.superCodeHint': 'Task records and task memory for Super Code. These limits never affect official presets.',
@@ -1956,6 +2036,14 @@ const budgetRemoteContribution = {
   })),
 }
 
+const connectionRemoteContribution = {
+  package: 'dsh-super-code', descriptors: ['readConfig', 'saveConfig', 'revealToken', 'rotateToken', 'overview', 'disconnectClient', 'directories', 'pickDirectory', 'browseDirectory', 'pendingDirectories', 'resolveDirectory'].map(method => ({
+    id: `dsh-super-code:superCodeConnection/${method}`, service: 'superCodeConnection', namespace: 'superCodeConnection', method, invocation: { kind: 'direct' },
+    parameters: (method === 'saveConfig' ? ['content', 'expected'] : method === 'rotateToken' ? ['expected'] : method === 'resolveDirectory' ? ['id', 'decision'] : method === 'disconnectClient' ? ['id'] : method === 'browseDirectory' ? ['path'] : [])
+      .map(name => ({ name, wire: name, source: 'json', codec: remoteStringCodec })), result: { mode: 'src-json' },
+  })),
+}
+
 const budgetFields = [
   { key: 'thresholdRatio', group: 'context', factor: 0.01, min: 1, max: 100, step: 'any' },
   { key: 'retainRatio', group: 'context', factor: 0.01, min: 0, max: 100, step: 'any' },
@@ -2009,7 +2097,7 @@ function budgetConfiguration(draft) {
   return { ok: true, configuration: config }
 }
 
-function BudgetSettings({ api, t, active }) {
+function BudgetSettings({ api, t, active, section = 'context', onSaved = () => {} }) {
   const [snapshot, setSnapshot] = useState(null)
   const [draft, setDraft] = useState(() => budgetDraft({})), [busy, setBusy] = useState(false)
   const [error, setError] = useState(''), [notice, setNotice] = useState('')
@@ -2026,24 +2114,33 @@ function BudgetSettings({ api, t, active }) {
     finally { pending.current = false; if (alive.current) setBusy(false) }
   }
   useEffect(() => { alive.current = true; return () => { alive.current = false } }, [api])
-  useEffect(() => { if (active && !snapshot && !error) read() }, [api, active])
+  useEffect(() => { if (active && (!snapshot || !dirty) && !error) read() }, [api, active])
   const save = async reset => {
     if (pending.current || !snapshot?.writable) return
-    const parsed = reset ? { ok: true } : budgetConfiguration(draft)
+    const protection = section === 'protection'
+    const parsed = budgetConfiguration(draft)
+    if (parsed.ok) {
+      const selected = protection
+        ? { ...snapshot.configuration, deletionProtection: reset ? 'relaxed' : draft.deletionProtection, deletionProtectionForOfficialPresets: reset ? false : draft.deletionProtectionForOfficialPresets }
+        : { ...(reset ? {} : parsed.configuration), deletionProtection: snapshot.configuration.deletionProtection, deletionProtectionForOfficialPresets: snapshot.configuration.deletionProtectionForOfficialPresets }
+      parsed.configuration = selected
+    }
     if (!parsed.ok) { setError(parsed.error); setNotice(''); return }
     pending.current = true; setBusy(true); setError(''); setNotice('')
     try {
-      const response = reset ? await api.resetConfig(String(snapshot.revision))
-        : await api.saveConfig(JSON.stringify(parsed.configuration), String(snapshot.revision))
+      const response = await api.saveConfig(JSON.stringify(parsed.configuration), String(snapshot.revision))
       if (!response.ok) throw new Error('Remote unavailable')
       if (!alive.current) return
-      if (response.value.ok) { receive(response.value.snapshot); setNotice(reset ? 'resetDone' : 'saved') }
+      if (response.value.ok) { receive(response.value.snapshot); onSaved(); setNotice(reset ? 'resetDone' : 'saved') }
       else setError(response.value.error)
     } catch { if (alive.current) setError('save-failed') }
     finally { pending.current = false; if (alive.current) setBusy(false) }
   }
   const disabled = busy || !snapshot?.writable
-  const dirty = snapshot && JSON.stringify(draft) !== JSON.stringify(budgetDraft(snapshot.configuration))
+  const sectionDraft = value => section === 'protection'
+    ? [value.deletionProtection, value.deletionProtectionForOfficialPresets]
+    : Object.fromEntries(Object.entries(value).filter(([key]) => !key.startsWith('deletionProtection')))
+  const dirty = snapshot && JSON.stringify(sectionDraft(draft)) !== JSON.stringify(sectionDraft(budgetDraft(snapshot.configuration)))
   const edit = (key, value) => { setDraft(current => ({ ...current, [key]: value })); setError(''); setNotice('') }
   const defaultLabel = (key, field) => {
     const value = field?.root ? snapshot?.defaults?.[key] : snapshot?.defaults?.budgets?.[key]
@@ -2060,8 +2157,8 @@ function BudgetSettings({ api, t, active }) {
         onChange: event => edit(field.key, event.target.value) }))
   })
   return React.createElement('section', { className: 'dsh-super-code-budgets' },
-    React.createElement('form', { 'aria-label': t('budget.title'), 'aria-busy': busy, onSubmit: event => { event.preventDefault(); save(false) } },
-      React.createElement('section', { className: 'dsh-super-code-budget-group', 'aria-labelledby': 'super-code-deletion-title' },
+    React.createElement('form', { 'aria-label': t(section === 'protection' ? 'delete.title' : 'budget.title'), 'aria-busy': busy, onSubmit: event => { event.preventDefault(); save(false) } },
+      section === 'protection' && React.createElement('section', { className: 'dsh-super-code-budget-group', 'aria-labelledby': 'super-code-deletion-title' },
         React.createElement('h3', { id: 'super-code-deletion-title' }, t('delete.title')),
         React.createElement('div', { className: 'dsh-super-code-settings-field' },
           React.createElement('label', { id: 'super-code-deletion-mode-label' }, t('delete.mode')),
@@ -2074,6 +2171,7 @@ function BudgetSettings({ api, t, active }) {
             'aria-describedby': 'super-code-deletion-official-hint', onChange: event => edit('deletionProtectionForOfficialPresets', event.target.checked) }),
           React.createElement('span', null, t('delete.official'))),
         React.createElement('p', { id: 'super-code-deletion-official-hint', className: 'dsh-super-code-budget-hint' }, t('delete.officialHint'))),
+      section !== 'protection' && React.createElement(React.Fragment, null,
       React.createElement('p', { className: 'dsh-super-code-budget-hint' }, t('budget.scope')),
       React.createElement('section', { className: 'dsh-super-code-budget-group', 'aria-labelledby': 'super-code-common-title' },
       React.createElement('h3', { id: 'super-code-common-title' }, t('budget.common')),
@@ -2101,7 +2199,7 @@ function BudgetSettings({ api, t, active }) {
       React.createElement('section', { className: 'dsh-super-code-budget-group dsh-super-code-budget-exclusive', 'aria-labelledby': 'super-code-exclusive-title' },
         React.createElement('h3', { id: 'super-code-exclusive-title' }, t('budget.superCode')),
         React.createElement('p', { className: 'dsh-super-code-budget-hint' }, t('budget.superCodeHint')),
-        React.createElement('div', { className: 'dsh-super-code-budget-grid' }, fields('superCode'))),
+        React.createElement('div', { className: 'dsh-super-code-budget-grid' }, fields('superCode')))),
       !busy && snapshot && !snapshot.writable && React.createElement('small', null, t('budget.error.read-only')),
       error && React.createElement('p', { role: 'alert' }, t(`budget.error.${error}`)),
       notice && React.createElement('p', { role: 'status', className: 'dsh-super-code-budget-hint' }, t(`budget.${notice}`)),
@@ -2151,8 +2249,364 @@ function synchronizePresetDisplay(api, locale, reload, onError, preferenceScope)
   return () => { disposed = true; unsubscribe(); unsubscribePreference() }
 }
 
-function PresetSettings({ api, budgetApi, t }) {
-  const [tab, setTab] = useState('preset')
+function connectionDraft(config) {
+  return { enabled: config.enabled, port: String(config.port), allowedDirectories: [...config.allowedDirectories], knownDirectories: [...config.knownDirectories ?? []],
+    maxConcurrent: config.maxConnections ?? 3, maxConnections: String(config.maxConnections ?? 3), directoriesConfigured: config.directoriesConfigured ?? false }
+}
+function connectionConfiguration(draft) {
+  const port = Number(draft.port), maxConnections = Number(draft.maxConnections)
+  const allowedDirectories = [...new Set(draft.allowedDirectories)]
+  if (typeof draft.enabled !== 'boolean' || !Number.isInteger(port) || port < 1024 || port > 65535 || !Number.isInteger(maxConnections) || maxConnections < 1 || maxConnections > 32 || allowedDirectories.length > 32 || allowedDirectories.some(path => typeof path !== 'string' || !path) || (draft.enabled && !allowedDirectories.length)) return { ok: false }
+  return { ok: true, configuration: { enabled: draft.enabled, port, allowedDirectories, maxConcurrent: maxConnections, maxConnections, directoriesConfigured: true, knownDirectories: draft.knownDirectories } }
+}
+/** Serialize writes and retain newer edits while an earlier revision is being saved. */
+function createConnectionAutosave(api) {
+  let state = { snapshot: false, draft: connectionDraft({ enabled: false, port: 23457, allowedDirectories: [] }), saving: false, error: '', notice: '', saveCount: 0 }
+  let version = 0, acknowledged = 0, blocked = -1, timer = false, running = false
+  const listeners = new Set()
+  const update = patch => { state = { ...state, ...patch }; for (const listener of listeners) listener() }
+  const flush = () => {
+    if (timer) { clearTimeout(timer); timer = false }
+    if (running) return running
+    if (version === acknowledged || version === blocked || !state.snapshot) return Promise.resolve()
+    running = (async () => {
+      update({ saving: true, error: '', notice: '' })
+      try {
+        while (acknowledged < version) {
+          const sent = version, parsed = connectionConfiguration(state.draft)
+          if (!parsed.ok) { blocked = version; update({ error: 'invalid' }); break }
+          const result = await api.saveConfig(JSON.stringify(parsed.configuration), String(state.snapshot.revision))
+          if (!result.ok) throw new Error('Remote unavailable')
+          if (!result.value.ok) { blocked = version; update({ error: result.value.error }); break }
+          acknowledged = sent
+          update({ snapshot: result.value.snapshot, saveCount: state.saveCount + 1,
+            ...(sent === version ? { draft: connectionDraft(result.value.snapshot.configuration), notice: 'saved' } : {}) })
+        }
+      } catch { blocked = version; update({ error: 'save-failed' }) }
+      finally { update({ saving: false }) }
+    })().finally(() => { running = false })
+    return running
+  }
+  return {
+    getSnapshot: () => state,
+    subscribe: listener => { listeners.add(listener); return () => listeners.delete(listener) },
+    hasChanges: () => version !== acknowledged || state.saving,
+    receive: (snapshot, draft = connectionDraft(snapshot.configuration)) => {
+      acknowledged = ++version
+      update({ snapshot, draft, error: '', notice: '' })
+    },
+    revision: snapshot => update({ snapshot }),
+    change: (patch, delay = 0) => {
+      version++
+      update({ draft: { ...state.draft, ...patch }, error: '', notice: '' })
+      if (timer) { clearTimeout(timer); timer = false }
+      if (delay) timer = setTimeout(() => { timer = false; void flush() }, delay)
+      else void flush()
+    },
+    flush,
+  }
+}
+function ConnectionSwitch({ checked, disabled, onChange, children }) {
+  return React.createElement('label', { className: 'dsh-super-code-connection-switch' },
+    React.createElement('input', { type: 'checkbox', role: 'switch', checked, disabled, onChange: event => onChange(event.target.checked) }),
+    React.createElement('span', { className: 'dsh-super-code-connection-track', 'aria-hidden': true }, React.createElement('i')), children)
+}
+function DirectoryBrowser({ api, t, onSelect, onClose }) {
+  const [listing, setListing] = useState(null), [busy, setBusy] = useState(false), [error, setError] = useState(false)
+  const dialog = useRef(null), generation = useRef(0), lastPath = useRef('')
+  const browse = async path => {
+    const version = ++generation.current; lastPath.current = path; setBusy(true); setError(false)
+    try { const result = await api.browseDirectory(path); if (!result.ok) throw new Error(); if (version === generation.current) setListing(result.value) }
+    catch { if (version === generation.current) setError(true) }
+    finally { if (version === generation.current) setBusy(false) }
+  }
+  useEffect(() => {
+    const element = dialog.current; element.showModal(); browse('')
+    return () => { generation.current++; if (element.open) element.close() }
+  }, [api])
+  return React.createElement('dialog', { ref: dialog, className: 'dsh-super-code-confirm', 'aria-labelledby': 'super-code-directory-title',
+    onCancel: event => { event.preventDefault(); event.stopPropagation(); onClose() }, onKeyDown: event => event.stopPropagation() },
+    React.createElement('h3', { id: 'super-code-directory-title' }, t('connection.directoryBrowser')),
+    React.createElement('nav', { className: 'dsh-super-code-directory-crumbs', 'aria-label': t('connection.directoryBrowser') },
+      listing?.crumbs.map((row, index) => React.createElement(ActionButton, { key: `${row.path}-${index}`, type: 'button', disabled: busy, onClick: () => browse(row.path) }, row.name || row.path))),
+    listing && React.createElement('code', { className: 'dsh-super-code-directory-path' }, listing.path),
+    React.createElement('div', { className: 'dsh-super-code-directory-browser', 'aria-busy': busy },
+      listing && listing.crumbs.length > 1 && React.createElement(ActionButton, { type: 'button', disabled: busy, onClick: () => browse(listing.crumbs[listing.crumbs.length - 2].path) }, '↑ ', t('connection.parentDirectory')),
+      listing?.entries.map(row => React.createElement(ActionButton, { key: row.path, type: 'button', disabled: busy, onClick: () => browse(row.path) }, React.createElement(Glyph, { type: 'folder' }), row.name)),
+      listing && !listing.entries.length && React.createElement('p', null, t('connection.emptyDirectory'))),
+    error && React.createElement('p', { role: 'alert' }, t('connection.browserError')),
+    React.createElement('div', { className: 'dsh-super-code-confirm-actions' },
+      error && React.createElement(ActionButton, { type: 'button', disabled: busy, onClick: () => browse(lastPath.current) }, t('connection.reload')),
+      React.createElement(ActionButton, { type: 'button', onClick: onClose }, t('preset.cancel')),
+      React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-primary-button', disabled: busy || error || !listing,
+        onClick: () => onSelect(listing.path) }, t('connection.selectDirectory'))))
+}
+function connectionSessions(overview) {
+  const online = new Set(overview.connections.map(row => row.id)), connected = [], history = []
+  for (const row of overview.sessions) (row.connectionId && online.has(row.connectionId) ? connected : history).push(row)
+  return { connected, history }
+}
+function ConnectionActivity({ api, t, active, openSession }) {
+  const [overview, setOverview] = useState(null), [busy, setBusy] = useState(false), [error, setError] = useState(false)
+  const alive = useRef(false), pending = useRef(false)
+  const load = async () => {
+    if (pending.current) return
+    pending.current = true
+    try { const result = await api.overview(); if (!result.ok) throw new Error(); if (alive.current) { setOverview(result.value); setError(false) } }
+    catch { if (alive.current) setError(true) }
+    finally { pending.current = false }
+  }
+  useEffect(() => { alive.current = true; return () => { alive.current = false } }, [api])
+  useEffect(() => { if (!active) return; load(); const timer = setInterval(load, 2000); return () => clearInterval(timer) }, [active, api])
+  const disconnect = async id => {
+    if (pending.current) return
+    pending.current = true; setBusy(true)
+    try { const result = await api.disconnectClient(id); if (!result.ok) throw new Error() }
+    catch { if (alive.current) setError(true); return }
+    finally { pending.current = false; if (alive.current) setBusy(false) }
+    if (alive.current) load()
+  }
+  const groups = overview ? connectionSessions(overview) : { connected: [], history: [] }
+  return React.createElement('section', { className: 'dsh-super-code-connection-activity', 'aria-label': t('home.sessions') },
+    React.createElement('h3', null, t('home.connections')),
+    !overview ? React.createElement('p', { role: 'status' }, t('connection.state.loading'))
+      : overview.connections.length ? React.createElement('ul', { className: 'dsh-super-code-connection-list' }, overview.connections.map(row => React.createElement('li', { key: row.id },
+        React.createElement('span', null, React.createElement('strong', null, row.name), React.createElement('small', null, row.version, ' · ', t('home.lastSeen'), ' ', new Date(row.lastSeen).toLocaleTimeString())),
+        React.createElement(ActionButton, { type: 'button', disabled: busy, onClick: () => disconnect(row.id) }, t('home.disconnect'))))) : React.createElement('p', null, t('home.noConnections')),
+    React.createElement('h3', null, t('home.sessions')),
+    ...['connected', 'history'].map(kind => React.createElement('div', { key: kind, 'data-session-group': kind },
+      React.createElement('h4', null, t(kind === 'connected' ? 'home.connectedSessions' : 'home.historySessions'), ' · ', overview ? groups[kind].length : '—'),
+      groups[kind].length ? React.createElement('ul', { className: 'dsh-super-code-connection-list' }, groups[kind].map(row => React.createElement('li', { key: row.taskId },
+        React.createElement('span', null, React.createElement('strong', null, row.client || row.sessionId), React.createElement('small', null, t(`taskStatus.${row.status}`), ' · ', row.cwd), React.createElement('code', null, row.sessionId)),
+        React.createElement(ActionButton, { type: 'button', onClick: () => openSession(row.sessionId) }, t('home.openSession'))))) : overview && React.createElement('p', null, t('home.noSessions')))),
+    error && React.createElement('p', { role: 'alert' }, t('home.error')))
+}
+
+function ConnectionSettings({ api, t, active, openSession, onSaved = () => {} }) {
+  const editor = useMemo(() => createConnectionAutosave(api), [api])
+  const editing = useSyncExternalStore(editor.subscribe, editor.getSnapshot, editor.getSnapshot)
+  const { snapshot, draft, saving } = editing
+  const [catalog, setCatalog] = useState({ items: [], picker: 'unavailable' }), [custom, setCustom] = useState([]), [browser, setBrowser] = useState(false)
+  const [busy, setBusy] = useState(false), [error, setError] = useState(''), [notice, setNotice] = useState(''), [token, setToken] = useState('')
+  const alive = useRef(false), pending = useRef(false), visible = useRef(active)
+  visible.current = active
+  const dirty = editor.hasChanges()
+  const receive = (value, directories = catalog) => {
+    const next = connectionDraft(value.configuration)
+    if (!next.directoriesConfigured && !next.allowedDirectories.length) next.allowedDirectories = directories.items.filter(row => row.workspace && row.available).slice(0, 32).map(row => row.path)
+    editor.receive(value, next)
+  }
+  const load = async (discard = false) => {
+    if (pending.current || (discard && editor.getSnapshot().saving)) return
+    pending.current = true; setBusy(true); setError('')
+    try {
+      const [config, directories, credential] = await Promise.all([api.readConfig(), api.directories(), api.revealToken()])
+      if (!config.ok || !directories.ok || !credential.ok) throw new Error()
+      if (!alive.current) return
+      setCatalog(directories.value)
+      if (discard || !dirty) receive(config.value, directories.value)
+      if (visible.current) setToken(credential.value.token)
+    } catch { if (alive.current) setError('unavailable') }
+    finally { pending.current = false; if (alive.current) setBusy(false) }
+  }
+  const action = async kind => {
+    if (pending.current) return
+    pending.current = true; setBusy(true); setError(''); setNotice('')
+    try {
+      const response = kind === 'rotate' ? await api.rotateToken(String(snapshot.revision)) : await api.revealToken()
+      if (!response.ok) throw new Error()
+      if (!alive.current) return
+      if (kind === 'token') { if (visible.current) setToken(response.value.token) }
+      else if (response.value.ok) {
+        if (kind === 'rotate') {
+          editor.revision(response.value.snapshot)
+          const credential = await api.revealToken()
+          if (credential.ok && alive.current && visible.current) setToken(credential.value.token)
+        } else receive(response.value.snapshot)
+        onSaved(); setNotice(kind === 'rotate' ? 'rotated' : 'saved')
+      } else setError(response.value.error)
+    } catch { if (alive.current) setError('unavailable') }
+    finally { pending.current = false; if (alive.current) setBusy(false) }
+  }
+  useEffect(() => { alive.current = true; return () => { alive.current = false; void editor.flush() } }, [editor])
+  useEffect(() => { if (editing.saveCount) onSaved() }, [editing.saveCount])
+  useEffect(() => { if (active) load(); else { setToken(''); setBrowser(false) } }, [api, active])
+  useEffect(() => {
+    if (!active) return
+    const changed = () => { if (dirty) setError('conflict'); else load(true) }
+    window.addEventListener('super-code-directories-changed', changed)
+    return () => window.removeEventListener('super-code-directories-changed', changed)
+  }, [active, dirty, api])
+  const disabled = busy || !snapshot?.writable
+  const change = (patch, delay = 0) => {
+    // Revoking the last directory also stops admission instead of retaining its old grant.
+    editor.change(patch.allowedDirectories?.length === 0 ? { ...patch, enabled: false } : patch, delay)
+    setNotice(''); setError('')
+  }
+  const edit = (key, value) => change({ [key]: value }, ['port', 'maxConnections'].includes(key) ? 350 : 0)
+  const choose = path => {
+    if (!draft.allowedDirectories.includes(path) && draft.allowedDirectories.length >= 32) { setError('directory-limit'); return }
+    setCustom(rows => [...new Set([...rows, path])]); change({ allowedDirectories: [...new Set([...draft.allowedDirectories, path])], knownDirectories: [...new Set([...draft.knownDirectories, path])].slice(-128) }); setNotice(''); setError(''); setBrowser(false)
+  }
+  const addDirectory = async () => {
+    if (pending.current) return
+    if (catalog.picker !== 'native' && !globalThis.__DSH_DIRECTORY_PICKER__?.pick) { setBrowser(true); return }
+    pending.current = true; setBusy(true)
+    try {
+      const result = globalThis.__DSH_DIRECTORY_PICKER__?.pick ? await globalThis.__DSH_DIRECTORY_PICKER__.pick()
+        : await api.pickDirectory().then(result => { if (!result.ok) throw new Error(); return result.value.kind === 'selected' ? result.value.path : null })
+      if (alive.current && result) choose(result)
+    } catch { if (alive.current) setError('picker-unavailable') }
+    finally { pending.current = false; if (alive.current) setBusy(false) }
+  }
+  const rows = [...catalog.items]
+  for (const path of [...custom, ...draft.knownDirectories, ...draft.allowedDirectories]) if (!rows.some(row => row.path === path)) rows.push({ path, title: '', available: true, workspace: false })
+  const copy = async value => {
+    try { await navigator.clipboard.writeText(value); if (alive.current) { setNotice('copied'); setError('') } }
+    catch { if (alive.current) setError('clipboard') }
+  }
+  const command = snapshot?.url ? t('connection.prompt', { url: snapshot.url }) : ''
+  return React.createElement('section', { className: 'dsh-super-code-connection' },
+    React.createElement('div', { className: 'dsh-super-code-settings-status-row' },
+      React.createElement('p', { className: 'dsh-super-code-preset-status', role: 'status', 'data-available': snapshot?.state === 'listening' },
+        React.createElement('i', { 'aria-hidden': true }), t(`connection.state.${snapshot?.state || 'loading'}`)),
+      React.createElement('div', { className: 'dsh-super-code-settings-actions' }, React.createElement(ActionButton, { type: 'button', disabled: busy, onClick: () => load(true) }, t('connection.reload')))),
+    snapshot?.error && React.createElement('p', { role: 'alert' }, t(`connection.error.${snapshot.error}`)),
+    React.createElement(ConnectionActivity, { api, t, active, openSession }),
+    React.createElement('form', { 'aria-label': t('connection.title'), 'aria-busy': saving, onSubmit: event => { event.preventDefault(); void editor.flush() } },
+      React.createElement(ConnectionSwitch, { checked: draft.enabled, disabled, onChange: value => edit('enabled', value) }, t('connection.enabled')),
+      React.createElement('p', { className: 'dsh-super-code-connection-hint' }, t('connection.scope')),
+      React.createElement('div', { className: 'dsh-super-code-connection-grid' },
+        ...[['port', 1024, 65535], ['maxConnections', 1, 32]].map(([key, min, max]) => React.createElement('div', { key, className: 'dsh-super-code-settings-field' },
+          React.createElement('label', { htmlFor: `super-code-connection-${key}` }, t(`connection.${key}`)),
+          React.createElement('input', { id: `super-code-connection-${key}`, type: 'number', min, max, step: 1, required: true, value: draft[key], disabled, onChange: event => edit(key, event.target.value), onBlur: () => { void editor.flush() } })))),
+      React.createElement('small', null, t('connection.connectionsHint')),
+      React.createElement('fieldset', { className: 'dsh-super-code-directory-fieldset' },
+        React.createElement('legend', null, t('connection.directories')),
+        React.createElement('div', { className: 'dsh-super-code-directory-list' },
+          ...rows.map(row => React.createElement('div', { key: row.path, className: 'dsh-super-code-directory-row' },
+            React.createElement('label', null,
+              React.createElement('input', { type: 'checkbox', checked: draft.allowedDirectories.includes(row.path), disabled: disabled || (!row.available && !draft.allowedDirectories.includes(row.path)),
+                onChange: event => {
+                  if (event.target.checked && draft.allowedDirectories.length >= 32) { setError('directory-limit'); return }
+                  edit('allowedDirectories', event.target.checked ? [...draft.allowedDirectories, row.path] : draft.allowedDirectories.filter(path => path !== row.path))
+                } }),
+              React.createElement('span', null, row.title && React.createElement('strong', null, row.title), React.createElement('code', null, row.path),
+                React.createElement('small', { 'data-unavailable': !row.available }, t(!row.available ? 'connection.directoryUnavailable' : row.workspace ? 'connection.workspaceDirectory' : 'connection.customDirectory')))),
+            !row.workspace && React.createElement(ActionButton, { type: 'button', disabled, 'aria-label': `${t('connection.removeDirectory')}: ${row.path}`,
+              onClick: () => { setCustom(values => values.filter(path => path !== row.path)); setCatalog(value => ({ ...value, items: value.items.filter(item => item.path !== row.path) })); change({ knownDirectories: draft.knownDirectories.filter(path => path !== row.path), allowedDirectories: draft.allowedDirectories.filter(path => path !== row.path) }) } }, t('preset.remove')))),
+          !rows.length && React.createElement('p', null, t('connection.noDirectories'))),
+        React.createElement('div', { className: 'dsh-super-code-settings-actions' },
+          React.createElement(ActionButton, { type: 'button', disabled: disabled || catalog.picker === 'unavailable', onClick: addDirectory }, t('connection.addDirectory'))),
+        React.createElement('small', null, t('connection.directoriesHint'))),
+      React.createElement('p', { role: 'status', className: 'dsh-super-code-connection-hint', 'data-connection-save': saving ? 'saving' : editing.error ? 'error' : editing.notice === 'saved' ? 'saved' : 'idle' },
+        t(saving ? 'connection.saving' : editing.notice === 'saved' ? 'connection.saved' : 'connection.autosave'))),
+    snapshot?.url && React.createElement('div', { className: 'dsh-super-code-connection-client' },
+      React.createElement('h3', null, t('connection.client')), React.createElement('code', null, snapshot.url), React.createElement('pre', null, command),
+      React.createElement('div', { className: 'dsh-super-code-settings-actions' },
+        React.createElement(ActionButton, { type: 'button', disabled: busy, onClick: () => copy(command) }, t('connection.copyCommand')),
+        React.createElement(ActionButton, { type: 'button', disabled, onClick: () => token ? setToken('') : action('token') }, t(token ? 'connection.hideToken' : 'connection.showToken')),
+        active && token && React.createElement(ActionButton, { type: 'button', onClick: () => copy(token) }, t('connection.copyToken')),
+        React.createElement(ActionButton, { type: 'button', disabled: disabled || dirty, onClick: () => action('rotate') }, t('connection.rotate'))),
+      active && token && React.createElement('input', { className: 'dsh-super-code-connection-token', 'aria-label': t('connection.token'), value: token, readOnly: true, autoComplete: 'off', spellCheck: false }),
+      React.createElement('small', null, t('connection.tokenHint'))),
+    notice && React.createElement('p', { role: 'status' }, t(`connection.${notice}`)),
+    (error || editing.error) && React.createElement('p', { role: 'alert' }, t(`connection.error.${error || editing.error}`)),
+    browser && React.createElement(DirectoryBrowser, { api, t, onSelect: choose, onClose: () => setBrowser(false) }))
+}
+
+function SettingsHome({ budgetApi, connectionApi, t, active, revision, navigate, children }) {
+  const [budget, setBudget] = useState(null), [connection, setConnection] = useState(null), [overview, setOverview] = useState({ connections: [], sessions: [] })
+  const [busy, setBusy] = useState(false), [error, setError] = useState(false), alive = useRef(false), pending = useRef(false)
+  const load = async () => {
+    if (pending.current) return
+    pending.current = true
+    try {
+      const [b, c, o] = await Promise.all([budgetApi.readConfig(), connectionApi.readConfig(), connectionApi.overview()])
+      if (!b.ok || !c.ok || !o.ok) throw new Error()
+      if (alive.current) { setBudget(b.value); setConnection(c.value); setOverview(o.value); setError(false) }
+    } catch { if (alive.current) setError(true) }
+    finally { pending.current = false }
+  }
+  useEffect(() => { alive.current = true; return () => { alive.current = false } }, [budgetApi, connectionApi])
+  useEffect(() => { if (!active) return; load(); const timer = setInterval(load, 2000); return () => clearInterval(timer) }, [active, revision, budgetApi, connectionApi])
+  const change = async (kind, value) => {
+    if (busy || pending.current) return
+    pending.current = true; setBusy(true)
+    try {
+      let response
+      if (kind === 'protection') response = await budgetApi.saveConfig(JSON.stringify({ ...budget.configuration, deletionProtection: value }), String(budget.revision))
+      else response = await connectionApi.saveConfig(JSON.stringify({ ...connection.configuration, enabled: value }), String(connection.revision))
+      if (!response.ok || !response.value.ok) throw new Error()
+    } catch { if (alive.current) setError(true); return }
+    finally { pending.current = false; if (alive.current) setBusy(false) }
+    if (alive.current) load()
+  }
+  const mode = budget ? budgetDraft(budget.configuration).deletionProtection : ''
+  return React.createElement('section', { className: 'dsh-super-code-home' }, children,
+    React.createElement('div', { className: 'dsh-super-code-settings-actions' }, React.createElement(ActionButton, { type: 'button', onClick: () => navigate('preset') }, t('home.managePreset'))),
+    React.createElement('h3', { className: 'dsh-super-code-home-category' }, t('home.protection')),
+    React.createElement('div', { className: 'dsh-super-code-home-card' },
+      React.createElement('div', { className: 'dsh-super-code-home-heading' }, React.createElement('strong', null, t('delete.title')),
+        React.createElement(ActionButton, { type: 'button', onClick: () => navigate('protection') }, t('home.configure'))),
+      budget && React.createElement(SelectControl, { label: t('delete.mode'), value: mode, choices: ['off', 'relaxed', 'strict'].map(value => [value, t(`delete.${value}`)]), disabled: busy || !budget.writable, onChange: value => change('protection', value) })),
+    React.createElement('h3', { className: 'dsh-super-code-home-category' }, t('home.extensions')),
+    React.createElement('div', { className: 'dsh-super-code-home-card' },
+      React.createElement('div', { className: 'dsh-super-code-home-heading' }, React.createElement('strong', null, t('home.mcp')),
+        React.createElement(ActionButton, { type: 'button', onClick: () => navigate('connection') }, t('home.configure'))),
+      connection && React.createElement(ConnectionSwitch, { checked: connection.configuration.enabled, disabled: busy || !connection.writable,
+        onChange: value => value && !connection.configuration.allowedDirectories.length ? navigate('connection') : change('connection', value) }, t(`connection.state.${connection.state}`)),
+      connection && React.createElement('small', null, t('home.connectionCount', { count: overview.connections.length, max: connection.configuration.maxConnections })),
+      React.createElement('dl', { className: 'dsh-super-code-session-counts' }, ...['connected', 'history'].map(kind => React.createElement('div', { key: kind, 'data-session-count': kind },
+        React.createElement('dt', null, t(kind === 'connected' ? 'home.connectedSessions' : 'home.historySessions')),
+        React.createElement('dd', null, connection ? connectionSessions(overview)[kind].length : '—'))))),
+    error && React.createElement('p', { role: 'alert' }, t('home.error')))
+}
+function ConnectionConsent({ api, t }) {
+  const [requests, setRequests] = useState([]), [busy, setBusy] = useState(false), [error, setError] = useState(false)
+  const dialog = useRef(null), alive = useRef(false), pending = useRef(false), resolving = useRef(false), settled = useRef(new Set())
+  const current = requests[0]
+  const load = async () => {
+    if (pending.current) return
+    pending.current = true
+    try { const result = await api.pendingDirectories(); if (alive.current && result.ok) setRequests(result.value.filter(row => !settled.current.has(row.id))) }
+    catch { /* Transport loss never grants consent. */ }
+    finally { pending.current = false }
+  }
+  useEffect(() => { alive.current = true; load(); const timer = setInterval(load, 1000); return () => { alive.current = false; clearInterval(timer) } }, [api])
+  const resolve = async decision => {
+    if (resolving.current || !current) return
+    resolving.current = true; setBusy(true); setError(false)
+    try {
+      const result = await api.resolveDirectory(current.id, decision)
+      if (!result.ok) throw new Error()
+      if (alive.current) { settled.current.add(current.id); setRequests(rows => rows.filter(row => row.id !== current.id)); window.dispatchEvent(new Event('super-code-directories-changed')) }
+    } catch { if (alive.current) setError(true) }
+    finally { resolving.current = false; if (alive.current) setBusy(false) }
+  }
+  useEffect(() => {
+    if (!current || !dialog.current) return
+    setError(false)
+    const element = dialog.current; element.showModal(); element.querySelector('[data-consent-reject]')?.focus()
+    const escape = event => { if (event.key === 'Escape') { event.preventDefault(); event.stopImmediatePropagation(); if (!resolving.current) resolve('rejected') } }
+    window.addEventListener('keydown', escape, true)
+    return () => { window.removeEventListener('keydown', escape, true); if (element.open) element.close() }
+  }, [current?.id])
+  if (!current) return null
+  return React.createElement('dialog', { ref: dialog, className: 'dsh-super-code-confirm', 'aria-labelledby': 'super-code-consent-title',
+    onCancel: event => { event.preventDefault(); event.stopPropagation(); resolve('rejected') } },
+    React.createElement('h3', { id: 'super-code-consent-title' }, t('connection.requestTitle')),
+    React.createElement('p', null, t('connection.requestHint')),
+    React.createElement('dl', { className: 'dsh-super-code-directory-request' },
+      ...[['requestClient', current.client], ['requestPath', current.path], ['requestReason', current.reason]].map(([key, value]) => React.createElement('div', { key }, React.createElement('dt', null, t(`connection.${key}`)), React.createElement('dd', null, value)))),
+    error && React.createElement('p', { role: 'alert' }, t('connection.requestError')),
+    React.createElement('div', { className: 'dsh-super-code-confirm-actions' },
+      React.createElement(ActionButton, { type: 'button', disabled: busy, 'data-consent-reject': true, onClick: () => resolve('rejected') }, t('connection.rejectDirectory')),
+      React.createElement(ActionButton, { type: 'button', disabled: busy, className: 'dsh-super-code-primary-button', onClick: () => resolve('approved') }, t('connection.approveDirectory'))))
+}
+
+function PresetSettings({ api, budgetApi, connectionApi, openSession = () => {}, t }) {
+  const [tab, setTab] = useState('home')
   const [status, setStatus] = useState(null), [customId, setCustomId] = useState(null)
   const reinstall = status?.reinstallable ?? status?.state === 'installed'
   const name = customId ?? (reinstall ? status.id : 'super-code')
@@ -2217,18 +2671,22 @@ function PresetSettings({ api, budgetApi, t }) {
   }
   const available = status && ['available', 'installed'].includes(status.state)
   const versionState = status?.presetVersion ? status.presetVersion === status.pluginVersion ? 'match' : 'mismatch' : 'unknown'
+  const [overviewRevision, setOverviewRevision] = useState(0)
+  const onSaved = () => setOverviewRevision(value => value + 1)
+  const tabs = ['home', 'preset', 'context', 'protection', 'connection']
   return React.createElement('section', { className: 'dsh-super-code-settings' },
     React.createElement('div', { className: 'dsh-super-code-settings-tabs', role: 'tablist', 'aria-label': t('settings.tabs'), onKeyDown: event => {
       if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
       event.preventDefault()
-      const selected = event.key === 'Home' ? 'preset' : event.key === 'End' ? 'context' : tab === 'preset' ? 'context' : 'preset'
+      const selected = event.key === 'Home' ? tabs[0] : event.key === 'End' ? tabs[tabs.length - 1] : tabs[(tabs.indexOf(tab) + (event.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length]
       setTab(selected)
       event.currentTarget.querySelector(`#super-code-tab-${selected}`)?.focus()
-    } }, ...['preset', 'context'].map(value => React.createElement('button', { key: value, type: 'button', role: 'tab',
+    } }, ...tabs.map(value => React.createElement('button', { key: value, type: 'button', role: 'tab',
       id: `super-code-tab-${value}`, 'aria-selected': tab === value, 'aria-controls': `super-code-panel-${value}`,
       tabIndex: tab === value ? 0 : -1, onClick: () => setTab(value) }, t(`settings.${value}Tab`)))),
     React.createElement('div', { className: 'dsh-super-code-settings-body' },
-      React.createElement('div', { role: 'tabpanel', id: 'super-code-panel-preset', 'aria-labelledby': 'super-code-tab-preset', hidden: tab !== 'preset' },
+      React.createElement('div', { role: 'tabpanel', id: 'super-code-panel-home', 'aria-labelledby': 'super-code-tab-home', hidden: tab !== 'home' },
+        React.createElement(SettingsHome, { budgetApi, connectionApi, t, active: tab === 'home', revision: overviewRevision, navigate: setTab },
       React.createElement('header', { className: 'dsh-super-code-settings-header' },
         React.createElement('span', { className: 'dsh-super-code-settings-mark', 'aria-hidden': true }, React.createElement(Glyph, { type: 'code' })),
         React.createElement('div', { className: 'dsh-super-code-settings-head-text' },
@@ -2249,9 +2707,9 @@ function PresetSettings({ api, budgetApi, t }) {
           React.createElement('div', null, React.createElement('dt', null, t('preset.presetVersion')), React.createElement('dd', null, status.state === 'missing' ? t('preset.versionMissing') : status.presetVersion || t('preset.versionUnknown')))),
         status && status.state !== 'missing' && React.createElement('p', { className: 'dsh-super-code-version-hint', role: 'status', 'data-version-state': versionState },
           t(versionState === 'match' ? 'preset.versionMatches' : versionState === 'mismatch' ? 'preset.versionMismatch' : 'preset.versionUnknownHint'),
-          versionState === 'mismatch' && ` ${t(reinstall && status.authorable ? 'preset.versionReinstallHint' : 'preset.versionReloadHint')}`)),
+          versionState === 'mismatch' && ` ${t(reinstall && status.authorable ? 'preset.versionReinstallHint' : 'preset.versionReloadHint')}`)))),
+      React.createElement('div', { role: 'tabpanel', id: 'super-code-panel-preset', 'aria-labelledby': 'super-code-tab-preset', hidden: tab !== 'preset' },
       status?.authorable && React.createElement('form', { onSubmit: event => { event.preventDefault(); submit() } },
-        React.createElement('h3', null, t('preset.configuration')),
         React.createElement('div', { className: 'dsh-super-code-settings-field' },
           React.createElement('label', { htmlFor: 'super-code-display-name' }, t('preset.displayName')),
           React.createElement('input', { id: 'super-code-display-name', value: displayName, maxLength: 120, required: true, disabled: busy, 'aria-describedby': 'super-code-display-name-hint', onChange: event => setCustomDisplayName(event.target.value) }),
@@ -2271,7 +2729,11 @@ function PresetSettings({ api, budgetApi, t }) {
         status?.delivery === 'directory' && !status.authorable && React.createElement('p', { role: 'note' }, t('preset.readonly'))),
       error && React.createElement('p', { role: 'alert' }, t(error))),
       React.createElement('div', { role: 'tabpanel', id: 'super-code-panel-context', 'aria-labelledby': 'super-code-tab-context', hidden: tab !== 'context' },
-        React.createElement(BudgetSettings, { api: budgetApi, t, active: tab === 'context' }))),
+        React.createElement(BudgetSettings, { api: budgetApi, t, active: tab === 'context', onSaved })),
+      React.createElement('div', { role: 'tabpanel', id: 'super-code-panel-protection', 'aria-labelledby': 'super-code-tab-protection', hidden: tab !== 'protection' },
+        React.createElement(BudgetSettings, { api: budgetApi, t, section: 'protection', active: tab === 'protection', onSaved })),
+      React.createElement('div', { role: 'tabpanel', id: 'super-code-panel-connection', 'aria-labelledby': 'super-code-tab-connection', hidden: tab !== 'connection' },
+        React.createElement(ConnectionSettings, { api: connectionApi, t, active: tab === 'connection', openSession, onSaved }))),
     confirmation && React.createElement('dialog', { ref: dialog, className: 'dsh-super-code-confirm',
       'aria-labelledby': 'super-code-confirm-title', 'aria-describedby': 'super-code-confirm-hint',
       onKeyDown: event => { if (event.key === 'Escape') event.stopPropagation() },
@@ -2309,20 +2771,34 @@ function apply(ctx) {
   // $mount creates a lifecycle effect on this same fiber; awaiting it from
   // another effect would stall the namespace and the settings contribution.
   void ctx.remote.$mount({ package: 'dsh-super-code', descriptors: [
-    ...presetRemoteContribution.descriptors, ...memoryRemoteContribution.descriptors, ...budgetRemoteContribution.descriptors,
+    ...presetRemoteContribution.descriptors, ...memoryRemoteContribution.descriptors, ...budgetRemoteContribution.descriptors, ...connectionRemoteContribution.descriptors,
   ] }).catch(error => console.warn('Super Code Remote:', error))
   const memoryStates = new WeakMap(), workspaceStates = new WeakMap()
+  const navigation = { openSession: () => {} }
+  ctx.inject(['uiWorkspace'], ready => {
+    navigation.openSession = id => {
+      if (typeof ready.uiWorkspace.openSession === 'function') ready.uiWorkspace.openSession(id)
+      else ready.sessions.open(id)
+    }
+    ready.effect(() => () => { navigation.openSession = () => {} })
+  })
+  ctx.inject(['remote.superCodeConnection'], ready => {
+    ready.slots.inject('shell.overlay', () => ready.slots.register({
+      name: 'shell.overlay', id: 'super-code-directory-consent', order: 180, locale: LOCALE_NS,
+      inject: () => ({ api: ready.remote.superCodeConnection }),
+    }, ConnectionConsent))
+  })
   // Locale already requires its host's preference service. Declare that same
   // service here: Cordis rejects even optional reads without an injection.
   const preferenceService = 'configForms' in ctx ? 'configForms' : 'settingsScope'
-  ctx.inject(['remote.superCodePresets', 'remote.superCodeBudgets', preferenceService], ready => {
+  ctx.inject(['remote.superCodePresets', 'remote.superCodeBudgets', 'remote.superCodeConnection', preferenceService], ready => {
     const preferenceScope = preferenceService === 'configForms'
       ? ready.configForms.get('locale') : ready.settingsScope.bind({ namespace: 'locale' })
     ready.effect(() => synchronizePresetDisplay(ready.remote.superCodePresets, locale,
       () => window.location.reload(), error => console.warn('Super Code preset display:', error), preferenceScope), 'super-code: preset display')
     ready.slots.inject('settings.section', () => ready.slots.register({
       name: 'settings.section', id: 'super-code', order: 120, label: () => t('preset.title'), locale: LOCALE_NS,
-      inject: () => ({ api: ready.remote.superCodePresets, budgetApi: ready.remote.superCodeBudgets }),
+      inject: () => ({ api: ready.remote.superCodePresets, budgetApi: ready.remote.superCodeBudgets, connectionApi: ready.remote.superCodeConnection, openSession: id => navigation.openSession(id) }),
     }, PresetSettings))
   })
   ctx.effect(() => {
@@ -2413,6 +2889,28 @@ function apply(ctx) {
 .dsh-super-code-budget-group{display:flex;flex-direction:column;gap:16px;min-width:0}
 .dsh-super-code-budget-group h3{margin:0;font-size:14px;font-weight:600}
 .dsh-super-code-budget-exclusive{border-top:1px solid var(--sc-line);padding-top:24px}
+
+.dsh-super-code-connection{display:grid;gap:18px}
+.dsh-super-code-connection form{display:grid;gap:16px}
+.dsh-super-code-connection-hint{margin:0;color:var(--sc-muted);font-size:12px;line-height:1.6}
+.dsh-super-code-connection-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.dsh-super-code-connection textarea,.dsh-super-code-connection-token{width:100%;box-sizing:border-box;border:1px solid var(--sc-line);border-radius:8px;background:var(--sc-bg);color:var(--sc-text);padding:9px 11px;font:12px/1.6 ui-monospace,monospace;resize:vertical}
+.dsh-super-code-connection-client{display:grid;gap:12px;border-top:1px solid var(--sc-line);padding-top:18px;min-width:0}
+.dsh-super-code-connection-client h3{margin:0;font-size:13px}
+.dsh-super-code-connection-client pre{white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.7 ui-monospace,monospace;background:var(--sc-surface);padding:12px;border-radius:8px;margin:0}
+.dsh-super-code-connection small{color:var(--sc-muted);font-size:12px;line-height:1.6}
+.dsh-super-code-connection .dsh-super-code-settings-actions{flex-wrap:wrap;gap:8px}
+ .dsh-super-code-connection-switch{position:relative;display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;font-weight:500;width:fit-content}
+.dsh-super-code-connection-switch input[role=switch]{position:absolute;opacity:0;width:34px;height:20px;margin:0;padding:0;left:0;top:50%;transform:translateY(-50%);z-index:1;cursor:pointer}
+.dsh-super-code-connection-track{display:inline-flex;align-items:center;flex:none;width:34px;height:20px;border:1px solid var(--sc-line);border-radius:20px;padding:2px;background:var(--sc-surface);transition:background .15s}
+.dsh-super-code-connection-track i{display:block;width:14px;height:14px;border-radius:50%;background:var(--sc-muted);transition:transform .15s}
+.dsh-super-code-connection-switch input:checked+.dsh-super-code-connection-track{background:var(--sc-accent);border-color:var(--sc-accent)}
+.dsh-super-code-connection-switch input:checked+.dsh-super-code-connection-track i{transform:translateX(14px);background:#fff}
+.dsh-super-code-connection-switch input:focus-visible+.dsh-super-code-connection-track{outline:2px solid var(--sc-accent);outline-offset:3px}
+.dsh-super-code-connection-switch input:disabled+.dsh-super-code-connection-track{opacity:.5}
+.dsh-super-code-connection input[type=number]{appearance:textfield}
+.dsh-super-code-connection input::-webkit-inner-spin-button{appearance:none}
+
 .dsh-super-code-budget-switch{display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer}
 .dsh-super-code-budget-switch input{width:30px;height:17px;flex:none;accent-color:var(--sc-active);cursor:pointer}
 .dsh-super-code-budget-default{color:var(--sc-muted);font-weight:400;font-size:12px}
@@ -2426,6 +2924,60 @@ function apply(ctx) {
 @container(max-width:420px){.dsh-super-code-budget-grid{grid-template-columns:1fr}.dsh-super-code-settings-tabs{padding:0 16px}}
 .dsh-super-code-settings [role=alert],.dsh-super-code-detail [role=alert],.dsh-super-code-tree-error{font-size:13px;color:var(--sc-error);overflow-wrap:anywhere}
 @container(max-width:420px){.dsh-super-code-settings-header{padding-bottom:16px;margin-bottom:16px}.dsh-super-code-settings-body{padding:16px}.dsh-super-code-settings-summary{padding:12px}.dsh-super-code-settings-status-row{gap:8px}.dsh-super-code-preset-status{flex-basis:100%}.dsh-super-code-settings-form-actions>small{min-width:0;flex-basis:100%}}
+
+.dsh-super-code-session-counts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:4px 0 0;padding-top:12px;border-top:1px solid var(--sc-line)}
+.dsh-super-code-session-counts dt{font-size:12px;color:var(--sc-muted)}
+.dsh-super-code-session-counts dd{font-size:22px;font-variant-numeric:tabular-nums;font-weight:600;margin:3px 0 0}
+.dsh-super-code-connection-activity{display:grid;gap:10px;border:1px solid var(--sc-line);border-radius:10px;padding:14px}
+.dsh-super-code-connection-activity h3{margin:0;font-size:13px;font-weight:600}
+.dsh-super-code-connection-activity h3:not(:first-child){margin-top:6px}
+.dsh-super-code-connection-activity h4{margin:0 0 6px;font-size:12px;color:var(--sc-muted);font-weight:500}
+.dsh-super-code-connection-activity p{margin:0;font-size:12px;color:var(--sc-muted)}
+.dsh-super-code-connection-activity button{border:1px solid var(--sc-line);border-radius:7px;background:var(--sc-bg);padding:4px 8px;font-size:12px}
+.dsh-super-code-connection-activity button:hover{background:var(--sc-hover)}
+/* Settings overview and directory consent use the same host theme aliases. */
+.dsh-super-code-settings-tabs{gap:20px;overflow-x:auto;white-space:nowrap}
+.dsh-super-code-home{display:grid;gap:12px}
+.dsh-super-code-home-category{font-size:11px;letter-spacing:.06em;color:var(--sc-muted);margin:12px 0 0}
+.dsh-super-code-home-card{display:grid;gap:12px;border:1px solid var(--sc-line);border-radius:10px;padding:14px}
+.dsh-super-code-home-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.dsh-super-code-home-heading strong{font-size:13px;font-weight:600}
+.dsh-super-code-home-card :is(p,small){margin:0;font-size:12px;color:var(--sc-muted)}
+.dsh-super-code-home-card h4{font-size:12px;font-weight:500;margin:6px 0 0}
+.dsh-super-code-home-card button,.dsh-super-code-home>.dsh-super-code-settings-actions button{border:1px solid var(--sc-line);border-radius:7px;background:var(--sc-bg);padding:4px 8px;font-size:12px}
+.dsh-super-code-home-card button:hover{background:var(--sc-hover)}
+.dsh-super-code-connection-list{list-style:none;padding:0;margin:0;max-height:280px;overflow:auto}
+.dsh-super-code-connection-list li{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--sc-line)}
+.dsh-super-code-connection-list li:last-child{border:0}
+.dsh-super-code-connection-list li>span{display:grid;gap:2px;flex:1;min-width:0;overflow-wrap:anywhere}
+.dsh-super-code-connection-list strong{font-size:12px;font-weight:500}
+.dsh-super-code-connection-list code{font:10px/1.5 var(--sc-mono);color:var(--sc-muted)}
+.dsh-super-code-connection-list button{flex:none}
+.dsh-super-code-home .dsh-super-code-settings-header{padding-bottom:12px;margin-bottom:0}
+.dsh-super-code-directory-fieldset{border:0;padding:0;margin:0;min-width:0;display:grid;gap:10px}
+.dsh-super-code-directory-fieldset legend{font-size:13px;font-weight:500;margin-bottom:10px}
+.dsh-super-code-directory-list{border:1px solid var(--sc-line);border-radius:9px;max-height:330px;overflow:auto}
+.dsh-super-code-directory-list>p{margin:0;padding:18px;color:var(--sc-muted);font-size:12px}
+.dsh-super-code-directory-row{display:flex;align-items:center;gap:8px;padding:10px 12px}
+.dsh-super-code-directory-row+.dsh-super-code-directory-row{border-top:1px solid var(--sc-line)}
+.dsh-super-code-directory-row label{display:flex;align-items:center;flex:1;min-width:0;gap:10px;cursor:pointer}
+.dsh-super-code-directory-row input[type=checkbox]{appearance:none;width:16px;height:16px;flex:none;border:1px solid var(--sc-line);padding:0;border-radius:4px;background:var(--sc-bg);cursor:pointer}
+.dsh-super-code-directory-row input[type=checkbox]:checked{background:var(--sc-accent);border-color:var(--sc-accent);box-shadow:inset 0 0 0 3px var(--sc-bg)}
+.dsh-super-code-directory-row input:disabled{opacity:.5;cursor:default}
+.dsh-super-code-directory-row label>span{display:grid;min-width:0;gap:1px}
+.dsh-super-code-directory-row strong{font-size:12px;font-weight:500}
+.dsh-super-code-directory-row code{font:11px/1.6 var(--sc-mono);overflow-wrap:anywhere}
+.dsh-super-code-directory-row small[data-unavailable=true]{color:var(--sc-warning)}
+.dsh-super-code-directory-row>button{font-size:11px;border:0;background:none;padding:5px;color:var(--sc-muted)}
+.dsh-super-code-directory-crumbs{display:flex;flex-wrap:wrap;gap:4px;margin:12px 0}
+.dsh-super-code-directory-crumbs button{font-size:11px}
+.dsh-super-code-directory-path{display:block;overflow-wrap:anywhere;font-size:12px;margin-bottom:10px}
+.dsh-super-code-directory-browser{display:grid;max-height:320px;overflow:auto;gap:2px}
+.dsh-super-code-directory-browser button{display:flex;align-items:center;justify-content:flex-start;gap:8px;border:0;text-align:left;overflow-wrap:anywhere}
+.dsh-super-code-directory-request{display:grid;gap:12px;padding:14px;border:1px solid var(--sc-line);border-radius:9px;background:var(--sc-surface)}
+.dsh-super-code-directory-request dt{font-size:11px;color:var(--sc-muted);margin-bottom:3px}
+.dsh-super-code-directory-request dd{font-size:13px;line-height:1.6;overflow-wrap:anywhere;white-space:pre-wrap;margin:0}
+.dsh-super-code-directory-request>div:nth-child(2) dd{font-family:var(--sc-mono);font-size:12px}
 
 /* Confirmation. */
 .dsh-super-code-confirm{width:min(520px,calc(100vw - 32px));max-height:calc(100dvh - 48px);overflow:auto;border:1px solid var(--sc-line);border-radius:16px;padding:24px;background:var(--sc-bg);box-shadow:0 12px 48px #0003}
@@ -2854,5 +3406,5 @@ function apply(ctx) {
   ctx.effect(() => disposeMemoryType, 'super-code: memory library tab')
 }
 
-return { inject, apply, taskFeedbackRows, feedbackStatus, feedbackListItems, feedbackListLayout, feedbackListIndex, feedbackListWindow, feedbackListAnchor, budgetDraft, budgetConfiguration, synchronizePresetDisplay, agentSessionState, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector, agentHistoryRange, agentHistoryRows, agentHistoryWindow, memoryLibraryAddress, memoryLibraryTarget, memoryLibraryNavigation, memoryLibraryWindow, createMemoryEditor }
+return { inject, apply, taskFeedbackRows, feedbackStatus, feedbackListItems, feedbackListLayout, feedbackListIndex, feedbackListWindow, feedbackListAnchor, connectionSessions, createConnectionAutosave, connectionDraft, connectionConfiguration, budgetDraft, budgetConfiguration, synchronizePresetDisplay, agentSessionState, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector, agentHistoryRange, agentHistoryRows, agentHistoryWindow, memoryLibraryAddress, memoryLibraryTarget, memoryLibraryNavigation, memoryLibraryWindow, createMemoryEditor }
 } })

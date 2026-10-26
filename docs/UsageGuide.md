@@ -264,3 +264,62 @@ These are recorded host actions, not proof that the model understood or followed
 历史会话的记忆可直接查看，不需要恢复 Agent 或再次调用模型。记忆库支持新增、编辑、取消、保存和删除。编辑时可修改类型、标题和内容；取消不保存，删除需要确认。手动保存的条目标为“手动维护”，仅保留当前内容，不保留版本历史。
 
 You can browse memory from stored conversations without resuming an Agent or making another model call. The library supports Add, Edit, Cancel, Save, and Delete. Edit the type, title, and content; Cancel discards the draft, and Delete asks for confirmation. Manually saved entries are marked accordingly. Only current content is kept, with no version history.
+
+
+## MCP 连接 · MCP Connection
+
+设置 → Super Code 模式默认打开“首页”，集中显示预设状态与版本、保护等级、MCP 开关，以及正在连接和历史对话的数量。客户端和关联会话详情、打开会话及断开操作位于“连接”标签。预设、上下文、删除保护、连接分别配置；预设配置页直接展示表单。MCP 默认关闭，在“连接”标签中勾选允许的工作目录、调整本机端口和最大连接数；修改会自动保存，无需确认按钮。服务只监听 `127.0.0.1`，地址以页面显示为准；端口冲突会显示错误。
+
+Settings → Super Code opens **Home**, with preset status and versions, protection level, the MCP switch, and counts of connected and past conversations. Client and linked-session details, opening conversations and disconnect actions are in **Connection**. Preset, context, deletion protection and connection settings have separate tabs. Preset configuration shows its form directly. MCP is disabled by default. In **Connection**, select allowed working directories and adjust the local port and maximum connections. Changes save automatically without a confirmation button. The service listens on `127.0.0.1` only; use the displayed URL. Port conflicts are reported explicitly.
+
+工作目录以勾选列表展示，每次进入连接页会重新读取 DSH 工作区。首次配置时预选已有有效工作区，修改后自动保存并保留用户选择；后来新增的工作区不会静默获得访问权限。可以通过目录选择器添加目录，取消勾选会撤销该目录的入口授权，取消最后一个允许目录时会同时关闭 MCP。手动添加但未勾选的目录仍保留在列表中。允许目录包含其子目录。
+
+Directories appear as a checkbox list refreshed from DSH workspaces when opening Connection. Existing valid workspaces are initially selected in the first configuration draft; edits save automatically and later workspaces are never silently granted access. Add directories with the directory picker. Unchecking revokes that directory's admission grant; removing the last grant also turns MCP off. Unchecked manually added directories remain listed. Each grant includes descendants.
+
+最大连接数限制真实 MCP 协议会话（默认 3，上限 32），并同时作为任务执行并发上限。在连接页可以断开客户端，空闲 10 分钟也会释放连接；断开不会取消已接收任务。正在连接的对话按其关联 MCP 连接是否在线统计，断开后计入历史；与任务是否执行完成无关。连接凭证默认展开，离开连接页后隐藏，再次进入时重新读取。
+
+Maximum connections counts MCP protocol sessions (default 3, maximum 32) and is also the task execution concurrency limit. Disconnect clients from Connection; idle connections also expire after 10 minutes. Disconnecting does not cancel accepted tasks. Conversations count as connected while their linked MCP connection is online, regardless of task completion; after disconnect they count as past conversations. The token is expanded by default in Connection, cleared when leaving the tab and reloaded on return.
+
+### 连接 Prompt · Connection Prompt
+
+1. 在连接页复制“连接 Prompt”，交给支持 Streamable HTTP MCP 的客户端配置连接。提示词包含页面当前地址、认证方式、五项工具与任务状态约定，不包含真实凭证，也不绑定特定客户端。
+2. 单独复制连接凭证，在客户端安全保存并配置为 `Authorization: Bearer <连接凭证>`。不要把实际凭证写进仓库或共享提示词。
+3. 保持提供连接的 DSH Web 服务或桌面应用运行。更换凭证后同步更新客户端；旧凭证立即失效。客户端是否允许由提示词自动配置 MCP，取决于客户端自身能力；也可以使用页面地址和认证方式手动配置。
+
+Copy **Connection Prompt** from the Connection tab and give it to a client that supports Streamable HTTP MCP. It contains the current URL, authentication method, five tools and task-state conventions, without an actual token or client-specific command. Copy the token separately and securely configure `Authorization: Bearer <connection token>` in the client. Keep the serving DSH process running, and update the client after token rotation. Whether a prompt can configure MCP automatically depends on the client; manual setup using the shown URL and authentication is also supported. Never put actual credentials in repository files or shared prompts.
+
+| 工具 / Tool | 用途 / Behavior |
+|---|---|
+| `dsh_run` | 新建独立的 Super Code 根会话并提交任务；相同 `requestId` 与相同输入不会重复提交，输入不同会报冲突。 / Create a separate Super Code root session. Retrying identical input with the same request ID does not dispatch again; conflicting input is rejected. |
+| `dsh_wait` | 提供任务 ID 时读取状态、输出、工作区观察及游标后的事件，最长等待 30 秒；省略任务 ID 时分页列出本服务持有的任务。 / Read task state, output, workspace observations and events after a cursor, with waits bounded to 30 seconds; omit the task ID to list owned tasks. |
+| `dsh_send` | 在同一根会话补充要求或明确继续，使用新的请求 ID；不会代替用户批准宿主权限。 / Queue a follow-up or explicitly continue the same root session with a new request ID. Does not approve host permissions. |
+| `dsh_request_directory` | 申请新增工作目录，由 DSH 用户明确批准；重复请求查询审批状态。 / Request additional directory access with explicit consent in DSH; repeat to poll the decision. |
+| `dsh_cancel` | 请求取消根会话及受管理后代；需继续观察真实状态，不能把取消请求当成全部停止。 / Request cancellation of the root and managed descendants; observe the resulting state to confirm execution stopped. |
+
+### 新增目录申请 · Additional Directory Requests
+
+外部会话可调用 `dsh_request_directory`，提交稳定的 `requestId`、已存在的绝对 `path` 和 `reason`。DSH 会在全局弹出确认对话框，显示客户端名称、实际目录和申请理由，不需要先打开设置。只有用户点击“允许访问”，才会将该目录加入列表并勾选；审批沿用最新配置，不覆盖同时发生的其他设置修改，也不会断开已有 MCP 连接。申请不会触发模型调用，且不能由模型的自动审批策略代为同意。
+
+重复相同输入可查询 `pending` / `approved` / `rejected` / `expired` 状态；相同 ID 改变输入会报冲突。批准前不能在该目录委派任务。待审批请求最多 8 条，5 分钟过期；拒绝、关闭服务或重启均不自动授权。请求历史为有界的进程内记录（最多 100 条），已批准的目录配置会保存。客户端名称和理由来自客户端，仅供辨认。
+
+External sessions call `dsh_request_directory` with a stable `requestId`, an existing absolute `path` and a `reason`. A global DSH dialog shows the client name, canonical directory and reason even when settings is closed. Only the user's **Allow access** action adds and selects the directory. Approval merges into the latest configuration without overwriting concurrent changes or disconnecting clients. It does not invoke a model and cannot be approved by a model's automatic permission policy.
+
+Repeat identical input to read `pending`, `approved`, `rejected` or `expired`; changing input under the same ID conflicts. Delegation is blocked until access is approved. At most eight pending requests are allowed, expiring after five minutes. Rejection, service shutdown and restart never grant access. Request history is in memory and bounded to 100 entries; approved directory settings persist. Client names and reasons are supplied by the caller for identification.
+
+### 状态、权限与恢复 · State, Permissions and Recovery
+
+任务沿用当前宿主的默认模型、Super Code 预设和权限；不修改普通会话的提示词或执行策略，也不会自动放行权限。调用方的沙箱不会自动传播到 DSH。允许目录限制用于任务入口，不构成文件系统沙箱；实际工具权限由 DSH 管理。同一工作区不会并行委派，可由调用方自行准备独立 worktree；插件不创建、删除或合并 worktree。
+
+Tasks use the host’s default model, Super Code preset and permissions without changing ordinary conversation prompts or execution strategy. Caller sandbox restrictions do not automatically propagate to DSH. Allowed directories govern task admission, not filesystem isolation; DSH controls tool permissions. Delegations in the same workspace do not run concurrently. Callers may supply separate worktrees; the plugin does not create, delete or merge them.
+
+`waiting_confirmation` 表示需要在 DSH 处理权限确认或受阻的回合。`finished` 仅表示根会话和已观测的受管理后代执行结束，返回的 `acceptance` 始终为 `not-verified`，需要调用方验证结果。文件信息来自执行前基线与当前 Git 工作区的有界观察，会保留原有脏文件列表，不能证明全部变化均由本任务产生；非 Git 目录、超出观察上限或读取失败时会标记不可用。
+
+`waiting_confirmation` requires action in DSH. `finished` means the root and observed managed descendants have settled; it does not certify acceptance. Results carry `acceptance: not-verified`. File information is a bounded Git workspace observation relative to the starting baseline, including pre-existing dirty files, and does not establish exclusive attribution. Non-Git directories, exceeded observation limits and read failures are reported as unavailable.
+
+等待超时或客户端断线不会取消执行。关闭连接停止接收请求，已接收任务继续由 DSH 管理。重启或热重载后不自动重发 prompt；可通过任务列表找回 ID，先观察会话，再明确继续。无法确认状态时保留 `interrupted` 或 `unavailable`，避免误报完成；未确认停止的任务会继续占用并发额度。
+
+Wait timeouts and client disconnections do not cancel execution. Disabling the connection stops accepting requests while DSH continues managing accepted work. Restart and hot reload never automatically replay prompts. Recover task IDs through the listing, inspect the session, then explicitly continue. Unconfirmed tasks remain interrupted or unavailable and retain their concurrency reservation.
+
+任务记录、配置和凭证保存在当前 profile 的 `super-code-connection` 目录中，目录权限为 0700，文件为 0600；同一配置目录只允许一个服务实例持有。当前上限为 200 个任务记录、每任务 128 个补充操作和最近 200 条状态事件，输出保留最后 12,000 个字符。达到记录上限会明确拒绝新任务，不会悄悄丢弃幂等记录并重跑。
+
+State, configuration and credentials are stored in the profile’s `super-code-connection` directory, with directory mode 0700 and file mode 0600. A profile has one service owner. Limits are 200 task records, 128 follow-up operations per task, the latest 200 state events, and the last 12,000 output characters. Reaching the history limit explicitly rejects new tasks rather than silently discarding idempotency records and redispatching work.

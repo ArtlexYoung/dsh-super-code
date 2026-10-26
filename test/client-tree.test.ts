@@ -168,7 +168,7 @@ test('browser loader resolves a plugin that retains its dependency declarations'
   assert.ok(resolved.inject?.includes('sidebarRightTabs'))
 })
 
-test('plugin settings stay expanded, compare versions in both languages and retain reinstallation confirmation', async () => {
+test('plugin settings open on home, separate protection and retain version and reinstallation details', async () => {
   type Element = { type: unknown; props: Record<string, any>; children: unknown[] }
   const state: unknown[] = [], refs: { current: unknown }[] = [], effects: (() => any)[] = []
   let cursor = 0, refCursor = 0
@@ -231,10 +231,25 @@ test('plugin settings stay expanded, compare versions in both languages and reta
   }
   let card = render()
   assert.equal(card.type, 'section')
+  const tabs = find(card, element => element.props.role === 'tab')
+  assert.equal(tabs.length, 5)
+  assert.deepEqual(tabs.map(tab => tab.props.id), ['super-code-tab-home', 'super-code-tab-preset', 'super-code-tab-context', 'super-code-tab-protection', 'super-code-tab-connection'])
+  assert.equal(tabs[0]!.props['aria-selected'], true)
+  const tablist = find(card, element => element.props.role === 'tablist')[0]!
+  let focused = ''
+  tablist.props.onKeyDown({ key: 'End', preventDefault() {}, currentTarget: { querySelector: (selector: string) => ({ focus: () => { focused = selector } }) } })
+  card = render()
+  assert.equal(focused, '#super-code-tab-connection')
+  assert.equal(find(card, element => element.props.id === 'super-code-panel-connection')[0]?.props.hidden, false)
+  find(card, element => element.props.id === 'super-code-tab-preset')[0]!.props.onClick()
+  card = render()
+
   assert.equal(find(card, element => element.type === 'button' && 'aria-expanded' in element.props).length, 0)
   assert.equal(find(card, element => element.type === 'form').length, 0)
   assert.equal(find(card, element => element.props.className === 'dsh-super-code-settings-body').length, 1)
   assert.equal(find(card, element => element.type === 'header').length, 1)
+  assert.equal(find(card, element => element.type === 'details' || element.type === 'summary').length, 0, 'Preset settings remain directly visible')
+  assert.equal(find(card, element => element.type === 'h3' && element.children.includes('preset.configuration')).length, 0, 'Preset configuration title is not repeated')
   state[4] = false
   const strings = (node: unknown): string => {
     if (typeof node === 'string') return node

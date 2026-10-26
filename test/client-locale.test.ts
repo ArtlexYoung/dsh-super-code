@@ -38,14 +38,14 @@ test('preset settings registration does not wait on the Remote mount lifecycle',
     locale: { register: () => () => {}, bind: () => (key: string) => key },
     remote: { $mount: (contribution: any) => { mounts.push(contribution); return new Promise(() => {}) } },
     inject: (dependencies: string[]) => {
-      assert.ok(['remote.superCodePresets', 'remote.superCodeMemory'].includes(dependencies[0]!))
+      assert.ok(['remote.superCodePresets', 'remote.superCodeMemory', 'remote.superCodeConnection', 'uiWorkspace'].includes(dependencies[0]!))
       if (dependencies[0] === 'remote.superCodePresets') injected = true
     },
     slots: { inject: () => {} }, sidebarRightTabs: { register: () => () => {} }, sessions: {}, sidebarRight: {},
   })
   assert.equal(injected, true)
   assert.equal(mounts.length, 1, 'The registry accepts one contribution per package')
-  assert.deepEqual([...new Set(mounts[0].descriptors.map((row: any) => row.namespace))].sort(), ['superCodeBudgets', 'superCodeMemory', 'superCodePresets'])
+  assert.deepEqual([...new Set(mounts[0].descriptors.map((row: any) => row.namespace))].sort(), ['superCodeBudgets', 'superCodeConnection', 'superCodeMemory', 'superCodePresets'])
   for (const descriptor of mounts[0].descriptors) for (const parameter of descriptor.parameters) {
     assert.equal(parameter.codec.create().parse('valid'), 'valid')
     assert.equal(parameter.codec.schema.parse('legacy'), 'legacy')
@@ -338,7 +338,7 @@ test('preset settings declare the available host preference service before readi
       },
       slots: { inject: () => {} }, sidebarRightTabs: { register: () => () => {} }, sessions: {}, sidebarRight: {},
     })
-    assert.deepEqual([...dependencies[0]!], ['remote.superCodePresets', 'remote.superCodeBudgets', service])
+    assert.deepEqual([...dependencies[0]!], ['remote.superCodePresets', 'remote.superCodeBudgets', 'remote.superCodeConnection', service])
     assert.deepEqual(registered, ['super-code'])
   }
 })
@@ -431,4 +431,42 @@ test('memory drafts, failed saves, hidden completion, and delete cancellation ha
   assert.equal(store.getSnapshot().confirmation.id, 'new'); assert.equal(saved.selected.id, 'new')
   fail = false; assert.equal((await store.remove()).kind, 'removed')
   assert.equal(saved.selected, null); assert.equal(store.getSnapshot().confirmation, null)
+})
+
+ test('connection drafts preserve a disabled default and validate independent settings', () => {
+  const { plugin, dictionaries } = fixture()
+  const config = { enabled: false, port: 23457, maxConcurrent: 4, maxConnections: 4, directoriesConfigured: true, knownDirectories: [], allowedDirectories: [] }
+  assert.deepEqual(JSON.parse(JSON.stringify(plugin.connectionConfiguration(plugin.connectionDraft(config)))), { ok: true, configuration: config })
+  const enabled = { ...plugin.connectionDraft(config), enabled: true, allowedDirectories: ['/project', '/project two'] }
+  assert.equal(plugin.connectionConfiguration(enabled).ok, true)
+  for (const change of [{ port: '0' }, { port: '1.5' }, { maxConnections: '33' }, { allowedDirectories: [] }]) assert.equal(plugin.connectionConfiguration({ ...enabled, ...change }).ok, false)
+  assert.equal(dictionaries.zh['settings.connectionTab'], '连接')
+  assert.equal(dictionaries.en['settings.connectionTab'], 'Connection')
+  assert.equal(dictionaries.zh['connection.client'], '连接 Prompt')
+  for (const language of ['zh', 'en']) {
+    const prompt = dictionaries[language]!['connection.prompt']!
+    assert.ok(prompt.includes('{url}'))
+    for (const tool of ['dsh_run', 'dsh_wait', 'dsh_send', 'dsh_cancel']) assert.ok(prompt.includes(tool))
+    assert.ok(prompt.includes('dsh_sessions'))
+    assert.equal(/codex/i.test(prompt), false)
+  }
+ })
+
+test('connection conversation counts follow live MCP connections rather than execution status', () => {
+  const { plugin, dictionaries } = fixture()
+  const sessions = [
+    { sessionId: 'finished-online', connectionId: 'online', status: 'finished' },
+    { sessionId: 'running-online', connectionId: 'online', status: 'running' },
+    { sessionId: 'running-offline', connectionId: 'old', status: 'running' },
+    { sessionId: 'old-record', status: 'finished' },
+  ]
+  const overview = { connections: [{ id: 'online' }], sessions }
+  const groups = plugin.connectionSessions(overview)
+  assert.equal(groups.connected.map((row: any) => row.sessionId).join(','), 'finished-online,running-online')
+  assert.equal(groups.history.map((row: any) => row.sessionId).join(','), 'running-offline,old-record')
+  assert.equal(plugin.connectionSessions({ ...overview, connections: [] }).history.length, 4)
+  assert.equal(plugin.connectionSessions({ connections: [], sessions: [] }).connected.length, 0)
+  assert.equal(overview.sessions.length, 4)
+  assert.equal(dictionaries.zh['home.connectedSessions'], '正在连接的对话')
+  assert.equal(dictionaries.zh['home.historySessions'], '历史对话')
 })

@@ -12,6 +12,7 @@ import { configurationSchema } from './budgets.js'
 import type { Configuration } from './budgets.js'
 import { applyBudgetSettings } from './budget-settings.js'
 import { applyOfficialBudgets } from './official-budgets.js'
+import { applyConnection } from './connection.js'
 import { applyDeletionProtection } from './deletion-protection.js'
 
 export const name = 'super-code'
@@ -36,6 +37,7 @@ export async function apply(ctx: Context, config: Configuration = {}): Promise<v
   applyOfficialBudgets(ctx)
   applyDeletionProtection(ctx)
   applyPresetInstallation(ctx)
+  applyConnection(ctx)
   ctx.inject(['superCodeLongMemory', 'sessions'], owner => {
     new SuperCodeMemory(owner, owner.get('superCodeLongMemory') as LongMemoryStore)
   })

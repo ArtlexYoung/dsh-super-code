@@ -12,9 +12,50 @@ function editor(api: object) {
   return plugin.createConnectionAutosave(api)
 }
 const initial = () => ({ revision: 1, writable: true, state: 'disabled', configuration: {
-  enabled: false, port: 23457, maxConnections: 4, maxConcurrent: 4,
+  enabled: false, allowNewConversations: true, allowCallerApproval: false, port: 23457, maxConnections: 4, maxConcurrent: 4,
   allowedDirectories: ['/project'], knownDirectories: [], directoriesConfigured: true,
 } })
+
+test('new-conversation permission saves false automatically and survives reopening the editor', async () => {
+  let stored = initial(), calls = 0
+  const api = { saveConfig: async (content: string, revision: string) => {
+    calls++
+    stored = { ...stored, revision: Number(revision) + 1, configuration: JSON.parse(content) }
+    return { ok: true, value: { ok: true, snapshot: stored } }
+  } }
+  const save = editor(api)
+  save.receive(stored)
+  save.change({ allowNewConversations: false }); await save.flush()
+  assert.equal(calls, 1)
+  assert.equal(stored.configuration.allowNewConversations, false)
+  assert.equal(save.getSnapshot().draft.allowNewConversations, false)
+  assert.equal(save.getSnapshot().notice, 'saved')
+  const reopened = editor(api); reopened.receive(stored)
+  assert.equal(reopened.getSnapshot().draft.allowNewConversations, false)
+  reopened.change({ maxConnections: '6' }); await reopened.flush()
+  assert.equal(stored.configuration.allowNewConversations, false, 'unrelated edits must not enable creation')
+  reopened.change({ allowNewConversations: true }); await reopened.flush()
+  assert.equal(stored.configuration.allowNewConversations, true)
+})
+
+test('caller approval defaults off and autosaves both choices without changing other permissions', async () => {
+  let stored = initial()
+  const api = { saveConfig: async (content: string, revision: string) => {
+    stored = { ...stored, revision: Number(revision) + 1, configuration: JSON.parse(content) }
+    return { ok: true, value: { ok: true, snapshot: stored } }
+  } }
+  const save = editor(api); save.receive(stored)
+  assert.equal(save.getSnapshot().draft.allowCallerApproval, false)
+  save.change({ allowCallerApproval: true }); await save.flush()
+  assert.equal(stored.configuration.allowCallerApproval, true)
+  const reopened = editor(api); reopened.receive(stored)
+  assert.equal(reopened.getSnapshot().draft.allowCallerApproval, true)
+  reopened.change({ maxConnections: '6' }); await reopened.flush()
+  assert.equal(stored.configuration.allowCallerApproval, true)
+  reopened.change({ allowCallerApproval: false }); await reopened.flush()
+  assert.equal(stored.configuration.allowCallerApproval, false)
+  assert.equal(stored.configuration.allowNewConversations, true)
+})
 
 test('automatic connection writes serialize and retain edits made during an earlier save', async () => {
   let finish!: (value: object) => void

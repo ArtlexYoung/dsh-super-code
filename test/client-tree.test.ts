@@ -327,7 +327,12 @@ test('plugin settings open on home, separate protection and retain version and r
   card = render()
   const statusRow = find(card, element => element.props.className === 'dsh-super-code-settings-status-row')[0]!
   assert.equal((statusRow.children[0] as Element).props.role, 'status')
-  assert.equal((statusRow.children[1] as Element).props.className, 'dsh-super-code-settings-actions')
+  assert.equal((statusRow.children[1] as Element).props.className, 'dsh-super-code-preset-meta')
+  // Refresh is an icon-only header action; its accessible name stays on the button.
+  const header = find(card, element => element.props.className === 'dsh-super-code-settings-header')[0]!
+  const headerActions = header.children[header.children.length - 1] as Element
+  assert.equal(headerActions.props.className, 'dsh-super-code-settings-actions')
+  assert.equal((headerActions.children[0] as Element).props['aria-label'], 'preset.refresh')
   assert.equal(find(card, element => element.props.type === 'submit')[0]!.children[0], 'preset.reinstall')
   find(card, element => element.type === 'form')[0]!.props.onSubmit({ preventDefault() {} })
   await Promise.resolve()
@@ -742,7 +747,7 @@ function workspaceFixture() {
   return { props, tab, render: () => slot.component(props) }
 }
 
-test('workspace defaults to task status first and keeps exactly one of three sections open', () => {
+test('workspace defaults to tasks and clicking the open section collapses it', () => {
   const { props, tab, render } = workspaceFixture()
   let layout = render().children[0]
   assert.equal(layout.props['data-active-section'], 'tasks')
@@ -759,11 +764,14 @@ test('workspace defaults to task status first and keeps exactly one of three sec
   assert.equal(layout.props['data-active-section'], 'memory')
   assert.equal(props.workspaceStates.get(tab.signal).active, 'memory')
   click(2)
-  assert.equal(render().children[0].props['data-active-section'], 'tasks', 'closing memory returns to tasks')
-  click(0)
-  assert.equal(render().children[0].props['data-active-section'], 'tree', 'closing tasks still keeps a section open')
+  layout = render().children[0]
+  assert.equal(layout.props['data-active-section'], '', 'clicking the open section collapses it')
+  assert.equal(layout.props.style.gridTemplateRows, '44px 44px 44px')
+  assert.deepEqual(layout.children.map((node: any) => node.props.key), ['tasks-collapsed', 'tree-collapsed', 'memory-collapsed'])
   click(0)
   assert.equal(render().children[0].props['data-active-section'], 'tasks')
+  click(0)
+  assert.equal(render().children[0].props['data-active-section'], '')
 })
 
 test('memory links expand their section once and repeated explicit navigation reopens it', () => {
@@ -773,7 +781,7 @@ test('memory links expand their section once and repeated explicit navigation re
   let layout = render().children[0]
   assert.equal(layout.props['data-active-section'], 'memory')
   layout.children[2].props.onToggle()
-  assert.equal(render().children[0].props['data-active-section'], 'tasks', 'unchanged link does not undo a user toggle')
+  assert.equal(render().children[0].props['data-active-section'], '', 'unchanged link does not undo a user toggle')
   tab.navigation.revision++
   assert.equal(render().children[0].props['data-active-section'], 'memory')
   tab.signal = new AbortController().signal
@@ -800,12 +808,30 @@ test('hidden workspace remount after memory navigation keeps the editor attached
   original.editorStore.update({ draft: { sessionId: 'root', scope: 'project', topic: 'notes', id: 'new', expected: '',
     kind: 'constraint', summary: 'Title', detail: 'Content' } })
   render().children[0].children[2].props.onToggle()
-  assert.equal(render().children[0].props['data-active-section'], 'tasks')
+  assert.equal(render().children[0].props['data-active-section'], '')
   render().children[0].children[2].children[0].props.onToggle()
   assert.equal(render().children[0].props['data-active-section'], 'memory')
   assert.equal(props.memoryStates.get(tab.signal).editorStore.getSnapshot().draft.summary, 'Title', 'collapse retains the draft')
   await original.editorStore.save()
   assert.equal(props.memoryStates.get(tab.signal).selected.id, 'new', 'saving after tab navigation opens the saved entry')
+})
+
+test('memory always opens the existing library without experimental type selectors', () => {
+  const { props, tab, render } = workspaceFixture()
+  render().children[0].children[2].children[0].props.onToggle()
+  props.memoryStates.set(tab.signal, { library: 'skills' })
+  for (const library of ['users', 'skills', 'legacy']) {
+    tab.navigation = { revision: tab.navigation.revision + 1, params: { memory: `dsh-resource://super-code-memory/root?library=${library}` } }
+    const component = render().children[0].children[2]
+    const page = component.type(component.props)
+    const nodes: any[] = []
+    const visit = (node: any) => { if (!node || typeof node !== 'object') return; nodes.push(node); node.children?.forEach(visit) }
+    visit(page)
+    assert.equal(page.props.className, 'dsh-super-code-memory')
+    assert.ok(nodes.some(node => node.props?.className === 'dsh-super-code-memory-workspace'))
+    assert.equal(nodes.some(node => node.props?.['aria-label'] === 'vm.library'), false)
+    assert.equal(nodes.some(node => node.children?.some((child: any) => ['vm.users', 'vm.skills', 'vm.legacy', 'vm.legacyHint', 'vm.import'].includes(child))), false)
+  }
 })
 
 
@@ -872,12 +898,13 @@ test('expanded feedback includes every loaded descendant, step, activity and fil
   assert.equal(model.tasks.length, 260)
   assert.equal(items.filter(item => item.kind === 'task').length, 260)
   assert.equal(items.filter(item => item.kind === 'step').length, 260 * 12)
-  assert.equal(items.filter(item => item.kind === 'activity').length, 260 * 80)
+  assert.equal(items.filter(item => item.kind === 'activity').length, 0, 'single calls stay in the execution log')
+  assert.equal(items.filter(item => item.kind === 'tools').length, 260)
   assert.equal(items.filter(item => item.kind === 'file').length, 260)
   assert.equal(new Set(items.map(item => item.key)).size, items.length)
   const first = items.filter(item => item.row?.id === 'agent0')
-  assert.equal(first.map(item => item.kind).join(','), ['task', ...Array(12).fill('step'), ...Array(80).fill('activity'), 'open'].join(','))
-  assert.equal(first.filter(item => item.kind === 'activity').map(item => item.activity.seq).join(','), Array.from({ length: 80 }, (_, i) => i).join(','))
+  assert.equal(first.map(item => item.kind).join(','), ['task', ...Array(12).fill('step'), 'tools', 'open'].join(','))
+  assert.deepEqual(JSON.parse(JSON.stringify(first.find(item => item.kind === 'tools').tools)), [{ tool: 'bash', succeeded: 80, failed: 0, running: false }])
   assert.ok(items.every(item => item.signature.length < 1500), 'measurement identity must not serialize whole session projections')
 })
 

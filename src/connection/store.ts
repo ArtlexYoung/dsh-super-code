@@ -14,6 +14,8 @@ const taskSchema = z.object({
   sequence: z.number().int().nonnegative(), events: z.array(z.object({ cursor: z.number().int().positive(), time: z.number(), status: z.string(), message: z.string().max(1000) }).strict()).max(200),
   operations: z.record(z.string(), z.string().length(64)).refine(value => Object.keys(value).length <= 128),
   connectionId: z.string().max(128).optional(),
+  modelSelection: z.object({ provider: z.string().min(1).max(256), model: z.string().min(1).max(256), reasoningEffort: z.string().min(1).max(128).optional() }).strict().optional(),
+  observation: z.object({ lastEventSeq: z.number().int().min(-1), lastEventType: z.string().max(128), outputTruncated: z.boolean(), errorCode: z.string().max(128).optional() }).strict().optional(),
   baseline: z.object({ available: z.boolean(), root: z.string(), head: z.string(), fingerprint: z.string(), dirty: z.array(z.string()).max(160) }).strict(),
 }).strict().refine(value => value.sessionId === value.id && isAbsolute(value.cwd))
 

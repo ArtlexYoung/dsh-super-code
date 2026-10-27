@@ -435,11 +435,16 @@ test('memory drafts, failed saves, hidden completion, and delete cancellation ha
 
  test('connection drafts preserve a disabled default and validate independent settings', () => {
   const { plugin, dictionaries } = fixture()
-  const config = { enabled: false, port: 23457, maxConcurrent: 4, maxConnections: 4, directoriesConfigured: true, knownDirectories: [], allowedDirectories: [] }
+  const config = { enabled: false, allowNewConversations: true, allowCallerApproval: false, port: 23457, maxConcurrent: 4, maxConnections: 4, directoriesConfigured: true, knownDirectories: [], allowedDirectories: [] }
   assert.deepEqual(JSON.parse(JSON.stringify(plugin.connectionConfiguration(plugin.connectionDraft(config)))), { ok: true, configuration: config })
+  const { allowNewConversations: _oldField, ...legacy } = config
+  assert.equal(plugin.connectionDraft(legacy).allowNewConversations, true)
+  assert.equal(plugin.connectionDraft({ ...config, allowNewConversations: false }).allowNewConversations, false)
+  assert.equal(plugin.connectionDraft(legacy).allowCallerApproval, false)
+  assert.equal(plugin.connectionDraft({ ...config, allowCallerApproval: true }).allowCallerApproval, true)
   const enabled = { ...plugin.connectionDraft(config), enabled: true, allowedDirectories: ['/project', '/project two'] }
   assert.equal(plugin.connectionConfiguration(enabled).ok, true)
-  for (const change of [{ port: '0' }, { port: '1.5' }, { maxConnections: '33' }, { allowedDirectories: [] }]) assert.equal(plugin.connectionConfiguration({ ...enabled, ...change }).ok, false)
+  for (const change of [{ port: '0' }, { port: '1.5' }, { maxConnections: '33' }, { allowedDirectories: [] }, { allowNewConversations: 'false' }, { allowCallerApproval: 'true' }]) assert.equal(plugin.connectionConfiguration({ ...enabled, ...change }).ok, false)
   assert.equal(dictionaries.zh['settings.connectionTab'], '连接')
   assert.equal(dictionaries.en['settings.connectionTab'], 'Connection')
   assert.equal(dictionaries.zh['connection.client'], '连接 Prompt')

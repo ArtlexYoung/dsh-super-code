@@ -4,6 +4,25 @@
 
 Versions are `major.performance.maintenance`. The second number changes when coding results or efficiency improve; the third covers fixes, UI, and compatibility. See [Compatibility](Compatibility.md) for what each release was tested on.
 
+## 0.3.9 · 2026-10-28
+
+**UI**
+
+- Refined Home, preset, budget, deletion-protection, and connection settings. Budgets autosave; invalid input and failed saves retain drafts with retry and reset controls.
+- A compact task sidebar summarizes tool successes, failures, and running state, and shows workspace-relative file paths. Long lists remain virtualized.
+- At most one of Tasks, Collaborative execution, and Memory opens at a time. Tasks opens by default; clicking the current heading collapses all. Circular nodes, running animations, top tooltips, and legacy memory CRUD are kept.
+- Refined bilingual installation, usage, and evaluation docs; refreshed README screenshots; included the existing main-branch grading reconciliation while preserving original verdicts and correction evidence.
+
+**MCP** (service still off by default)
+
+- Added **Allow MCP to create conversations**, on by default; when off, explicit reuse is required. New conversations join an existing workspace, or register the directory under its own name, and use `[MCP]` titles.
+- Query and select model/effort IDs, retaining the conversation's current/default choice when omitted. Selected choices persist in the conversation.
+- Added `dsh_status`, `dsh_models`, `dsh_read`, and `dsh_approve` for capacity diagnosis, paged public history, and explicit failure/recovery guidance. Old failed child tasks no longer fail later continuations.
+- Added **Allow caller approval**, off by default: decisions apply to one exact operation and fall back to DSH when unhandled. New directory access still requires user consent in DSH.
+- Improved busy, retry, and disconnect handling; clarified stable request IDs, waiting for capacity, and releasing sessions with DELETE. Added the `super-code-mcp` CLI.
+
+Only legacy memory is included, without experimental memory, type switching, or migration. Normal conversation prompts and model behavior are unchanged. No new 100-task evaluation was run; historical grading reconciliation is not a claim of better 0.3.9 results. See [Compatibility](Compatibility.md) for test scope.
+
 ## 0.3.8 · 2026-10-26
 
 **MCP connection** (off by default). [Guide](UsageGuide.md#mcp-connection)
@@ -32,7 +51,7 @@ Versions are `major.performance.maintenance`. The second number changes when cod
 - Strict: recognized permanent-deletion commands need your approval every time.
 - Official presets have a separate switch, off by default. Legacy boolean settings and v4 logs are supported.
 
-**Task status**: a read-only section in the sidebar, open by default. [Guide](UsageGuide.md#task-status)
+**Task status**: a read-only section in the sidebar, open by default. [Guide](UsageGuide.md#tasks)
 
 - Shows recorded goals, step progress, actions, and successful file operations. Agent names appear only at task roots.
 - Everything is expanded in a variable-height virtual list, with reading position, keyboard navigation, and running indicators.

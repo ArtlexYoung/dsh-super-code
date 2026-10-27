@@ -9,6 +9,7 @@ import { ConnectionError, defaultConnectionConfig } from '../connection/types.js
 import { ConnectionStore } from '../connection/store.js'
 import { ConnectionHost } from './connection-host.js'
 import type { ConnectionHostServices } from './connection-host.js'
+import { applyConnectionApproval } from './connection-approval.js'
 
 interface DirectoryListing { path: string; home: string; crumbs: { name: string; path: string; hidden: boolean }[]; entries: { name: string; path: string; hidden: boolean }[]; truncated: boolean }
 interface SettingsEnvironment {
@@ -68,6 +69,7 @@ export function applyConnection(ctx: Context): void {
   let service: ConnectionService | false = false
   const environment: SettingsEnvironment = { workspaces: false, picker: false }
   new SuperCodeConnection(ctx, () => service, environment)
+  applyConnectionApproval(ctx, () => service)
   ctx.inject(['workspaceRegistry'], owner => {
     environment.workspaces = owner.get('workspaceRegistry')
     owner.effect(() => () => { environment.workspaces = false })
@@ -93,7 +95,8 @@ export function applyConnection(ctx: Context): void {
       }
     } catch { owner.logger.warn('Super Code connection requires a persistent host profile.'); return }
     const host = new ConnectionHost({ presets: owner.get('superCodePresets'), controller: owner.get('sessionController'),
-      agents: owner.get('agents'), query: owner.get('sessionQuery'), subagents: owner.get('subagents') } as ConnectionHostServices)
+      workspaceRegistry: owner.get('workspaceRegistry'), agents: owner.get('agents'), query: owner.get('sessionQuery'),
+      subagents: owner.get('subagents') } as ConnectionHostServices)
     const connection = new ConnectionService(new ConnectionStore(join(directory, 'super-code-connection')), host)
     try {
       await connection.initialize()

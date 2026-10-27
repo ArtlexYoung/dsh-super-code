@@ -40,7 +40,7 @@ Desktop: enter the full path of the package in "Package name or address", then c
 Web: run the following command (use the actual file name):
 
 ```bash
-dsh plugin --profile web add ./dsh-super-code-0.3.8.tgz
+dsh plugin --profile web add ./dsh-super-code-0.3.9.tgz
 ```
 
 </details>
@@ -58,11 +58,17 @@ If the preset is not listed, check its status in **Settings → Super Code**, or
 
 Select **Super Code** in the right sidebar. It contains three sections:
 
-- **Task status**: goal, step progress, actions performed, and files changed. Read-only.
-- **Agent execution**: the Agent execution tree. Click a node to view details.
-- **Memory library**: view, add, edit, and delete project memory and global preferences.
+- **Tasks**: goal, step progress, tool-call summaries, and changed files. Read-only.
+- **Collaborative execution**: the Agent execution tree. Click a node to view details.
+- **Memory**: view, add, edit, and delete project memory and global preferences.
+
+The three sections open one at a time. Tasks opens by default; click the current heading to collapse it.
+
+[![Task sidebar](docs/images/task-status-preview.png)](docs/images/task-status.png)
 
 [![Agent tree](docs/images/agent-tree-preview.png)](docs/images/agent-tree.png)
+
+Screenshots use the current UI with sample data to illustrate the plugin.
 
 ## Features
 
@@ -79,9 +85,9 @@ See the [usage guide](docs/en/UsageGuide.md).
 
 ## Recent releases
 
+- **0.3.9**: Refined Settings and the task sidebar; improved MCP conversations, model selection, history, and approvals; refreshed UI screenshots.
 - **0.3.8**: Added MCP connection; external clients can delegate, inspect, continue, and cancel DSH conversations. Added a Home overview in Settings.
 - **0.3.7**: Added three-level deletion protection (Relaxed by default). Added Task status to the sidebar.
-- **0.3.6**: Newer Harness versions tightened budgets and results declined; the plugin restores the legacy budgets by default.
 
 [Full changelog](docs/en/Changelog.md)
 
@@ -117,7 +123,7 @@ Versions follow `major.performance.maintenance`: a change in the second number i
 
 - Each configuration was run once. The same task can pass in one run and fail in another; run-to-run variance for a fixed configuration has not been estimated.
 - The default-budget and legacy-budget runs used different plugin versions (`0.3.4` → `0.3.5`), so the gain cannot be attributed entirely to budgets.
-- `0.3.6` – `0.3.8` have not been re-evaluated on the 100 tasks.
+- `0.3.6` – `0.3.9` have not been re-evaluated on the 100 tasks.
 - The cross-model comparison is between two complete systems and cannot isolate the plugin's contribution.
 
 [Results and methodology](docs/en/EvaluationResults.md) · [All result tables](eval/results/swebench-pro-final-100/ResultsTables.md)

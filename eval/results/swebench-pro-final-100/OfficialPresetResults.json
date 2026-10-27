@@ -1,6 +1,6 @@
 {
   "schema": 3,
-  "snapshot_at": "2026-10-16T14:46:59+08:00",
+  "snapshot_at": "2026-10-27T15:40:21+08:00",
   "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
   "historical_exposure": true,
   "accounting": {
@@ -32,6 +32,10 @@
       "sha256": "3dd7eb80822a0ae96ab2a940150716c1008ef9c23f4bb5af113fc499f577d2df",
       "grader_verdicts_preserved": true,
       "policy": "Passed includes verified test-name corrections only when every missing required name maps exactly to a passing test and all raw tests pass. Original grader verdicts, patch evidence, model usage and timing are preserved."
+    },
+    "reconciliation": {
+      "file": "GradingReconciliation.json",
+      "sha256": "bb99eadc1d16f0997f1180c7a0d92761115a32901e8b0e7c72f3814e9bc8d780"
     }
   },
   "modes": [
@@ -10989,32 +10993,33 @@
     {
       "preset": "standard",
       "reasoning_effort": "max",
-      "status": "in_progress",
+      "status": "complete",
       "provenance": {
         "harness_revision": "649bfcddf0e3532510a38380b9620570d8b13818",
-        "timing_snapshot_sha256": "e58863f595eca33c8258db57305fdbd92fc44a84753cf4177f17c9da1c465375"
+        "timing_snapshot_sha256": "e58863f595eca33c8258db57305fdbd92fc44a84753cf4177f17c9da1c465375",
+        "reconciliation_id": "official-standard-max-task610"
       },
       "summary": {
         "target_tasks": 100,
-        "valid_scores": 99,
-        "passed": 49,
-        "average_raw_minutes": 20.45240404040404,
-        "average_net_minutes": 19.561294612794615,
+        "valid_scores": 100,
+        "passed": 50,
+        "average_raw_minutes": 20.389102,
+        "average_net_minutes": 19.506903666666666,
         "excluded_retry_minutes": 88.21983333333333,
         "requests_without_usage": 0,
-        "cache_hit_rate": 0.9940435953381134,
+        "cache_hit_rate": 0.9940310002664261,
         "net_timing_status": "complete",
-        "average_model_calls": 101.06060606060606,
-        "average_tool_calls": 124.63636363636364,
-        "average_input_tokens": 11417324.02020202,
-        "average_cached_input_tokens": 11349317.818181818,
-        "average_uncached_input_tokens": 68006.20202020202,
-        "average_output_tokens": 109548.17171717172,
-        "average_total_tokens": 11526872.191919193,
+        "average_model_calls": 101.26,
+        "average_tool_calls": 124.94,
+        "average_input_tokens": 11434388.18,
+        "average_cached_input_tokens": 11366136.32,
+        "average_uncached_input_tokens": 68251.86,
+        "average_output_tokens": 109384.81,
+        "average_total_tokens": 11543772.99,
         "pending_regrades": 0,
         "identifier_review_additional_passes": 1,
         "identifier_review_status": "all_snapshot_grading_logs_reviewed",
-        "grader_passed": 48
+        "grader_passed": 49
       },
       "rows": [
         {
@@ -13119,9 +13124,31 @@
           "timing_receipt_sha256": "a8af542eacc95120b55c58950f065bd27fae3558eada70bec63bc227b08ae4c3",
           "original_evidence_sha256": "2ab3e2bf2464cb26b9bfdf9a60c32c6e57bdf62be1b48be8778f08ce085d7ad7",
           "patch_sha256": "ed0cf0b0e8e7b10b981afdd97d4964e10220ce25bba9d65dc1c6bf54769495c0"
+        },
+        {
+          "instance_id": "instance_gravitational__teleport-c1b1c6a1541c478d7777a48fca993cc8206c73b9",
+          "task_index": 610,
+          "passed": true,
+          "model_calls": 121,
+          "input_tokens": 13123740,
+          "cached_input_tokens": 13031168,
+          "uncached_input_tokens": 92572,
+          "output_tokens": 93212,
+          "total_tokens": 13216952,
+          "tool_calls": 155,
+          "requests_without_usage": 0,
+          "raw_response_ms": 847332.0,
+          "response_ms": 847332.0,
+          "excluded_retry_ms": 0,
+          "failed_requests_excluded": 0,
+          "patch_sha256": "287cd62a6c70c844ffd716651a93b9baa9153ec6f2e1f56e8f34c82dabba1d4c",
+          "timing_method": "attested-no-failed-requests",
+          "timing_receipt_sha256": "01ee28209ac91c17dddaeb3df557210ae0290350749f2b3a975cc833dbe32c8e",
+          "original_evidence_sha256": "2d85287a9dc6a2b27f1ff0c94ee16697bbac14cb13784a2731a07aa258c5ec84"
         }
       ],
       "pending_grading_rows": []
     }
-  ]
+  ],
+  "previous_snapshot_at": "2026-10-16T14:46:59+08:00"
 }

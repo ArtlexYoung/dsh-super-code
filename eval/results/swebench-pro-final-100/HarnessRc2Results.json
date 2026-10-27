@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "snapshot_at": "2026-10-20T11:56:18.995065+00:00",
+  "snapshot_at": "2026-10-27T15:40:21+08:00",
   "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
   "accounting": "Final scored attempt only. Failed requests and retry waits excluded from net time; failed requests excluded from reported usage/calls. Output includes reasoning; cached input is an input subset. Unknown usage is not estimated. Grading does not add model calls.",
   "model_id": "deepseek/deepseek-flash",
@@ -25,7 +25,7 @@
       "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
       "task_count": 100,
       "valid_scores": 100,
-      "passed": 45,
+      "passed": 46,
       "means": {
         "model_calls": 85.05,
         "input_tokens": 6769835.02,
@@ -1494,10 +1494,10 @@
           "instance_id": "instance_NodeBB__NodeBB-00c70ce7b0541cfc94afe567921d7668cdc8f4ac-vnan",
           "repo": "NodeBB/NodeBB",
           "base_commit": "ae3fa85f40db0dca83d19dda1afb96064dffcc83",
-          "started_at": "2026-10-18T14:11:53.023Z",
-          "completed_at": "2026-10-18T14:11:53.025Z",
+          "started_at": "2026-10-18T06:36:53.887Z",
+          "completed_at": "2026-10-18T06:56:05.994Z",
           "valid_score": true,
-          "passed": false,
+          "passed": true,
           "model_calls": 53,
           "input_tokens": 2136135,
           "cached_input_tokens": 2096128,
@@ -1508,8 +1508,15 @@
           "excluded_retry_ms": 0,
           "unknown_usage_requests": 0,
           "patch_sha256": "98408388f0e6e423612ec19c0b722bc679f8bae0c456b134362fc0aba763c9c7",
-          "summary_sha256": "70d474bbedae183ed118f0806b267d5f8b9262ba19161cb8cee59917351c50bb",
-          "grading_reason": "two_consistent_patch_only_regrades_after_environment_repair"
+          "summary_sha256": "18613404f788747b0c61f3ea097683d13b58540d9c208f41a2c08b49288c2d51",
+          "grading_reason": "two_consistent_complete_patch_only_grades_after_reviewed_infrastructure_errors",
+          "original_passed": false,
+          "grader_passed": false,
+          "grading_status": "scored",
+          "grading_review": {
+            "file": "GradingReconciliation.json",
+            "id": "nodebb-additional-1"
+          }
         },
         {
           "task_index": 456,
@@ -2237,7 +2244,8 @@
           "summary_sha256": "6455239c5ffaf92d09b1e05fe33d10bdb48e0d871b38a4d920a756ba4aa6765f",
           "grading_reason": "two_consistent_patch_only_regrades_after_environment_repair"
         }
-      ]
+      ],
+      "pending_reviews": 0
     },
     {
       "name": "Super Code 0.3.4／默认预算",
@@ -2258,16 +2266,16 @@
       "schema": 1,
       "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
       "task_count": 100,
-      "valid_scores": 99,
-      "passed": 40,
+      "valid_scores": 100,
+      "passed": 41,
       "means": {
-        "model_calls": 69.05050505050505,
-        "input_tokens": 5063514.303030303,
-        "cached_input_tokens": 5008071.111111111,
-        "uncached_input_tokens": 55443.19191919192,
-        "output_tokens": 61726.121212121216,
-        "total_tokens": 5125240.424242424,
-        "response_ms": 1227479.0505050505
+        "model_calls": 68.81,
+        "input_tokens": 5027305.27,
+        "cached_input_tokens": 4972166.4,
+        "uncached_input_tokens": 55138.87,
+        "output_tokens": 61368.28,
+        "total_tokens": 5088673.55,
+        "response_ms": 1221837.54
       },
       "unknown_usage_requests": 0,
       "records": [
@@ -3730,8 +3738,8 @@
           "base_commit": "ae3fa85f40db0dca83d19dda1afb96064dffcc83",
           "started_at": "2026-10-18T06:36:54.413Z",
           "completed_at": "2026-10-18T07:07:32.468Z",
-          "valid_score": false,
-          "passed": false,
+          "valid_score": true,
+          "passed": true,
           "model_calls": 45,
           "input_tokens": 1442611,
           "cached_input_tokens": 1417600,
@@ -3742,11 +3750,16 @@
           "excluded_retry_ms": 0,
           "unknown_usage_requests": 0,
           "patch_sha256": "0991ec05e7c0a4bc1624bf80f4440c7c6007d06a6e458bdd9e2c9a7c2d6b4e68",
-          "summary_sha256": "4b88c22a32ded7922c1a594e4da3c90c4a8095e0839eafb3caf2f526d4a66a70",
-          "grading_reason": "offline_dependency_and_reference_setup_timeout_under_review",
+          "summary_sha256": "fb6e48f16082e44d6855cd3c493c233ce53837c11776adcc743fe5ba79e894c9",
+          "grading_reason": "two_consistent_complete_patch_only_grades_after_reviewed_infrastructure_errors",
           "original_passed": false,
-          "grading_status": "pending-review",
-          "score_review": {
+          "grading_status": "scored",
+          "grader_passed": false,
+          "grading_review": {
+            "file": "GradingReconciliation.json",
+            "id": "nodebb-15"
+          },
+          "previous_score_review": {
             "reason": "Runtime npm dependency was unavailable in isolation. Dependencies are now bundled offline, but the reference setup still timed out at the original limit; no clean verdict yet.",
             "original_summary_sha256": "4b88c22a32ded7922c1a594e4da3c90c4a8095e0839eafb3caf2f526d4a66a70",
             "source_unchanged": true,
@@ -4489,7 +4502,7 @@
           "grading_reason": "initial_valid_score"
         }
       ],
-      "pending_reviews": 1
+      "pending_reviews": 0
     },
     {
       "name": "Super Code 0.3.5／旧预算",
@@ -4510,16 +4523,16 @@
       "schema": 1,
       "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
       "task_count": 100,
-      "valid_scores": 99,
-      "passed": 48,
+      "valid_scores": 100,
+      "passed": 49,
       "means": {
-        "model_calls": 68.61616161616162,
-        "input_tokens": 5069948.404040404,
-        "cached_input_tokens": 5016822.909090909,
-        "uncached_input_tokens": 53125.49494949495,
-        "output_tokens": 61776.15151515151,
-        "total_tokens": 5131724.555555556,
-        "response_ms": 989174.4747474748
+        "model_calls": 68.54,
+        "input_tokens": 5046841.88,
+        "cached_input_tokens": 4993935.32,
+        "uncached_input_tokens": 52906.56,
+        "output_tokens": 61544.53,
+        "total_tokens": 5108386.41,
+        "response_ms": 984963.9
       },
       "unknown_usage_requests": 1,
       "records": [
@@ -5982,8 +5995,8 @@
           "base_commit": "ae3fa85f40db0dca83d19dda1afb96064dffcc83",
           "started_at": "2026-10-19T06:37:26.501Z",
           "completed_at": "2026-10-19T06:56:12.437Z",
-          "valid_score": false,
-          "passed": false,
+          "valid_score": true,
+          "passed": true,
           "model_calls": 61,
           "input_tokens": 2759296,
           "cached_input_tokens": 2728064,
@@ -5994,11 +6007,16 @@
           "excluded_retry_ms": 0,
           "unknown_usage_requests": 0,
           "patch_sha256": "6b29ac6b1bd5d61b2102afdc31213120fe5390185874ff49b10cded4a24c1051",
-          "summary_sha256": "1d22cc73fbc45c2f348d769d8e7fc26f7e6d7666bfbe98dd8cef479288549ae3",
-          "grading_reason": "offline_dependency_and_reference_setup_timeout_under_review",
+          "summary_sha256": "e9cb98c7b20bb66af61d013248cc0d47a8c0c603640c07caf7a2dfbd3d3b8090",
+          "grading_reason": "two_consistent_complete_patch_only_grades_after_reviewed_infrastructure_errors",
           "original_passed": false,
-          "grading_status": "pending-review",
-          "score_review": {
+          "grading_status": "scored",
+          "grader_passed": false,
+          "grading_review": {
+            "file": "GradingReconciliation.json",
+            "id": "nodebb-16"
+          },
+          "previous_score_review": {
             "reason": "Runtime npm dependency was unavailable in isolation. Dependencies are now bundled offline, but the reference setup still timed out at the original limit; no clean verdict yet.",
             "original_summary_sha256": "1d22cc73fbc45c2f348d769d8e7fc26f7e6d7666bfbe98dd8cef479288549ae3",
             "source_unchanged": true,
@@ -6741,7 +6759,7 @@
           "grading_reason": "initial_valid_score"
         }
       ],
-      "pending_reviews": 1
+      "pending_reviews": 0
     },
     {
       "name": "标准 high／旧预算",
@@ -8244,8 +8262,15 @@
           "excluded_retry_ms": 899025,
           "unknown_usage_requests": 0,
           "patch_sha256": "753786160f7d8ecddfb88073fb6574822ff36462293a4b0a95f8fd17da972453",
-          "summary_sha256": "5ff6c4cbc91584c28a1b4e8cc83bc050e8fa21019293542baee6783959bf68bd",
-          "grading_reason": "initial_valid_score"
+          "summary_sha256": "bd4e9f01a5438e04dc5fff8e84e48a7b99462f116db352defddda6157e74259f",
+          "grading_reason": "two_consistent_complete_patch_only_grades_after_reviewed_infrastructure_errors",
+          "original_passed": false,
+          "grader_passed": false,
+          "grading_status": "scored",
+          "grading_review": {
+            "file": "GradingReconciliation.json",
+            "id": "nodebb-additional-2"
+          }
         },
         {
           "task_index": 456,
@@ -8973,8 +8998,14 @@
           "summary_sha256": "45d05c6a3f3b7fb94b1ae0855d56845d48aab32c06cae47381874194dcf7da2f",
           "grading_reason": "initial_valid_score"
         }
-      ]
+      ],
+      "pending_reviews": 0
     }
   ],
-  "score_review_policy": "Unresolved environment failures remain in the task records with valid_score=false; original verdicts, hashes and per-answer metrics are preserved, and aggregate means use valid scores only."
+  "score_review_policy": "Unresolved environment failures remain in the task records with valid_score=false; original verdicts, hashes and per-answer metrics are preserved, and aggregate means use valid scores only.",
+  "previous_snapshot_at": "2026-10-20T11:56:18.995065+00:00",
+  "reconciliation": {
+    "file": "GradingReconciliation.json",
+    "sha256": "bb99eadc1d16f0997f1180c7a0d92761115a32901e8b0e7c72f3814e9bc8d780"
+  }
 }

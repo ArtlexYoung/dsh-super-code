@@ -1,8 +1,12 @@
 # GLM 评测材料 · GLM Evaluation Artifacts
 
-同一批 SWE-bench Pro hard-100、同一模型 `glm-5.3-flash`、同一 `max` 思考等级：DSH `0.1.5-rc.2` + Super Code `0.3.4` 对照完整原生 ZCode Desktop `3.14.4` / CLI `0.16.9`。两组均完成 100 题，通过数分别为 **44 和 28**。[完整指标与限制](../../docs/EvaluationResults.md#跨模型迁移--cross-model-transfer)
+同一批 SWE-bench Pro hard-100、同一模型 `glm-5.3-flash`、同一 `max` 思考等级：DSH `0.1.5-rc.2` + Super Code `0.3.4` 对照完整原生 ZCode Desktop `3.14.4` / CLI `0.16.9`。两组均完成 100 题，通过数分别为 **45 和 29**。[完整指标与限制](../../docs/EvaluationResults.md#跨模型)
 
-The same SWE-bench Pro hard-100 set, `glm-5.3-flash`, and `max` reasoning: DSH `0.1.5-rc.2` + Super Code `0.3.4` versus complete native ZCode Desktop `3.14.4` / CLI `0.16.9`. Both completed 100 tasks, with **44 and 28 passes**. [Metrics and limitations](../../docs/EvaluationResults.md#跨模型迁移--cross-model-transfer)
+The same SWE-bench Pro hard-100 set, `glm-5.3-flash`, and `max` reasoning: DSH `0.1.5-rc.2` + Super Code `0.3.4` versus complete native ZCode Desktop `3.14.4` / CLI `0.16.9`. Both completed 100 tasks, with **45 and 29 passes**. [Metrics and limitations](../../docs/en/EvaluationResults.md#cross-model)
+
+成绩已包含 10 月 22 日的 NodeBB 原答案复评，两组各补回 1 题通过，逐题用量和耗时不变。[复核依据](../results/swebench-pro-final-100/GradingReconciliation.json)
+
+Scores include the October 22 NodeBB regrades of the original answers, restoring one pass per group without changing per-task usage or timing. [Review evidence](../results/swebench-pro-final-100/GradingReconciliation.json)
 
 ## 文件 · Files
 

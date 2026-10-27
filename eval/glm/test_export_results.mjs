@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
 import { test } from 'node:test'
 import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -100,4 +101,71 @@ test('all six published groups reconcile exactly across the same 100 tasks', asy
   }
   assert.equal(groups.length, 6)
   assert(groups.every(tasks => JSON.stringify(tasks) === JSON.stringify(groups[0])))
+})
+
+test('published reconciliations bind original patches and preserve raw verdicts', async () => {
+  const base = new URL('../results/swebench-pro-final-100/', import.meta.url)
+  const bytes = await readFile(new URL('GradingReconciliation.json', base))
+  const review = JSON.parse(bytes)
+  const digest = createHash('sha256').update(bytes).digest('hex')
+  assert.equal(review.new_model_calls, 0)
+  assert.equal(review.records.length, 7)
+  assert(!/\/Users\/|\/Volumes\/|\.development\//u.test(bytes.toString()))
+  const nodes = review.records.filter(row => row.id.startsWith('nodebb-'))
+  assert.equal(nodes.length, 6)
+  for (const file of ['GLMComparison.json', 'HarnessRc2Results.json']) {
+    const snapshot = JSON.parse(await readFile(new URL(file, base)))
+    assert.equal(snapshot.reconciliation.sha256, digest)
+    for (const group of snapshot.runs) {
+      const receipt = nodes.find(row => row.group === group.name)
+      assert(receipt)
+      const row = group.records.find(item => item.instance_id === receipt.instance_id)
+      assert.equal(row.patch_sha256, receipt.patch_sha256)
+      assert.equal(row.summary_sha256, receipt.corrected_summary_sha256)
+      assert.equal(row.original_passed, receipt.previous_passed)
+      assert.equal(row.passed, receipt.passed)
+      assert.equal(row.grader_passed, receipt.grader_passed)
+      assert.equal(row.grading_review.id, receipt.id)
+      assert.equal(receipt.model_calls_added, 0)
+      assert.equal(receipt.original_answer_and_accounting_preserved, true)
+      assert.equal(receipt.confirmations.length, 2)
+      for (const confirmation of receipt.confirmations) {
+        assert.equal(confirmation.passed, row.passed)
+        assert.equal(confirmation.no_test_assertion_or_status_changed, true)
+        assert.deepEqual(confirmation.missing, [])
+        assert.deepEqual(confirmation.extra_failures_require_attribution, [])
+        if (row.passed) assert.deepEqual(confirmation.failed, [])
+      }
+    }
+  }
+})
+
+test('all official presets include the reconciled task set and exact per-task means', async () => {
+  const base = new URL('../results/swebench-pro-final-100/', import.meta.url)
+  const snapshot = JSON.parse(await readFile(new URL('OfficialPresetResults.json', base)))
+  const bytes = await readFile(new URL('GradingReconciliation.json', base))
+  const review = JSON.parse(bytes)
+  assert.equal(snapshot.audit.reconciliation.sha256, createHash('sha256').update(bytes).digest('hex'))
+  const expected = snapshot.modes[0].rows.map(row => row.instance_id).sort()
+  for (const mode of snapshot.modes) {
+    assert.equal(mode.status, 'complete')
+    assert.equal(mode.rows.length, 100)
+    assert.equal(new Set(mode.rows.map(row => row.instance_id)).size, 100)
+    assert.deepEqual(mode.rows.map(row => row.instance_id).sort(), expected)
+    assert.equal(mode.summary.valid_scores, 100)
+    assert.equal(mode.summary.passed, mode.rows.filter(row => row.passed).length)
+    for (const key of ['model_calls', 'tool_calls', 'input_tokens', 'cached_input_tokens',
+      'uncached_input_tokens', 'output_tokens', 'total_tokens']) {
+      assert.equal(mode.summary[`average_${key}`], mode.rows.reduce((sum, row) => sum + row[key], 0) / 100)
+    }
+    for (const [key, field] of [['raw_response_ms', 'average_raw_minutes'], ['response_ms', 'average_net_minutes']]) {
+      const mean = mode.rows.reduce((sum, row) => sum + row[key], 0) / 100 / 60000
+      assert(Math.abs(mode.summary[field] - mean) < 1e-10)
+    }
+  }
+  const restored = review.records.find(row => row.id === 'official-standard-max-task610')
+  const mode = snapshot.modes.find(row => row.preset === 'standard' && row.reasoning_effort === 'max')
+  assert.deepEqual(mode.rows.find(row => row.instance_id === restored.added_row.instance_id), restored.added_row)
+  assert.equal(restored.grading_runs_added, 0)
+  assert.equal(restored.model_calls_added, 0)
 })

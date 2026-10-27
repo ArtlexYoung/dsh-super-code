@@ -1,88 +1,140 @@
-# 版本记录 · Changelog
+# 版本记录
 
-- **0.3.8 · 2026-10-26**：新增默认关闭、仅监听 `127.0.0.1` 且需凭证认证的 Streamable HTTP MCP 服务，提供 `dsh_sessions`、`dsh_run`、`dsh_wait`、`dsh_send`、`dsh_cancel` 与 `dsh_request_directory`。外部客户端可委派原生 DSH 对话、读取进度、跟进和取消，沿用宿主模型、预设及权限，不改变普通会话提示词，也不自动批准工具权限。保留幂等请求、重启中断状态、有界输出及 Git 工作区观察。[MCP 连接](UsageGuide.md#mcp-连接--mcp-connection)
-  **0.3.8 · 2026-10-26**: Adds an opt-in, token-authenticated Streamable HTTP MCP service bound to `127.0.0.1`, with `dsh_sessions`, `dsh_run`, `dsh_wait`, `dsh_send`, `dsh_cancel`, and `dsh_request_directory`. External clients can delegate native DSH conversations, inspect progress, follow up, and cancel using the host model, preset, and permissions. Normal conversation prompts and tool approvals are unchanged. Includes idempotent requests, interrupted-state recovery without automatic replay, bounded output, and Git workspace observations. [MCP connection](UsageGuide.md#mcp-连接--mcp-connection)
+中文 · [English](en/Changelog.md)
 
-  连接后可按允许目录查询本服务持有的最近对话与连接容量，由调用方明确复用指定任务或新建，不默认复用最新对话。最大连接数与任务并发同步，默认均为 3，保留用户已保存的上限。目录改为工作区与自定义目录勾选列表，每次打开刷新；外部申请新目录需要用户在 DSH 弹窗中批准，撤权后不能通过复用绕过限制。
-  Lists recent service-owned conversations and connection capacity by allowed directory, so callers explicitly reuse a selected task or create a new conversation; the latest conversation is never selected automatically. Connection and task-concurrency limits stay synchronized, default to three, and preserve saved user limits. Workspace and custom-directory checklists refresh when opened. External requests for new directories require consent in DSH, and reuse cannot bypass revoked directory access.
+版本号格式为「主版本.效果版本.维护版本」。第二位变化表示编码效果或效率有提升；第三位表示修复、界面和兼容性更新。各版本的验证范围见[兼容性](Compatibility.md)。
 
-  设置新增首页概览，集中展示预设状态与版本、删除保护等级、MCP 开关及在线/历史对话数量；客户端和关联会话详情归连接页，删除保护独立成页，预设配置直接展开。连接修改自动保存，凭证默认展开；修复工作区实体 getter 丢失导致“目录不可用”和无法启用连接的问题。保留 `0.1.5-alpha.1` 至 `0.2.1-rc.2` 的已适配范围，分批宿主验证及平台限制见[兼容性记录](Compatibility.md)，本次不新增效果评测成绩。
-  Adds a Home overview for preset status and versions, deletion protection, the MCP switch, and connected/past conversation counts. Client and linked-session details live in Connection; deletion protection has a separate tab, and preset configuration displays directly. Connection changes save automatically and credentials open expanded. Fixes missing Workspace getters that marked valid directories unavailable and prevented activation. Retains the adapted `0.1.5-alpha.1`–`0.2.1-rc.2` range; see [compatibility records](Compatibility.md) for staged host checks and platform limits. No new effectiveness scores are claimed.
+## 0.3.8 · 2026-10-26
 
-- **0.3.7 · 2026-10-24**：新增关闭、宽松、严格三档删除保护，默认宽松：提示优先使用可恢复的 `trash`，脚本中同样建议使用，用户明确要求时可用 `rm`；严格模式识别永久删除命令并逐次请求确认，官方预设另设开关且默认关闭。兼容旧布尔设置与 v4 日志。[删除保护](UsageGuide.md#删除保护--deletion-protection)
-  **0.3.7 · 2026-10-24**: Adds Off, Relaxed, and Strict deletion protection, defaulting to Relaxed: prefer recoverable `trash`, including in scripts, while honoring explicit `rm` requests. Strict mode recognizes permanent-deletion commands and requests per-call approval; official presets opt in separately. Supports legacy boolean settings and v4 journals. [Deletion protection](UsageGuide.md#删除保护--deletion-protection)
+**MCP 连接**（默认关闭）。[说明](UsageGuide.md#mcp-连接)
 
-  Super Code 侧栏新增只读任务状态并默认展开，从现有记录展示目标、步骤进度、动作和成功文件操作；Agent 名字只在任务根显示。任务、步骤、已加载动作全部展开，使用变高虚拟滚动，保留阅读位置、键盘导航和运行指示。保留原圆圈执行树与记忆库，三项互斥切换。任务状态不改提示词、模型请求、工具定义或执行行为；文件记录不等同完整 Git diff，缺失与截断明确提示。[任务状态](UsageGuide.md#任务状态--task-status)
-  Adds a read-only Task status section, open by default, showing recorded objectives, step counts, activity, and successful file operations. Agent names appear only at task roots. All loaded tasks, steps, and activity stay expanded in a variable-height virtual list with reading-position retention, keyboard navigation, and running indicators. Preserves the circular Agent graph and memory library with exclusive section switching. Task status changes no prompts, model requests, tool definitions, or execution behavior. File records are not a complete Git diff; missing or bounded data is labeled. [Task status](UsageGuide.md#任务状态--task-status)
+- 在本机 `127.0.0.1` 上提供 Streamable HTTP MCP 服务，使用凭证认证。
+- 提供六个工具：`dsh_sessions`、`dsh_run`、`dsh_wait`、`dsh_send`、`dsh_cancel`、`dsh_request_directory`。外部客户端可委派 DSH 对话、查看进度、补充要求和取消任务。
+- 沿用宿主的模型、预设和权限；不修改普通会话的提示词，不自动批准权限。
+- 先通过 `dsh_sessions` 按目录查询最近对话和连接额度，由调用方明确选择复用或新建，不默认复用最新对话。
+- 最大连接数与任务并发上限保持一致，默认均为 3，并保留用户已保存的值。
+- 工作目录改为勾选列表，每次打开时刷新。外部申请新目录需在 DSH 弹窗中批准；撤销授权后无法通过复用绕过。
+- 请求具备幂等性；重启后任务标记为中断，不自动重发；输出有长度上限；附带 Git 工作区观察结果。
 
-README 仅保留最近三个版本，完整记录见本页；[评测说明](EvaluationResults.md) 列出各组 DSH、插件与模型版本，以及 GLM 迁移和新版预算对照。
+**设置页**
 
-README shows the three most recent releases; this page retains the full history. The [evaluation report](EvaluationResults.md) identifies DSH, plugin, and model versions, with GLM transfer and newer-host budget comparisons.
+- 新增首页：显示预设状态和版本、删除保护等级、MCP 开关以及在线/历史对话数。
+- 客户端和关联会话详情移至「连接」页；删除保护单独成页；预设配置默认展开。
+- 连接设置自动保存，凭证默认展开显示。
 
-- **0.3.6 · 2026-10-20**：排查发现新版 Harness 预算收紧后出现效果退化，因此增加插件内预算配置，并默认使用此前 Pro 测试中效果更好的旧预算，无需用户手动填写：按完整上下文窗口计算、80% 触发压缩、保留最近 16% 原文、摘要上限 8,192 Token，压缩追加尝试与溢出重试各 1 次，支持新版 PTC 的宿主默认执行时限和上限均为 600 秒。保留原有宿主默认值提示、用户自定义覆盖及运行中 Agent 的配置快照；旧宿主按能力禁用时限覆盖，始终遵守宿主时限上限。官方预设仍需手动开启应用。该修复不代表新增或改写历史评测成绩。[预算设置](UsageGuide.md#运行预算--runtime-budgets)
-  **0.3.6 · 2026-10-20**: Investigation found regressions after newer Harness versions reduced their budgets. Adds in-plugin budget settings and defaults to the older budgets that performed better in the Pro tests, without manual setup: full-context-window accounting, compression at 80%, 16% recent verbatim retention, an 8,192-token summary cap, one additional compression attempt and one overflow retry, and 600-second default/maximum deadlines on hosts with the newer PTC provider. Preserves host-default hints, user overrides, and running Agents' configuration snapshots. Older hosts disable unsupported deadline overrides, and host ceilings always apply. Official presets remain opt-in. This fix does not add or revise historical evaluation scores. [Budget settings](UsageGuide.md#运行预算--runtime-budgets)
+**修复**：读取工作区路径出错，导致有效目录显示「目录不可用」、无法启用连接。
 
-  设置页按“预设状态 / 上下文配置”分组，预算支持保存、恢复默认和并发编辑冲突检查；修复语言偏好尚未保存时提前重载导致语言回退的问题。完成 20 个 Web 版本、5 个官方 macOS arm64 Desktop 版本与 DSH NEXT 的兼容复验；[验证范围与限制](Compatibility.md)。
-  Groups settings into Preset status / Context settings, with budget saving, reset, and concurrent-edit conflict checks. Fixes language changes being lost when the page reloads before the host saves the preference. Revalidated 20 Web versions, five official macOS arm64 Desktop versions, and DSH NEXT; [coverage and limits](Compatibility.md).
+## 0.3.7 · 2026-10-24
 
-- **0.3.5 · 2026-10-18**：适配 Harness `0.2.1-rc.2`，修复 v4 日志迁移后旧任务记录不可见的问题，保留 `0.1.5-alpha.1` 起的兼容性，并补齐官方桌面安装说明。[验证范围](Compatibility.md)
-  **0.3.5 · 2026-10-18**: Supports Harness `0.2.1-rc.2`, restores legacy task records after v4 log migration, retains support from `0.1.5-alpha.1`, and clarifies official Desktop installation. [Validation coverage](Compatibility.md)
+**删除保护**：提供关闭、宽松、严格三档，默认宽松。[说明](UsageGuide.md#删除保护)
 
-- **0.3.4 · 2026-10-15**：补充官方预设在同一批 100 题上的成绩、用量与耗时核算说明；新增 README 致谢表格和[详细致谢文档](Acknowledgements.md)，说明宿主、界面设计、Skill、无障碍资料、评测项目与运行依赖的贡献和借鉴范围，并将文档纳入 npm 包。
-  **0.3.4 · 2026-10-15**: Adds official preset results on the same 100 tasks, with usage and timing methodology. Adds a README acknowledgements table and [detailed acknowledgements](Acknowledgements.md) covering the host, UI design, Skills, accessibility resources, evaluation projects, and runtime dependencies; includes the document in the npm package.
+- 宽松：引导 Agent 默认使用可恢复的 `trash`，脚本中同样适用；用户明确要求时可使用 `rm`。
+- 严格：识别永久删除命令，每次执行前均需确认。
+- 官方预设另设开关，默认关闭。兼容旧的布尔配置和 v4 日志。
 
-- **0.3.3 · 2026-10-14**：执行树与记忆库合并为单个 Super Code 侧栏，默认展开执行区，两区互斥且始终保留一个展开；切换后保留树状态、筛选、搜索、阅读位置与草稿，记忆记录同页定位。记忆支持新增、编辑、取消、保存和确认删除，手动条目标明来源，只保留当前内容，失败保留输入并防止并发覆盖。保留圆形节点，增强运行环动画，修复节点光环、文字与连线重叠。内嵌按需加载的前端 Skill，覆盖布局对齐、操作舒适度、响应式、交互状态和浏览器验证；旧预设需要确认重装。整理双语安装、评测用途、版本规则及简短更新说明；[验证范围](Compatibility.md)。
-  **0.3.3 · 2026-10-14**: Combines the Agent tree and memory library in one Super Code sidebar, with the tree open by default and exactly one section expanded. Switching preserves tree state, filters, search, reading position, and drafts; memory activity links open in the same page. Adds memory creation, editing, cancellation, saving, and confirmed deletion. Manual entries are labeled; only current content is stored, failed writes preserve input, and concurrent changes are protected. Retains circular nodes, makes running animation clearer, and fixes halo, label, and connector overlap. Bundles an on-demand frontend Skill for alignment, comfortable controls, responsive layout, interaction states, and browser validation; existing presets require confirmed reinstallation. Clarifies bilingual installation, evaluation methodology, version rules, and concise update notes; [validation scope](Compatibility.md).
+**任务状态**：侧边栏新增只读的任务状态，默认展开。[说明](UsageGuide.md#任务状态)
 
-- **0.3.2 · 2026-10-11**：统一预设设置、执行树和记忆库的视觉样式，保留圆形节点，紧凑工具栏显示“已收起”/“自动整理”名称；所有插件按钮使用上方名称气泡，历史时间/排序改为支持键盘操作的自定义下拉。Agent 详情按对话呈现用户消息、回复和可展开的真实工具调用/结果，兼容旧版与新版 journal，顶部额外信息按需展开。记忆库新增主题导航、筛选和同主题条目，精简中英文冗余文案。保留预设安装、版本提示、归属保护及重装备份；[验证范围](Compatibility.md)。
-  **0.3.2 · 2026-10-11**: Refreshes preset settings, the Agent tree, and memory library while retaining circular nodes. Compact actions have visible Collapsed/Organize labels; plugin buttons show name bubbles above, and history filters use keyboard-accessible custom dropdowns. Agent details show user/reply roles and expandable real tool calls/results from old and new journals, with additional header information folded. Adds memory topic navigation, filtering, and related entries, and trims redundant bilingual copy. Preserves installation, version notices, ownership protection, and reinstall backups; [validation scope](Compatibility.md).
-  修复新版侧栏聚焦导致下拉选项无法点击的问题；启动时等待宿主语言偏好加载，避免暂定浏览器语言触发预设重复同步与刷新。
-  Fixes dropdown options closing before selection when newer sidebars take focus. Startup waits for the host language preference, preventing provisional browser locales from repeatedly synchronizing presets and reloading the page.
+- 根据已有记录展示目标、步骤进度、操作和成功的文件改动。Agent 名称仅在任务根节点显示。
+- 内容全部展开，采用变高虚拟滚动；保留阅读位置、键盘导航和运行指示。
+- 保留原有的执行树和记忆库，三个部分互斥切换。
+- 不修改提示词、模型请求、工具定义或执行行为。文件记录不等同于完整的 Git diff，缺失和截断时会提示。
 
-- **0.3.1 · 2026-10-10**：设置页始终展开，展示插件与当前预设的独立版本，提示不一致或未记录版本；声明式宿主新增安装、确认重装、改名、恢复备份及默认名称/描述语言同步。保留目录式安装、归属校验和自定义内容保护，允许新版宿主使用的 Cordis/Schemastery alpha 依赖。
-  **0.3.1 · 2026-10-10**: Keeps settings expanded and shows independent plugin/preset versions with mismatch or unrecorded-version notices. Adds installation, confirmed reinstallation, renaming, recovery backups and default display-language synchronization on declarative hosts. Retains directory installation, ownership checks and custom display-field protection, and accepts the Cordis/Schemastery alpha dependencies used by newer hosts.
-  修复原生桌面宿主管理 API 的解析位置，以及移除确认列表条目后 Escape 误关设置页的问题。逐版验证 15 个官方 Harness 版本（`0.1.5-alpha.1`～`0.2.1-alpha.2`）及可获取的四个 macOS arm64 Desktop 发行包；[验证范围与限制](Compatibility.md)。
-  Fixes native Desktop management API resolution and Escape closing Settings after removing a confirmation row. Verifies 15 official Harness versions (`0.1.5-alpha.1`–`0.2.1-alpha.2`) and four available macOS arm64 Desktop releases; [verification scope and limits](Compatibility.md).
+## 0.3.6 · 2026-10-20
 
-- **0.3.0 · 2026-10-09**：合入 Batch.3，用 Harness 原生 PTC 合并工具调用、并行独立读取，补齐批量调用中的 Agent 记忆使用记录，保留分层记忆及 0.2.1 的兼容适配，更新完整 100 题成绩和使用说明。
-  **0.3.0 · 2026-10-09**: Integrates Batch.3 with Harness-native PTC for composed tool calls and parallel independent reads, adds per-Agent memory activity for nested calls, retains layered memory and 0.2.1 compatibility updates, and refreshes the complete 100-task results and usage guide.
+新版 Harness 收紧预算后效果下降。插件新增预算配置，默认恢复此前 Pro 评测中效果更好的旧预算，无需手动填写。[说明](UsageGuide.md#运行预算)
 
-- **0.2.1 · 2026-10-08**：逐版验证 Harness `0.2.0-rc.2` 与 `0.2.1-alpha.1`，扩展 peer 依赖范围，补齐根路径及 `/dsh`、`/super-code` 子路径的中英文展示资源，以适配新版插件元数据读取机制。安装、主/子 Agent、记忆、重启及 Safari 界面验收通过；alpha.1 原生 Desktop 尚未验收。[兼容范围与限制](Compatibility.md)
-  **0.2.1 · 2026-10-08**: Verifies Harness `0.2.0-rc.2` and `0.2.1-alpha.1` individually, extends peer ranges, and exports Chinese/English display resources for the root, `/dsh`, and `/super-code` entries to support the new plugin metadata reader. Installation, main/child Agents, memory, restart, and Safari checks passed; native Desktop alpha.1 remains unverified. [Compatibility scope and limitations](Compatibility.md)
+- 默认值：按完整上下文窗口计算，用量达到 80% 时触发压缩，保留最近 16% 的原文，摘要上限 8,192 token，压缩追加和溢出重试各 1 次；支持 PTC 时限配置的新版宿主，默认时限和上限均为 600 秒。
+- 用户自定义值优先；运行中的 Agent 保留原配置；旧宿主不支持的时限项会禁用；所有值均不超过宿主上限。
+- 官方预设仍需手动开启后才应用。
+- 设置页分为「预设状态」和「上下文配置」，支持保存、恢复默认和并发修改冲突检查。
+- 修复：语言偏好尚未保存时页面提前重载，导致语言回退。
+- 未新增或改写历史评测成绩。
 
-- **0.2.0 · 2026-09-30**：合入分层任务记忆，新增记忆库和每个 Agent 的记忆使用记录，tab 标题和界面文案跟随中英文切换，补齐 Harness 0.1.5-alpha.1 至 0.2.0-rc.2 的宿主兼容适配并完成官方 Desktop 原生窗口验收。
-  **0.2.0 · 2026-09-30**: Integrates hierarchical task memory, adds the memory library and per-Agent memory activity, keeps tab titles and interface labels in sync with the Chinese/English language setting, and adapts the host boundary from Harness 0.1.5-alpha.1 through 0.2.0-rc.2, including checks in the official Desktop native window.
+## 0.3.5 · 2026-10-18
 
-- **0.1.4**：适配 Harness 的目录与声明式预设机制：旧宿主保留目录安装，新宿主通过 bundle 声明 Super Code，设置页按宿主能力显示状态；声明式路径不提供目录副本安装、重命名、重装或名称语言同步。扩展 Harness peer 依赖范围，补齐中英文发布说明、使用指南及 npm 包内公开文档。`zod` 保留为运行时依赖，不内嵌其文件。
-  Adapts directory and declarative Harness presets: older hosts retain directory installation, while newer hosts use a Super Code bundle declaration and capability-specific status. The declarative path does not install, rename, reinstall, or synchronize localized names for directory copies. Expands Harness peer dependency ranges and includes bilingual release notes, usage guidance, and public documentation in the npm package. `zod` remains a runtime dependency without bundling its files.
-  已验证 `0.1.5-rc.3`、`0.1.6-alpha.1`、`0.1.6-alpha.2`、`0.1.7-alpha.1`、`0.1.7-alpha.2`、`0.1.7-rc.1`、`0.1.7-rc.2`；仅代表固定依赖的隔离 Web/CLI 与确定性模型冒烟，不代表原生 Desktop、外部模型、完整升级回归或新的 SWE-bench 成绩。[兼容范围与安装限制](Compatibility.md)
-  Verified `0.1.5-rc.3`, `0.1.6-alpha.1`, `0.1.6-alpha.2`, `0.1.7-alpha.1`, `0.1.7-alpha.2`, `0.1.7-rc.1`, and `0.1.7-rc.2` in pinned, isolated Web/CLI smoke checks using a deterministic model—not native Desktop, external models, complete upgrade regression, or new SWE-bench results. [Compatibility scope and installation limitations](Compatibility.md)
-- **0.1.3**：插件配置和预设的默认名称、描述跟随中英文语言设置；升级仅更新未被用户修改的字段。安装名称支持中文和空格。已安装副本可在确认清单后按新名称与标识符重装，旧目录保留恢复备份，并严格校验副本归属。[使用说明](UsageGuide.md)
-  Plugin settings and default preset names and descriptions follow the Chinese/English interface language; upgrades update only untouched fields. Installation names support Chinese characters and spaces. Owned copies can be reinstalled with a new name and identifier after confirmation, while the old directory is retained as a recovery backup. [Usage guide](UsageGuide.md)
-- **0.1.2**：优化按需专业指导、故障诊断与状态恢复验证，保留预设安装修复，最低支持 Harness 0.1.5-alpha.1。
-  Improves on-demand guidance, failure diagnosis, and state recovery checks; retains the preset installation fix and supports Harness 0.1.5-alpha.1 or later.
-- **0.1.1**：修复部分宿主安装后预设不可见的问题，新增可折叠的安装状态与自定义名称安装入口，兼容 Harness 0.1.5-rc.1。
-  Fixes presets missing on some hosts after installation and adds a collapsible status panel with custom-name installation; supports Harness 0.1.5-rc.1.
-- **0.1.0**：发布统一 Super Code 编码预设，提供多 Agent 执行树、任务记忆与用量展示。
-  Introduces the unified Super Code coding preset, with an Agent tree, task memory, and usage display.
-- **0.0.9**：包名改为 `dsh-super-code`，使用 Harness 原生任务记忆和按需专业指导，简化旧工作流并完善执行树状态。
-  Renames the package to `dsh-super-code`, adopts Harness-native task memory and on-demand specialist guidance, simplifies earlier workflows, and improves Agent tree state.
+- 适配 Harness `0.2.1-rc.2`，最低仍支持 `0.1.5-alpha.1`。
+- 修复：v4 日志迁移后旧任务记录无法显示。
+- 补充官方桌面版安装说明。
 
-更早版本以 `dsh-super-agent` 包名开发和发布；以下条目记录该项目的前身，不代表 `dsh-super-code` 曾以这些版本号发布。历史中没有 0.0.8 发布提交。
+## 0.3.4 · 2026-10-15
 
-Earlier versions were developed and released as `dsh-super-agent`. The entries below describe that predecessor, not releases of the `dsh-super-code` package. The repository history has no 0.0.8 release commit.
+- 补充官方预设在同一批 100 题上的成绩，以及用量和耗时的统计方法。
+- 新增致谢表和[详细致谢](Acknowledgements.md)，并纳入 npm 包。
 
-- **0.0.7**：引入统一 Super Code 预设、Agent 执行图和精简任务上下文。
-  Introduces the unified Super Code preset, Agent graph, and compact task context.
-- **0.0.6**：完成统一预设的初版集成，改进编程任务规划与模型选择；Harness 包改为 peer dependencies。
-  Integrates the first unified preset, improves programming planning and model selection, and declares Harness packages as peer dependencies.
-- **0.0.5**：完成 Harness Web 适配、宿主界面集成和模型池路由，并让简单任务按需规划。
-  Completes Harness Web adaptation, host UI integration, and model-pool routing, with adaptive planning for straightforward tasks.
-- **0.0.4**：加入有界多轮任务上下文、验证失败修复提示与评测聚合，限制停滞修复和历史内存增长。
-  Adds bounded multi-turn task context, verifier repair hints, and evaluation aggregation, while limiting stalled repairs and history growth.
-- **0.0.3**：整理插件文档并采用 Apache-2.0 许可。
-  Refines plugin documentation and adopts the Apache-2.0 license.
-- **0.0.2**：补齐类型化任务和指标协议，建立初版评测工具。
-  Adds typed task and metric protocols and an initial evaluation tool.
-- **0.0.1**：提供场景预设及可安装的 DSH 插件包。
-  Provides scenario presets and an installable DSH plugin package.
+## 0.3.3 · 2026-10-14
+
+- 执行树和记忆库合并为一个 Super Code 侧边栏，两部分互斥切换，切换后保留状态、筛选、搜索、阅读位置和草稿。
+- 记忆库支持新增、编辑、取消、保存和确认删除。手动条目标明来源，仅保留当前内容；保存失败时保留输入，并防止并发覆盖。
+- 运行动画更清晰；修复节点光环、文字和连线重叠的问题。
+- 内置按需加载的前端 Skill（对齐、操作舒适度、响应式、交互状态、浏览器验证）。旧预设需确认重装后才包含该 Skill。
+- 整理双语安装说明、评测用途和版本规则。
+
+## 0.3.2 · 2026-10-11
+
+- 统一预设设置、执行树和记忆库的视觉风格，保留圆形节点。工具栏显示「已收起」「自动整理」文字；按钮提示统一显示在上方；时间和排序改为支持键盘操作的下拉菜单。
+- Agent 详情按对话形式展示用户消息、回复和可展开的工具调用，兼容新旧日志。
+- 记忆库新增主题导航、筛选和同主题条目。
+- 修复：新版侧边栏抢占焦点导致下拉选项无法点击；启动时先等待宿主语言加载，避免预设反复同步、页面反复刷新。
+
+## 0.3.1 · 2026-10-10
+
+- 设置页始终展开，分别显示插件版本和预设版本，二者不一致或未记录时给出提示。
+- 声明式宿主支持安装、确认重装、改名、恢复备份和默认名称的语言同步。
+- 修复：桌面版管理接口解析位置错误；在确认框中移除条目后按 Esc 误关设置页。
+- 逐版验证 15 个 Harness 版本（`0.1.5-alpha.1` ~ `0.2.1-alpha.2`）和 4 个 macOS arm64 桌面版。
+
+## 0.3.0 · 2026-10-09
+
+- 使用 Harness 原生 PTC 合并工具调用、并行执行独立读取（Batch.3）。
+- 补充批量调用中的 Agent 记忆使用记录。
+- 更新完整的 100 题成绩和使用说明。
+
+## 0.2.1 · 2026-10-08
+
+- 适配 Harness `0.2.0-rc.2`、`0.2.1-alpha.1` 新的插件信息读取方式，补充中英文展示资源。
+- `0.2.1-alpha.1` 的原生桌面版未经验收。
+
+## 0.2.0 · 2026-09-30
+
+- 引入分层任务记忆；新增记忆库和每个 Agent 的记忆使用记录。
+- 界面跟随中英文设置切换。
+- 适配 Harness `0.1.5-alpha.1` ~ `0.2.0-rc.2`，官方桌面版通过验收。
+
+## 0.1.4
+
+- 适配两种预设机制：旧宿主采用目录安装，新宿主采用 bundle 声明；设置页按宿主能力显示。声明式路径暂不支持重命名、重装和名称语言同步。
+- 扩大 Harness 依赖范围，补充双语文档。
+- 已在 7 个版本（`0.1.5-rc.3` ~ `0.1.7-rc.2`）上完成隔离冒烟测试，不含原生桌面、外部模型和新评测成绩。
+
+## 0.1.3
+
+- 默认名称和描述跟随中英文设置，升级时仅修改用户未改动的字段。
+- 安装名称支持中文和空格；确认后可按新名称和标识符重装，旧目录保留为备份。
+
+## 0.1.2
+
+优化按需专业指导、故障诊断和状态恢复；最低支持 Harness `0.1.5-alpha.1`。
+
+## 0.1.1
+
+修复部分宿主安装后无法显示预设的问题；新增可折叠的安装状态和自定义名称安装；兼容 Harness `0.1.5-rc.1`。
+
+## 0.1.0
+
+发布统一的 Super Code 编码预设，包含多 Agent 执行树、任务记忆和用量展示。
+
+## 0.0.9
+
+包名改为 `dsh-super-code`；改用 Harness 原生任务记忆和按需专业指导。
+
+## 更早版本（`dsh-super-agent`）
+
+以下为前身 `dsh-super-agent` 的版本，`dsh-super-code` 未发布过这些版本号。历史中没有 0.0.8。
+
+- **0.0.7**：统一 Super Code 预设、Agent 执行图、精简任务上下文。
+- **0.0.6**：统一预设初版；改进规划和模型选择；Harness 包改为 peer 依赖。
+- **0.0.5**：适配 Harness Web、宿主界面集成、模型池路由；简单任务按需规划。
+- **0.0.4**：有上限的多轮任务上下文、验证失败修复提示、评测汇总。
+- **0.0.3**：整理文档，采用 Apache-2.0。
+- **0.0.2**：类型化任务和指标协议，初版评测工具。
+- **0.0.1**：场景预设和可安装的插件包。

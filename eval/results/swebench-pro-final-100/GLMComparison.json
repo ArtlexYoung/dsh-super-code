@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "snapshot_at": "2026-10-20T03:12:59.861Z",
+  "snapshot_at": "2026-10-27T15:40:21+08:00",
   "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
   "accounting": "Final scored attempt only. Failed requests and retry waits excluded from net time; failed requests excluded from reported usage/calls. Output includes reasoning; cached input is an input subset. Unknown usage is not estimated. Grading does not add model calls.",
   "comparison_scope": "Complete systems: DSH Web RPC + Super Code versus complete native ZCode; plugin effect is not isolated.",
@@ -25,7 +25,7 @@
       "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
       "task_count": 100,
       "valid_scores": 100,
-      "passed": 44,
+      "passed": 45,
       "means": {
         "model_calls": 66.89,
         "input_tokens": 5428846.8,
@@ -1495,9 +1495,9 @@
           "repo": "NodeBB/NodeBB",
           "base_commit": "ae3fa85f40db0dca83d19dda1afb96064dffcc83",
           "started_at": "2026-10-16T04:02:52.667Z",
-          "completed_at": "2026-10-17T05:34:56.238Z",
+          "completed_at": "2026-10-16T04:49:31.400Z",
           "valid_score": true,
-          "passed": false,
+          "passed": true,
           "model_calls": 85,
           "input_tokens": 5939664,
           "cached_input_tokens": 5827392,
@@ -1508,8 +1508,15 @@
           "excluded_retry_ms": 0,
           "unknown_usage_requests": 0,
           "patch_sha256": "d04ff5a243e403db080e58fb9e932629c8c4980573d1b6176a92fb8110de22b3",
-          "summary_sha256": "7095f46c7c61f8a1d2ccd505da3f99c0f861ba1128432527e99f74696d5d88f7",
-          "grading_reason": "official_failure"
+          "summary_sha256": "582b4921f45e9ed03b37ffe2b5d4285b2a88b7f5741f32627c50f75f4cf49cee",
+          "grading_reason": "two_consistent_complete_patch_only_grades_after_reviewed_infrastructure_errors",
+          "original_passed": false,
+          "grader_passed": false,
+          "grading_status": "scored",
+          "grading_review": {
+            "file": "GradingReconciliation.json",
+            "id": "nodebb-additional-3"
+          }
         },
         {
           "task_index": 456,
@@ -2237,7 +2244,8 @@
           "summary_sha256": "ee0887bcaaa6f5f9864ed29f2a23bcb34b42fbed8a66aa23149185f514179231",
           "grading_reason": "candidate_compile_failure"
         }
-      ]
+      ],
+      "pending_reviews": 0
     },
     {
       "name": "GLM 完整原生 ZCode",
@@ -2256,7 +2264,7 @@
       "selection_id": "swebench-pro-hard-100-ddd22492f1c38839",
       "task_count": 100,
       "valid_scores": 100,
-      "passed": 28,
+      "passed": 29,
       "means": {
         "model_calls": 64.31,
         "input_tokens": 3501267.74,
@@ -3726,9 +3734,9 @@
           "repo": "NodeBB/NodeBB",
           "base_commit": "ae3fa85f40db0dca83d19dda1afb96064dffcc83",
           "started_at": "2026-10-16T16:01:57.246Z",
-          "completed_at": "2026-10-17T05:36:29.330Z",
+          "completed_at": "2026-10-16T16:50:01.365Z",
           "valid_score": true,
-          "passed": false,
+          "passed": true,
           "model_calls": 100,
           "input_tokens": 4026468,
           "cached_input_tokens": 3879872,
@@ -3739,8 +3747,15 @@
           "excluded_retry_ms": 0,
           "unknown_usage_requests": 0,
           "patch_sha256": "a17fb9c5390ab433012f8dbee9c2e2425f116ab98ac51b2757b47e60e03fe29c",
-          "summary_sha256": "70d0be14322b77c5822339da41175f91e233ec3f86de146dda317805b6979bb7",
-          "grading_reason": "official_failure"
+          "summary_sha256": "316a782bdd269fb3d150c525f3fceb372ad6e42c0f2f625b8241ca8c4d9994c3",
+          "grading_reason": "two_consistent_complete_patch_only_grades_after_reviewed_infrastructure_errors",
+          "original_passed": false,
+          "grader_passed": false,
+          "grading_status": "scored",
+          "grading_review": {
+            "file": "GradingReconciliation.json",
+            "id": "nodebb-additional-4"
+          }
         },
         {
           "task_index": 456,
@@ -4468,7 +4483,13 @@
           "summary_sha256": "64237fad18c87278ce7b18bb6d34f943f9bad419ff88c9d39977b1bc2e03596f",
           "grading_reason": "candidate_import_dependency_not_declared"
         }
-      ]
+      ],
+      "pending_reviews": 0
     }
-  ]
+  ],
+  "previous_snapshot_at": "2026-10-20T03:12:59.861Z",
+  "reconciliation": {
+    "file": "GradingReconciliation.json",
+    "sha256": "bb99eadc1d16f0997f1180c7a0d92761115a32901e8b0e7c72f3814e9bc8d780"
+  }
 }

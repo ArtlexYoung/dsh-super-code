@@ -1,4 +1,6 @@
-import type { ConnectionConfig, DelegationHost, TaskStatus, TaskView } from './types.js';
+import type { CallerApproval, CallerApprovalDecision, ConnectionConfig, DelegationHost, HistoryCursor, HistoryPage, ModelSelection, TaskStatus, TaskView } from './types.js';
+import { CallerApprovals } from './approvals.js';
+import type { ApprovalAnswer } from './approvals.js';
 import type { ConnectionStore } from './store.js';
 export declare function withinDirectory(root: string, cwd: string): boolean;
 export declare class DelegatedTasks {
@@ -8,6 +10,7 @@ export declare class DelegatedTasks {
     private records;
     private tail;
     private closed;
+    readonly approvals: CallerApprovals;
     constructor(store: ConnectionStore, host: DelegationHost, configuration: () => ConnectionConfig);
     initialize(): Promise<void>;
     private exclusive;
@@ -15,6 +18,14 @@ export declare class DelegatedTasks {
     private persist;
     private owned;
     private enabled;
+    requestApproval(input: Omit<CallerApproval, 'id' | 'createdAt' | 'expiresAt' | 'taskId' | 'cwd'>, roots: readonly string[], signal?: AbortSignal): Promise<ApprovalAnswer>;
+    approve(taskId: string, approvalId: string, decision: CallerApprovalDecision): Promise<{
+        outcome: string;
+        repeated: boolean;
+    }>;
+    approvalsChanged(): void;
+    private selectModel;
+    models(): Promise<unknown>;
     private directory;
     private capacity;
     run(input: {
@@ -23,6 +34,7 @@ export declare class DelegatedTasks {
         prompt: string;
         client?: string;
         connectionId?: string;
+        modelSelection?: ModelSelection;
     }): Promise<TaskView>;
     send(input: {
         taskId: string;
@@ -30,11 +42,15 @@ export declare class DelegatedTasks {
         cwd?: string;
         prompt: string;
         connectionId?: string;
+        modelSelection?: ModelSelection;
     }): Promise<TaskView>;
     cancel(id: string): Promise<TaskView>;
     private refresh;
+    private refreshPending;
     tick(): Promise<void>;
+    private snapshot;
     view(id: string, cursor: number): Promise<TaskView>;
+    private describe;
     list(cursor: number): Promise<{
         tasks: {
             taskId: string;
@@ -52,6 +68,7 @@ export declare class DelegatedTasks {
         ids: readonly string[];
     }): Promise<{
         cwd: string;
+        allowNewConversations: boolean;
         connections: number;
         maxConnections: number;
         availableConnections: number;
@@ -67,6 +84,29 @@ export declare class DelegatedTasks {
             updatedAt: number;
             connectionCount: number;
             reusable: boolean;
+            modelSelection?: ModelSelection;
+        }[];
+    }>;
+    history(id: string, cursor: HistoryCursor, limit: number, descendantId?: string): Promise<HistoryPage & {
+        taskId: string;
+    }>;
+    status(connections: {
+        connections: number;
+        maxConnections: number;
+    }): Promise<{
+        role: 'delegation-executor';
+        allowNewConversations: boolean;
+        allowCallerApproval: boolean;
+        allowedDirectories: string[];
+        connections: number;
+        maxConnections: number;
+        availableConnections: number;
+        activeTasks: number;
+        availableTasks: number;
+        blockingTasks: {
+            taskId: string;
+            cwd: string;
+            status: TaskStatus;
         }[];
     }>;
     overview(): {

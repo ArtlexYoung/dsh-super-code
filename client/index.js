@@ -149,7 +149,11 @@ function Glyph({ type }) {
     arrow: 'M3 10h13m-5-5 5 5-5 5',
     fit: 'M3 7V3h4m6 0h4v4m0 6v4h-4m-6 0H3v-4',
     history: 'M3 4v5h5M3 9a7 7 0 1 1 2 6m5-10v5l3 2',
-    organize: 'M8 2h4v4H8zM2 14h4v4H2zm12 0h4v4h-4zM10 6v4m-6 4v-4h12v4'
+    organize: 'M8 2h4v4H8zM2 14h4v4H2zm12 0h4v4h-4zM10 6v4m-6 4v-4h12v4',
+    info: 'M10 9v5m0-8h0M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z',
+    shield: 'M10 2 3 5v5c0 4 3 7 7 8 4-1 7-4 7-8V5l-7-3Z',
+    plug: 'M7 2v4m6-4v4M5 6h10v3a5 5 0 0 1-10 0V6Zm5 8v4',
+    check: 'm4 10 4 4 8-8'
   }
   return React.createElement('svg', { className: 'dsh-super-code-glyph', viewBox: type === 'code' ? '0 0 24 20' : '0 0 20 20', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true }, React.createElement('path', { d: paths[type] || paths.code }))
 }
@@ -256,7 +260,9 @@ const ActionButton = React.forwardRef(function ActionButton({ children, title, .
 
 const LOCALE_NS = 'dshSuperCode'
 const zh = {
-  'feedback.title': '任务状态',
+  'feedback.title': '任务',
+  'feedback.tools': '工具调用汇总',
+  'feedback.toolCount': '{tool} 成功 {ok} 次，失败 {failed} 次',
   'feedback.refresh': '刷新任务状态',
   'feedback.noGoal': '尚无目标记录',
   'feedback.source.record': '任务记录',
@@ -303,13 +309,16 @@ const zh = {
   "connection.rejectDirectory": "拒绝",
   "connection.error.directory-limit": "最多允许选择 32 个目录。",
   "connection.error.picker-unavailable": "无法打开目录选择器，请重新读取后重试。",
-  'home.protection': '保护', 'home.extensions': '扩展', 'home.configure': '配置', 'home.managePreset': '配置预设',
+  'home.configure': '配置', 'home.managePreset': '配置预设', 'home.details': '打开{title}详情', 'home.activeSessions': '{count} 个活跃对话',
+  'preset.versionBadge': '版本一致',
   'home.connectedSessions': '正在连接的对话', 'home.historySessions': '历史对话',
   'home.connections': '已连接客户端', 'home.noConnections': '暂无客户端连接', 'home.sessions': '关联会话', 'home.noSessions': '暂无关联会话',
   'home.disconnect': '断开', 'home.openSession': '打开会话', 'home.connected': '已连接', 'home.enabled': '已开启', 'home.disabled': '已关闭',
   'home.mcp': 'MCP 服务', 'home.connectionCount': '{count} / {max} 个连接', 'home.setupConnection': '配置并启用',
   'home.lastSeen': '最近活动', 'home.refresh': '刷新概览', 'home.error': '状态读取或操作失败，请刷新后重试。',
   'connection.maxConnections': '最大连接数', 'connection.connectionsHint': '按 MCP 客户端会话计数。断开或空闲 10 分钟后释放连接；已接收任务继续执行。',
+  'connection.allowNewConversations': '允许 MCP 新增对话', 'connection.allowNewConversationsHint': '关闭后不会创建新的 DSH 对话；MCP 仍可查看并继续已有对话。',
+  'connection.allowCallerApproval': '允许调用方审批', 'connection.allowCallerApprovalHint': '默认关闭。开启后，由 MCP 调用方批准或拒绝委派任务的单次操作；无法处理或超时后回到 DSH。新增目录仍需在 DSH 同意。',
   'connection.addDirectory': '添加目录', 'connection.noDirectories': '暂无目录，请通过文件管理器添加。',
   'connection.workspaceDirectory': 'DSH 工作区', 'connection.customDirectory': '添加的目录', 'connection.directoryUnavailable': '目录不可用',
   'connection.removeDirectory': '移除目录', 'connection.directoryRefresh': '刷新目录',
@@ -327,10 +336,10 @@ const zh = {
   'connection.directoriesHint': '勾选允许的目录，包含其子目录。每次打开设置会同步 DSH 工作区，保留已保存的选择。',
   'connection.save': '保存连接', 'connection.cancel': '取消修改', 'connection.reload': '重新读取', 'connection.saved': '已保存连接设置。',
   'connection.client': '连接 Prompt', 'connection.copyCommand': '复制连接 Prompt', 'connection.showToken': '显示凭证', 'connection.hideToken': '隐藏凭证', 'connection.copyToken': '复制凭证', 'connection.token': '连接凭证', 'connection.rotate': '更换凭证',
-  'connection.prompt': '请配置并连接 DSH Super Code MCP 服务：\n地址：{url}\n传输：Streamable HTTP\n认证：Authorization: Bearer <连接凭证>，凭证由我单独提供，请妥善保存在客户端。\n连接后先使用 dsh_sessions 按工作目录查看最近对话、状态和连接额度，由调用方选择传 taskId 复用历史，或传 newConversation: true 新建；不要默认复用最新对话。然后使用 dsh_run 委派任务、dsh_wait 查询状态或找回任务、dsh_send 补充要求、dsh_cancel 取消任务。使用稳定的 requestId 避免重复提交，只使用允许的绝对工作目录；新增目录请用 dsh_request_directory 提交申请，并等待用户在 DSH 中同意。权限确认需在 DSH 中处理；finished 仅表示执行结束，仍需验证结果。',
+  'connection.prompt': '请配置并连接 DSH Super Code MCP 服务：\n地址：{url}\n传输：Streamable HTTP\n认证：Authorization: Bearer <连接凭证>，凭证由我单独提供，请妥善保存在客户端。\nDSH 仅作为任务执行器，待开发或验收的对象是指定目录中的项目/候选产物；不要为排查委派任务而操作、重装、重启或改配提供服务的 DSH/NEXT。连接后先用 dsh_status 查看允许目录、连接额度和阻塞任务，再使用 dsh_sessions 按工作目录查看最近对话和状态，由调用方选择传 taskId 复用历史，或传 newConversation: true 新建；不要默认复用最新对话。如果 DSH 关闭了“允许 MCP 新增对话”，必须传已有 taskId 复用，不能创建新对话。调用 dsh_models 查看可用模型及思考强度，再在 dsh_run 或 dsh_send 中按需传 provider、model、reasoningEffort；省略时沿用 DSH 当前/默认选择。然后使用 dsh_run 委派任务、dsh_wait 查询状态或找回任务、dsh_send 补充要求、dsh_cancel 取消任务。使用稳定的 requestId 避免重复提交，只使用允许的绝对工作目录；新增目录请用 dsh_request_directory 提交申请，并等待用户在 DSH 中同意。通过 dsh_wait 的返回游标长轮询（waitMs: 30000）；空输出、失败或截断时使用 dsh_read 分页读取公开对话和工具结果。忙碌/额度错误时查看阻塞任务、等待并保留原 requestId 和输入，不重复新建或清理其他连接。复用一个 MCP 会话，用完以 DELETE 释放；SDK 需先 transport.terminateSession() 再 client.close()。原生工具未加载时可用随包的 super-code-mcp 命令，凭证通过私密环境变量提供，不读取 DSH profile 搜寻凭证。dsh_status 返回 allowCallerApproval；默认关闭，权限确认请用户在 DSH 中处理。开启后通过 dsh_wait 接收交互审批请求或 callerApproval.pending，检查具体工具、参数和原因后，用 dsh_approve 传 taskId、approvalId、decision（approve/reject）作单次决定；目录申请仍需用户在 DSH 同意。不自动点击界面批准。finished 仅表示执行结束，仍需验证结果。',
   'connection.tokenHint': '请将凭证安全保存在客户端。更换凭证后，旧凭证立即失效。',
   'connection.rotated': '已更换凭证，请更新客户端。', 'connection.copied': '已复制。',
-  'connection.error.unavailable': '连接服务尚未就绪或当前配置目录不可写，请重新读取。', 'connection.error.invalid': '请检查端口、最大连接数和目录。启用连接至少需要一个有效目录。',
+  'connection.error.unavailable': '连接服务尚未就绪或当前配置目录不可写，请重新读取。', 'connection.error.invalid': '请检查端口、最大连接数和目录。启用连接至少需要一个有效目录。', 'connection.error.new-conversation-disabled': 'MCP 新增对话已关闭，请选择已有对话继续。',
   'connection.error.conflict': '连接设置已在别处修改。草稿已保留，请重新读取。', 'connection.error.save-failed': '保存失败，草稿已保留。', 'connection.error.port-unavailable': '端口被占用或无法监听。请更换端口并保存。', 'connection.error.storage-unavailable': '任务状态保存失败，请检查配置目录。', 'connection.error.clipboard': '复制失败，请手动复制。',
   'settings.contextTab': '上下文配置', 'settings.tabs': 'Super Code 配置',
   'budget.common': '通用预算', 'budget.superCode': 'Super Code 专属预算',
@@ -339,11 +348,11 @@ const zh = {
   'budget.defaultValue': '（默认：{value}）', 'budget.off': '关闭', 'budget.managed': '宿主管理',
   'delete.title': '删除保护', 'delete.mode': '保护模式', 'delete.off': '关闭', 'delete.relaxed': '宽松', 'delete.strict': '严格', 'delete.official': '同时应用到官方预设',
   'delete.hint.off': '不添加删除保护提示，不额外拦截命令。宿主原有权限检查仍然有效。',
-  'delete.hint.relaxed': '默认使用 trash，脚本中也建议使用；用户明确要求时可以使用 rm，无需插件额外确认。',
+  'delete.hint.relaxed': '默认使用 trash（脚本中也建议）；用户明确要求时可用 rm，无需额外确认。',
   'delete.hint.strict': '默认使用 trash，脚本也禁止直接使用 rm。识别到永久删除命令时，仅清理临时文件或构建产物可经用户逐次二次确认放行。',
   'delete.officialHint': '默认仅保护 Super Code。此开关独立于预算的官方预设开关；保存后立即作用于后续命令。',
   'budget.title': '上下文配置', 'budget.scope': '预算保存后对新建 Agent 生效，运行中的任务保留原配置。',
-  'budget.defaults': '留空沿用默认值，括号内显示默认值；通用预算随宿主版本变化。恢复默认会清除这里的覆盖，回到插件加载配置；未配置时跟随宿主。',
+  'budget.defaults': '留空沿用默认值，各项下方显示默认值；通用预算随宿主版本变化。恢复默认会清除这里的覆盖，回到插件加载配置；未配置时跟随宿主。',
   'budget.context': '上下文压缩', 'budget.execution': '批量工具执行', 'budget.advanced': '更多预算',
   'budget.pressureBasis': '压缩预算基准', 'budget.inherit': '跟随默认', 'budget.host': '宿主策略', 'budget.window': '完整上下文窗口',
   'budget.thresholdRatio': '压缩触发比例（%）', 'budget.retainRatio': '最近原文保留比例（%）', 'budget.summaryMaxTokens': '摘要输出上限（Token）',
@@ -360,6 +369,9 @@ const zh = {
   'budget.error.conflict': '预算已在别处修改。草稿已保留，请重新读取后再修改。', 'budget.error.read-only': '当前宿主的设置只读，无法保存。',
   'budget.error.ptc-unavailable': '此宿主不支持覆盖 PTC 总执行时限。', 'budget.error.ptc-ceiling': '执行时限超过了宿主允许的上限。',
   'budget.error.save-failed': '保存失败，草稿已保留，请重试。',
+  'budget.defaultHint': '默认：{value}', 'budget.error.range': '超出允许范围或格式不正确。',
+  'budget.resetQuestion': '清除这里的所有覆盖？', 'budget.resetConfirm': '恢复默认', 'delete.scope': '适用范围',
+  'save.idle': '修改后自动保存', 'save.saving': '正在保存…', 'save.saved': '已自动保存', 'save.error': '保存失败', 'save.invalid': '有字段需要修正，暂未保存', 'save.retry': '重试',
   'memory.add': '新增记忆', 'memory.edit': '编辑', 'memory.cancel': '取消', 'memory.save': '保存', 'memory.delete': '删除', 'memory.deleting': '正在删除…', 'memory.saving': '正在保存…',
   'memory.topic': '主题', 'memory.kind': '类型', 'memory.summaryLabel': '标题', 'memory.detailLabel': '内容', 'memory.manual': '手动维护',
   'memory.topicHint': '字母、数字、点、下划线或短横线，最多 96 个字符。',
@@ -371,7 +383,7 @@ const zh = {
   'detail.toolCall': '工具调用', 'detail.toolResult': '工具结果', 'detail.toolError': '工具失败',
   'detail.cache': '缓存', 'detail.info': '详情', 'tree.countCompact': '{shown}/{total} · 运行 {running}',
   'memory.loading': '正在读取记忆…', 'memory.topics': '知识主题', 'memory.allTopics': '全部主题', 'memory.related': '同主题知识', 'preset.configuration': '预设配置',
-  'memory.title': '记忆库', 'memory.project': '当前项目', 'memory.global': '全局偏好', 'memory.search': '搜索主题或记忆',
+  'memory.title': '记忆', 'memory.project': '当前项目', 'memory.global': '全局偏好', 'memory.search': '搜索主题或记忆',
   'memory.description': '知识主题与条目',
   'memory.empty': '还没有保存的记忆。需要长期保留时，直接告诉 Agent 即可。', 'memory.noMatches': '没有匹配的记忆',
   'memory.selectSession': '先打开一个对话，查看它所在项目的记忆。', 'memory.error': '暂时无法读取记忆，请刷新重试。',
@@ -430,7 +442,9 @@ const zh = {
   'detail.path': 'Agent 路径', 'detail.title': 'Agent 详情', 'detail.refresh': '刷新对话详情', 'detail.task': '任务', 'detail.agent': 'Agent', 'detail.interrupted': 'Agent · 已中断', 'detail.error': '执行错误', 'detail.incomplete': '执行未完成，请稍后重试。', 'detail.input': '输入', 'detail.output': '输出', 'detail.cacheRead': '缓存读取', 'detail.cacheWrite': '缓存写入', 'detail.total': 'Token 总量', 'detail.hitRate': '缓存命中率', 'detail.moreUsage': '用量详情', 'detail.unavailable': '未提供', 'detail.reading': '正在读取对话…', 'detail.read': '读取中…', 'detail.older': '加载更早记录', 'detail.latest': '回到最新', 'detail.empty': '暂无执行内容', 'detail.new': '有新内容 · 查看最新', 'detail.loadError': '对话详情读取失败', 'detail.connection': '连接中断，正在重连', 'detail.historyError': '历史记录读取失败', 'detail.open': '展开全文', 'detail.noAccess': '无法打开详情，请重试', 'tree.loadError': '部分执行记录读取失败，请刷新重试', 'detail.unknown': '用量未知', 'main.agent': '主 Agent', 'tree.open': '点击查看详情', 'tree.expand': '展开', 'tree.collapse': '收起', 'image': '[图片]'
 }
 const en = {
-  'feedback.title': 'Task status',
+  'feedback.title': 'Tasks',
+  'feedback.tools': 'Tool call summary',
+  'feedback.toolCount': '{tool}: {ok} succeeded, {failed} failed',
   'feedback.refresh': 'Refresh task status',
   'feedback.noGoal': 'No recorded objective',
   'feedback.source.record': 'Recorded objective',
@@ -477,13 +491,16 @@ const en = {
   "connection.rejectDirectory": "Reject",
   "connection.error.directory-limit": "Select up to 32 directories.",
   "connection.error.picker-unavailable": "Could not open the directory picker. Reload and try again.",
-  'home.protection': 'Protection', 'home.extensions': 'Extensions', 'home.configure': 'Configure', 'home.managePreset': 'Configure preset',
+  'home.configure': 'Configure', 'home.managePreset': 'Configure preset', 'home.details': 'Open {title} details', 'home.activeSessions': '{count} active conversations',
+  'preset.versionBadge': 'Up to date',
   'home.connectedSessions': 'Connected conversations', 'home.historySessions': 'Past conversations',
   'home.connections': 'Connected clients', 'home.noConnections': 'No clients connected', 'home.sessions': 'Linked sessions', 'home.noSessions': 'No linked sessions',
   'home.disconnect': 'Disconnect', 'home.openSession': 'Open session', 'home.connected': 'Connected', 'home.enabled': 'On', 'home.disabled': 'Off',
   'home.mcp': 'MCP service', 'home.connectionCount': '{count} / {max} connections', 'home.setupConnection': 'Set up connection',
   'home.lastSeen': 'Last activity', 'home.refresh': 'Refresh overview', 'home.error': 'Could not read or update the status. Refresh and try again.',
   'connection.maxConnections': 'Maximum connections', 'connection.connectionsHint': 'Counts MCP client sessions. Disconnect or 10 minutes of inactivity releases a connection; accepted tasks continue.',
+  'connection.allowNewConversations': 'Allow MCP to create conversations', 'connection.allowNewConversationsHint': 'When off, MCP cannot create new DSH conversations; it can still inspect and continue existing ones.',
+  'connection.allowCallerApproval': 'Allow caller approval', 'connection.allowCallerApprovalHint': 'Off by default. MCP callers may approve or reject one-time task operations; unhandled or expired requests return to DSH. New directory access still requires consent in DSH.',
   'connection.addDirectory': 'Add directory', 'connection.noDirectories': 'No directories. Add one with the directory picker.',
   'connection.workspaceDirectory': 'DSH workspace', 'connection.customDirectory': 'Added directory', 'connection.directoryUnavailable': 'Directory unavailable',
   'connection.removeDirectory': 'Remove directory', 'connection.directoryRefresh': 'Refresh directories',
@@ -501,10 +518,10 @@ const en = {
   'connection.directoriesHint': 'Select allowed directories, including their subdirectories. Reopening settings refreshes DSH workspaces and retains saved selections.',
   'connection.save': 'Save connection', 'connection.cancel': 'Cancel changes', 'connection.reload': 'Reload', 'connection.saved': 'Connection settings saved.',
   'connection.client': 'Connection Prompt', 'connection.copyCommand': 'Copy connection prompt', 'connection.showToken': 'Show token', 'connection.hideToken': 'Hide token', 'connection.copyToken': 'Copy token', 'connection.token': 'Connection token', 'connection.rotate': 'Rotate token',
-  'connection.prompt': 'Configure and connect to the DSH Super Code MCP service:\nURL: {url}\nTransport: Streamable HTTP\nAuthentication: Authorization: Bearer <connection token>. I will supply the token separately; store it securely in the client.\nAfter connecting, call dsh_sessions for the working directory to show recent conversations, statuses and connection capacity. Let the caller choose whether to pass taskId to reuse history or newConversation: true to create a new root; never default to the latest conversation. Then use dsh_run to delegate, dsh_wait to observe or recover, dsh_send for follow-ups, and dsh_cancel to cancel. Use stable requestId values to avoid duplicate submissions and only allowed absolute working directories. Request additional access with dsh_request_directory and wait for user approval in DSH. Resolve permissions in DSH. A finished task still requires result verification.',
+  'connection.prompt': 'Configure and connect to the DSH Super Code MCP service:\nURL: {url}\nTransport: Streamable HTTP\nAuthentication: Authorization: Bearer <connection token>. I will supply the token separately; store it securely in the client.\nDSH is the task executor; the project/candidate in the chosen cwd is the target. Do not control, reinstall, restart or reconfigure the serving DSH/NEXT app to investigate delegated work. After connecting, call dsh_status for directory grants, capacity and blocking tasks, then dsh_sessions for recent conversations and statuses. Let the caller choose whether to pass taskId to reuse history or newConversation: true to create a new root; never default to the latest conversation. If DSH has “Allow MCP to create conversations” disabled, pass an existing taskId and never create a new conversation. Call dsh_models to inspect available models and reasoning efforts, then optionally pass provider, model and reasoningEffort to dsh_run or dsh_send; omit them to keep the current DSH model selection. Use dsh_run to delegate, dsh_wait to observe or recover, dsh_send for follow-ups, and dsh_cancel to cancel. Use stable requestId values to avoid duplicate submissions and only allowed absolute working directories. Request additional access with dsh_request_directory and wait for user approval in DSH. Long-poll dsh_wait with its returned cursor and waitMs: 30000. Use dsh_read to page through public messages/tool results when output is empty, failed or truncated. On busy/limit errors, inspect blockers, wait and retain the original requestId/input; do not repeatedly initialize or clear other connections. Reuse one MCP session and release it with DELETE when done; with the SDK call transport.terminateSession() before client.close(). If native tools are unavailable, use the packaged super-code-mcp command with private environment credentials rather than searching DSH profile files. Check allowCallerApproval in dsh_status (off by default). When off, ask the user to resolve permissions in DSH. When on, dsh_wait delivers interactive approvals or callerApproval.pending; inspect the tool, arguments and reason, then use dsh_approve with taskId, approvalId and decision (approve/reject) for that exact operation. Directory access still requires consent in DSH. Never click UI approval controls. A finished task still requires result verification.',
   'connection.tokenHint': 'Store the token securely in the client. Rotation invalidates the previous token immediately.',
   'connection.rotated': 'Token rotated. Update your client.', 'connection.copied': 'Copied.',
-  'connection.error.unavailable': 'The service is not ready or the profile directory is not writable. Reload to retry.', 'connection.error.invalid': 'Check the port, maximum connections and directories. Enabling requires at least one valid directory.',
+  'connection.error.unavailable': 'The service is not ready or the profile directory is not writable. Reload to retry.', 'connection.error.invalid': 'Check the port, maximum connections and directories. Enabling requires at least one valid directory.', 'connection.error.new-conversation-disabled': 'MCP new conversations are disabled. Choose an existing conversation to continue.',
   'connection.error.conflict': 'Connection settings changed elsewhere. Your draft is retained; reload to continue.', 'connection.error.save-failed': 'Save failed. Your draft is retained.', 'connection.error.port-unavailable': 'The port is occupied or cannot be opened. Save with another port.', 'connection.error.storage-unavailable': 'Task state could not be saved. Check the profile directory.', 'connection.error.clipboard': 'Copy failed. Copy the text manually.',
   'settings.contextTab': 'Context settings', 'settings.tabs': 'Super Code settings',
   'budget.common': 'Common budgets', 'budget.superCode': 'Super Code budgets',
@@ -517,7 +534,7 @@ const en = {
   'delete.hint.strict': 'Prefer trash; scripts must not directly use rm. Recognized permanent deletion requires separate approval for each temporary-file or build-artifact cleanup.',
   'delete.officialHint': 'Protects Super Code by default. This switch is independent of official-preset budgets; saved changes apply to subsequent commands immediately.',
   'budget.title': 'Context settings', 'budget.scope': 'Budget changes apply to new Agents. Running tasks keep their current settings.',
-  'budget.defaults': 'Leave fields blank to inherit defaults. Parentheses show defaults; common budgets follow the host version. Reset clears overrides and restores the plugin configuration, or host defaults when unconfigured.',
+  'budget.defaults': 'Leave fields blank to inherit defaults, shown below each field; common budgets follow the host version. Reset clears overrides and restores the plugin configuration, or host defaults when unconfigured.',
   'budget.context': 'Context compression', 'budget.execution': 'Batched tool execution', 'budget.advanced': 'More budgets',
   'budget.pressureBasis': 'Compression budget basis', 'budget.inherit': 'Inherit default', 'budget.host': 'Host policy', 'budget.window': 'Full context window',
   'budget.thresholdRatio': 'Compress at (%)', 'budget.retainRatio': 'Keep recent context (%)', 'budget.summaryMaxTokens': 'Summary output limit (tokens)',
@@ -534,6 +551,9 @@ const en = {
   'budget.error.conflict': 'Budgets changed elsewhere. Your draft is retained; reload before editing again.', 'budget.error.read-only': 'This host has read-only settings.',
   'budget.error.ptc-unavailable': 'This host cannot override PTC elapsed deadlines.', 'budget.error.ptc-ceiling': 'The deadline exceeds the host ceiling.',
   'budget.error.save-failed': 'Save failed. Your draft is retained; try again.',
+  'budget.defaultHint': 'Default: {value}', 'budget.error.range': 'Out of range or not a valid number.',
+  'budget.resetQuestion': 'Clear all overrides here?', 'budget.resetConfirm': 'Reset', 'delete.scope': 'Scope',
+  'save.idle': 'Changes save automatically', 'save.saving': 'Saving…', 'save.saved': 'Saved automatically', 'save.error': 'Save failed', 'save.invalid': 'Fix the highlighted fields to save', 'save.retry': 'Retry',
   'memory.add': 'Add memory', 'memory.edit': 'Edit', 'memory.cancel': 'Cancel', 'memory.save': 'Save', 'memory.delete': 'Delete', 'memory.deleting': 'Deleting…', 'memory.saving': 'Saving…',
   'memory.topic': 'Topic', 'memory.kind': 'Type', 'memory.summaryLabel': 'Title', 'memory.detailLabel': 'Content', 'memory.manual': 'Manually maintained',
   'memory.topicHint': 'Letters, digits, dots, underscores or hyphens; up to 96 characters.',
@@ -545,7 +565,7 @@ const en = {
   'detail.toolCall': 'Tool call', 'detail.toolResult': 'Tool result', 'detail.toolError': 'Tool failed',
   'detail.cache': 'Cache', 'detail.info': 'Details', 'tree.countCompact': '{shown}/{total} · Running {running}',
   'memory.loading': 'Loading memories…', 'memory.topics': 'Knowledge topics', 'memory.allTopics': 'All topics', 'memory.related': 'More in this topic', 'preset.configuration': 'Preset configuration',
-  'memory.title': 'Memory library', 'memory.project': 'This project', 'memory.global': 'Global preferences', 'memory.search': 'Search topics or memories',
+  'memory.title': 'Memory', 'memory.project': 'This project', 'memory.global': 'Global preferences', 'memory.search': 'Search topics or memories',
   'memory.description': 'Knowledge topics and entries',
   'memory.empty': 'No saved memories yet. Tell the agent when something is worth keeping.', 'memory.noMatches': 'No matching memories',
   'memory.selectSession': 'Open a conversation to view memory for its project.', 'memory.error': 'Memory is unavailable. Refresh to try again.',
@@ -964,19 +984,33 @@ function FeedbackMark({ tone, label }) {
       React.createElement('path', { d: 'm3.5 8 3 3 6-6', strokeLinecap: 'round', strokeLinejoin: 'round' })),
     tone === 'error' && React.createElement('span', { 'aria-hidden': true }, '!'))
 }
-function FeedbackActivity({ activity, t }) {
-  const tone = { running: 'active', failed: 'error', succeeded: 'success', interrupted: 'idle' }[activity.status] || 'idle'
-  return React.createElement('div', { className: 'dsh-super-code-feedback-activity', 'data-activity-state': activity.status },
-    React.createElement(FeedbackMark, { tone, label: text(t, 'feedback.activity.' + activity.status) }),
-    React.createElement('span', { className: 'dsh-super-code-feedback-activity-text', title: activity.description || activity.tool }, activity.description || activity.tool),
-    activity.description && React.createElement('small', { className: 'dsh-super-code-feedback-tool', title: activity.tool }, activity.tool),
-    ['failed', 'interrupted'].includes(activity.status) && React.createElement('small', null, text(t, 'feedback.activity.' + activity.status)))
+/** Per-tool settled counts in first-use order; single calls stay in the execution log. */
+function feedbackToolSummary(activities = []) {
+  const tools = new Map()
+  for (const { tool, status } of activities) {
+    const row = tools.get(tool) || { tool, succeeded: 0, failed: 0, running: false }
+    if (status === 'succeeded') row.succeeded++
+    else if (status === 'failed') row.failed++
+    else if (status === 'running') row.running = true
+    tools.set(tool, row)
+  }
+  return [...tools.values()]
 }
-/** Flatten presentation rows only; no task, step, or loaded activity is folded. */
+function FeedbackTools({ tools, t }) {
+  return React.createElement('ul', { className: 'dsh-super-code-feedback-tools', 'aria-label': text(t, 'feedback.tools') },
+    tools.map(row => {
+      const label = text(t, 'feedback.toolCount', { tool: row.tool, ok: row.succeeded, failed: row.failed })
+      return React.createElement('li', { key: row.tool, title: label, 'aria-label': label, 'data-running': row.running || undefined },
+        React.createElement('span', { 'aria-hidden': true }, row.tool),
+        React.createElement('b', { className: 'dsh-super-code-tool-badge', 'data-tone': 'success', 'aria-hidden': true }, row.succeeded),
+        React.createElement('b', { className: 'dsh-super-code-tool-badge', 'data-tone': 'warning', 'data-zero': row.failed === 0 || undefined, 'aria-hidden': true }, row.failed))
+    }))
+}
+/** Flatten presentation rows only; tool calls fold into one per-task summary row. */
 function feedbackListItems(model, root, partial) {
   const items = []
   const add = (kind, key, data = {}, row) => items.push({ kind, key: JSON.stringify(key), row, ...data,
-    signature: JSON.stringify([kind, data.content, data.todo, data.activity, data.label, data.count,
+    signature: JSON.stringify([kind, data.content, data.todo, data.tools, data.label, data.count,
       data.file && [data.file.name, data.file.directory, [...data.file.operations]], kind === 'task' &&
       [row.title, row.owner, row.done, row.total, row.complete, row.taskStatus, row.facts?.phase, row.node.running]]) })
   for (const row of model.tasks) {
@@ -985,8 +1019,9 @@ function feedbackListItems(model, root, partial) {
     if (row.goal && row.goal !== row.title) add('text', [row.id, 'goal'], { content: row.goal }, row)
     if (facts?.latestRequest && facts.latestRequest !== facts.request) add('request', [row.id, 'request'], { content: facts.latestRequest }, row)
     row.todos.forEach((todo, index) => add('step', [row.id, 'step', index], { todo }, row))
-    for (const activity of facts?.activities || []) add('activity', [row.id, 'activity', activity.callId, activity.seq], { activity }, row)
-    if (!row.total && !facts?.activities?.length) add('note', [row.id, 'empty'], { label: facts ? 'feedback.noSteps' : 'feedback.loading' }, row)
+    const tools = feedbackToolSummary(facts?.activities)
+    if (tools.length) add('tools', [row.id, 'tools'], { tools }, row)
+    if (!row.total && !tools.length) add('note', [row.id, 'empty'], { label: facts ? 'feedback.noSteps' : 'feedback.loading' }, row)
     if (facts?.omittedActivities) add('note', [row.id, 'recent'], { label: 'feedback.recentOnly' }, row)
     add('open', [row.id, 'open'], { focusable: !row.node.unavailable }, row)
   }
@@ -1002,7 +1037,7 @@ function feedbackListItems(model, root, partial) {
 
 /** Prefix heights allow binary-search windows without mounting offscreen rows. */
 function feedbackListLayout(items, heights = new Map()) {
-  const estimates = { task: 64, text: 48, request: 70, step: 28, activity: 30, open: 34, files: 40, file: 30, note: 26 }
+  const estimates = { task: 64, text: 48, request: 70, step: 28, tools: 32, open: 34, files: 40, file: 30, note: 26 }
   const offsets = [0], byKey = new Map()
   items.forEach((item, index) => {
     const measured = heights.get(item.key)
@@ -1050,7 +1085,7 @@ function FeedbackRowContent({ item, root, openDetail, t }) {
   if (item.kind === 'step') return React.createElement('div', { className: 'dsh-super-code-feedback-step', 'data-step-state': item.todo.status },
     React.createElement(FeedbackMark, { tone: item.todo.status === 'completed' ? 'success' : item.todo.status === 'in_progress' ? 'active' : 'pending', label: text(t, 'feedback.todo.' + item.todo.status) }),
     React.createElement('span', null, item.todo.content))
-  if (item.kind === 'activity') return React.createElement(FeedbackActivity, { activity: item.activity, t })
+  if (item.kind === 'tools') return React.createElement(FeedbackTools, { tools: item.tools, t })
   if (item.kind === 'open') return React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-feedback-open', disabled: !item.focusable,
     title: text(t, 'feedback.open'), onClick: () => openDetail(row.node) }, text(t, 'feedback.open'), React.createElement(Glyph, { type: 'arrow' }))
   if (item.kind === 'files') return React.createElement('h3', { className: 'dsh-super-code-feedback-files-heading' }, text(t, 'feedback.files'), React.createElement('span', null, item.count))
@@ -1062,7 +1097,9 @@ function FeedbackRowContent({ item, root, openDetail, t }) {
       file.directory && React.createElement('small', null, file.directory),
       React.createElement('span', { className: 'dsh-super-code-feedback-file-operation' }, [...file.operations].map(operation => text(t, 'feedback.file.' + operation)).join(' · ')))
   }
-  if (item.kind === 'note') return React.createElement('p', { className: 'dsh-super-code-feedback-muted', role: item.label === 'tree.loadError' ? 'alert' : undefined }, text(t, item.label))
+  if (item.label === 'tree.loadError') return React.createElement('p', { className: 'dsh-super-code-state', 'data-tone': 'error', role: 'alert' }, React.createElement(Glyph, { type: 'error' }), text(t, item.label))
+  if (item.label === 'tree.empty') return React.createElement('p', { className: 'dsh-super-code-state', 'data-tone': 'empty' }, React.createElement(Glyph, { type: 'context' }), text(t, item.label))
+  if (item.kind === 'note') return React.createElement('p', { className: 'dsh-super-code-feedback-muted' }, text(t, item.label))
   return React.createElement('p', { className: 'dsh-super-code-feedback-text' },
     item.kind === 'request' && React.createElement('small', null, text(t, 'feedback.latest')), item.content)
 }
@@ -1221,7 +1258,7 @@ function WorkspaceSectionToggle({ section, expanded, onToggle, children, t }) {
     React.createElement('strong', null, label), children)
 }
 
-/** One active section guarantees exactly one open view; tab state retains drafts. */
+/** Accordion: at most one open view; clicking the open heading collapses it. Tab state retains drafts. */
 function SuperCodeWorkspace(props) {
   const { tab } = props.useTabInfo()
   const address = typeof tab.navigation?.params?.memory === 'string' ? tab.navigation.params.memory : tab.contentId
@@ -1236,11 +1273,11 @@ function SuperCodeWorkspace(props) {
     props.workspaceStates.set(tab.signal, value)
     return value
   }, [props.workspaceStates, tab.signal])
-  const [active, setActive] = useState(['tasks', 'tree', 'memory'].includes(saved.active) ? saved.active : 'tasks')
+  const [active, setActive] = useState(['tasks', 'tree', 'memory', ''].includes(saved.active) ? saved.active : 'tasks')
   const layout = useRef(null), focusSection = useRef('')
   const toggle = section => {
-    const next = active === section ? section === 'tasks' ? 'tree' : 'tasks' : section
-    saved.active = next; focusSection.current = next; setActive(next)
+    const next = active === section ? '' : section
+    saved.active = next; focusSection.current = section; setActive(next)
   }
   useLayoutEffect(() => {
     if (saved.navigationKey === navigationKey) return
@@ -2097,116 +2134,188 @@ function budgetConfiguration(draft) {
   return { ok: true, configuration: config }
 }
 
+/* Settings primitives. Every tab composes titled sections of label/control rows,
+ * one callout style for notices, and one autosave indicator. */
+function SettingsSection({ id, title, description, actions, plain = false, children }) {
+  const lines = [].concat(description ?? []).filter(Boolean)
+  return React.createElement('section', { className: 'dsh-super-code-section', 'aria-labelledby': `${id}-title` },
+    React.createElement('header', { className: 'dsh-super-code-section-head' },
+      React.createElement('div', { className: 'dsh-super-code-section-heading' },
+        React.createElement('h3', { id: `${id}-title` }, title),
+        ...lines.map((line, index) => React.createElement('p', { key: index }, line))),
+      actions && React.createElement('div', { className: 'dsh-super-code-section-actions' }, actions)),
+    React.createElement('div', { className: 'dsh-super-code-section-body', 'data-plain': plain || undefined }, children))
+}
+/** Label and hint on the left, control on the right; `children` may take the describedby ids. */
+function SettingRow({ id, label, hint, error, children }) {
+  const described = [hint && `${id}-hint`, error && `${id}-error`].filter(Boolean).join(' ') || undefined
+  return React.createElement('div', { className: 'dsh-super-code-setting-row', 'data-invalid': error ? true : undefined },
+    React.createElement('div', { className: 'dsh-super-code-setting-row-text' },
+      React.createElement('label', { htmlFor: id }, label),
+      hint && React.createElement('p', { id: `${id}-hint` }, hint),
+      error && React.createElement('p', { id: `${id}-error`, className: 'dsh-super-code-setting-row-error' }, error)),
+    React.createElement('div', { className: 'dsh-super-code-setting-row-control' }, typeof children === 'function' ? children(described) : children))
+}
+function Callout({ tone = 'info', action, children }) {
+  return React.createElement('div', { className: 'dsh-super-code-callout', 'data-tone': tone, role: tone === 'error' ? 'alert' : tone === 'success' ? 'status' : undefined },
+    React.createElement(Glyph, { type: tone === 'success' ? 'check' : tone === 'info' ? 'info' : 'error' }),
+    React.createElement('div', { className: 'dsh-super-code-callout-text' }, children),
+    action || null)
+}
+function SaveIndicator({ state, t }) {
+  return React.createElement('p', { className: 'dsh-super-code-save-indicator', role: 'status', 'data-save-state': state },
+    React.createElement('i', { 'aria-hidden': true }), React.createElement('span', null, t(`save.${state}`)))
+}
+/** Exclusive choices that need a sentence each; native radios keep arrow-key behavior. */
+function ChoiceCards({ name, label, value, choices, onChange, disabled = false }) {
+  return React.createElement('div', { className: 'dsh-super-code-choice-cards', role: 'radiogroup', 'aria-label': label },
+    ...choices.map(([choice, title, hint]) => React.createElement('label', { key: choice, className: 'dsh-super-code-choice-card', 'data-checked': choice === value || undefined },
+      React.createElement('input', { type: 'radio', name, value: choice, checked: choice === value, disabled, 'aria-describedby': `${name}-${choice}-hint`,
+        onChange: () => { if (choice !== value) onChange(choice) } }),
+      React.createElement('i', { 'aria-hidden': true }),
+      React.createElement('span', { className: 'dsh-super-code-choice-card-text' },
+        React.createElement('strong', null, title), React.createElement('small', { id: `${name}-${choice}-hint` }, hint)))))
+}
+
+/** Each budget tab writes only its own fields and carries the other tab's stored values through. */
+function budgetSectionConfiguration(section, draft, snapshot) {
+  const parsed = budgetConfiguration(draft)
+  if (!parsed.ok) return parsed
+  const current = snapshot.configuration
+  return { ok: true, configuration: section === 'protection'
+    ? { ...current, deletionProtection: draft.deletionProtection, deletionProtectionForOfficialPresets: draft.deletionProtectionForOfficialPresets }
+    : { ...parsed.configuration, deletionProtection: current.deletionProtection, deletionProtectionForOfficialPresets: current.deletionProtectionForOfficialPresets } }
+}
+function createBudgetAutosave(api, section = 'context') {
+  return createAutosave(api, { draft: budgetDraft({}), toDraft: budgetDraft,
+    toConfiguration: (draft, snapshot) => budgetSectionConfiguration(section, draft, snapshot) })
+}
+function budgetFieldValid(field, input) {
+  const value = String(input ?? '').trim()
+  if (!value) return true
+  const number = Number(value)
+  if (!Number.isFinite(number) || number < field.min || (field.max !== undefined && number > field.max)) return false
+  if (field.step === 'any') return true
+  const scaled = number * field.factor, rounded = Math.round(scaled)
+  return Math.abs(rounded - scaled) <= 1e-7 && Number.isSafeInteger(rounded)
+}
+const autosaveValidationErrors = ['invalid', 'retain', 'ptc-order']
+function autosaveState(editing) {
+  return editing.saving ? 'saving' : autosaveValidationErrors.includes(editing.error) ? 'invalid'
+    : editing.error ? 'error' : editing.notice === 'saved' ? 'saved' : 'idle'
+}
+
 function BudgetSettings({ api, t, active, section = 'context', onSaved = () => {} }) {
-  const [snapshot, setSnapshot] = useState(null)
-  const [draft, setDraft] = useState(() => budgetDraft({})), [busy, setBusy] = useState(false)
-  const [error, setError] = useState(''), [notice, setNotice] = useState('')
+  const protection = section === 'protection'
+  const editor = useMemo(() => createBudgetAutosave(api, section), [api, section])
+  const editing = useSyncExternalStore(editor.subscribe, editor.getSnapshot, editor.getSnapshot)
+  const { snapshot, draft } = editing
+  const [loading, setLoading] = useState(false), [failure, setFailure] = useState(''), [notice, setNotice] = useState('')
+  const [confirmReset, setConfirmReset] = useState(false)
   const alive = useRef(false), pending = useRef(false)
-  const receive = value => { setSnapshot(value); setDraft(budgetDraft(value.configuration)) }
-  const read = async () => {
-    if (pending.current) return
-    pending.current = true; setBusy(true); setError(''); setNotice('')
+  const load = async (discard = false) => {
+    if (pending.current || (!discard && editor.hasChanges())) return
+    pending.current = true; setLoading(true); setFailure('')
     try {
       const response = await api.readConfig()
       if (!response.ok) throw new Error('Remote unavailable')
-      if (alive.current) receive(response.value)
-    } catch { if (alive.current) setError('connection') }
-    finally { pending.current = false; if (alive.current) setBusy(false) }
+      if (alive.current) editor.receive(response.value)
+    } catch { if (alive.current) setFailure('connection') }
+    finally { pending.current = false; if (alive.current) setLoading(false) }
   }
-  useEffect(() => { alive.current = true; return () => { alive.current = false } }, [api])
-  useEffect(() => { if (active && (!snapshot || !dirty) && !error) read() }, [api, active])
-  const save = async reset => {
-    if (pending.current || !snapshot?.writable) return
-    const protection = section === 'protection'
-    const parsed = budgetConfiguration(draft)
-    if (parsed.ok) {
-      const selected = protection
-        ? { ...snapshot.configuration, deletionProtection: reset ? 'relaxed' : draft.deletionProtection, deletionProtectionForOfficialPresets: reset ? false : draft.deletionProtectionForOfficialPresets }
-        : { ...(reset ? {} : parsed.configuration), deletionProtection: snapshot.configuration.deletionProtection, deletionProtectionForOfficialPresets: snapshot.configuration.deletionProtectionForOfficialPresets }
-      parsed.configuration = selected
-    }
-    if (!parsed.ok) { setError(parsed.error); setNotice(''); return }
-    pending.current = true; setBusy(true); setError(''); setNotice('')
+  useEffect(() => { alive.current = true; return () => { alive.current = false; void editor.flush() } }, [editor])
+  useEffect(() => { if (editing.saveCount) onSaved() }, [editing.saveCount])
+  // Other tabs write the same document, so reread on every visit; leaving flushes pending input.
+  useEffect(() => { if (active) load(); else { setConfirmReset(false); void editor.flush() } }, [editor, active])
+  const reset = async () => {
+    setConfirmReset(false)
+    if (pending.current) return
+    await editor.flush()
+    const current = editor.getSnapshot().snapshot
+    if (!alive.current || !current?.writable) return
+    const base = current.configuration
+    const configuration = protection
+      ? { ...base, deletionProtection: 'relaxed', deletionProtectionForOfficialPresets: false }
+      : { deletionProtection: base.deletionProtection, deletionProtectionForOfficialPresets: base.deletionProtectionForOfficialPresets }
+    pending.current = true; setLoading(true); setFailure(''); setNotice('')
     try {
-      const response = await api.saveConfig(JSON.stringify(parsed.configuration), String(snapshot.revision))
+      const response = await api.saveConfig(JSON.stringify(configuration), String(current.revision))
       if (!response.ok) throw new Error('Remote unavailable')
       if (!alive.current) return
-      if (response.value.ok) { receive(response.value.snapshot); onSaved(); setNotice(reset ? 'resetDone' : 'saved') }
-      else setError(response.value.error)
-    } catch { if (alive.current) setError('save-failed') }
-    finally { pending.current = false; if (alive.current) setBusy(false) }
+      if (response.value.ok) { editor.receive(response.value.snapshot); onSaved(); setNotice('resetDone') }
+      else setFailure(response.value.error)
+    } catch { if (alive.current) setFailure('save-failed') }
+    finally { pending.current = false; if (alive.current) setLoading(false) }
   }
-  const disabled = busy || !snapshot?.writable
-  const sectionDraft = value => section === 'protection'
-    ? [value.deletionProtection, value.deletionProtectionForOfficialPresets]
-    : Object.fromEntries(Object.entries(value).filter(([key]) => !key.startsWith('deletionProtection')))
-  const dirty = snapshot && JSON.stringify(sectionDraft(draft)) !== JSON.stringify(sectionDraft(budgetDraft(snapshot.configuration)))
-  const edit = (key, value) => { setDraft(current => ({ ...current, [key]: value })); setError(''); setNotice('') }
-  const defaultLabel = (key, field) => {
-    const value = field?.root ? snapshot?.defaults?.[key] : snapshot?.defaults?.budgets?.[key]
-    const shown = key === 'pressureBasis' ? t('budget.host') : value === undefined ? t('budget.managed') : Number(value / field.factor).toLocaleString('en-US', { maximumFractionDigits: 3 })
-    return React.createElement('span', { className: 'dsh-super-code-budget-default' }, text(t, 'budget.defaultValue', { value: shown }))
+  const disabled = loading || !snapshot?.writable
+  const edit = (key, value, delay = 0) => { setNotice(''); setFailure(''); editor.change({ [key]: value }, delay) }
+  const parsed = budgetConfiguration(draft)
+  const fieldError = field => !budgetFieldValid(field, draft[field.key]) ? t('budget.error.range')
+    : field.key === 'retainRatio' && parsed.error === 'retain' ? t('budget.error.retain')
+    : field.key === 'ptcTimeoutMs' && parsed.error === 'ptc-order' ? t('budget.error.ptc-order') : ''
+  const defaultOf = field => {
+    const value = field.root ? snapshot?.defaults?.[field.key] : snapshot?.defaults?.budgets?.[field.key]
+    return value === undefined ? '' : Number(value / field.factor).toLocaleString('en-US', { maximumFractionDigits: 3, useGrouping: false })
   }
-  const fields = group => budgetFields.filter(field => field.group === group).map(field => {
-    const id = `super-code-budget-${field.key}`
-    return React.createElement('div', { className: 'dsh-super-code-settings-field', key: field.key },
-      React.createElement('label', { htmlFor: id }, t(`budget.${field.key}`), ' ', defaultLabel(field.key, field)),
-      React.createElement('input', { id, type: 'number', inputMode: 'decimal', value: draft[field.key],
-        min: field.min, max: group === 'execution' && snapshot?.ptcMaxTimeoutMs ? snapshot.ptcMaxTimeoutMs / 1000 : field.max,
-        step: field.step, placeholder: t('budget.inherit'), disabled: disabled || (group === 'execution' && snapshot?.ptcMaxTimeoutMs === false),
-        onChange: event => edit(field.key, event.target.value) }))
-  })
+  const numberRow = field => {
+    const id = `super-code-budget-${field.key}`, execution = field.group === 'execution', fallback = defaultOf(field)
+    return React.createElement(SettingRow, { key: field.key, id, label: t(`budget.${field.key}`), error: fieldError(field),
+      hint: text(t, 'budget.defaultHint', { value: fallback || t('budget.managed') }) }, described =>
+      React.createElement('input', { id, type: 'number', inputMode: 'decimal', value: draft[field.key], min: field.min,
+        max: execution && snapshot?.ptcMaxTimeoutMs ? snapshot.ptcMaxTimeoutMs / 1000 : field.max, step: field.step,
+        placeholder: fallback || t('budget.inherit'), 'aria-invalid': fieldError(field) ? true : undefined, 'aria-describedby': described,
+        disabled: disabled || (execution && snapshot?.ptcMaxTimeoutMs === false),
+        onChange: event => edit(field.key, event.target.value, 500), onBlur: () => { void editor.flush() } }))
+  }
+  const rows = group => budgetFields.filter(field => field.group === group).map(numberRow)
+  const saveError = editing.error && !autosaveValidationErrors.includes(editing.error) ? editing.error : ''
+  const problem = failure || saveError
+  const button = (label, onClick, extra = {}) => React.createElement(ActionButton, { type: 'button', disabled: loading, onClick, ...extra }, label)
+  const content = protection ? React.createElement(React.Fragment, null,
+    React.createElement(SettingsSection, { id: 'super-code-deletion-mode', title: t('delete.mode'), plain: true },
+      React.createElement(ChoiceCards, { name: 'super-code-deletion-mode', label: t('delete.mode'), value: draft.deletionProtection, disabled,
+        choices: ['off', 'relaxed', 'strict'].map(mode => [mode, t(`delete.${mode}`), t(`delete.hint.${mode}`)]),
+        onChange: value => edit('deletionProtection', value) })),
+    React.createElement(SettingsSection, { id: 'super-code-deletion-scope', title: t('delete.scope') },
+      React.createElement(SettingRow, { id: 'super-code-deletion-official', label: t('delete.official'), hint: t('delete.officialHint') }, described =>
+        React.createElement(ConnectionSwitch, { id: 'super-code-deletion-official', checked: draft.deletionProtectionForOfficialPresets,
+          disabled: disabled || draft.deletionProtection === 'off', 'aria-describedby': described,
+          onChange: value => edit('deletionProtectionForOfficialPresets', value) }))))
+    : React.createElement(React.Fragment, null,
+      React.createElement(Callout, { tone: 'info' }, React.createElement('p', null, t('budget.scope')), React.createElement('p', null, t('budget.defaults'))),
+      React.createElement(SettingsSection, { id: 'super-code-budget-common', title: t('budget.common') },
+        React.createElement(SettingRow, { id: 'super-code-budget-official', label: t('budget.applyToOfficialPresets'), hint: t('budget.officialHint') }, described =>
+          React.createElement(ConnectionSwitch, { id: 'super-code-budget-official', checked: draft.applyToOfficialPresets, disabled, 'aria-describedby': described,
+            onChange: value => edit('applyToOfficialPresets', value) }))),
+      React.createElement(SettingsSection, { id: 'super-code-budget-context', title: t('budget.context'), description: t('budget.contextHint') },
+        React.createElement(SettingRow, { id: 'super-code-budget-basis', label: t('budget.pressureBasis'), hint: text(t, 'budget.defaultHint', { value: t('budget.host') }) },
+          React.createElement(SelectControl, { id: 'super-code-budget-basis', label: t('budget.pressureBasis'), value: draft.pressureBasis, disabled,
+            choices: [['', t('budget.inherit')], ['host', t('budget.host')], ['window', t('budget.window')]], onChange: value => edit('pressureBasis', value) })),
+        ...rows('context'),
+        React.createElement('details', { className: 'dsh-super-code-section-more' },
+          React.createElement('summary', null, React.createElement(Glyph, { type: 'chevron' }), t('budget.advanced')), ...rows('advanced'))),
+      React.createElement(SettingsSection, { id: 'super-code-budget-execution', title: t('budget.execution'),
+        description: [t(snapshot?.ptcMaxTimeoutMs === false ? 'budget.ptcUnavailable' : 'budget.ptcHint'),
+          snapshot?.ptcMaxTimeoutMs && text(t, 'budget.ptcCeiling', { seconds: snapshot.ptcMaxTimeoutMs / 1000 })] }, ...rows('execution')),
+      React.createElement(SettingsSection, { id: 'super-code-budget-exclusive', title: t('budget.superCode'), description: t('budget.superCodeHint') }, ...rows('superCode')))
   return React.createElement('section', { className: 'dsh-super-code-budgets' },
-    React.createElement('form', { 'aria-label': t(section === 'protection' ? 'delete.title' : 'budget.title'), 'aria-busy': busy, onSubmit: event => { event.preventDefault(); save(false) } },
-      section === 'protection' && React.createElement('section', { className: 'dsh-super-code-budget-group', 'aria-labelledby': 'super-code-deletion-title' },
-        React.createElement('h3', { id: 'super-code-deletion-title' }, t('delete.title')),
-        React.createElement('div', { className: 'dsh-super-code-settings-field' },
-          React.createElement('label', { id: 'super-code-deletion-mode-label' }, t('delete.mode')),
-          React.createElement(SelectControl, { id: 'super-code-deletion-protection', label: t('delete.mode'), value: draft.deletionProtection,
-            choices: ['off', 'relaxed', 'strict'].map(mode => [mode, t(`delete.${mode}`)]), disabled,
-            onChange: value => edit('deletionProtection', value) })),
-        React.createElement('p', { id: 'super-code-deletion-hint', className: 'dsh-super-code-budget-hint' }, t(`delete.hint.${draft.deletionProtection}`)),
-        React.createElement('label', { className: 'dsh-super-code-budget-switch' },
-          React.createElement('input', { id: 'super-code-deletion-official', type: 'checkbox', role: 'switch', checked: draft.deletionProtectionForOfficialPresets, disabled: disabled || draft.deletionProtection === 'off',
-            'aria-describedby': 'super-code-deletion-official-hint', onChange: event => edit('deletionProtectionForOfficialPresets', event.target.checked) }),
-          React.createElement('span', null, t('delete.official'))),
-        React.createElement('p', { id: 'super-code-deletion-official-hint', className: 'dsh-super-code-budget-hint' }, t('delete.officialHint'))),
-      section !== 'protection' && React.createElement(React.Fragment, null,
-      React.createElement('p', { className: 'dsh-super-code-budget-hint' }, t('budget.scope')),
-      React.createElement('section', { className: 'dsh-super-code-budget-group', 'aria-labelledby': 'super-code-common-title' },
-      React.createElement('h3', { id: 'super-code-common-title' }, t('budget.common')),
-      React.createElement('label', { className: 'dsh-super-code-budget-switch' },
-        React.createElement('input', { type: 'checkbox', role: 'switch', checked: draft.applyToOfficialPresets, disabled,
-          'aria-describedby': 'super-code-official-hint', onChange: event => edit('applyToOfficialPresets', event.target.checked) }),
-        React.createElement('span', null, t('budget.applyToOfficialPresets'), ' ', React.createElement('span', { className: 'dsh-super-code-budget-default' }, text(t, 'budget.defaultValue', { value: t('budget.off') })))),
-      React.createElement('p', { id: 'super-code-official-hint', className: 'dsh-super-code-budget-hint' }, t('budget.officialHint')),
-      React.createElement('p', { className: 'dsh-super-code-budget-hint' }, t('budget.defaults')),
-      React.createElement('fieldset', null, React.createElement('legend', null, t('budget.context')),
-        React.createElement('div', { className: 'dsh-super-code-budget-grid' },
-          React.createElement('div', { className: 'dsh-super-code-settings-field' },
-            React.createElement('label', { id: 'super-code-budget-basis-label' }, t('budget.pressureBasis'), ' ', defaultLabel('pressureBasis')),
-            React.createElement(SelectControl, { id: 'super-code-budget-basis', label: t('budget.pressureBasis'), value: draft.pressureBasis,
-              choices: [['', t('budget.inherit')], ['host', t('budget.host')], ['window', t('budget.window')]], disabled,
-              onChange: value => edit('pressureBasis', value) })), fields('context')),
-        React.createElement('small', null, t('budget.contextHint'))),
-      React.createElement('fieldset', null, React.createElement('legend', null, t('budget.execution')),
-        React.createElement('div', { className: 'dsh-super-code-budget-grid' }, fields('execution')),
-        React.createElement('small', null, t(snapshot?.ptcMaxTimeoutMs === false ? 'budget.ptcUnavailable' : 'budget.ptcHint')),
-        snapshot?.ptcMaxTimeoutMs && React.createElement('small', null, text(t, 'budget.ptcCeiling', { seconds: snapshot.ptcMaxTimeoutMs / 1000 }))),
-      React.createElement('details', { className: 'dsh-super-code-budget-more' },
-        React.createElement('summary', null, t('budget.advanced')),
-        React.createElement('div', { className: 'dsh-super-code-budget-grid' }, fields('advanced')))),
-      React.createElement('section', { className: 'dsh-super-code-budget-group dsh-super-code-budget-exclusive', 'aria-labelledby': 'super-code-exclusive-title' },
-        React.createElement('h3', { id: 'super-code-exclusive-title' }, t('budget.superCode')),
-        React.createElement('p', { className: 'dsh-super-code-budget-hint' }, t('budget.superCodeHint')),
-        React.createElement('div', { className: 'dsh-super-code-budget-grid' }, fields('superCode')))),
-      !busy && snapshot && !snapshot.writable && React.createElement('small', null, t('budget.error.read-only')),
-      error && React.createElement('p', { role: 'alert' }, t(`budget.error.${error}`)),
-      notice && React.createElement('p', { role: 'status', className: 'dsh-super-code-budget-hint' }, t(`budget.${notice}`)),
-      React.createElement('div', { className: 'dsh-super-code-settings-form-actions' },
-        error && React.createElement(ActionButton, { type: 'button', disabled: busy, onClick: read }, t('budget.reload')),
-        React.createElement(ActionButton, { type: 'button', disabled, onClick: () => save(true) }, t('budget.reset')),
-        React.createElement(ActionButton, { type: 'submit', className: 'dsh-super-code-primary-button', disabled: disabled || !dirty }, t(busy ? 'budget.saving' : 'budget.save')))))
+    React.createElement('form', { className: 'dsh-super-code-stack', 'aria-label': t(protection ? 'delete.title' : 'budget.title'), 'aria-busy': loading || editing.saving,
+      onSubmit: event => { event.preventDefault(); void editor.flush() } },
+      problem && React.createElement(Callout, { tone: 'error',
+        action: failure === 'connection' || problem === 'conflict' ? button(t('budget.reload'), () => load(true))
+          : saveError ? button(t('save.retry'), () => { void editor.retry() }) : null },
+        React.createElement('p', null, t(`budget.error.${problem}`))),
+      snapshot && !snapshot.writable && React.createElement(Callout, { tone: 'warning' }, React.createElement('p', null, t('budget.error.read-only'))),
+      notice && React.createElement(Callout, { tone: 'success' }, React.createElement('p', null, t(`budget.${notice}`))),
+      content,
+      React.createElement('div', { className: 'dsh-super-code-settings-footer' },
+        React.createElement(SaveIndicator, { state: autosaveState(editing), t }),
+        React.createElement('div', { className: 'dsh-super-code-settings-footer-actions' },
+          confirmReset ? React.createElement(React.Fragment, null,
+            React.createElement('span', null, t('budget.resetQuestion')),
+            button(t('preset.cancel'), () => setConfirmReset(false)),
+            button(t('budget.resetConfirm'), reset, { className: 'dsh-super-code-danger-button', disabled }))
+            : button(t('budget.reset'), () => setConfirmReset(true), { disabled })))))
 }
 
 // Old hosts render file metadata. Synchronize through our own Remote, then
@@ -2250,18 +2359,21 @@ function synchronizePresetDisplay(api, locale, reload, onError, preferenceScope)
 }
 
 function connectionDraft(config) {
-  return { enabled: config.enabled, port: String(config.port), allowedDirectories: [...config.allowedDirectories], knownDirectories: [...config.knownDirectories ?? []],
+  return { enabled: config.enabled, allowNewConversations: config.allowNewConversations !== false, allowCallerApproval: config.allowCallerApproval === true, port: String(config.port), allowedDirectories: [...config.allowedDirectories], knownDirectories: [...config.knownDirectories ?? []],
     maxConcurrent: config.maxConnections ?? 3, maxConnections: String(config.maxConnections ?? 3), directoriesConfigured: config.directoriesConfigured ?? false }
 }
 function connectionConfiguration(draft) {
   const port = Number(draft.port), maxConnections = Number(draft.maxConnections)
   const allowedDirectories = [...new Set(draft.allowedDirectories)]
-  if (typeof draft.enabled !== 'boolean' || !Number.isInteger(port) || port < 1024 || port > 65535 || !Number.isInteger(maxConnections) || maxConnections < 1 || maxConnections > 32 || allowedDirectories.length > 32 || allowedDirectories.some(path => typeof path !== 'string' || !path) || (draft.enabled && !allowedDirectories.length)) return { ok: false }
-  return { ok: true, configuration: { enabled: draft.enabled, port, allowedDirectories, maxConcurrent: maxConnections, maxConnections, directoriesConfigured: true, knownDirectories: draft.knownDirectories } }
+  if (typeof draft.enabled !== 'boolean' || typeof draft.allowNewConversations !== 'boolean' || typeof draft.allowCallerApproval !== 'boolean' || !Number.isInteger(port) || port < 1024 || port > 65535 || !Number.isInteger(maxConnections) || maxConnections < 1 || maxConnections > 32 || allowedDirectories.length > 32 || allowedDirectories.some(path => typeof path !== 'string' || !path) || (draft.enabled && !allowedDirectories.length)) return { ok: false }
+  return { ok: true, configuration: { enabled: draft.enabled, allowNewConversations: draft.allowNewConversations, allowCallerApproval: draft.allowCallerApproval, port, allowedDirectories, maxConcurrent: maxConnections, maxConnections, directoriesConfigured: true, knownDirectories: draft.knownDirectories } }
 }
-/** Serialize writes and retain newer edits while an earlier revision is being saved. */
-function createConnectionAutosave(api) {
-  let state = { snapshot: false, draft: connectionDraft({ enabled: false, port: 23457, allowedDirectories: [] }), saving: false, error: '', notice: '', saveCount: 0 }
+/**
+ * Serialize writes and retain newer edits while an earlier revision is being saved.
+ * `toConfiguration` returns `{ ok, configuration }` or `{ ok: false, error? }`; invalid drafts never write.
+ */
+function createAutosave(api, { draft: initialDraft, toDraft, toConfiguration }) {
+  let state = { snapshot: false, draft: initialDraft, saving: false, error: '', notice: '', saveCount: 0 }
   let version = 0, acknowledged = 0, blocked = -1, timer = false, running = false
   const listeners = new Set()
   const update = patch => { state = { ...state, ...patch }; for (const listener of listeners) listener() }
@@ -2273,14 +2385,14 @@ function createConnectionAutosave(api) {
       update({ saving: true, error: '', notice: '' })
       try {
         while (acknowledged < version) {
-          const sent = version, parsed = connectionConfiguration(state.draft)
-          if (!parsed.ok) { blocked = version; update({ error: 'invalid' }); break }
+          const sent = version, parsed = toConfiguration(state.draft, state.snapshot)
+          if (!parsed.ok) { blocked = version; update({ error: parsed.error || 'invalid' }); break }
           const result = await api.saveConfig(JSON.stringify(parsed.configuration), String(state.snapshot.revision))
           if (!result.ok) throw new Error('Remote unavailable')
           if (!result.value.ok) { blocked = version; update({ error: result.value.error }); break }
           acknowledged = sent
           update({ snapshot: result.value.snapshot, saveCount: state.saveCount + 1,
-            ...(sent === version ? { draft: connectionDraft(result.value.snapshot.configuration), notice: 'saved' } : {}) })
+            ...(sent === version ? { draft: toDraft(result.value.snapshot.configuration), notice: 'saved' } : {}) })
         }
       } catch { blocked = version; update({ error: 'save-failed' }) }
       finally { update({ saving: false }) }
@@ -2291,7 +2403,7 @@ function createConnectionAutosave(api) {
     getSnapshot: () => state,
     subscribe: listener => { listeners.add(listener); return () => listeners.delete(listener) },
     hasChanges: () => version !== acknowledged || state.saving,
-    receive: (snapshot, draft = connectionDraft(snapshot.configuration)) => {
+    receive: (snapshot, draft = toDraft(snapshot.configuration)) => {
       acknowledged = ++version
       update({ snapshot, draft, error: '', notice: '' })
     },
@@ -2303,12 +2415,19 @@ function createConnectionAutosave(api) {
       if (delay) timer = setTimeout(() => { timer = false; void flush() }, delay)
       else void flush()
     },
+    /** Retry the last blocked or failed draft without requiring another edit. */
+    retry: () => { blocked = -1; return flush() },
     flush,
   }
 }
-function ConnectionSwitch({ checked, disabled, onChange, children }) {
+function createConnectionAutosave(api) {
+  return createAutosave(api, { draft: connectionDraft({ enabled: false, port: 23457, allowedDirectories: [] }),
+    toDraft: connectionDraft, toConfiguration: draft => connectionConfiguration(draft) })
+}
+/** The single switch control for every settings toggle; extra props go to the input. */
+function ConnectionSwitch({ checked, disabled, onChange, children, ...input }) {
   return React.createElement('label', { className: 'dsh-super-code-connection-switch' },
-    React.createElement('input', { type: 'checkbox', role: 'switch', checked, disabled, onChange: event => onChange(event.target.checked) }),
+    React.createElement('input', { ...input, type: 'checkbox', role: 'switch', checked, disabled, onChange: event => onChange(event.target.checked) }),
     React.createElement('span', { className: 'dsh-super-code-connection-track', 'aria-hidden': true }, React.createElement('i')), children)
 }
 function DirectoryBrowser({ api, t, onSelect, onClose }) {
@@ -2476,6 +2595,10 @@ function ConnectionSettings({ api, t, active, openSession, onSaved = () => {} })
     React.createElement('form', { 'aria-label': t('connection.title'), 'aria-busy': saving, onSubmit: event => { event.preventDefault(); void editor.flush() } },
       React.createElement(ConnectionSwitch, { checked: draft.enabled, disabled, onChange: value => edit('enabled', value) }, t('connection.enabled')),
       React.createElement('p', { className: 'dsh-super-code-connection-hint' }, t('connection.scope')),
+      React.createElement(ConnectionSwitch, { checked: draft.allowNewConversations, disabled, onChange: value => edit('allowNewConversations', value) }, t('connection.allowNewConversations')),
+      React.createElement('small', null, t('connection.allowNewConversationsHint')),
+      React.createElement(ConnectionSwitch, { checked: draft.allowCallerApproval, disabled, onChange: value => edit('allowCallerApproval', value) }, t('connection.allowCallerApproval')),
+      React.createElement('small', null, t('connection.allowCallerApprovalHint')),
       React.createElement('div', { className: 'dsh-super-code-connection-grid' },
         ...[['port', 1024, 65535], ['maxConnections', 1, 32]].map(([key, min, max]) => React.createElement('div', { key, className: 'dsh-super-code-settings-field' },
           React.createElement('label', { htmlFor: `super-code-connection-${key}` }, t(`connection.${key}`)),
@@ -2515,52 +2638,94 @@ function ConnectionSettings({ api, t, active, openSession, onSaved = () => {} })
     browser && React.createElement(DirectoryBrowser, { api, t, onSelect: choose, onClose: () => setBrowser(false) }))
 }
 
+/* A few exclusive choices read faster as one visible radio group than as a menu. */
+function SegmentedControl({ label, value, choices, onChange, disabled = false, busy = false, describedBy }) {
+  const selected = choices.findIndex(([choice]) => choice === value)
+  const focusable = Math.max(0, selected)
+  const pick = choice => { if (!disabled && !busy && choice !== value) onChange(choice) }
+  return React.createElement('div', { className: 'dsh-super-code-segmented', role: 'radiogroup', 'aria-label': label, 'aria-describedby': describedBy,
+    'aria-busy': busy || undefined, 'aria-disabled': disabled || undefined,
+    onKeyDown: event => {
+      const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key]
+      const next = event.key === 'Home' ? 0 : event.key === 'End' ? choices.length - 1
+        : step === undefined ? -1 : (focusable + step + choices.length) % choices.length
+      if (next < 0 || disabled || busy) return
+      event.preventDefault()
+      event.currentTarget.querySelectorAll('[role=radio]')[next]?.focus()
+      pick(choices[next][0])
+    } },
+    ...choices.map(([choice, text], index) => React.createElement('button', { key: choice, type: 'button', role: 'radio',
+      'aria-checked': index === selected, tabIndex: index === focusable ? 0 : -1, disabled, onClick: () => pick(choice) }, text)))
+}
 function SettingsHome({ budgetApi, connectionApi, t, active, revision, navigate, children }) {
   const [budget, setBudget] = useState(null), [connection, setConnection] = useState(null), [overview, setOverview] = useState({ connections: [], sessions: [] })
-  const [busy, setBusy] = useState(false), [error, setError] = useState(false), alive = useRef(false), pending = useRef(false)
-  const load = async () => {
-    if (pending.current) return
-    pending.current = true
+  // `saving` keeps the chosen value on screen until the reread confirms it.
+  const [saving, setSaving] = useState(null), [failure, setFailure] = useState('')
+  const alive = useRef(false), request = useRef(0), loading = useRef(false), writing = useRef(false)
+  const load = async (force = false) => {
+    if (!force && (loading.current || writing.current)) return
+    const sequence = ++request.current
+    loading.current = true
     try {
       const [b, c, o] = await Promise.all([budgetApi.readConfig(), connectionApi.readConfig(), connectionApi.overview()])
       if (!b.ok || !c.ok || !o.ok) throw new Error()
-      if (alive.current) { setBudget(b.value); setConnection(c.value); setOverview(o.value); setError(false) }
-    } catch { if (alive.current) setError(true) }
-    finally { pending.current = false }
+      if (alive.current && sequence === request.current) {
+        setBudget(b.value); setConnection(c.value); setOverview(o.value); setFailure(value => value === 'load' ? '' : value)
+      }
+    } catch { if (alive.current && sequence === request.current) setFailure('load') }
+    finally { if (sequence === request.current) loading.current = false }
   }
   useEffect(() => { alive.current = true; return () => { alive.current = false } }, [budgetApi, connectionApi])
   useEffect(() => { if (!active) return; load(); const timer = setInterval(load, 2000); return () => clearInterval(timer) }, [active, revision, budgetApi, connectionApi])
   const change = async (kind, value) => {
-    if (busy || pending.current) return
-    pending.current = true; setBusy(true)
+    const current = kind === 'protection' ? budget : connection
+    if (writing.current || !current?.writable) return
+    // A save supersedes any poll in flight, so a stale read cannot undo the choice.
+    writing.current = true; request.current++; loading.current = false
+    setSaving({ kind, value }); setFailure('')
+    let saved = false
     try {
-      let response
-      if (kind === 'protection') response = await budgetApi.saveConfig(JSON.stringify({ ...budget.configuration, deletionProtection: value }), String(budget.revision))
-      else response = await connectionApi.saveConfig(JSON.stringify({ ...connection.configuration, enabled: value }), String(connection.revision))
-      if (!response.ok || !response.value.ok) throw new Error()
-    } catch { if (alive.current) setError(true); return }
-    finally { pending.current = false; if (alive.current) setBusy(false) }
-    if (alive.current) load()
+      const configuration = kind === 'protection' ? { ...current.configuration, deletionProtection: value } : { ...current.configuration, enabled: value }
+      const response = await (kind === 'protection' ? budgetApi : connectionApi).saveConfig(JSON.stringify(configuration), String(current.revision))
+      saved = Boolean(response.ok && response.value.ok)
+    } catch { /* Reported on the row below. */ }
+    if (saved && alive.current) await load(true)
+    writing.current = false
+    if (alive.current) { setSaving(null); if (!saved) setFailure(kind) }
   }
-  const mode = budget ? budgetDraft(budget.configuration).deletionProtection : ''
+  const mode = saving?.kind === 'protection' ? saving.value : budget ? budgetDraft(budget.configuration).deletionProtection : ''
+  const enabled = saving?.kind === 'connection' ? saving.value : Boolean(connection?.configuration.enabled)
+  const state = !connection || saving?.kind === 'connection' ? 'loading' : connection.state
+  const listening = enabled && state === 'listening'
+  const needsSetup = Boolean(connection) && !enabled && !connection.configuration.allowedDirectories.length
+  const placeholder = kind => React.createElement('span', { className: 'dsh-super-code-skeleton', 'data-skeleton': kind, 'aria-hidden': true })
+  const row = ({ key, icon, title, target, on, body, control }) => React.createElement('section', { className: 'dsh-super-code-home-row',
+    'data-home-row': key, 'data-active': on || undefined, 'aria-label': title, 'aria-busy': saving?.kind === key || undefined },
+    React.createElement('span', { className: 'dsh-super-code-home-row-icon', 'aria-hidden': true }, React.createElement(Glyph, { type: icon })),
+    React.createElement('div', { className: 'dsh-super-code-home-row-text' },
+      React.createElement('h3', { className: 'dsh-super-code-home-row-title' },
+        React.createElement('button', { type: 'button', 'aria-label': t('home.details', { title }), onClick: () => navigate(target) }, title, React.createElement(Glyph, { type: 'chevron' }))),
+      body),
+    React.createElement('div', { className: 'dsh-super-code-home-row-control' }, control),
+    failure === key && React.createElement('p', { role: 'alert' }, t('home.error')))
   return React.createElement('section', { className: 'dsh-super-code-home' }, children,
-    React.createElement('div', { className: 'dsh-super-code-settings-actions' }, React.createElement(ActionButton, { type: 'button', onClick: () => navigate('preset') }, t('home.managePreset'))),
-    React.createElement('h3', { className: 'dsh-super-code-home-category' }, t('home.protection')),
-    React.createElement('div', { className: 'dsh-super-code-home-card' },
-      React.createElement('div', { className: 'dsh-super-code-home-heading' }, React.createElement('strong', null, t('delete.title')),
-        React.createElement(ActionButton, { type: 'button', onClick: () => navigate('protection') }, t('home.configure'))),
-      budget && React.createElement(SelectControl, { label: t('delete.mode'), value: mode, choices: ['off', 'relaxed', 'strict'].map(value => [value, t(`delete.${value}`)]), disabled: busy || !budget.writable, onChange: value => change('protection', value) })),
-    React.createElement('h3', { className: 'dsh-super-code-home-category' }, t('home.extensions')),
-    React.createElement('div', { className: 'dsh-super-code-home-card' },
-      React.createElement('div', { className: 'dsh-super-code-home-heading' }, React.createElement('strong', null, t('home.mcp')),
-        React.createElement(ActionButton, { type: 'button', onClick: () => navigate('connection') }, t('home.configure'))),
-      connection && React.createElement(ConnectionSwitch, { checked: connection.configuration.enabled, disabled: busy || !connection.writable,
-        onChange: value => value && !connection.configuration.allowedDirectories.length ? navigate('connection') : change('connection', value) }, t(`connection.state.${connection.state}`)),
-      connection && React.createElement('small', null, t('home.connectionCount', { count: overview.connections.length, max: connection.configuration.maxConnections })),
-      React.createElement('dl', { className: 'dsh-super-code-session-counts' }, ...['connected', 'history'].map(kind => React.createElement('div', { key: kind, 'data-session-count': kind },
-        React.createElement('dt', null, t(kind === 'connected' ? 'home.connectedSessions' : 'home.historySessions')),
-        React.createElement('dd', null, connection ? connectionSessions(overview)[kind].length : '—'))))),
-    error && React.createElement('p', { role: 'alert' }, t('home.error')))
+    failure === 'load' && React.createElement('p', { role: 'alert' }, t('home.error')),
+    React.createElement('div', { className: 'dsh-super-code-home-list' },
+      row({ key: 'protection', icon: 'shield', title: t('delete.title'), target: 'protection', on: Boolean(mode) && mode !== 'off',
+        body: budget ? React.createElement('p', { id: 'super-code-home-protection-hint', className: 'dsh-super-code-home-row-hint' }, t(`delete.hint.${mode}`)) : placeholder('text'),
+        control: budget ? React.createElement(SegmentedControl, { label: t('delete.mode'), value: mode, describedBy: 'super-code-home-protection-hint',
+          choices: ['off', 'relaxed', 'strict'].map(value => [value, t(`delete.${value}`)]), disabled: !budget.writable, busy: saving?.kind === 'protection',
+          onChange: value => change('protection', value) }) : placeholder('control') }),
+      row({ key: 'connection', icon: 'plug', title: t('home.mcp'), target: 'connection', on: enabled,
+        body: connection ? React.createElement('p', { className: 'dsh-super-code-home-row-status', 'data-tone': state === 'listening' ? 'success' : state === 'error' ? 'error' : 'idle' },
+          React.createElement('i', { 'aria-hidden': true }),
+          React.createElement('span', null, t(`connection.state.${state}`)),
+          listening && React.createElement('span', null, t('home.connectionCount', { count: overview.connections.length, max: connection.configuration.maxConnections })),
+          listening && React.createElement('span', null, t('home.activeSessions', { count: connectionSessions(overview).connected.length }))) : placeholder('text'),
+        control: needsSetup ? React.createElement(ActionButton, { type: 'button', onClick: () => navigate('connection') }, t('home.setupConnection'))
+          : connection ? React.createElement(ConnectionSwitch, { checked: enabled, disabled: !connection.writable, 'aria-label': t('home.mcp'),
+            onChange: value => value && !connection.configuration.allowedDirectories.length ? navigate('connection') : change('connection', value) })
+          : placeholder('control') })))
 }
 function ConnectionConsent({ api, t }) {
   const [requests, setRequests] = useState([]), [busy, setBusy] = useState(false), [error, setError] = useState(false)
@@ -2671,6 +2836,8 @@ function PresetSettings({ api, budgetApi, connectionApi, openSession = () => {},
   }
   const available = status && ['available', 'installed'].includes(status.state)
   const versionState = status?.presetVersion ? status.presetVersion === status.pluginVersion ? 'match' : 'mismatch' : 'unknown'
+  const stateProblem = Boolean(status) && ['missing', 'broken', 'conflict'].includes(status.state)
+  const versionProblem = Boolean(status) && status.state !== 'missing' && versionState !== 'match'
   const [overviewRevision, setOverviewRevision] = useState(0)
   const onSaved = () => setOverviewRevision(value => value + 1)
   const tabs = ['home', 'preset', 'context', 'protection', 'connection']
@@ -2687,27 +2854,35 @@ function PresetSettings({ api, budgetApi, connectionApi, openSession = () => {},
     React.createElement('div', { className: 'dsh-super-code-settings-body' },
       React.createElement('div', { role: 'tabpanel', id: 'super-code-panel-home', 'aria-labelledby': 'super-code-tab-home', hidden: tab !== 'home' },
         React.createElement(SettingsHome, { budgetApi, connectionApi, t, active: tab === 'home', revision: overviewRevision, navigate: setTab },
+      // Healthy state collapses to one status line; problems expand into a notice with its fix.
       React.createElement('header', { className: 'dsh-super-code-settings-header' },
         React.createElement('span', { className: 'dsh-super-code-settings-mark', 'aria-hidden': true }, React.createElement(Glyph, { type: 'code' })),
         React.createElement('div', { className: 'dsh-super-code-settings-head-text' },
           React.createElement('h2', { className: 'dsh-super-code-settings-name' }, t('preset.title')),
-          React.createElement('p', { className: 'dsh-super-code-settings-description' }, t('preset.description')))),
-      React.createElement('div', { className: 'dsh-super-code-settings-summary' },
-        React.createElement('div', { className: 'dsh-super-code-settings-status-row' },
-          status ? React.createElement('p', { className: 'dsh-super-code-preset-status', role: 'status', 'data-available': available },
-            React.createElement('i', { 'aria-hidden': true }),
-            React.createElement('span', null, t(status.delivery === 'declaration' && status.state === 'installed' ? 'preset.state.declaredInstalled' : `preset.state.${status.state}`)),
-            React.createElement('code', null, status.id))
-            : React.createElement('p', { className: 'dsh-super-code-preset-status', role: 'status' }, busy ? t('preset.working') : t('preset.unavailableHint')),
-          React.createElement('div', { className: 'dsh-super-code-settings-actions' },
-            React.createElement(ActionButton, { type: 'button', disabled: busy, onClick: () => run(false), 'aria-label': t('preset.refresh') },
-              React.createElement(IconRefreshOutline16), t('preset.refresh')))),
-        status && React.createElement('dl', { className: 'dsh-super-code-preset-versions' },
-          React.createElement('div', null, React.createElement('dt', null, t('preset.pluginVersion')), React.createElement('dd', null, status.pluginVersion)),
-          React.createElement('div', null, React.createElement('dt', null, t('preset.presetVersion')), React.createElement('dd', null, status.state === 'missing' ? t('preset.versionMissing') : status.presetVersion || t('preset.versionUnknown')))),
-        status && status.state !== 'missing' && React.createElement('p', { className: 'dsh-super-code-version-hint', role: 'status', 'data-version-state': versionState },
-          t(versionState === 'match' ? 'preset.versionMatches' : versionState === 'mismatch' ? 'preset.versionMismatch' : 'preset.versionUnknownHint'),
-          versionState === 'mismatch' && ` ${t(reinstall && status.authorable ? 'preset.versionReinstallHint' : 'preset.versionReloadHint')}`)))),
+          React.createElement('div', { className: 'dsh-super-code-settings-status-row' },
+            status ? React.createElement('p', { className: 'dsh-super-code-preset-status', role: 'status', 'data-available': available },
+              React.createElement('i', { 'aria-hidden': true }),
+              React.createElement('span', null, t(status.delivery === 'declaration' && status.state === 'installed' ? 'preset.state.declaredInstalled' : `preset.state.${status.state}`)),
+              React.createElement('code', null, status.id))
+              : React.createElement('p', { className: 'dsh-super-code-preset-status', role: 'status' }, busy ? t('preset.working') : t('preset.unavailableHint')),
+            status && React.createElement('dl', { className: 'dsh-super-code-preset-meta' },
+              React.createElement('div', null, React.createElement('dt', null, t('preset.pluginVersion')), React.createElement('dd', null, status.pluginVersion)),
+              React.createElement('div', null, React.createElement('dt', null, t('preset.presetVersion')), React.createElement('dd', { 'data-stale': status.state !== 'missing' && versionState !== 'match' || undefined }, status.state === 'missing' ? t('preset.versionMissing') : status.presetVersion || t('preset.versionUnknown')))),
+            status && status.state !== 'missing' && versionState === 'match' && React.createElement('span', { className: 'dsh-super-code-version-badge', 'data-version-state': 'match', title: t('preset.versionMatches') }, t('preset.versionBadge')))),
+        React.createElement('div', { className: 'dsh-super-code-settings-actions' },
+          React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-icon-button', disabled: busy, onClick: () => run(false), 'aria-label': t('preset.refresh') },
+            React.createElement(IconRefreshOutline16, { 'aria-hidden': true })))),
+      (stateProblem || versionProblem) && React.createElement('div', { className: 'dsh-super-code-preset-notice', 'data-tone': status.state === 'broken' ? 'error' : 'warning' },
+        React.createElement(Glyph, { type: 'error' }),
+        React.createElement('div', { className: 'dsh-super-code-preset-notice-text' },
+          stateProblem && React.createElement('p', null, t(status.authorable ? 'preset.installHint' : 'preset.unavailableHint')),
+          versionProblem && React.createElement('p', { 'data-version-state': versionState },
+            t(versionState === 'mismatch' ? 'preset.versionMismatch' : 'preset.versionUnknownHint')),
+          // The fix goes on its own line, so no locale-specific sentence joiner is needed.
+          versionProblem && versionState === 'mismatch' && React.createElement('p', { className: 'dsh-super-code-preset-notice-fix' },
+            t(reinstall && status.authorable ? 'preset.versionReinstallHint' : 'preset.versionReloadHint'))),
+        status.authorable && React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-primary-button', onClick: () => setTab('preset') },
+          t(status.state === 'missing' ? status.delivery === 'declaration' ? 'preset.installDeclared' : 'preset.install' : 'home.managePreset'))))),
       React.createElement('div', { role: 'tabpanel', id: 'super-code-panel-preset', 'aria-labelledby': 'super-code-tab-preset', hidden: tab !== 'preset' },
       status?.authorable && React.createElement('form', { onSubmit: event => { event.preventDefault(); submit() } },
         React.createElement('div', { className: 'dsh-super-code-settings-field' },
@@ -2819,6 +2994,11 @@ function apply(ctx) {
   --sc-success:var(--dsw-color-text-success,#197661);
   --sc-warning:var(--dsw-color-text-warning,#9c650c);
   --sc-error:var(--dsw-color-text-error,#bb4545);
+  --sc-active:var(--sc-accent);
+  --sc-idle:var(--dsw-alias-state-idle-primary,var(--sc-faint));
+  --sc-on-accent:var(--dsw-alias-label-primary-foreground,var(--sc-bg));
+  --sc-shadow:color-mix(in srgb,var(--sc-text) 14%,transparent);
+  --sc-radius:6px;
   --sc-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   --agent-muted:var(--sc-muted);--agent-line:var(--sc-line);
   color:var(--sc-text);font-size:14px;line-height:1.55;letter-spacing:0;
@@ -2847,9 +3027,7 @@ function apply(ctx) {
 .dsh-super-code-settings-mark svg{width:22px;height:22px;color:var(--sc-text)}
 .dsh-super-code-settings-head-text{display:grid;gap:4px;min-width:0}
 .dsh-super-code-settings-name{font-size:16px;font-weight:600;line-height:1.4;margin:0}
-.dsh-super-code-settings-description{font-size:13px;color:var(--sc-muted);margin:0}
 .dsh-super-code-settings-body{padding:20px 24px 24px}
-.dsh-super-code-settings-summary{padding:16px;border-radius:12px;background:var(--sc-surface)}
 .dsh-super-code-settings-status-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .dsh-super-code-preset-status{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:4px 0;font-size:13px;min-width:0;flex:1}
 .dsh-super-code-preset-status>i{width:7px;height:7px;flex:none;border-radius:50%;background:var(--sc-warning)}
@@ -2857,15 +3035,12 @@ function apply(ctx) {
 .dsh-super-code-preset-status>span{font-weight:500}
 .dsh-super-code-preset-status code{color:var(--sc-muted);overflow-wrap:anywhere}
 .dsh-super-code-settings-actions{display:flex;flex:none;margin-left:auto}
-.dsh-super-code-settings-actions button,.dsh-super-code-settings-form-actions button,.dsh-super-code-confirm button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:32px;border:1px solid var(--sc-line);border-radius:8px;background:var(--sc-bg);padding:5px 10px;font-size:13px}
-.dsh-super-code-settings-actions button:hover,.dsh-super-code-confirm button:hover{background:var(--sc-hover)}
+/* One button family: secondary by default, primary via class; 32px in forms, 28px in cards. */
+.dsh-super-code-settings-actions button,.dsh-super-code-settings-form-actions button,.dsh-super-code-confirm button,.dsh-super-code-home-row-control>button,.dsh-super-code-preset-notice>button,.dsh-super-code-connection-activity button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:32px;border:1px solid var(--sc-line);border-radius:var(--sc-radius);background:var(--sc-bg);color:var(--sc-text);padding:5px 12px;font:inherit;font-size:13px;cursor:pointer;transition:background .12s,border-color .12s}
+.dsh-super-code-settings-actions button:hover,.dsh-super-code-settings-form-actions button:hover,.dsh-super-code-confirm button:hover,.dsh-super-code-home-row-control>button:hover,.dsh-super-code-preset-notice>button:hover,.dsh-super-code-connection-activity button:hover{background:var(--sc-hover);border-color:color-mix(in srgb,var(--sc-text) 22%,var(--sc-line))}
+:is(.dsh-super-code-settings,.dsh-super-code-confirm) button:focus-visible{outline:2px solid var(--sc-accent);outline-offset:2px}
+:is(.dsh-super-code-settings,.dsh-super-code-confirm) button:disabled{opacity:.5;cursor:default}
 .dsh-super-code-settings-actions svg{width:14px;height:14px}
-.dsh-super-code-preset-versions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:16px 0 0;padding-top:16px;border-top:1px solid var(--sc-line)}
-.dsh-super-code-preset-versions>div+div{border-left:1px solid var(--sc-line);padding-left:16px}
-.dsh-super-code-preset-versions dt{font-size:12px;color:var(--sc-muted)}
-.dsh-super-code-preset-versions dd{font-family:var(--sc-mono);font-variant-numeric:tabular-nums;font-size:15px;margin:4px 0 0;overflow-wrap:anywhere}
-.dsh-super-code-version-hint{font-size:12px;color:var(--sc-muted);margin:12px 0 0;overflow-wrap:anywhere}
-.dsh-super-code-version-hint[data-version-state=mismatch],.dsh-super-code-version-hint[data-version-state=unknown]{padding:10px 12px;background:color-mix(in srgb,var(--sc-warning) 8%,var(--sc-bg));border-left:2px solid var(--sc-warning);border-radius:0 6px 6px 0;color:var(--sc-text)}
 .dsh-super-code-settings form{display:grid;gap:16px;margin-top:24px}
 .dsh-super-code-settings form>h3{margin:0;font-size:14px;font-weight:600}
 .dsh-super-code-settings-field{display:grid;gap:6px}
@@ -2874,8 +3049,8 @@ function apply(ctx) {
 .dsh-super-code-settings-form-actions{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:12px;padding-top:4px}
 .dsh-super-code-settings-form-actions>small{flex:1;min-width:220px}
 .dsh-super-code-settings-form-actions>button{margin-left:auto;flex:none}
-.dsh-super-code-settings .dsh-super-code-primary-button,.dsh-super-code-confirm .dsh-super-code-primary-button{background:var(--sc-text);border-color:var(--sc-text);color:var(--sc-bg);font-weight:500}
-.dsh-super-code-settings .dsh-super-code-primary-button:hover,.dsh-super-code-confirm .dsh-super-code-primary-button:hover{background:color-mix(in srgb,var(--sc-text) 85%,var(--sc-bg))}
+.dsh-super-code-settings .dsh-super-code-primary-button,.dsh-super-code-confirm .dsh-super-code-primary-button{background:var(--sc-accent);border-color:var(--sc-accent);color:var(--sc-on-accent);font-weight:500}
+.dsh-super-code-settings .dsh-super-code-primary-button:hover:not(:disabled),.dsh-super-code-confirm .dsh-super-code-primary-button:hover:not(:disabled){background:color-mix(in srgb,var(--sc-accent) 86%,var(--sc-text));border-color:color-mix(in srgb,var(--sc-accent) 86%,var(--sc-text))}
 .dsh-super-code-settings-guidance:empty{display:none}
 .dsh-super-code-settings-guidance{margin-top:20px;padding-top:12px;border-top:1px solid var(--sc-line);color:var(--sc-muted);font-size:12px}
 .dsh-super-code-settings-guidance p{margin:0 0 4px}
@@ -2884,11 +3059,73 @@ function apply(ctx) {
 .dsh-super-code-settings-tabs>[role=tab][aria-selected=true]{border-bottom-color:var(--sc-text);color:var(--sc-text);font-weight:600}
 .dsh-super-code-settings-tabs>[role=tab]:focus-visible{outline:2px solid var(--sc-active);outline-offset:3px;border-radius:2px}
 .dsh-super-code-settings [role=tabpanel][hidden]{display:none}
-.dsh-super-code-budgets form{gap:24px}
-.dsh-super-code-budget-hint{margin:0;color:var(--sc-muted);font-size:12px;line-height:1.65}
-.dsh-super-code-budget-group{display:flex;flex-direction:column;gap:16px;min-width:0}
-.dsh-super-code-budget-group h3{margin:0;font-size:14px;font-weight:600}
-.dsh-super-code-budget-exclusive{border-top:1px solid var(--sc-line);padding-top:24px}
+/* Settings primitives: stacked sections of label/control rows, callouts, autosave status. */
+.dsh-super-code-settings form.dsh-super-code-stack,.dsh-super-code-stack{display:grid;gap:24px;margin:0;min-width:0}
+.dsh-super-code-section{display:grid;gap:12px;min-width:0}
+.dsh-super-code-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.dsh-super-code-section-heading{display:grid;gap:4px;min-width:0}
+.dsh-super-code-section-heading h3{margin:0;font-size:14px;font-weight:600;line-height:1.4}
+.dsh-super-code-section-heading p{margin:0;font-size:12px;line-height:1.6;color:var(--sc-muted);text-wrap:pretty}
+.dsh-super-code-section-actions{display:flex;flex:none;gap:8px}
+.dsh-super-code-section-body{border:1px solid var(--sc-line);border-radius:12px;background:var(--sc-bg);min-width:0}
+.dsh-super-code-section-body[data-plain]{border:0;border-radius:0;background:none}
+.dsh-super-code-setting-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px 24px;padding:12px 16px}
+.dsh-super-code-section-body>*+.dsh-super-code-setting-row,.dsh-super-code-section-body>*+.dsh-super-code-section-more,.dsh-super-code-section-more>.dsh-super-code-setting-row{border-top:1px solid var(--sc-line)}
+.dsh-super-code-setting-row-text{display:grid;gap:2px;min-width:0}
+.dsh-super-code-settings .dsh-super-code-setting-row-text>label{font-size:13px;font-weight:500;line-height:1.5}
+.dsh-super-code-setting-row-text>p{margin:0;font-size:12px;line-height:1.6;color:var(--sc-muted);overflow-wrap:anywhere;text-wrap:pretty}
+.dsh-super-code-setting-row-text>.dsh-super-code-setting-row-error{color:var(--sc-error)}
+.dsh-super-code-setting-row-control{display:flex;justify-content:flex-end;min-width:0}
+.dsh-super-code-setting-row-control>:is(input,.dsh-super-code-select){width:180px}
+.dsh-super-code-setting-row-control>input{height:32px;padding:5px 10px;border-radius:8px;font-variant-numeric:tabular-nums;text-align:right}
+.dsh-super-code-setting-row[data-invalid] input{border-color:var(--sc-error)}
+.dsh-super-code-settings input[type=number]{appearance:textfield}
+.dsh-super-code-settings input::-webkit-inner-spin-button{appearance:none}
+.dsh-super-code-section-more>summary{display:flex;align-items:center;gap:6px;padding:10px 16px;list-style:none;cursor:pointer;font-size:13px;color:var(--sc-muted)}
+.dsh-super-code-section-more>summary::-webkit-details-marker{display:none}
+.dsh-super-code-section-more>summary:hover{color:var(--sc-text)}
+.dsh-super-code-section-more>summary .dsh-super-code-glyph{width:14px;height:14px;transform:rotate(-90deg);transition:transform .15s}
+.dsh-super-code-section-more[open]>summary .dsh-super-code-glyph{transform:none}
+.dsh-super-code-callout{--tone:var(--sc-accent);display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border:1px solid color-mix(in srgb,var(--tone) 26%,var(--sc-line));border-radius:8px;background:color-mix(in srgb,var(--tone) 6%,var(--sc-bg))}
+.dsh-super-code-callout[data-tone=warning]{--tone:var(--sc-warning)}
+.dsh-super-code-callout[data-tone=error]{--tone:var(--sc-error)}
+.dsh-super-code-callout[data-tone=success]{--tone:var(--sc-success)}
+.dsh-super-code-callout>.dsh-super-code-glyph{width:16px;height:16px;margin-top:2px;color:var(--tone)}
+.dsh-super-code-callout-text{display:grid;gap:4px;flex:1;min-width:0}
+.dsh-super-code-callout-text p{margin:0;font-size:12px;line-height:1.6;color:var(--sc-text);overflow-wrap:anywhere;text-wrap:pretty}
+.dsh-super-code-callout-text p+p{color:var(--sc-muted)}
+.dsh-super-code-callout>button{flex:none;align-self:center;min-height:28px;padding:3px 12px;font-size:12px}
+.dsh-super-code-settings .dsh-super-code-callout[role=alert]{font-size:inherit;color:inherit}
+.dsh-super-code-save-indicator{display:inline-flex;align-items:center;gap:6px;margin:0;font-size:12px;color:var(--sc-muted)}
+.dsh-super-code-save-indicator>i{width:6px;height:6px;border-radius:50%;background:var(--sc-idle);transition:background .15s}
+.dsh-super-code-save-indicator[data-save-state=saving]>i{background:var(--sc-accent);animation:sc-pulse 1s ease-in-out infinite}
+.dsh-super-code-save-indicator[data-save-state=saved]>i{background:var(--sc-success)}
+.dsh-super-code-save-indicator[data-save-state=invalid]{color:var(--sc-warning)}
+.dsh-super-code-save-indicator[data-save-state=invalid]>i{background:var(--sc-warning)}
+.dsh-super-code-save-indicator[data-save-state=error]{color:var(--sc-error)}
+.dsh-super-code-save-indicator[data-save-state=error]>i{background:var(--sc-error)}
+@keyframes sc-pulse{50%{opacity:.35}}
+.dsh-super-code-settings-footer{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 12px;padding-top:16px;border-top:1px solid var(--sc-line)}
+.dsh-super-code-settings-footer-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-left:auto;font-size:12px;color:var(--sc-muted)}
+.dsh-super-code-settings-footer-actions button{display:inline-flex;align-items:center;min-height:28px;border:1px solid var(--sc-line);border-radius:var(--sc-radius);background:var(--sc-bg);padding:3px 12px;font-size:12px}
+.dsh-super-code-settings-footer-actions button:hover:not(:disabled){background:var(--sc-hover)}
+.dsh-super-code-settings .dsh-super-code-danger-button{color:var(--sc-error);border-color:color-mix(in srgb,var(--sc-error) 35%,var(--sc-line))}
+.dsh-super-code-settings .dsh-super-code-danger-button:hover:not(:disabled){background:color-mix(in srgb,var(--sc-error) 8%,var(--sc-bg))}
+.dsh-super-code-choice-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.dsh-super-code-settings .dsh-super-code-choice-card{position:relative;display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border:1px solid var(--sc-line);border-radius:12px;background:var(--sc-bg);cursor:pointer;font-weight:400;transition:border-color .12s,background .12s}
+.dsh-super-code-choice-card:hover{border-color:color-mix(in srgb,var(--sc-text) 22%,var(--sc-line))}
+.dsh-super-code-choice-card[data-checked]{border-color:var(--sc-accent);background:var(--sc-selected)}
+.dsh-super-code-choice-card>input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+.dsh-super-code-choice-card>input:disabled{cursor:default}
+.dsh-super-code-choice-card:has(input:disabled){opacity:.55;cursor:default}
+.dsh-super-code-choice-card:has(input:focus-visible){outline:2px solid var(--sc-accent);outline-offset:2px}
+.dsh-super-code-choice-card>i{flex:none;width:16px;height:16px;margin-top:2px;border:1.5px solid var(--sc-line);border-radius:50%;background:var(--sc-bg);transition:border-color .12s,box-shadow .12s}
+.dsh-super-code-choice-card[data-checked]>i{border-color:var(--sc-accent);box-shadow:inset 0 0 0 3px var(--sc-bg),inset 0 0 0 8px var(--sc-accent)}
+.dsh-super-code-choice-card-text{display:grid;gap:4px;min-width:0}
+.dsh-super-code-choice-card-text strong{font-size:13px;font-weight:600}
+.dsh-super-code-choice-card-text small{font-size:12px;line-height:1.6;color:var(--sc-muted);text-wrap:pretty}
+@container(max-width:560px){.dsh-super-code-choice-cards{grid-template-columns:1fr}}
+@container(max-width:480px){.dsh-super-code-setting-row:not(:has(.dsh-super-code-connection-switch)){grid-template-columns:minmax(0,1fr)}.dsh-super-code-setting-row:not(:has(.dsh-super-code-connection-switch)) .dsh-super-code-setting-row-control{justify-content:flex-start}.dsh-super-code-setting-row-control>:is(input,.dsh-super-code-select){width:100%;text-align:left}}
 
 .dsh-super-code-connection{display:grid;gap:18px}
 .dsh-super-code-connection form{display:grid;gap:16px}
@@ -2900,19 +3137,17 @@ function apply(ctx) {
 .dsh-super-code-connection-client pre{white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.7 ui-monospace,monospace;background:var(--sc-surface);padding:12px;border-radius:8px;margin:0}
 .dsh-super-code-connection small{color:var(--sc-muted);font-size:12px;line-height:1.6}
 .dsh-super-code-connection .dsh-super-code-settings-actions{flex-wrap:wrap;gap:8px}
- .dsh-super-code-connection-switch{position:relative;display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;font-weight:500;width:fit-content}
+.dsh-super-code-connection-switch{position:relative;display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;font-weight:500;width:fit-content}
 .dsh-super-code-connection-switch input[role=switch]{position:absolute;opacity:0;width:34px;height:20px;margin:0;padding:0;left:0;top:50%;transform:translateY(-50%);z-index:1;cursor:pointer}
 .dsh-super-code-connection-track{display:inline-flex;align-items:center;flex:none;width:34px;height:20px;border:1px solid var(--sc-line);border-radius:20px;padding:2px;background:var(--sc-surface);transition:background .15s}
 .dsh-super-code-connection-track i{display:block;width:14px;height:14px;border-radius:50%;background:var(--sc-muted);transition:transform .15s}
 .dsh-super-code-connection-switch input:checked+.dsh-super-code-connection-track{background:var(--sc-accent);border-color:var(--sc-accent)}
-.dsh-super-code-connection-switch input:checked+.dsh-super-code-connection-track i{transform:translateX(14px);background:#fff}
+.dsh-super-code-connection-switch input:checked+.dsh-super-code-connection-track i{transform:translateX(14px);background:var(--sc-on-accent)}
 .dsh-super-code-connection-switch input:focus-visible+.dsh-super-code-connection-track{outline:2px solid var(--sc-accent);outline-offset:3px}
 .dsh-super-code-connection-switch input:disabled+.dsh-super-code-connection-track{opacity:.5}
 .dsh-super-code-connection input[type=number]{appearance:textfield}
 .dsh-super-code-connection input::-webkit-inner-spin-button{appearance:none}
 
-.dsh-super-code-budget-switch{display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer}
-.dsh-super-code-budget-switch input{width:30px;height:17px;flex:none;accent-color:var(--sc-active);cursor:pointer}
 .dsh-super-code-budget-default{color:var(--sc-muted);font-weight:400;font-size:12px}
 .dsh-super-code-budgets fieldset{min-width:0;margin:0;border:0;padding:0}
 .dsh-super-code-budgets legend{font-size:13px;font-weight:500;margin-bottom:12px;padding:0}
@@ -2923,37 +3158,82 @@ function apply(ctx) {
 .dsh-super-code-budgets .dsh-super-code-settings-form-actions{border-top:1px solid var(--sc-line);padding-top:16px}
 @container(max-width:420px){.dsh-super-code-budget-grid{grid-template-columns:1fr}.dsh-super-code-settings-tabs{padding:0 16px}}
 .dsh-super-code-settings [role=alert],.dsh-super-code-detail [role=alert],.dsh-super-code-tree-error{font-size:13px;color:var(--sc-error);overflow-wrap:anywhere}
-@container(max-width:420px){.dsh-super-code-settings-header{padding-bottom:16px;margin-bottom:16px}.dsh-super-code-settings-body{padding:16px}.dsh-super-code-settings-summary{padding:12px}.dsh-super-code-settings-status-row{gap:8px}.dsh-super-code-preset-status{flex-basis:100%}.dsh-super-code-settings-form-actions>small{min-width:0;flex-basis:100%}}
+@container(max-width:420px){.dsh-super-code-settings-header{padding-bottom:16px;margin-bottom:16px}.dsh-super-code-settings-body{padding:16px}.dsh-super-code-settings-status-row{gap:8px}.dsh-super-code-preset-status{flex-basis:100%}.dsh-super-code-settings-form-actions>small{min-width:0;flex-basis:100%}}
 
-.dsh-super-code-session-counts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:4px 0 0;padding-top:12px;border-top:1px solid var(--sc-line)}
-.dsh-super-code-session-counts dt{font-size:12px;color:var(--sc-muted)}
-.dsh-super-code-session-counts dd{font-size:22px;font-variant-numeric:tabular-nums;font-weight:600;margin:3px 0 0}
-.dsh-super-code-connection-activity{display:grid;gap:10px;border:1px solid var(--sc-line);border-radius:10px;padding:14px}
+.dsh-super-code-connection-activity{display:grid;gap:10px;border:1px solid var(--sc-line);border-radius:var(--sc-radius);padding:14px}
 .dsh-super-code-connection-activity h3{margin:0;font-size:13px;font-weight:600}
 .dsh-super-code-connection-activity h3:not(:first-child){margin-top:6px}
 .dsh-super-code-connection-activity h4{margin:0 0 6px;font-size:12px;color:var(--sc-muted);font-weight:500}
 .dsh-super-code-connection-activity p{margin:0;font-size:12px;color:var(--sc-muted)}
-.dsh-super-code-connection-activity button{border:1px solid var(--sc-line);border-radius:7px;background:var(--sc-bg);padding:4px 8px;font-size:12px}
-.dsh-super-code-connection-activity button:hover{background:var(--sc-hover)}
+.dsh-super-code-connection-activity button{min-height:28px;padding:3px 10px;font-size:12px}
 /* Settings overview and directory consent use the same host theme aliases. */
 .dsh-super-code-settings-tabs{gap:20px;overflow-x:auto;white-space:nowrap}
-.dsh-super-code-home{display:grid;gap:12px}
-.dsh-super-code-home-category{font-size:11px;letter-spacing:.06em;color:var(--sc-muted);margin:12px 0 0}
-.dsh-super-code-home-card{display:grid;gap:12px;border:1px solid var(--sc-line);border-radius:10px;padding:14px}
-.dsh-super-code-home-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}
-.dsh-super-code-home-heading strong{font-size:13px;font-weight:600}
-.dsh-super-code-home-card :is(p,small){margin:0;font-size:12px;color:var(--sc-muted)}
-.dsh-super-code-home-card h4{font-size:12px;font-weight:500;margin:6px 0 0}
-.dsh-super-code-home-card button,.dsh-super-code-home>.dsh-super-code-settings-actions button{border:1px solid var(--sc-line);border-radius:7px;background:var(--sc-bg);padding:4px 8px;font-size:12px}
-.dsh-super-code-home-card button:hover{background:var(--sc-hover)}
+/* Home: one status header, then a settings list whose rows act in place and open details. */
+.dsh-super-code-home{display:grid;gap:16px}
+.dsh-super-code-home .dsh-super-code-settings-header{align-items:flex-start;padding-bottom:16px;margin-bottom:0}
+.dsh-super-code-home .dsh-super-code-settings-head-text{flex:1}
+.dsh-super-code-settings-head-text .dsh-super-code-settings-status-row{justify-content:flex-start;align-items:center;gap:2px 10px}
+.dsh-super-code-settings-head-text .dsh-super-code-preset-status{flex:none;margin:0;font-size:12px;gap:6px}
+.dsh-super-code-settings-head-text .dsh-super-code-preset-status>span{font-weight:400;color:var(--sc-muted)}
+.dsh-super-code-settings-head-text .dsh-super-code-preset-status code{font:12px var(--sc-mono)}
+.dsh-super-code-preset-meta{display:flex;flex-wrap:wrap;gap:0 10px;margin:0;font-size:12px;color:var(--sc-muted)}
+.dsh-super-code-preset-meta>div{display:flex;gap:4px}
+.dsh-super-code-preset-meta>div:before{content:"·";color:var(--sc-faint);margin-right:6px}
+.dsh-super-code-preset-meta dd{margin:0;font-family:var(--sc-mono);font-variant-numeric:tabular-nums;color:var(--sc-text)}
+.dsh-super-code-preset-meta dd[data-stale]{color:var(--sc-warning);font-weight:600}
+.dsh-super-code-version-badge{display:inline-flex;align-items:center;height:18px;padding:0 7px;border-radius:9px;font-size:11px;font-weight:500;color:var(--sc-success);background:color-mix(in srgb,var(--sc-success) 10%,transparent)}
+.dsh-super-code-settings-actions>.dsh-super-code-icon-button{min-height:0;width:30px;height:30px;padding:0;border:0;background:transparent;color:var(--sc-muted)}
+.dsh-super-code-settings-actions>.dsh-super-code-icon-button:hover{background:var(--sc-hover);color:var(--sc-text)}
+.dsh-super-code-settings-actions>.dsh-super-code-icon-button svg{width:16px;height:16px}
+.dsh-super-code-preset-notice{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border:1px solid color-mix(in srgb,var(--sc-warning) 28%,var(--sc-line));border-radius:8px;background:color-mix(in srgb,var(--sc-warning) 7%,var(--sc-bg))}
+.dsh-super-code-preset-notice[data-tone=error]{border-color:color-mix(in srgb,var(--sc-error) 28%,var(--sc-line));background:color-mix(in srgb,var(--sc-error) 6%,var(--sc-bg))}
+.dsh-super-code-preset-notice>.dsh-super-code-glyph{width:16px;height:16px;margin-top:2px;color:var(--sc-warning)}
+.dsh-super-code-preset-notice[data-tone=error]>.dsh-super-code-glyph{color:var(--sc-error)}
+.dsh-super-code-preset-notice-text{display:grid;gap:4px;flex:1;min-width:0}
+.dsh-super-code-preset-notice-text p{margin:0;font-size:12px;line-height:1.6;overflow-wrap:anywhere;text-wrap:pretty}
+.dsh-super-code-preset-notice-text .dsh-super-code-preset-notice-fix{color:var(--sc-muted)}
+.dsh-super-code-preset-notice>button{flex:none;align-self:center;min-height:28px;padding:3px 12px;font-size:12px}
+.dsh-super-code-home-list{border:1px solid var(--sc-line);border-radius:10px;background:var(--sc-bg)}
+.dsh-super-code-home-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:4px 14px;padding:14px 16px}
+.dsh-super-code-home-row+.dsh-super-code-home-row{border-top:1px solid var(--sc-line)}
+.dsh-super-code-home-row-icon{display:grid;place-items:center;align-self:start;width:32px;height:32px;border-radius:8px;background:var(--sc-surface);color:var(--sc-muted);transition:background .15s,color .15s}
+.dsh-super-code-home-row-icon .dsh-super-code-glyph{width:17px;height:17px;color:inherit}
+.dsh-super-code-home-row[data-active] .dsh-super-code-home-row-icon{background:color-mix(in srgb,var(--sc-accent) 10%,var(--sc-bg));color:var(--sc-accent)}
+.dsh-super-code-home-row-text{display:grid;gap:2px;min-width:0}
+.dsh-super-code-home-row-title{margin:0;font-size:13px;font-weight:600;line-height:1.5}
+.dsh-super-code-home-row-title>button{display:inline-flex;align-items:center;gap:2px;border:0;border-radius:4px;background:none;padding:0;font:inherit;color:var(--sc-text)}
+.dsh-super-code-home-row-title>button:hover{color:var(--sc-accent)}
+.dsh-super-code-home-row-title .dsh-super-code-glyph{width:14px;height:14px;color:var(--sc-faint);transform:rotate(-90deg);transition:transform .12s,color .12s}
+.dsh-super-code-home-row-title>button:hover .dsh-super-code-glyph{color:currentColor;transform:translateX(2px) rotate(-90deg)}
+.dsh-super-code-home-row :is(.dsh-super-code-home-row-hint,.dsh-super-code-home-row-status){margin:0;font-size:12px;line-height:1.55;color:var(--sc-muted)}
+/* Avoid a lone trailing character on wrapped CJK hints. */
+.dsh-super-code-home-row-hint{text-wrap:pretty}
+.dsh-super-code-home-row-status{display:flex;flex-wrap:wrap;align-items:center;gap:0 6px}
+.dsh-super-code-home-row-status>i{width:6px;height:6px;flex:none;border-radius:50%;background:var(--sc-idle)}
+.dsh-super-code-home-row-status[data-tone=success]>i{background:var(--sc-success)}
+.dsh-super-code-home-row-status[data-tone=error]>i{background:var(--sc-error)}
+.dsh-super-code-home-row-status>span+span:before{content:"·";margin-right:6px;color:var(--sc-faint)}
+.dsh-super-code-home-row-control{display:flex;justify-content:flex-end}
+.dsh-super-code-home-row-control>button{min-height:28px;padding:3px 12px;font-size:12px}
+.dsh-super-code-home-row>[role=alert]{grid-column:2/-1;margin:2px 0 0;font-size:12px}
+@container(max-width:560px){.dsh-super-code-home-row[data-home-row=protection]{grid-template-columns:auto minmax(0,1fr)}.dsh-super-code-home-row[data-home-row=protection]>.dsh-super-code-home-row-control{grid-column:2;justify-content:flex-start;margin-top:6px}}
+.dsh-super-code-segmented{display:inline-flex;gap:2px;padding:2px;border:1px solid var(--sc-line);border-radius:8px;background:var(--sc-surface)}
+.dsh-super-code-segmented>[role=radio]{min-height:26px;border:0;border-radius:6px;background:transparent;padding:3px 12px;font-size:12px;color:var(--sc-muted);white-space:nowrap}
+.dsh-super-code-segmented>[role=radio]:hover:not(:disabled){color:var(--sc-text)}
+.dsh-super-code-segmented>[role=radio][aria-checked=true]{background:var(--sc-bg);color:var(--sc-text);font-weight:500;box-shadow:0 1px 2px var(--sc-shadow)}
+.dsh-super-code-segmented[aria-busy=true]{cursor:progress}
+.dsh-super-code-segmented[aria-busy=true]>[role=radio]{pointer-events:none}
+.dsh-super-code-skeleton{display:block;border-radius:4px;background:linear-gradient(90deg,var(--sc-surface) 25%,var(--sc-hover) 50%,var(--sc-surface) 75%);background-size:200% 100%;animation:sc-skeleton 1.2s ease-in-out infinite}
+.dsh-super-code-skeleton[data-skeleton=text]{width:min(60%,280px);height:12px;margin-top:5px}
+.dsh-super-code-skeleton[data-skeleton=control]{width:96px;height:28px;border-radius:8px}
+@keyframes sc-skeleton{to{background-position:-200% 0}}
 .dsh-super-code-connection-list{list-style:none;padding:0;margin:0;max-height:280px;overflow:auto}
 .dsh-super-code-connection-list li{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--sc-line)}
 .dsh-super-code-connection-list li:last-child{border:0}
 .dsh-super-code-connection-list li>span{display:grid;gap:2px;flex:1;min-width:0;overflow-wrap:anywhere}
 .dsh-super-code-connection-list strong{font-size:12px;font-weight:500}
-.dsh-super-code-connection-list code{font:10px/1.5 var(--sc-mono);color:var(--sc-muted)}
+.dsh-super-code-connection-list code{font:11px/1.5 var(--sc-mono);color:var(--sc-muted)}
 .dsh-super-code-connection-list button{flex:none}
-.dsh-super-code-home .dsh-super-code-settings-header{padding-bottom:12px;margin-bottom:0}
 .dsh-super-code-directory-fieldset{border:0;padding:0;margin:0;min-width:0;display:grid;gap:10px}
 .dsh-super-code-directory-fieldset legend{font-size:13px;font-weight:500;margin-bottom:10px}
 .dsh-super-code-directory-list{border:1px solid var(--sc-line);border-radius:9px;max-height:330px;overflow:auto}
@@ -3048,10 +3328,16 @@ function apply(ctx) {
 [data-feedback-live=false] .dsh-super-code-feedback-step .dsh-super-code-feedback-mark.active:before{animation:none}
 @keyframes sc-feedback-spin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.dsh-super-code-feedback-mark.active:before{animation:none!important}}
-.dsh-super-code-feedback-activity{display:flex;gap:7px;align-items:flex-start;min-height:28px;padding:4px 0;line-height:20px}
-.dsh-super-code-feedback-activity-text{min-width:0;flex:1;overflow-wrap:anywhere;white-space:pre-wrap}
-.dsh-super-code-feedback-activity>small{flex:none;font-size:10px;line-height:20px}
-.dsh-super-code-feedback-tool{max-width:84px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}
+.dsh-super-code-feedback-tools{display:flex;flex-wrap:wrap;gap:4px 10px;list-style:none;margin:4px 0;padding:0 5px}
+.dsh-super-code-feedback-tools>li{display:inline-flex;align-items:center;gap:3px;min-height:22px;font-family:var(--sc-mono);font-size:11px;line-height:18px;color:var(--sc-muted)}
+.dsh-super-code-feedback-tools>li[data-running]>span{color:var(--sc-active)}
+.dsh-super-code-tool-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 4px;border:1px solid currentColor;border-radius:9px;font-family:inherit;font-size:11px;font-weight:600;font-variant-numeric:tabular-nums;line-height:16px}
+.dsh-super-code-tool-badge[data-tone=success]{color:var(--sc-success);background:color-mix(in srgb,var(--sc-success) 10%,transparent)}
+.dsh-super-code-tool-badge[data-tone=warning]{color:var(--sc-warning);background:color-mix(in srgb,var(--sc-warning) 12%,transparent)}
+.dsh-super-code-tool-badge[data-zero]{color:var(--sc-faint);background:transparent;border-color:color-mix(in srgb,var(--sc-faint) 40%,transparent);font-weight:400}
+.dsh-super-code-state{display:flex;align-items:center;gap:6px;margin:6px 0;padding:6px 8px;border-radius:var(--sc-radius);font-size:12px;line-height:18px;color:var(--sc-muted);background:color-mix(in srgb,var(--sc-line) 40%,transparent)}
+.dsh-super-code-state>.dsh-super-code-glyph{flex:none;width:14px;height:14px}
+.dsh-super-code-state[data-tone=error]{color:var(--sc-error);background:color-mix(in srgb,var(--sc-error) 8%,transparent)}
 .dsh-super-code-feedback-list>li[data-feedback-kind=open]{padding-bottom:8px}
 .dsh-super-code-feedback-open{display:inline-flex;align-items:center;gap:4px;min-height:24px;border:0;border-radius:4px;background:transparent;color:var(--sc-muted);font:inherit;font-size:11px;padding:2px 4px}
 .dsh-super-code-feedback-open>.dsh-super-code-glyph{width:12px;height:12px;transition:transform .15s}
@@ -3064,7 +3350,7 @@ function apply(ctx) {
 .dsh-super-code-feedback-file>.dsh-super-code-glyph{flex:none;width:14px;height:14px;color:var(--sc-muted)}
 .dsh-super-code-feedback-file strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:400}
 .dsh-super-code-feedback-file small{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dsh-super-code-feedback-file-operation{flex:none;margin-left:auto;font-size:10px;color:var(--sc-success)}
+.dsh-super-code-feedback-file-operation{flex:none;margin-left:auto;font-size:11px;color:var(--sc-success)}
 .dsh-super-code-feedback button:focus-visible,.dsh-super-code-feedback-scroll:focus-visible{outline:2px solid var(--sc-accent);outline-offset:-2px}
 
 /* Memory library: geometry stays at 76px per row. */
@@ -3108,7 +3394,7 @@ function apply(ctx) {
 .dsh-super-code-memory-row-topic{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--sc-muted);font-size:11px}
 .dsh-super-code-memory-row-kind{color:var(--sc-muted);white-space:nowrap}
 .dsh-super-code-memory-row strong{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:500;line-height:16px}
-.dsh-super-code-memory-row-meta{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--sc-muted);white-space:nowrap;line-height:12px}
+.dsh-super-code-memory-row-meta{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--sc-muted);white-space:nowrap;line-height:12px}
 .dsh-super-code-memory-row-meta>span+span{border-left:1px solid var(--sc-line);padding-left:8px;font-family:var(--sc-mono)}
 .dsh-super-code-memory-empty{padding:24px 8px;color:var(--sc-muted);font-size:13px;line-height:1.8}
 .dsh-super-code-memory-body{flex:1;min-height:0;overflow:auto;padding:16px;background:var(--sc-surface)}
@@ -3146,7 +3432,10 @@ function apply(ctx) {
 .dsh-super-code-memory-action[data-action=read]{color:var(--sc-accent)}
 .dsh-super-code-memory-action[data-action=remember]{color:var(--sc-success)}
 
-/* Direct memory editing keeps one current copy, with no version UI. */
+.dsh-super-code-memory-editor fieldset{display:grid;gap:8px;border:1px solid var(--sc-line);border-radius:6px;min-width:0}
+
+
+/* Legacy memory retains its original editor. */
 .dsh-super-code-memory-editor{display:grid;align-content:start;gap:12px;flex:1;min-height:0;overflow:auto;padding:12px 16px}
 .dsh-super-code-memory-editor-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .dsh-super-code-memory-editor label{display:grid;grid-template-columns:1fr auto;gap:6px;font-size:12px}
@@ -3183,12 +3472,12 @@ function apply(ctx) {
 .dsh-super-code-tree-toolbar{display:flex;align-items:center;gap:6px;min-width:0}
 .dsh-super-code-tree-toolbar>.dsh-super-code-icon-button{width:28px;height:28px;border-radius:6px}
 .dsh-super-code-tree-toolbar>.dsh-super-code-icon-button svg{width:16px;height:16px}
-.dsh-super-code-graph-legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:10px;color:var(--sc-muted)}
+.dsh-super-code-graph-legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:11px;color:var(--sc-muted)}
 .dsh-super-code-graph-legend>span{display:flex;align-items:center;gap:5px}
-.dsh-super-code-circle.active{--state-color:#008b78}
-.dsh-super-code-circle.idle{--state-color:#3971de}
-.dsh-super-code-circle.stopped{--state-color:#777d87}
-.dsh-super-code-circle.unavailable{--state-color:#b87716}
+.dsh-super-code-circle.active{--state-color:var(--sc-success)}
+.dsh-super-code-circle.idle{--state-color:var(--sc-accent)}
+.dsh-super-code-circle.stopped{--state-color:var(--sc-faint)}
+.dsh-super-code-circle.unavailable{--state-color:var(--sc-warning)}
 .dsh-super-code-graph-legend .dsh-super-code-circle,.dsh-super-code-history-list .dsh-super-code-circle{display:block;width:7px;height:7px;flex:none;border-radius:50%;background:var(--state-color)}
 .dsh-super-code-graph-legend .dsh-super-code-circle.idle{background:transparent;border:1px solid var(--state-color)}
 .dsh-super-code-graph-controls{display:flex;align-items:center;gap:0;padding:0;border:1px solid var(--sc-line);border-radius:7px;color:var(--sc-muted);font-size:12px;flex:none}
@@ -3232,7 +3521,7 @@ function apply(ctx) {
 .dsh-super-code-node-status[data-tone=active]{color:var(--sc-accent)}
 .dsh-super-code-node-status[data-tone=unavailable]{color:var(--sc-warning)}
 .dsh-super-code-node-status[data-tone=idle]>i{background:transparent;border:1px solid currentColor}
-.dsh-super-code-tree-usage{display:flex;flex-direction:column;gap:0;font-size:10px;line-height:12px;color:var(--sc-muted);font-variant-numeric:tabular-nums}
+.dsh-super-code-tree-usage{display:flex;flex-direction:column;gap:0;font-size:11px;line-height:12px;color:var(--sc-muted);font-variant-numeric:tabular-nums}
 .dsh-super-code-tree-usage>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dsh-super-code-branch-toggle{position:absolute;display:grid;place-items:center;width:22px;height:22px;border:1px solid var(--sc-line);border-radius:50%;padding:0;background:var(--sc-bg);color:var(--sc-muted)}
 .dsh-super-code-branch-toggle:hover{color:var(--sc-accent);border-color:currentColor}
@@ -3294,7 +3583,7 @@ function apply(ctx) {
 .dsh-super-code-detail-avatar .dsh-super-code-glyph{width:16px;height:16px;color:inherit}
 .dsh-super-code-detail-message{flex:1;min-width:0;padding:10px 12px;border:1px solid var(--sc-line);border-radius:4px 12px 12px 12px;background:var(--sc-bg)}
 .dsh-super-code-detail-entry.user{flex-direction:row-reverse;margin-left:28px}
-.dsh-super-code-detail-entry.user .dsh-super-code-detail-avatar{background:var(--sc-accent);color:#fff}
+.dsh-super-code-detail-entry.user .dsh-super-code-detail-avatar{background:var(--sc-accent);color:var(--sc-on-accent)}
 .dsh-super-code-detail-entry.user .dsh-super-code-detail-message{border-color:color-mix(in srgb,var(--sc-accent) 22%,var(--sc-line));border-radius:12px 4px 12px 12px;background:var(--sc-selected)}
 .dsh-super-code-detail-entry.agent .dsh-super-code-detail-avatar{background:color-mix(in srgb,var(--sc-success) 10%,var(--sc-bg));color:var(--sc-success)}
 .dsh-super-code-detail-entry.tool{margin-bottom:12px}
@@ -3406,5 +3695,5 @@ function apply(ctx) {
   ctx.effect(() => disposeMemoryType, 'super-code: memory library tab')
 }
 
-return { inject, apply, taskFeedbackRows, feedbackStatus, feedbackListItems, feedbackListLayout, feedbackListIndex, feedbackListWindow, feedbackListAnchor, connectionSessions, createConnectionAutosave, connectionDraft, connectionConfiguration, budgetDraft, budgetConfiguration, synchronizePresetDisplay, agentSessionState, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector, agentHistoryRange, agentHistoryRows, agentHistoryWindow, memoryLibraryAddress, memoryLibraryTarget, memoryLibraryNavigation, memoryLibraryWindow, createMemoryEditor }
+return { inject, apply, taskFeedbackRows, feedbackStatus, feedbackListItems, feedbackListLayout, feedbackListIndex, feedbackListWindow, feedbackListAnchor, connectionSessions, createConnectionAutosave, connectionDraft, connectionConfiguration, budgetDraft, budgetConfiguration, synchronizePresetDisplay, agentSessionState, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector, agentHistoryRange, agentHistoryRows, agentHistoryWindow, memoryLibraryAddress, memoryLibraryTarget, memoryLibraryNavigation, memoryLibraryWindow, createMemoryEditor, MemoryLibrary }
 } })

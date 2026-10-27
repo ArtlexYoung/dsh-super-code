@@ -1,4 +1,5 @@
-import type { ConnectionConfig, DelegationHost } from './types.js';
+import type { CallerApproval, ConnectionConfig, DelegationHost } from './types.js';
+import type { ApprovalAnswer } from './approvals.js';
 import { ConnectionStore } from './store.js';
 import { DelegatedTasks } from './tasks.js';
 import type { ConnectedClient } from './http.js';
@@ -38,6 +39,7 @@ export declare class ConnectionService {
     initialize(): Promise<void>;
     read(): ConnectionSnapshot;
     overview(): ConnectionOverview;
+    requestApproval(input: Omit<CallerApproval, 'id' | 'createdAt' | 'expiresAt' | 'taskId' | 'cwd'>, roots: readonly string[], signal?: AbortSignal): Promise<ApprovalAnswer>;
     disconnect(id: string): Promise<{
         disconnected: true;
     }>;

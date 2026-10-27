@@ -18,11 +18,21 @@ import { SuperCodeConnection } from '../src/dsh/connection.js'
 
 class FakeHost implements DelegationHost {
   created: string[] = []; prompts: string[] = []; cancelled: string[] = []
+  modelSelections: { sessionId: string; selection: { provider: string; model: string; reasoningEffort?: string } }[] = []
+  order: string[] = []
+  rejectModelSelection = false
   observation: HostObservation = { status: 'running', output: '', detail: 'running' }
   rejectPrompt = false
   async preset(): Promise<string> { return 'owned-preset' }
   async create(id: string): Promise<void> { this.created.push(id) }
+  async models(): Promise<unknown> { return { default: { provider: 'fixture', model: 'default' }, groups: [{ id: 'fixture', models: [{ id: 'fast', reasoning: { efforts: [{ id: 'low' }, { id: 'high' }] } }] }] } }
+  async selectModel(sessionId: string, selection: { provider: string; model: string; reasoningEffort?: string }): Promise<{ provider: string; model: string; reasoningEffort?: string }> {
+    this.order.push('select'); this.modelSelections.push({ sessionId, selection })
+    if (this.rejectModelSelection) throw new Error('model unavailable')
+    return selection
+  }
   async prompt(_id: string, _request: string, prompt: string): Promise<void> {
+    this.order.push('prompt')
     this.prompts.push(prompt); if (this.rejectPrompt) throw new Error('admission unknown')
   }
   async observe(): Promise<HostObservation> { return this.observation }
@@ -41,18 +51,72 @@ const request = (cwd: string) => ({ cwd, requestId: 'retry-1', prompt: 'Implemen
 
 test('run and send persist intent, coalesce retries, reject conflicts and restrict task ownership', async t => {
   const f = await setup(t)
-  const [first, retry] = await Promise.all([f.tasks.run(request(f.cwd)), f.tasks.run(request(f.cwd))])
+  const selection = { provider: 'fixture', model: 'fast', reasoningEffort: 'high' }
+  const [first, retry] = await Promise.all([f.tasks.run({ ...request(f.cwd), modelSelection: selection }), f.tasks.run({ ...request(f.cwd), modelSelection: selection })])
   assert.equal(first.taskId, retry.taskId); assert.equal(first.preset, 'owned-preset'); assert.equal(first.acceptance, 'not-verified')
   assert.equal(f.host.prompts.length, 1)
+  assert.deepEqual(first.modelSelection, selection)
+  assert.deepEqual(f.host.order, ['select', 'prompt'], 'model selection must precede the first prompt')
+  assert.equal(f.host.modelSelections.length, 1, 'a retry must not repeat selection or dispatch')
   await assert.rejects(f.tasks.run({ ...request(f.cwd), prompt: 'Different' }), /request-conflict/)
+  await assert.rejects(f.tasks.run({ ...request(f.cwd), modelSelection: { ...selection, reasoningEffort: 'low' } }), /request-conflict/)
   await assert.rejects(f.tasks.cancel('arbitrary-session'), /task-not-found/)
-  await f.tasks.send({ taskId: first.taskId, requestId: 'send-1', prompt: 'Also test' })
-  await f.tasks.send({ taskId: first.taskId, requestId: 'send-1', prompt: 'Also test' })
+  await f.tasks.send({ taskId: first.taskId, requestId: 'send-1', prompt: 'Also test', modelSelection: { provider: 'fixture', model: 'default' } })
+  await f.tasks.send({ taskId: first.taskId, requestId: 'send-1', prompt: 'Also test', modelSelection: { provider: 'fixture', model: 'default' } })
   assert.equal(f.host.prompts.length, 2)
+  assert.deepEqual(f.host.order, ['select', 'prompt', 'select', 'prompt'])
   await assert.rejects(f.tasks.send({ taskId: first.taskId, requestId: 'send-1', prompt: 'changed' }), /request-conflict/)
   const history = JSON.parse(await readFile(join(f.directory, 'store/tasks.json'), 'utf8'))
   assert.equal(history[0].id, first.taskId)
   assert.equal((await stat(join(f.directory, 'store/tasks.json'))).mode & 0o777, 0o600)
+})
+
+test('model selection failures do not dispatch the requested prompt', async t => {
+  const f = await setup(t); f.host.rejectModelSelection = true
+  const failed = await f.tasks.run({ ...request(f.cwd), modelSelection: { provider: 'missing', model: 'unknown' } })
+  assert.equal(failed.status, 'failed')
+  assert.match(failed.events.at(-1)!.message, /No prompt was sent/)
+  assert.deepEqual(f.host.order, ['select'])
+  assert.equal(f.host.prompts.length, 0)
+})
+
+test('disabled MCP new-conversation setting blocks only new roots', async t => {
+  const f = await setup(t)
+  f.config.allowNewConversations = false
+  await assert.rejects(f.tasks.run(request(f.cwd)), /new-conversation-disabled/)
+  assert.equal(f.host.created.length, 0)
+  assert.equal(f.host.prompts.length, 0)
+  f.config.allowNewConversations = true
+  const created = await f.tasks.run(request(f.cwd))
+  f.host.observation = { status: 'finished', output: 'done', detail: 'finished' }
+  await f.tasks.wait(created.taskId, created.cursor, 0)
+  f.config.allowNewConversations = false
+  const reused = await f.tasks.send({ taskId: created.taskId, requestId: 'existing-follow-up', prompt: 'Continue the existing conversation' })
+  assert.equal(reused.taskId, created.taskId)
+  assert.equal(f.host.prompts.length, 2)
+})
+
+test('hosts without the model APIs retain model-less MCP execution', async t => {
+  const root = await mkdtemp(join(tmpdir(), 'super-code-legacy-host-')), cwd = join(root, 'workspace'), secondCwd = join(root, 'another-workspace')
+  await Promise.all([mkdir(cwd), mkdir(secondCwd)])
+  const store = new ConnectionStore(join(root, 'store')); await store.initialize()
+  const prompts: string[] = []
+  const host: DelegationHost = {
+    preset: async () => 'owned-preset', create: async () => {},
+    prompt: async (_session, _request, content) => { prompts.push(content) },
+    observe: async () => ({ status: 'running', output: '', detail: 'running' }), cancel: async () => {},
+  }
+  const config: ConnectionConfig = { ...defaultConnectionConfig, enabled: true, allowedDirectories: [cwd, secondCwd] }
+  const tasks = new DelegatedTasks(store, host, () => config); await tasks.initialize()
+  t.after(async () => { await tasks.close(); await store.close(); await rm(root, { recursive: true, force: true }) })
+  const result = await tasks.run({ requestId: 'legacy-model-less', cwd, prompt: 'Continue with the host default model' })
+  assert.equal(result.status, 'running')
+  assert.deepEqual(prompts, ['Continue with the host default model'])
+  const unavailable = await tasks.run({ requestId: 'legacy-selection', cwd: secondCwd, prompt: 'Do not dispatch',
+    modelSelection: { provider: 'fixture', model: 'reasoner', reasoningEffort: 'high' } })
+  assert.equal(unavailable.status, 'failed')
+  assert.match(unavailable.events.at(-1)!.message, /No prompt was sent/)
+  assert.equal(prompts.length, 1)
 })
 
 test('directory boundaries resolve symlinks and reject siblings, relative paths and concurrent workspace writes', async t => {
@@ -110,6 +174,7 @@ test('conversation listing exposes reusable history and connection capacity', as
   assert.equal(listed.availableConnections, 1)
   assert.equal(listed.activeTasks, 0)
   assert.equal(listed.availableTasks, 3)
+  assert.equal(listed.allowNewConversations, true)
   assert.deepEqual(listed.sessions[0], { taskId: first.taskId, sessionId: first.sessionId, cwd: listed.cwd, client: 'reuse-client', status: 'finished', createdAt: listed.sessions[0]!.createdAt, updatedAt: listed.sessions[0]!.updatedAt, connectionCount: 1, reusable: true })
   const fresh = await f.tasks.run({ cwd: f.cwd, requestId: 'fresh-request', prompt: 'Start a separate task', client: 'reuse-client' })
   assert.notEqual(fresh.taskId, first.taskId)
@@ -141,6 +206,7 @@ test('recent conversations use activity order and uncertain sessions are not reu
   records[1].status = 'unavailable'
   await f.store.saveTasks(records)
   const restored = new DelegatedTasks(f.store, f.host, () => f.config); await restored.initialize()
+  f.host.observation = { status: 'unavailable', output: '', detail: 'host cannot establish completion' }
   const listing = await restored.sessions(f.cwd, 10, { connections: 0, maxConnections: 3, ids: [] })
   assert.deepEqual(listing.sessions.map(row => row.taskId), [first.taskId, second.taskId])
   assert.equal(listing.sessions[1]!.reusable, false)
@@ -185,7 +251,7 @@ test('journal facts require an admitted request and settled turn, normalize outp
     ['assistant/message', { message: { content: [{ type: 'text', text: 'Result' }] } }], ['turn/end', { reason: { kind: 'completed' } }]])
   assert.equal(connectionSessionFacts(log, 'idle', 'other').status, 'running')
   assert.equal(connectionSessionFacts(log, 'running', 'request').status, 'running')
-  assert.deepEqual(connectionSessionFacts(log, 'idle', 'request'), { status: 'finished', output: 'Result' })
+  assert.deepEqual(connectionSessionFacts(log, 'idle', 'request'), { status: 'finished', output: 'Result', observation: { lastEventSeq: 3, lastEventType: 'turn/end', outputTruncated: false } })
   assert.equal(connectionSessionFacts(events([['approval/asked', { id: 'a' }]]), 'running', '').status, 'waiting_confirmation')
   assert.equal(connectionSessionFacts(events([['turn/end', { reason: { kind: 'max-tokens' } }]]), 'idle', '').status, 'failed')
 })
@@ -208,11 +274,134 @@ test('host adapter waits for descendants and cancels only the owned tree with qu
   for (const args of cancellations) assert.deepEqual(args, [{ kind: 'user' }, { keepInbox: false }])
   assert.deepEqual(interrupted, ['child'])
 })
+test('host adapter attaches MCP sessions to the matching workspace and creates named MCP workspaces when needed', async t => {
+  const root = await mkdtemp(join(tmpdir(), 'super-code-workspaces-')), existingPath = join(root, 'existing'), existingAlias = join(root, 'existing-alias'), newPath = join(root, 'new-project')
+  await Promise.all([mkdir(existingPath), mkdir(newPath)])
+  await symlink(existingPath, existingAlias)
+  t.after(() => rm(root, { recursive: true, force: true }))
+  const requests: unknown[] = [], renames: unknown[] = [], records = [{ id: 'existing-id', path: existingAlias, title: 'existing' }]
+  const registry = { list: () => records, create: async (path: string, title?: string) => {
+    const row = { id: `workspace-${records.length}`, path, title: title ?? 'new-project' }; records.push(row); return row
+  } }
+  const host = new ConnectionHost({
+    presets: { status: async () => ({ state: 'available', id: 'custom-super-code' }) as any },
+    controller: { create: async row => { requests.push(row); return { sessionId: row.sessionId } }, rename: async row => { renames.push(row); return { title: row.title, seq: 1 } }, prompt: async () => ({ accepted: true }) },
+    workspaceRegistry: registry,
+    agents: { get: () => undefined }, query: { observeSession: async () => ({ events: [], inheritedEventCount: 0, [Symbol.dispose]: () => {} }) },
+    subagents: { listDescendants: async () => [], interrupt: async () => {} },
+  })
+  await host.create('existing-session', await realpath(existingPath), 'custom-super-code')
+  await host.create('new-session', await realpath(newPath), 'custom-super-code')
+  assert.deepEqual(requests, [
+    { sessionId: 'existing-session', workspaceId: 'existing-id', agentPreset: 'custom-super-code' },
+    { sessionId: 'new-session', workspaceId: 'workspace-1', agentPreset: 'custom-super-code' },
+  ])
+  assert.deepEqual(renames, [
+    { sessionId: 'existing-session', title: '[MCP] existing' },
+    { sessionId: 'new-session', title: '[MCP] new-project' },
+  ])
+  assert.equal(records[1]!.title, 'new-project')
+})
+
+test('host adapter exposes the public model catalog and applies a per-session model selection', async () => {
+  const selections: unknown[] = [], catalog = { default: { provider: 'fixture', model: 'base' }, groups: [] }
+  const host = new ConnectionHost({
+    presets: { status: async () => ({ state: 'available', id: 'custom-super-code' }) as any },
+    controller: { create: async row => ({ sessionId: row.sessionId }), prompt: async () => ({ accepted: true }),
+      modelCatalog: async () => catalog,
+      selectModel: async request => { selections.push(request); return { selected: request } } },
+    agents: { get: () => undefined }, query: { observeSession: async () => ({ events: [], inheritedEventCount: 0, [Symbol.dispose]: () => {} }) },
+    subagents: { listDescendants: async () => [], interrupt: async () => {} },
+  })
+  assert.equal(await host.models(), catalog)
+  const requested = { provider: 'fixture', model: 'reasoner', reasoningEffort: 'high' }
+  assert.deepEqual(await host.selectModel('session', requested), requested, 'host-only response fields are not persisted')
+  assert.deepEqual(selections, [{ sessionId: 'session', ...requested }])
+})
 async function freePort(): Promise<number> {
   const server = createServer(); await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve))
   const address = server.address(); if (!address || typeof address === 'string') throw new Error('No port')
   await new Promise<void>(resolve => server.close(() => resolve())); return address.port
 }
+
+test('legacy settings default to allowing new conversations while invalid flags are rejected', async t => {
+  const root = await mkdtemp(join(tmpdir(), 'super-code-legacy-setting-'))
+  const store = new ConnectionStore(root); await store.initialize()
+  t.after(async () => { await store.close(); await rm(root, { recursive: true, force: true }) })
+  const settings = await store.settings()
+  assert.equal(settings.config.allowNewConversations, true)
+  const { allowNewConversations: _oldField, ...legacy } = settings.config
+  await writeFile(join(root, 'settings.json'), JSON.stringify({ ...settings, config: legacy }))
+  assert.equal((await store.settings()).config.allowNewConversations, true)
+  await assert.rejects(store.saveSettings({ ...settings, config: { ...settings.config, allowNewConversations: 'false' as any } }))
+  assert.equal((await store.settings()).config.allowNewConversations, true)
+})
+
+test('MCP creation policy persists across restarts, blocks both creation routes and permits existing conversations', async t => {
+  const root = await mkdtemp(join(tmpdir(), 'super-code-creation-policy-')), host = new FakeHost(), profile = join(root, 'profile')
+  let service = new ConnectionService(new ConnectionStore(profile), host)
+  const clients: Client[] = []
+  t.after(async () => { await Promise.all(clients.map(client => client.close())); await service.close(); await rm(root, { recursive: true, force: true }) })
+  await service.initialize()
+  assert.equal((await service.save(JSON.stringify({ ...defaultConnectionConfig, enabled: true, port: await freePort(), allowedDirectories: [root] }), '0')).ok, true)
+  const connect = async () => {
+    const client = new Client({ name: 'creation-policy-test', version: '1' })
+    clients.push(client)
+    await client.connect(new StreamableHTTPClientTransport(new URL(service.read().url), { requestInit: { headers: { authorization: `Bearer ${service.reveal().token}` } } }))
+    return client
+  }
+  const client = await connect()
+  const originalRequest = { ...request(root), newConversation: true }
+  const first = await client.callTool({ name: 'dsh_run', arguments: originalRequest })
+  assert.equal(first.isError, undefined)
+  const task = JSON.parse((first.content as any)[0].text)
+  host.observation = { status: 'finished', output: 'done', detail: 'finished' }
+  const closed = { ...service.read().configuration, allowNewConversations: false }
+  assert.equal((await service.save(JSON.stringify(closed), String(service.read().revision))).ok, true)
+  assert.equal(service.overview().connections.length, 1, 'changing creation permission must retain the live connection')
+  assert.equal(service.read().configuration.allowNewConversations, false)
+  assert.equal(JSON.parse(await readFile(join(profile, 'settings.json'), 'utf8')).config.allowNewConversations, false)
+
+  const verifyClosed = async (current: Client) => {
+    const listing = await current.callTool({ name: 'dsh_sessions', arguments: { cwd: root } })
+    assert.equal(listing.isError, undefined)
+    const listed = JSON.parse((listing.content as any)[0].text)
+    assert.equal(listed.allowNewConversations, false)
+    assert.equal(listed.sessions[0].taskId, task.taskId)
+    const before = { created: host.created.length, prompts: host.prompts.length }
+    for (const choice of [{}, { newConversation: true }]) {
+      const blocked = await current.callTool({ name: 'dsh_run', arguments: { ...request(root), requestId: 'blocked-new', ...choice } })
+      assert.equal(blocked.isError, true)
+      assert.equal((blocked.content as any)[0].text, 'new-conversation-disabled')
+    }
+    assert.equal(host.created.length, before.created)
+    assert.equal(host.prompts.length, before.prompts)
+    assert.equal(service.overview().sessions.length, 1, 'rejected creation must not append task records')
+    const retry = await current.callTool({ name: 'dsh_run', arguments: originalRequest })
+    assert.equal(retry.isError, undefined)
+    assert.equal(JSON.parse((retry.content as any)[0].text).taskId, task.taskId)
+    assert.equal(host.prompts.length, before.prompts, 'retrieving an accepted request must not dispatch again')
+  }
+  await verifyClosed(client)
+  const reuse = await client.callTool({ name: 'dsh_run', arguments: { ...request(root), requestId: 'reuse-closed', taskId: task.taskId } })
+  assert.equal(reuse.isError, undefined)
+  assert.equal(JSON.parse((reuse.content as any)[0].text).taskId, task.taskId)
+  const follow = await client.callTool({ name: 'dsh_send', arguments: { taskId: task.taskId, requestId: 'follow-closed', prompt: 'Continue without a new session' } })
+  assert.equal(follow.isError, undefined)
+  assert.equal(host.created.length, 1)
+  assert.equal(host.prompts.length, 3)
+  await client.close(); await service.close()
+  service = new ConnectionService(new ConnectionStore(profile), host); await service.initialize()
+  assert.equal(service.read().configuration.allowNewConversations, false)
+  assert.equal(service.read().state, 'listening')
+  const restarted = await connect()
+  await verifyClosed(restarted)
+  const resumed = await restarted.callTool({ name: 'dsh_run', arguments: { ...request(root), requestId: 'reuse-after-restart', taskId: task.taskId } })
+  assert.equal(resumed.isError, undefined)
+  assert.equal(host.created.length, 1)
+  assert.equal(host.prompts.length, 4)
+})
+
 test('real MCP HTTP client covers disabled default, authentication, tools, token rotation and configuration conflicts', async t => {
   const root = await mkdtemp(join(tmpdir(), 'super-code-http-')), host = new FakeHost()
   const service = new ConnectionService(new ConnectionStore(join(root, 'profile')), host); await service.initialize()
@@ -230,12 +419,15 @@ test('real MCP HTTP client covers disabled default, authentication, tools, token
   const client = new Client({ name: 'integration-test', version: '1' })
   await client.connect(new StreamableHTTPClientTransport(new URL(url), { requestInit: { headers: { authorization: `Bearer ${token}` } } }))
   t.after(() => client.close())
-  assert.deepEqual((await client.listTools()).tools.map(tool => tool.name).sort(), ['dsh_cancel', 'dsh_request_directory', 'dsh_run', 'dsh_send', 'dsh_sessions', 'dsh_wait'])
-  const run = await client.callTool({ name: 'dsh_run', arguments: { ...request(root) } })
+  assert.deepEqual((await client.listTools()).tools.map(tool => tool.name).sort(), ['dsh_approve', 'dsh_cancel', 'dsh_models', 'dsh_read', 'dsh_request_directory', 'dsh_run', 'dsh_send', 'dsh_sessions', 'dsh_status', 'dsh_wait'])
+  const catalog = await client.callTool({ name: 'dsh_models', arguments: {} })
+  assert.deepEqual(JSON.parse((catalog.content as any)[0].text).default, { provider: 'fixture', model: 'default' })
+  const chosenModel = { provider: 'fixture', model: 'fast', reasoningEffort: 'high' }
+  const run = await client.callTool({ name: 'dsh_run', arguments: { ...request(root), ...chosenModel } })
   assert.equal(run.isError, undefined)
   const task = JSON.parse((run.content as any)[0].text)
   assert.equal(task.status, 'running')
-  const retry = await client.callTool({ name: 'dsh_run', arguments: request(root) })
+  const retry = await client.callTool({ name: 'dsh_run', arguments: { ...request(root), ...chosenModel } })
   assert.equal(JSON.parse((retry.content as any)[0].text).taskId, task.taskId)
   const sessions = await client.callTool({ name: 'dsh_sessions', arguments: { cwd: root } })
   const sessionList = JSON.parse((sessions.content as any)[0].text)
@@ -245,11 +437,21 @@ test('real MCP HTTP client covers disabled default, authentication, tools, token
   assert.equal(sessionList.availableTasks, configuration.maxConnections - 1)
   assert.equal(sessionList.sessions[0].taskId, task.taskId)
   assert.equal(sessionList.sessions[0].reusable, false)
+  assert.deepEqual(sessionList.sessions[0].modelSelection, chosenModel)
   host.observation = { status: 'finished', output: 'done', detail: 'finished' }
-  const reused = await client.callTool({ name: 'dsh_run', arguments: { ...request(root), requestId: 'reuse-history', taskId: task.taskId, prompt: 'Continue this history' } })
+  const nextModel = { provider: 'fixture', model: 'default' }
+  const reused = await client.callTool({ name: 'dsh_run', arguments: { ...request(root), ...nextModel, requestId: 'reuse-history', taskId: task.taskId, prompt: 'Continue this history' } })
   assert.equal(JSON.parse((reused.content as any)[0].text).taskId, task.taskId)
+  assert.deepEqual(JSON.parse((reused.content as any)[0].text).modelSelection, nextModel)
   assert.equal(host.created.length, 1)
   assert.equal(host.prompts.length, 2)
+  assert.equal(host.modelSelections.length, 2)
+  const followUpModel = { provider: 'fixture', model: 'fast', reasoningEffort: 'low' }
+  const followUp = await client.callTool({ name: 'dsh_send', arguments: { taskId: task.taskId, requestId: 'explicit-follow-up', prompt: 'One more check', ...followUpModel } })
+  assert.equal(followUp.isError, undefined)
+  assert.deepEqual(JSON.parse((followUp.content as any)[0].text).modelSelection, followUpModel)
+  assert.equal(host.modelSelections.length, 3)
+  assert.deepEqual(host.modelSelections[2]!.selection, followUpModel)
   const unknown = await client.callTool({ name: 'dsh_wait', arguments: { taskId: 'unknown', waitMs: 0 } })
   assert.equal(unknown.isError, true)
   assert.equal((await service.rotate('1')).ok, true)

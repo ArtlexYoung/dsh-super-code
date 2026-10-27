@@ -79,15 +79,15 @@ Settings shows the **plugin version** and the **preset version** separately.
 
 ## Sidebar
 
-In the right sidebar choose **Super Code**. Three sections, one open at a time, Task status by default. Switching keeps reading position, filters, and drafts. The UI follows Harness's Chinese/English setting.
+In the right sidebar choose **Super Code**. Three sections, at most one open at a time, Tasks by default. Click the open heading to collapse all sections. Switching keeps reading position, filters, and drafts. The UI follows Harness's Chinese/English setting.
 
-### Task status
+### Tasks
 
 Read-only. Shows what's already recorded in the session:
 
 - **Goal**: the recorded task goal, or the user's original message if there is none.
 - **Steps**: todos the model wrote down, shown as done/total. No steps means no invented plan or progress.
-- **Actions**: tool calls and results.
+- **Tool calls**: success, failure, and running counts grouped by tool.
 - **Files**: successful file changes that can be confirmed from tool arguments or diffs, including nested PTC calls.
 
 Notes:
@@ -106,7 +106,7 @@ The Agent tree, with status, usage, and cache rate for each Agent.
 - Details are shown as a chat: user task, Agent replies, expandable tool calls and results. The header shows status, tokens, and cache; open **Details** for more usage, task records, and memory activity.
 - Running animations respect the system's reduced-motion setting.
 
-The [tree screenshot](../images/agent-tree.png) comes from an isolated Harness web host with model responses from a local test fixture. It shows the UI only, not model quality.
+The [task](../images/task-status.png) and [tree screenshots](../images/agent-tree.png) render the current plugin with official frontend components and sample data. They illustrate the UI, not model quality.
 
 ### Memory library
 
@@ -219,6 +219,10 @@ Under the **Connection** tab:
 2. Adjust the port and maximum connections if needed.
 3. Turn the switch on. Changes save automatically.
 
+**Allow MCP to create conversations** is on by default. Turning it off requires explicit reuse. New conversations join the existing workspace; an unregistered directory gets a workspace with the same name and no suffix. New titles start with `[MCP]`.
+
+**Allow caller approval** is off by default. When enabled, an exact one-time tool approval for a delegated task can be sent to the caller through an interactive form or `dsh_approve`. Host policy remains authoritative, and directory consent always stays in DSH.
+
 Directories:
 
 - The DSH workspace list is reread every time you open the tab. On first setup, existing workspaces are preselected; workspaces added later are **not** granted access automatically.
@@ -244,6 +248,10 @@ Whether a client can set up MCP from the prompt by itself depends on the client.
 
 | Tool | Purpose |
 |---|---|
+| `dsh_status` | Inspect directories, policies, capacity, blocking tasks, and recovery guidance |
+| `dsh_models` | List exact model/effort IDs for `dsh_run` and `dsh_send`; omission retains the current/default selection |
+| `dsh_read` | Page through owned conversations and managed children, including public messages, tool results, and failure details; excludes reasoning and private configuration |
+| `dsh_approve` | Approve or reject one exact pending operation only when caller approval is enabled |
 | `dsh_sessions` | Call first after connecting: lists recent conversations per directory with status, whether they can be reused, connection capacity, and task concurrency |
 | `dsh_run` | Start a task. Pass `taskId` to reuse a specific conversation, or `newConversation: true` for a new one (passing neither also creates new). It **never** picks the latest conversation on its own. Same `requestId` + same input won't dispatch twice; different input is a conflict |
 | `dsh_wait` | Read task status, output, workspace changes, and new events, waiting up to 30 seconds. Without a task ID, lists all tasks page by page |
@@ -263,14 +271,16 @@ The client calls `dsh_request_directory` with a `requestId`, an existing absolut
 
 ### Task status and recovery
 
-- Tasks use the host's default model, the Super Code preset, and your permission settings. Permissions are never auto-approved.
+- Tasks use the conversation's current or explicitly selected model, the Super Code preset, and your permissions. Model/effort choices persist in that conversation. Permissions are never auto-approved.
 - The client's sandbox doesn't carry over to DSH. Allowed directories only control where tasks can start; they aren't a file sandbox.
 - Tasks in the same workspace don't run in parallel. For parallel work, prepare separate worktrees yourself; the plugin doesn't create, delete, or merge worktrees.
-- `waiting_confirmation`: go to DSH and handle the permission prompt.
+- `waiting_confirmation`: the caller can decide only when caller approval is enabled and an exact pending request exists; otherwise the user handles it in DSH.
 - `finished`: execution ended, but `acceptance` is always `not-verified`. The caller must check the result.
 - Returned file info is an observation of the Git workspace, including changes that existed before the task, so it doesn't prove the task made them. Non-Git directories or exceeded limits are marked unavailable.
 - Wait timeouts and client disconnects don't cancel tasks. Turning off the connection just stops new requests.
 - After a restart, prompts are never resent automatically. Find the ID via `dsh_sessions` or the task list, check the state, then continue explicitly. If the state can't be confirmed, it shows `interrupted` or `unavailable`; tasks not confirmed as stopped keep their concurrency slot.
+
+On capacity refusal, retain the same `requestId` and input and wait through `dsh_status` and `dsh_wait`. Do not cancel other clients' tasks or reconfigure the serving app. Release SDK sessions with `transport.terminateSession()` before `client.close()`; closing alone does not release server capacity. The packaged `super-code-mcp` CLI accepts JSON on stdin and reads its token from the private `DSH_MCP_TOKEN` environment variable.
 
 ### Storage and limits
 

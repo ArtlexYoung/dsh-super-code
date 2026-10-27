@@ -51,6 +51,16 @@ Under npm rules, a range like `>=0.1.5-alpha.1 <0.3.0` excludes prereleases such
 
 `zod`, `js-yaml`, and `@modelcontextprotocol/sdk` are runtime dependencies and are not bundled. The published package contains only the plugin, public docs, and screenshots.
 
+## 0.3.9 · 2026-10-27
+
+These incremental checks cover 0.3.9, not a rerun of the full host matrix above. Host and frontend checks used the integrated candidate labeled 0.3.8; the release changes version metadata and documentation only, with runtime code compared byte for byte.
+
+- 284 tests, type checking, build, and client syntax checks pass.
+- Official React, themes, and controls with local fixture services pass 390 interaction groups across 30 frontend targets: Web `0.1.5-alpha.1`–`0.2.1-rc.4`, six official Desktop frontends, and two NEXT frontends. Checks include both languages and themes, autosave and failures, preset states, custom dropdowns, narrow layouts, running circles, and long lists. **This is not a rerun of 30 real hosts.**
+- Real official Desktop `0.2.1-rc.3` and NEXT `2.0.19-next` pass serial checks for settings, a real MCP client connection, workspace refresh and grant revocation, legacy memory CRUD and cancellation, task projections and virtualization, and cold restart. No page script errors; model replies come from a local deterministic program.
+- At most one sidebar section opens at a time; Tasks opens by default and all sections can be collapsed. Only legacy memory is included, without experimental memory, type switching, or migration.
+- Native directory picking was not rerun. `0.2.1-rc.4` has frontend checks only, not full-host validation.
+
 ## Per-release records
 
 ### 0.3.8 · 2026-10-26

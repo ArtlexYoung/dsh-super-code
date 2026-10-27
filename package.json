@@ -1,12 +1,13 @@
 {
   "name": "dsh-super-code",
-  "version": "0.3.8",
+  "version": "0.3.9",
   "description": "Task-focused coding, specialist teams, and durable task memory with directory and declarative presets for DeepSeek Harness.",
   "license": "Apache-2.0",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "bin": {
+    "super-code-mcp": "lib/connection-cli.js",
     "super-code-eval": "lib/evaluate.js"
   },
   "exports": {
@@ -55,6 +56,8 @@
     "docs/en/*.md",
     "docs/images/agent-tree.png",
     "docs/images/agent-tree-preview.png",
+    "docs/images/task-status.png",
+    "docs/images/task-status-preview.png",
     "docs/images/preset-settings.png",
     "docs/images/preset-settings-preview.png",
     "docs/images/install-tgz.png",

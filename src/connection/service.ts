@@ -2,7 +2,8 @@ import { randomBytes } from 'node:crypto'
 import { realpath, stat } from 'node:fs/promises'
 import { isAbsolute } from 'node:path'
 import { ConnectionError, connectionConfigSchema } from './types.js'
-import type { ConnectionConfig, DelegationHost } from './types.js'
+import type { CallerApproval, ConnectionConfig, DelegationHost } from './types.js'
+import type { ApprovalAnswer } from './approvals.js'
 import { ConnectionStore } from './store.js'
 import type { ConnectionSettings } from './store.js'
 import { DelegatedTasks } from './tasks.js'
@@ -51,6 +52,10 @@ export class ConnectionService {
       state: this.state, error: this.error, url: `http://127.0.0.1:${this.settings.config.port}/mcp` }
   }
   overview(): ConnectionOverview { return { connections: this.http.connections(), sessions: this.tasks.overview() } }
+  requestApproval(input: Omit<CallerApproval, 'id' | 'createdAt' | 'expiresAt' | 'taskId' | 'cwd'>, roots: readonly string[], signal?: AbortSignal): Promise<ApprovalAnswer> {
+    if (this.state !== 'listening') return Promise.resolve('host')
+    return this.tasks.requestApproval(input, roots, signal)
+  }
   async disconnect(id: string): Promise<{ disconnected: true }> { await this.http.disconnect(id); return { disconnected: true } }
   pendingDirectories(): DirectoryRequest[] { return this.directoryRequests.pending() }
   async resolveDirectory(id: string, decision: string): Promise<{ status: DirectoryRequest['status'] }> {
@@ -91,6 +96,7 @@ export class ConnectionService {
       const next = { ...this.settings, revision: this.settings.revision + 1, config }
       try { await this.store.saveSettings(next) } catch { return { ok: false, error: 'save-failed' } }
       this.settings = next
+      if (!config.enabled || !config.allowCallerApproval || JSON.stringify(config.allowedDirectories) !== JSON.stringify(previous.allowedDirectories)) this.tasks.approvalsChanged()
       if (!config.enabled) this.directoryRequests.rejectPending()
       const transportChanged = this.state === 'error' || config.enabled !== previous.enabled || config.port !== previous.port || config.maxConnections !== previous.maxConnections
       if (transportChanged) { await this.http.close(); await this.listen() }
@@ -104,6 +110,7 @@ export class ConnectionService {
       const next = { ...this.settings, revision: this.settings.revision + 1, token: randomBytes(32).toString('hex') }
       try { await this.store.saveSettings(next) } catch { return { ok: false, error: 'save-failed' } }
       this.settings = next
+      this.tasks.approvalsChanged()
       await this.http.close(); await this.listen()
       return { ok: true, snapshot: this.read() }
     })

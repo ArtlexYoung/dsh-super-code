@@ -40,7 +40,7 @@ dsh plugin --profile web add dsh-super-code
 Web 版：运行以下命令（文件名以实际下载的为准）：
 
 ```bash
-dsh plugin --profile web add ./dsh-super-code-0.3.8.tgz
+dsh plugin --profile web add ./dsh-super-code-0.3.9.tgz
 ```
 
 </details>
@@ -58,11 +58,17 @@ dsh plugin --profile web add ./dsh-super-code-0.3.8.tgz
 
 在右侧边栏选择「Super Code」，包含三个部分：
 
-- **任务状态**：目标、步骤进度、已执行的操作和已修改的文件，只读。
+- **任务**：目标、步骤进度、工具调用汇总和已修改的文件，只读。
 - **协作执行**：Agent 执行树，点击节点可查看详情。
-- **记忆库**：查看、新增、编辑和删除项目记忆与全局偏好。
+- **记忆**：查看、新增、编辑和删除项目记忆与全局偏好。
+
+三个部分互斥展开，默认显示任务；点击当前标题可收起。
+
+[![任务侧边栏](docs/images/task-status-preview.png)](docs/images/task-status.png)
 
 [![Agent 执行树](docs/images/agent-tree-preview.png)](docs/images/agent-tree.png)
+
+截图使用当前界面与演示数据，仅展示插件外观。
 
 ## 功能
 
@@ -79,9 +85,9 @@ dsh plugin --profile web add ./dsh-super-code-0.3.8.tgz
 
 ## 最近更新
 
+- **0.3.9**：优化设置和任务侧栏，完善 MCP 对话、模型选择、历史读取与审批，并更新界面截图。
 - **0.3.8**：新增 MCP 连接，外部客户端可委派、查看、继续和取消 DSH 对话；设置页新增首页概览。
 - **0.3.7**：新增三档删除保护（默认宽松）；侧边栏新增任务状态。
-- **0.3.6**：新版 Harness 收紧预算后效果下降，插件默认恢复旧预算。
 
 [完整版本记录](docs/Changelog.md)
 
@@ -117,7 +123,7 @@ dsh plugin --profile web add ./dsh-super-code-0.3.8.tgz
 
 - 每组配置只运行一轮。同一道题在不同轮次中结果可能不同，目前尚未估计固定配置下的随机波动。
 - 默认预算与旧预算两组的插件版本不同（`0.3.4` → `0.3.5`），收益不能全部归因于预算。
-- `0.3.6` ~ `0.3.8` 未重新运行 100 题评测。
+- `0.3.6` ~ `0.3.9` 未重新运行 100 题评测。
 - 跨模型对比是两套完整系统之间的比较，无法单独分离插件的贡献。
 
 [评测结果与口径](docs/EvaluationResults.md) · [完整成绩表](eval/results/swebench-pro-final-100/ResultsTables.md)

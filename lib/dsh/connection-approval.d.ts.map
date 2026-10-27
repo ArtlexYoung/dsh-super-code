@@ -1,0 +1,1 @@
+{"version":3,"file":"connection-approval.d.ts","sourceRoot":"","sources":["../../src/dsh/connection-approval.ts"],"names":[],"mappings":"AAAA,gGAAgG;AAChG,OAAO,KAAK,EAAE,OAAO,EAAE,MAAM,qBAAqB,CAAA;AAIlD,OAAO,KAAK,EAAE,iBAAiB,EAAE,MAAM,0BAA0B,CAAA;AAIjE,wBAAgB,uBAAuB,CAAC,GAAG,EAAE,OAAO,EAAE,OAAO,EAAE,MAAM,iBAAiB,GAAG,KAAK,GAAG,IAAI,CAwBpG"}

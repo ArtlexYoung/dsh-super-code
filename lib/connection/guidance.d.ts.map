@@ -1,0 +1,1 @@
+{"version":3,"file":"guidance.d.ts","sourceRoot":"","sources":["../../src/connection/guidance.ts"],"names":[],"mappings":"AAAA,4EAA4E;AAC5E,eAAO,MAAM,sBAAsB,EAAE,MAAmnD,CAAA;AAExpD,MAAM,WAAW,QAAQ;IAAG,MAAM,EAAE,MAAM,CAAC;IAAC,OAAO,EAAE,MAAM,CAAC;IAAC,SAAS,EAAE,OAAO,CAAC;IAAC,YAAY,CAAC,EAAE,MAAM,CAAA;CAAE;AACxG,wBAAgB,kBAAkB,CAAC,IAAI,EAAE,MAAM,GAAG,QAAQ,CAqBzD"}

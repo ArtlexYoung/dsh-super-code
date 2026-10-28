@@ -11,6 +11,8 @@ import type { Agent } from '@deepseek-ai/dsh-agent'
 import { Session, SessionId } from '@deepseek-ai/dsh-session'
 import { ToolCallId } from '@deepseek-ai/dsh-llm'
 import { createScope } from '@deepseek-ai/dsh-scope'
+import Tools, { defineTool } from '@deepseek-ai/dsh-tools'
+import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
 import { ElicitRequestSchema } from '@modelcontextprotocol/sdk/types.js'
@@ -214,4 +216,87 @@ for (const response of ['approve', 'reject', 'cancel'] as const) test(`form-capa
     assert.equal(await result, 'rejected')
   } else assert.equal(await result, response === 'approve' ? 'allowed-once' : 'rejected')
   assert.equal(f.hostAnswers(), response === 'cancel' ? 1 : 0)
+})
+
+async function executionFixture(t: test.TestContext) {
+  const f = await fixture(t)
+  await f.ctx.plugin(SystemPrompt)
+  await f.ctx.plugin(Tools)
+  let bodies = 0
+  f.ctx.tools.register(defineTool({ name: 'bash', description: 'Approval fixture; never spawns a process',
+    parameters: { command: { type: 'string', required: true } },
+    output: { schema: { type: 'string' }, render: (_args, value) => [{ type: 'text', text: value }] },
+    async execute(args, exec) {
+      const answer = await f.ctx.approval.request({ agent: exec.agent!, toolName: exec.name, callId: exec.callId,
+        reason: 'Exact nested operation', signal: exec.signal })
+      if (answer !== 'allowed-once') throw new Error(`Approval: ${answer}`)
+      bodies++
+      return args.command
+    },
+  }))
+  f.ctx.tools.register(defineTool({ name: 'nested_fixture', description: 'PTC-style dispatch with an opaque sub-call ID',
+    parameters: { command: { type: 'string', required: true }, id: { type: 'string', required: true } },
+    output: { schema: { type: 'boolean' }, render: (_args, value) => [{ type: 'text', text: String(value) }] },
+    async execute(args, exec) {
+      const result = await f.ctx.tools.execute({ parent: exec.token, rootCallId: exec.rootCallId, agent: exec.agent,
+        name: 'bash', callId: ToolCallId(args.id), arguments: { command: args.command }, signal: exec.signal })
+      return result.isError
+    },
+  }))
+  const execute = (command: string, id: string, agent = f.agent, signal = new AbortController().signal) =>
+    f.ctx.tools.execute({ name: 'nested_fixture', agent, callId: ToolCallId(`outer-${id}`),
+      arguments: { command, id }, signal })
+  return { ...f, execute, bodies: () => bodies }
+}
+
+for (const decision of ['approve', 'reject'] as const) test(`nested tool approval carries exact live arguments without a tool/call event: ${decision}`, async t => {
+  const f = await executionFixture(t); await f.configure({ allowCallerApproval: true })
+  const result = f.execute('trash -- "中文 build"', 'opaque-child')
+  const item = (await eventually(f.pending, rows => rows.length === 1))[0]!
+  assert.equal(item.callId, 'opaque-child'); assert.equal(item.toolName, 'bash')
+  assert.deepEqual(JSON.parse(item.arguments), { command: 'trash -- "中文 build"' })
+  assert.equal(item.reason, 'Exact nested operation')
+  assert.equal(f.agent.session.ownEvents().some(event => event.type === 'tool/call'), false)
+  await f.call('dsh_approve', { taskId: f.run.taskId, approvalId: item.id, decision })
+  const outcome = await result
+  assert.equal(outcome.isError, false); assert.equal(outcome.value, decision === 'reject')
+  assert.equal(f.bodies(), decision === 'approve' ? 1 : 0)
+  assert.equal(f.hostAnswers(), 0)
+  // The live dispatch has settled; its ID must not authorize a later request.
+  assert.equal(await f.ctx.approval.request({ agent: f.agent, toolName: 'bash', callId: ToolCallId('opaque-child') }), 'rejected')
+  assert.equal((await f.pending()).length, 0)
+})
+
+test('concurrent nested calls isolate arguments by Agent, call ID and tool name', async t => {
+  const f = await executionFixture(t); await f.configure({ allowCallerApproval: true })
+  const child = { session: Session.create(SessionId('nested-child')) } as Agent
+  Object.assign(child, { ctx: createScope(f.ctx, child, { parent: f.agent }).ctx })
+  child.session.append('turn/start', { turn: 1 })
+  const rootResult = f.execute('trash root', 'same-id'), childResult = f.execute('trash child', 'same-id', child)
+  const rows = await eventually(f.pending, items => items.length === 2)
+  assert.equal(await f.ctx.approval.request({ agent: f.agent, toolName: 'other', callId: ToolCallId('same-id') }), 'rejected')
+  for (const row of rows) {
+    assert.equal(JSON.parse(row.arguments).command, row.sessionId === f.agent.session.id ? 'trash root' : 'trash child')
+    await f.call('dsh_approve', { taskId: f.run.taskId, approvalId: row.id, decision: row.sessionId === child.session.id ? 'reject' : 'approve' })
+  }
+  assert.equal((await rootResult).value, false); assert.equal((await childResult).value, true)
+  assert.equal(f.bodies(), 1)
+})
+
+test('cancelled nested executions withdraw approval and discard live arguments', async t => {
+  const f = await executionFixture(t); await f.configure({ allowCallerApproval: true })
+  const abort = new AbortController(), result = f.execute('trash build', 'aborted-child', f.agent, abort.signal)
+  const row = (await eventually(f.pending, rows => rows.length === 1))[0]!
+  abort.abort(); await result
+  assert.equal(f.bodies(), 0); assert.equal((await f.pending()).length, 0)
+  assert.equal((await f.call('dsh_approve', { taskId: f.run.taskId, approvalId: row.id, decision: 'approve' })).isError, true)
+  assert.equal(await f.ctx.approval.request({ agent: f.agent, toolName: 'bash', callId: ToolCallId('aborted-child') }), 'rejected')
+})
+
+test('disabled caller approval and oversized nested arguments stay with the host', async t => {
+  const f = await executionFixture(t)
+  assert.equal((await f.execute('trash build', 'disabled-child')).value, true)
+  await f.configure({ allowCallerApproval: true })
+  assert.equal((await f.execute('x'.repeat(16001), 'large-child')).value, true)
+  assert.equal((await f.pending()).length, 0); assert.equal(f.bodies(), 0); assert.equal(f.hostAnswers(), 2)
 })

@@ -19,6 +19,7 @@ Versions are `major.performance.maintenance`. The second number changes when cod
 - Query and select model/effort IDs, retaining the conversation's current/default choice when omitted. Selected choices persist in the conversation.
 - Added `dsh_status`, `dsh_models`, `dsh_read`, and `dsh_approve` for capacity diagnosis, paged public history, and explicit failure/recovery guidance. Old failed child tasks no longer fail later continuations.
 - Added **Allow caller approval**, off by default: decisions apply to one exact operation and fall back to DSH when unhandled. New directory access still requires user consent in DSH.
+- Fixed MCP approval routing for child tools inside `run_code`: when caller approval is enabled, match the live Agent, call ID, and tool name to the actual arguments. Grants apply only to that call; rejection and cancellation clear the request. With the switch off, DSH still handles confirmation.
 - Improved busy, retry, and disconnect handling; clarified stable request IDs, waiting for capacity, and releasing sessions with DELETE. Added the `super-code-mcp` CLI.
 
 Only legacy memory is included, without experimental memory, type switching, or migration. Normal conversation prompts and model behavior are unchanged. No new 100-task evaluation was run; historical grading reconciliation is not a claim of better 0.3.9 results. See [Compatibility](Compatibility.md) for test scope.

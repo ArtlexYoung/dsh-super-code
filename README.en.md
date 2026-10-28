@@ -17,7 +17,7 @@ Tested on version `0.3.5`. [Full results and limitations](docs/en/EvaluationResu
 
 ## Install
 
-Supports Harness `0.1.5-alpha.1` – `0.2.1-rc.2`. See [compatibility](docs/en/Compatibility.md).
+Supports Harness from `0.1.5-alpha.1`, with Web verified through `0.2.1-rc.4`; see [compatibility](docs/en/Compatibility.md) for tested desktop versions.
 
 **Desktop**: open **Plugins → Add plugin** in the left sidebar, enter `dsh-super-code`, then click **Install** and **Enable now** (on older versions, reload or restart when prompted). Desktop includes its own runtime; Node.js is not required.
 
@@ -85,7 +85,7 @@ See the [usage guide](docs/en/UsageGuide.md).
 
 ## Recent releases
 
-- **0.3.9**: Refined Settings and the task sidebar; improved MCP conversations, model selection, history, and approvals; refreshed UI screenshots.
+- **0.3.9**: Polished Settings and the task sidebar, improved MCP conversation control, fixed PTC child-tool approvals, and verified rc.4 Web compatibility.
 - **0.3.8**: Added MCP connection; external clients can delegate, inspect, continue, and cancel DSH conversations. Added a Home overview in Settings.
 - **0.3.7**: Added three-level deletion protection (Relaxed by default). Added Task status to the sidebar.
 

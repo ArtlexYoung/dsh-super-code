@@ -2,7 +2,7 @@
 
 [中文](../Compatibility.md) · English
 
-Supports Harness `0.1.5-alpha.1` – `0.2.1-rc.2`.
+Web is verified from Harness `0.1.5-alpha.1` through `0.2.1-rc.4`, with incremental rc.4 coverage detailed below. Official Desktop is verified through `0.2.1-rc.4` (x64 archive under Rosetta), and NEXT at `2.0.19-next` (bundled `0.2.1-rc.2`).
 
 ## Verified hosts
 
@@ -24,12 +24,12 @@ The 0.3.8 incremental features were also checked on NEXT `2.0.19-next` (bundled 
 
 - Each host runs in an isolated profile with pinned, audited host dependencies. Daily apps and configuration are untouched.
 - A local deterministic program supplies model responses through the real host Agents and tools. **No external model is called**; these are not effectiveness evaluations.
-- Web uses Chromium; native testing covers macOS arm64 only.
+- Web uses Chromium; native tests run on macOS arm64, with the official rc.4 x64 archive additionally tested under Rosetta, not Intel hardware.
 - Every release also runs the full unit tests, type checking, build, and client syntax checks.
 
 ## Not covered
 
-- Native Windows and Linux clients, macOS x64, Safari-specific behavior
+- Native Windows/Linux clients, Intel hardware, Safari-specific behavior
 - Live model services, full upgrade and custom-configuration regression, every tool combination
 - Narrow windows: at 440px the host sidebar leaves only 156px for the plugin, which is not counted as usable (the settings page without the plugin has the same problem)
 - Confirm/cancel in the native directory picker (OS accessibility API timed out)
@@ -51,15 +51,17 @@ Under npm rules, a range like `>=0.1.5-alpha.1 <0.3.0` excludes prereleases such
 
 `zod`, `js-yaml`, and `@modelcontextprotocol/sdk` are runtime dependencies and are not bundled. The published package contains only the plugin, public docs, and screenshots.
 
-## 0.3.9 · 2026-10-27
+## 0.3.9 · 2026-10-27–28
 
-These incremental checks cover 0.3.9, not a rerun of the full host matrix above. Host and frontend checks used the integrated candidate labeled 0.3.8; the release changes version metadata and documentation only, with runtime code compared byte for byte.
+These records distinguish the initial UI acceptance from the approval fix checked before npm publication. They do not mean all 26 full hosts above were rerun.
 
-- 284 tests, type checking, build, and client syntax checks pass.
-- Official React, themes, and controls with local fixture services pass 390 interaction groups across 30 frontend targets: Web `0.1.5-alpha.1`–`0.2.1-rc.4`, six official Desktop frontends, and two NEXT frontends. Checks include both languages and themes, autosave and failures, preset states, custom dropdowns, narrow layouts, running circles, and long lists. **This is not a rerun of 30 real hosts.**
-- Real official Desktop `0.2.1-rc.3` and NEXT `2.0.19-next` pass serial checks for settings, a real MCP client connection, workspace refresh and grant revocation, legacy memory CRUD and cancellation, task projections and virtualization, and cold restart. No page script errors; model replies come from a local deterministic program.
-- At most one sidebar section opens at a time; Tasks opens by default and all sections can be collapsed. Only legacy memory is included, without experimental memory, type switching, or migration.
-- Native directory picking was not rerun. `0.2.1-rc.4` has frontend checks only, not full-host validation.
+- **Initial UI acceptance**: the integrated candidate was labeled 0.3.8; the initial 0.3.9 runtime matched it byte for byte, with 284 passing tests. Official React, themes, and controls plus local fixture services passed 390 interaction groups across 30 frontend targets (Web `0.1.5-alpha.1`–`0.2.1-rc.4`, six official Desktop frontends, two NEXT frontends). Coverage includes languages, themes, autosave and failures, preset states, custom dropdowns, narrow layouts, running circles, and long lists. **Frontend checks are not full-host acceptance.**
+- **Real UI and persistence**: official Desktop `0.2.1-rc.3`, NEXT `2.0.19-next`, and the full Web `0.2.1-rc.4` and official Desktop `0.2.1-rc.4` x64/Rosetta hosts added on October 28 passed Settings, real MCP SDK connections, workspace refresh and grant revocation, legacy memory CRUD/cancel, task projections/virtualization, and cold restart. No page script errors. The rc.4 host pins and audits 274 official components.
+- **Fix regression**: fixed caller approval routing for child tools inside `run_code`. All 289 tests, type checking, build, and client syntax checks pass. Each of the 20 existing Web engine versions (minimum `0.1.5-alpha.1` through `0.2.1-rc.2`) plus `0.2.1-rc.4` passes 28 approval/deletion-protection checks.
+- **Real approval paths**: the fixed package passes serial `run_code → bash` checks on Web `0.1.5-alpha.1`, Web `0.2.1-rc.4`, official Desktop `0.2.1-rc.3` / `0.2.1-rc.4` (x64/Rosetta), and NEXT `2.0.19-next`: exact arguments, approve/reject/cancel, cross-task isolation, stale-decision rejection, host confirmation with caller approval off, and capacity recovery. Approval deletes only a task-owned temporary file; rejection and cancellation preserve it.
+- **rc.4 MCP flow**: both official Web and official Desktop x64/Rosetta additionally rechecked preset rename/reinstall with backup, legacy budget defaults and invalid/stale-write rejection, actual model/effort selection, explicit reuse and follow-ups, paged public history, directory consent/rejection, three-connection and three-task limits, cancellation recovery, child Agent history, and reconnect.
+- All real hosts use local deterministic model responses; **no external model is called**. At most one sidebar section opens, Tasks by default, and all can collapse. Only legacy memory is included; no experimental memory, type switching, or migration.
+- rc.4 Desktop uses the official mac-x64 nightly ZIP, with SHA-512 matching its feed and the original app signature verified, on macOS arm64/Rosetta. This is neither a relabeled rc.3 app nor a source-built substitute. The mac-arm64 feed still lists rc.3 and its rc.4 ZIP returns 404; **the native arm64 rc.4 archive is untested**. Native directory picking was not rerun.
 
 ## Per-release records
 

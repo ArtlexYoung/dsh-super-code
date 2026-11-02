@@ -112,6 +112,10 @@ export function windowsRuntimeEnvironment(runtime: WindowsRuntime, supplied: Nod
   for (const key of new Set([...Object.keys(process.env), ...Object.keys(supplied)])) {
     if (['PATH', 'BASH_ENV', 'ENV', 'SHELLOPTS', 'BASHOPTS'].includes(key.toUpperCase()) || key.toUpperCase().startsWith('BASH_FUNC_')) env[key] = undefined
   }
-  return { ...env, PATH: runtime.bin + ';' + (existing ?? ''), BB_GLOBBING: '0', BB_OVERRIDE_APPLETS: 'bash,sh',
+  const overrides = { PATH: runtime.bin + ';' + (existing ?? ''), BB_GLOBBING: '0', BB_OVERRIDE_APPLETS: 'bash,sh',
     TERM: 'dumb', BASH_ENV: '', ENV: '' }
+  // Newer hosts fold Windows aliases in insertion order before Node sorts keys.
+  // Updating an existing property does not move it after a later alias/tombstone.
+  for (const key of Object.keys(overrides)) delete env[key]
+  return { ...env, ...overrides }
 }

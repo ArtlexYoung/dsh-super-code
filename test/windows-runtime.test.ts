@@ -159,6 +159,40 @@ test('Windows PATH aliases follow Node precedence and explicit empty paths do no
   for (const PATH of ['', undefined]) assert.equal(windowsRuntimeEnvironment(runtime, { PATH }).PATH, runtime.bin + ';')
 })
 
+test('fixed overrides survive case-insensitive host merging in either supplied key order', () => {
+  const runtime = { root: 'C:\\Runtime', bin: 'C:\\Runtime\\usr\\bin', bash: 'C:\\Runtime\\usr\\bin\\bash.exe', version: 'test', arch: 'x64' }
+  // Published Windows hosts merge overlays case-insensitively in insertion order
+  // before passing the environment to Node. Alias tombstones must not erase the final value.
+  const merged = (env: NodeJS.ProcessEnv) => Object.fromEntries(Object.entries(env).map(([key, value]) => [key.toUpperCase(), value]))
+  for (const supplied of [{ Path: 'C:\\Ignored', PATH: 'C:\\Node' }, { PATH: 'C:\\Node', Path: 'C:\\Ignored' }]) {
+    assert.equal(merged(windowsRuntimeEnvironment(runtime, supplied)).PATH, runtime.bin + ';C:\\Node')
+  }
+  const env = merged(windowsRuntimeEnvironment(runtime, {
+    BB_GLOBBING: '1', bb_globbing: '1', BB_OVERRIDE_APPLETS: 'all', bb_override_applets: 'all',
+    TERM: 'xterm', term: 'xterm', BASH_ENV: 'bad.sh', bash_env: 'bad.sh', ENV: 'bad.sh', env: 'bad.sh',
+  }))
+  assert.equal(env.BB_GLOBBING, '0')
+  assert.equal(env.BB_OVERRIDE_APPLETS, 'bash,sh')
+  assert.equal(env.TERM, 'dumb')
+  assert.equal(env.BASH_ENV, '')
+  assert.equal(env.ENV, '')
+})
+
+test('an ambient Windows Path alias cannot erase an explicit PATH or restore an explicitly empty path', () => {
+  const runtime = { root: 'C:\\Runtime', bin: 'C:\\Runtime\\usr\\bin', bash: 'C:\\Runtime\\usr\\bin\\bash.exe', version: 'test', arch: 'x64' }
+  const previous = process.env.Path
+  process.env.Path = 'C:\\Ambient'
+  try {
+    for (const [PATH, expected] of [['C:\\Node', 'C:\\Node'], ['', ''], [undefined, '']] as const) {
+      const env = Object.fromEntries(Object.entries(windowsRuntimeEnvironment(runtime, { PATH })).map(([key, value]) => [key.toUpperCase(), value]))
+      assert.equal(env.PATH, runtime.bin + ';' + expected)
+    }
+  } finally {
+    if (previous === undefined) delete process.env.Path
+    else process.env.Path = previous
+  }
+})
+
 test('ambient startup files, shell options and exported functions cannot affect a command', () => {
   const runtime = { root: 'C:\\Runtime', bin: 'C:\\Runtime\\usr\\bin', bash: 'C:\\Runtime\\usr\\bin\\bash.exe', version: 'test', arch: 'x64' }
   const values = { SC_BASH_HOST_ONLY: 'host-only-fixture', BASH_ENV: 'startup.sh', ENV: 'startup.sh', SHELLOPTS: 'xtrace',

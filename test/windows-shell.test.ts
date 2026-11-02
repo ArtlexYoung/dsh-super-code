@@ -42,7 +42,7 @@ test('Windows confinement refuses Bash before execution and accepts only the hos
 })
 
 /** Fake host executors avoid platform binaries; the real scope, tool and prompt engines run. */
-async function fixture(t: test.TestContext, options: { platform?: NodeJS.Platform; customProvider?: boolean; preparationGate?: Promise<void> } = {}) {
+async function fixture(t: test.TestContext, options: { platform?: NodeJS.Platform; customProvider?: boolean; preparationGate?: Promise<void>; profileContext?: boolean } = {}) {
   const ctx = new Context(), root = await mkdtemp(join(tmpdir(), 'super-code-shell-test-'))
   t.after(async () => { await ctx.fiber.dispose(); await rm(root, { recursive: true, force: true }) })
   const require = createRequire(import.meta.url)
@@ -91,7 +91,8 @@ async function fixture(t: test.TestContext, options: { platform?: NodeJS.Platfor
       return { root, bin: root, bash: 'verified-bash.exe', version: 'fixture', arch: 'x64' }
     },
   })
-  ctx.provide('profileContext', { installAnchor: join(root, 'package.json') })
+  if (options.profileContext === false) ctx.baseUrl = pathToFileURL(root + '/').href
+  else ctx.provide('profileContext', { installAnchor: join(root, 'package.json') })
   const generation = {}, preset = createScope(ctx, generation)
   const platform = process.platform
   Object.defineProperty(process, 'platform', { value: options.platform ?? 'win32' })
@@ -272,4 +273,16 @@ test('unsupported providers fail explicitly when enabled and preserve a disabled
   const next = f.make('unsupported-next')
   await assert.rejects(next.ready(), /Unsupported host shell provider/)
   assert.equal(f.preparations(), 0)
+})
+
+test('directory presets without profileContext resolve shell modules from their owning profile', async t => {
+  for (const platform of ['win32', 'darwin'] as const) {
+    const f = await fixture(t, { platform, profileContext: false })
+    const root = f.make('profile-fallback-' + platform)
+    await root.ready()
+    assert.deepEqual((await f.names(root.agent)).filter(name => ['bash', 'pwsh'].includes(name)), ['bash'])
+    const result = await f.call(root.agent, 'bash')
+    assert.equal(result.isError, false)
+    assert.match(JSON.stringify(result), platform === 'win32' ? /verified-bash\.exe/ : /host-pwsh/)
+  }
 })

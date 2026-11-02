@@ -50,7 +50,11 @@ export function bundledBashProvider(Base: ShellConstructor, runtime: WindowsRunt
 /** Resolve the running host's modules, including installed directory presets and Desktop profiles. */
 async function hostModule(ctx: Context, name: string): Promise<Record<string, unknown>> {
   const profile = ctx.get('profileContext') as { installAnchor?: string } | undefined
-  const require = createRequire(profile?.installAnchor ?? new URL('../../package.json', import.meta.url))
+  // Directory-preset hosts predate profileContext; their root retains the profile's module fallback links.
+  const anchor = profile?.installAnchor ?? (ctx.root.baseUrl
+    ? new URL('package.json', ctx.root.baseUrl)
+    : new URL('../../package.json', import.meta.url))
+  const require = createRequire(anchor)
   return await import(pathToFileURL(require.resolve(name)).href)
 }
 

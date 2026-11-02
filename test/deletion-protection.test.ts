@@ -47,6 +47,15 @@ test('deletion recognizer leaves quoted prose, comments, paths and recoverable c
   for (const command of ["'Remove-Item a'", 'Write-Output "rm a"', 'Get-Command rm']) assert.equal(deletionCommand(command, true), false, command)
 })
 
+test('MSYS cmd switch escaping still recognizes deletion and leaves echoed commands alone', () => {
+  for (const command of ['cmd.exe //c "del /q build.txt"', 'cmd //d //s //c "rmdir /s /q build"',
+    'cmd.exe //k "erase build.txt"', 'env cmd.exe //c "del build.txt"']) {
+    assert.equal(deletionCommand(command), true, command)
+  }
+  for (const command of ['cmd.exe //c "echo del build.txt"', 'cmd.exe //c "dir build"',
+    'echo \'cmd.exe //c "del build.txt"\'']) assert.equal(deletionCommand(command), false, command)
+})
+
 async function fixture(t: test.TestContext) {
   const ctx = new Context()
   t.after(() => ctx.fiber.dispose())
@@ -94,6 +103,14 @@ test('strict protection injects the script rule in Super Code and blocks without
   assert.match(await f.prompt(child), /trash <path>/)
   assert.equal((await f.execute('rm child-build', child)).isError, true)
   assert.equal(f.bodies(), 1, 'inheriting a parent composition also inherits its deletion policy')
+})
+
+test('strict protection stops MSYS cmd deletion before the executor when no approval is available', async t => {
+  const f = await fixture(t)
+  const result = await f.execute('cmd.exe //c "del /q build.txt"')
+  assert.equal(result.isError, true)
+  assert.match(JSON.stringify(result.content), /SUPER_CODE_DELETE_PROTECTED/)
+  assert.equal(f.bodies(), 0)
 })
 
 test('official opt-in is independent of budgets and toggles apply to subsequent calls immediately', async t => {

@@ -94,7 +94,8 @@ export function deletionCommand(input: string, powershell = false, depth = 0): b
         if (start >= 0 && deletionCommand(args.slice(start + 1).map(arg => arg.text).join(' '), powershell, depth + 1)) return true
       }
       if (['sh', 'bash', 'zsh', 'dash', 'ksh', 'fish', 'pwsh', 'powershell', 'cmd'].includes(name)) {
-        const code = args.findIndex(arg => /^-[a-z]*c[a-z]*$/i.test(arg.text) || ['-command', '/c', '/k'].includes(arg.text.toLowerCase()))
+        const code = args.findIndex(arg => /^-[a-z]*c[a-z]*$/i.test(arg.text) || ['-command', '/c', '/k'].includes(arg.text.toLowerCase())
+          || name === 'cmd' && !powershell && ['//c', '//k'].includes(arg.text.toLowerCase())) // MSYS escapes native /c and /k this way.
         if (code >= 0 && deletionCommand(args.slice(code + 1).map(arg => arg.text).join(' '), ['pwsh', 'powershell', 'cmd'].includes(name), depth + 1)) return true
       }
       if (['eval', 'invoke-expression', 'iex'].includes(name) && deletionCommand(args.map(arg => arg.text).join(' '), powershell, depth + 1)) return true

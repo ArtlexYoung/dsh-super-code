@@ -4,6 +4,8 @@
 
 Web is verified from Harness `0.1.5-alpha.1` through `0.2.1-rc.4`, with incremental rc.4 coverage detailed below. Official Desktop is verified through `0.2.1-rc.4` (x64 archive under Rosetta), and NEXT at `2.0.19-next` (bundled `0.2.1-rc.2`).
 
+The bundled Windows Bash under development also passes full-process Windows acceptance on official Desktop `0.2.1-rc.5` and NEXT `2.0.21-next` (bundled `0.2.1-rc.4`), within the scope below.
+
 ## Verified hosts
 
 The 26 targets below were each checked as a full set for 0.3.6, 0.3.7, and 0.3.8.
@@ -24,12 +26,12 @@ The 0.3.8 incremental features were also checked on NEXT `2.0.19-next` (bundled 
 
 - Each host runs in an isolated profile with pinned, audited host dependencies. Daily apps and configuration are untouched.
 - A local deterministic program supplies model responses through the real host Agents and tools. **No external model is called**; these are not effectiveness evaluations.
-- Web uses Chromium; native tests run on macOS arm64, with the official rc.4 x64 archive additionally tested under Rosetta, not Intel hardware.
+- Web uses Chromium; historical native tests run on macOS arm64, with the official rc.4 x64 archive additionally tested under Rosetta. Windows Bash development checks also run actual x64 desktop releases in a Windows 11 ARM64 VM, not Intel hardware.
 - Every release also runs the full unit tests, type checking, build, and client syntax checks.
 
 ## Not covered
 
-- Native Windows/Linux clients, Intel hardware, Safari-specific behavior
+- Native Linux clients, Intel hardware, Safari-specific behavior; Windows desktop coverage is limited to the Bash checks below, without rerunning every plugin feature on each version
 - Live model services, full upgrade and custom-configuration regression, every tool combination
 - Narrow windows: at 440px the host sidebar leaves only 156px for the plugin, which is not counted as usable (the settings page without the plugin has the same problem)
 - Confirm/cancel in the native directory picker (OS accessibility API timed out)
@@ -56,9 +58,13 @@ Under npm rules, a range like `>=0.1.5-alpha.1 <0.3.0` excludes prereleases such
 2026-11-02. Unreleased work; the historical release records below are unchanged.
 
 - **Full Windows Web**: `0.2.1-rc.4` and `rc.5` pass checks with the real Loader, preset, Agent, PTC, and Windows ACL sandbox. `run_code → bash` passes approval, rejection, and cancellation through the actual DSH UI, plus disabled approvals, subsequent refusal, and background preflight refusal. The approved command exits 0 and writes exactly once; six unapproved paths leave no files, with the session remaining in workspace-write. Actual critical component versions are checked for both hosts.
+- **Full Windows Desktop / NEXT**: official Desktop `0.2.1-rc.5` and NEXT `2.0.21-next` run serially from actual release installers; NEXT bundles Harness `0.2.1-rc.4`. Both actual Hosts use x64, Node `24.21.0`, and Electron `44.7.0`, with 11 critical host packages audited. Both pass native plugin-page installation and activation of the current tgz, preset availability, both Bash autosave directions, budget preservation, tab switching, and complete application cold restart. No page script errors during the checks.
+- **Desktop execution and approval**: both actual `run_code → bash` paths pass arrays, Chinese filenames with spaces, GNU grep, BusyBox, nonzero exit, running cancellation, and timeout promotion to a successfully completed background job. Confined calls refuse explicitly; a host-approved call runs exactly once. Rejection, cancellation, never, subsequent ordinary calls, and background preflight refusal leave no files, with the session remaining in workspace-write. Disabling Bash preserves the existing Agent's choice; a new Agent uses host PowerShell.
+- **Desktop deletion protection**: both pass rejection, cancellation, and approval of MSYS `cmd.exe //c` deletion in strict mode. Under Workspace write + ask, the deletion confirmation and that Bash call's sandbox escalation require separate approvals before deleting the task-owned temporary file. Rejection and cancellation preserve it; relaxed/off add no plugin confirmation. Host Full access also sets approval=never by default, so strict deletion requests are rejected automatically; the plugin does not change that policy.
+- **Desktop installer provenance**: the official installer comes from the [DeepSeek Windows nightly feed](https://download.deepseek.com/dsh-desk/feeds/win-x64/nightly.yml), matches its SHA-512, and has valid Windows Authenticode. NEXT comes from the [NEXT Windows download API](https://www.dshdesktop.cn/api/downloads/windows), with next-channel and target-version headers. Its installer is unsigned and the API supplies no public digest; only HTTPS provenance, product version, and matching SHA-256 before/after transfer are verified, not a valid signature.
 - **Confined-mode boundary**: MSYS cannot create its internal named pipes in the official Windows confined sandbox. The plugin keeps Bash and rejects confined calls explicitly before process launch. Only the host-approved per-call `danger-full-access` policy is accepted; later commands still require approval, without changing session permissions or switching shells. Arrays, Chinese file I/O, and GNU grep are also verified in an explicitly full-access test session.
 - **Environment comparison**: earlier Node 22.23.4 ARM64 produced fs.mkdir/ACL-lock EPERM even without loading the plugin. Those failures are retained. The complete approval and settings checks above use official Node 24.18.1 on the same VM, without ACL changes or disabling protection.
-- **Windows scope**: a dedicated Windows 11 ARM64 VM; each payload passes seven execution checks. Bash/MSYS/grep use x64 emulation, not native ARM64 builds or native x64 hardware. Windows official Desktop and NEXT are untested.
+- **Windows scope**: a dedicated Windows 11 ARM64 VM; each payload passes seven execution checks. Desktop releases and Bash/MSYS/grep use x64 compatibility execution, not native ARM64 Bash builds or native x64 hardware. Full desktop acceptance covers only the two releases above, without rerunning all historical Windows desktop versions or external-model evaluations.
 - **Actual tool components**: 12 rc.4 checks pass for root/child restrictions, conversation-frozen shell choice, PowerShell selection, single execution, timeout/cancellation, deletion protection and per-call approval, host denial, background jobs, and disposal isolation. Real tools and Windows processes are used, without proving that Bash works in the complete confined host.
 - **Fixed command suite**: 97/100 pass, including all original 45. Three remaining cases concern `.cmd` quoting and MSYS conversion of native `/` arguments. Fixtures and expectations are unchanged. No global path-conversion disable or failed-command replay.
 - **Every published version**: all 24 npm releases from `0.1.5-alpha.1` through `0.2.2-alpha.2` pass 591 shell-scope, deletion-protection, and settings checks. Older versions use the actual SettingsProvider; newer ones use the actual Loader and SettingsForms with a temporary-file ConfigEditor fixture. Alpha uses its actual native executor, batch API, and session projections, and passes the full deletion suite. The 24 actual providers also pass 240 execution checks on macOS with stubbed sandbox denial. This is not acceptance of 24 complete Windows hosts.

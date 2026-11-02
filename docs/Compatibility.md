@@ -4,6 +4,8 @@
 
 Web 已验证 Harness `0.1.5-alpha.1` ~ `0.2.1-rc.4`，其中 `rc.4` 为下述增量验收；官方桌面已验证至 `0.2.1-rc.4`（x64 包在 Rosetta 下），NEXT 已验证 `2.0.19-next`（内置 `0.2.1-rc.2`）。
 
+开发中的内置 Windows Bash 另在官方 Desktop `0.2.1-rc.5` 和 NEXT `2.0.21-next`（内置 `0.2.1-rc.4`）完成 Windows 完整进程专项验收，范围见下文。
+
 ## 已验证的宿主
 
 以下 26 个目标在 0.3.6、0.3.7、0.3.8 中均完成整组验证。
@@ -24,12 +26,12 @@ Web 已验证 Harness `0.1.5-alpha.1` ~ `0.2.1-rc.4`，其中 `rc.4` 为下述�
 
 - 每个宿主使用独立 profile，宿主依赖固定版本并经过审计，不影响日常使用的应用和配置。
 - 模型响应由本地确定性程序提供，经过真实的宿主 Agent 和工具链。**未调用外部模型**，因此不属于效果评测。
-- Web 端使用 Chromium；原生端在 macOS arm64 上运行，rc.4 官方 x64 包另通过 Rosetta 验证，未使用 Intel 实机。
+- Web 端使用 Chromium；历史原生验收在 macOS arm64 上运行，rc.4 官方 x64 包另通过 Rosetta 验证。开发中的 Windows Bash 另使用 Windows 11 ARM64 VM 运行真实 x64 桌面发行包，未使用 Intel 实机。
 - 每次发布均同时运行全量单元测试、类型检查、构建和客户端语法检查。
 
 ## 未覆盖的范围
 
-- Windows、Linux 原生客户端、Intel 实机、Safari 专属行为
+- Linux 原生客户端、Intel 实机、Safari 专属行为；Windows 桌面仅覆盖下述内置 Bash 专项，未逐版重跑全部插件功能
 - 真实模型服务、完整的升级与自定义配置回归、所有工具组合
 - 窄窗口：宽度为 440px 时，宿主侧边栏仅为插件保留 156px，视为不可用（未安装插件时设置页存在同样问题）
 - 原生目录选择器的确认与取消（系统辅助功能接口超时）
@@ -56,9 +58,13 @@ Web 已验证 Harness `0.1.5-alpha.1` ~ `0.2.1-rc.4`，其中 `rc.4` 为下述�
 2026-11-02，尚未发布，不改变下方历史版本的验收结论。
 
 - **完整 Windows Web**：`0.2.1-rc.4`、`rc.5` 的真实 Loader、预设、Agent、PTC 和 Windows ACL 沙箱已验收。`run_code → bash` 通过真实 DSH 界面的批准、拒绝、取消，以及禁用审批、下一次再次拒绝和后台前置拒绝；批准命令实际退出 0 且只写入一次，其他 6 个未批准路径无文件副作用，会话仍为 workspace-write。已核对两版实际加载的关键组件版本。
+- **完整 Windows Desktop / NEXT**：官方 Desktop `0.2.1-rc.5` 与 NEXT `2.0.21-next` 串行运行真实发行安装包；后者内置 Harness `0.2.1-rc.4`。两端实际 Host 均为 x64、Node `24.21.0`、Electron `44.7.0`，11 个关键宿主包已核对。通过原生插件页安装和启用当前 tgz、预设可用、Bash 开关双向自动保存、预算保留、跨标签恢复及完整应用冷重启；测试期间无页面脚本错误。
+- **桌面执行与审批**：两端真实 `run_code → bash` 均通过数组、中文带空格文件名、GNU grep、BusyBox、非零退出、运行取消及超时转后台并完成。受限调用明确拒绝，宿主单次批准只执行一次；拒绝、取消、never、后续普通调用和后台前置拒绝均无文件副作用，会话保持 workspace-write。关闭 Bash 后旧 Agent 保留选择，新 Agent 使用宿主 PowerShell。
+- **桌面删除保护**：两端通过严格模式下 MSYS `cmd.exe //c` 删除的拒绝、取消和批准；在 Workspace write + ask 下，删除确认与该条 Bash 的沙箱外权限申请分别批准，才删除任务临时文件。拒绝或取消均保留文件，宽松和关闭模式不增加插件确认。宿主 Full access 默认同时设置 approval=never，此时严格删除申请被自动拒绝，插件不改变宿主策略。
+- **桌面安装来源**：官方包来自 [DeepSeek Windows nightly](https://download.deepseek.com/dsh-desk/feeds/win-x64/nightly.yml)，SHA-512 与更新源一致，Windows Authenticode 有效。NEXT 来自 [NEXT Windows 下载接口](https://www.dshdesktop.cn/api/downloads/windows)，携带 next 频道与目标版本请求头；安装程序未签名且接口未提供公开摘要，仅核对 HTTPS 来源、产品版本及传输前后 SHA-256，不能视为签名验证通过。
 - **限权边界**：MSYS 无法在官方 Windows 限权沙箱中创建内部命名管道。插件保留 Bash，在进程启动前明确拒绝受限调用；仅接受宿主批准的单次 `danger-full-access` 调用策略，之后的命令仍需审批，不修改会话权限或切换 Shell。另在显式完全访问的测试会话中验证了数组、中文文件读写和 GNU grep。
 - **测试环境对照**：前期 Node 22.23.4 ARM64 出现不加载插件也能复现的 fs.mkdir/ACL 锁文件 EPERM。保留失败记录后，在同一 VM 用官方 Node 24.18.1 完成上述完整审批与设置页验收；没有修改系统 ACL 或关闭防护。
-- **实机范围**：专用 Windows 11 ARM64 VM；两套载荷各通过 7 项执行检查。x64 Bash/MSYS/grep 通过系统兼容执行，不能视为原生 x64 硬件或原生 ARM64 Bash 验证。未运行 Windows 官方 Desktop 或 NEXT。
+- **实机范围**：专用 Windows 11 ARM64 VM；两套载荷各通过 7 项执行检查。桌面发行包和 Bash/MSYS/grep 均通过系统 x64 兼容执行，不能视为原生 x64 硬件或原生 ARM64 Bash 验证。完整桌面专项仅覆盖上述两款发行包，未重跑所有历史 Windows 桌面版本或外部模型评测。
 - **真实工具组件**：rc.4 的 12 项通过，覆盖根/子作用域过滤、按会话保留 Shell 选择、PowerShell 切回、单次副作用、超时/取消、删除保护及单次审批、宿主拒绝、后台任务和销毁隔离。这组使用真实工具和 Windows 进程，未证明完整限权沙箱可运行 Bash。
 - **固定命令题集**：100 项中 97 项通过，原 45 项全部通过。剩余 3 项涉及 `.cmd` 引号及 MSYS 对原生 `/` 参数的转换。题目与预期结果未修改；不全局关闭路径转换，不失败重放。
 - **逐版接口**：从 `0.1.5-alpha.1` 到 `0.2.2-alpha.2` 的全部 24 个 npm 发布版本逐版通过，共 591 项 Shell 作用域、删除保护和设置检查。旧版使用真实 SettingsProvider；新版使用真实 Loader 与 SettingsForms，ConfigEditor 持久化为临时文件夹具。alpha 使用真实 native executor、batch API 和会话投影，删除保护整组通过。24 版真实 provider 另在 macOS 通过 240 项执行检查，其中沙箱拒绝为桩；不等同于 24 个完整 Windows 宿主验收。

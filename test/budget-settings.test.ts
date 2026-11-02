@@ -8,6 +8,7 @@ import type { Configuration } from '../src/dsh/budgets.js'
 import { BudgetSettings, applyBudgetSettings } from '../src/dsh/budget-settings.js'
 import { scopeTarget } from '@deepseek-ai/dsh-scope'
 import { BasicCompactionEngine } from '@deepseek-ai/dsh-compaction-basic'
+import { applyWindowsShell } from '../src/dsh/windows-shell.js'
 
 class MemorySettings extends SettingsProvider {
   writable = true
@@ -75,6 +76,36 @@ test('deletion settings persist independently of budgets and reset to relaxed wi
   assert.equal((await api.reset(String(api.read().revision))).ok, true)
   assert.equal(deletionProtectionMode(api.read().configuration), 'relaxed')
   assert.equal(api.read().configuration.deletionProtectionForOfficialPresets ?? false, false)
+})
+
+test('the Windows shell choice persists and rejects invalid input', async t => {
+  const { api, scope } = await fixture(t)
+  for (const windowsBash of [false, true]) {
+    assert.equal((await api.save(JSON.stringify({ windowsBash, budgets: { summaryMaxTokens: 8192 } }), String(api.read().revision))).ok, true)
+    assert.equal(scope.get().windowsBash, windowsBash)
+    assert.equal(api.read().configuration.budgets?.summaryMaxTokens, 8192)
+  }
+  for (const value of [null, 'true', 1, []]) {
+    assert.equal((await api.save(JSON.stringify({ windowsBash: value }), String(api.read().revision))).ok, false)
+  }
+})
+
+test('settings responses retain host shell status after saving and resetting', async t => {
+  const ctx = new Context()
+  t.after(() => ctx.fiber.dispose())
+  new MemorySettings(ctx)
+  applyWindowsShell(ctx)
+  await ctx.plugin({ apply(owner: Context) { applyBudgetSettings(owner, {}) } })
+  await ctx.inject(['superCodeBudgets'], () => {})
+  const api = ctx.get('superCodeBudgets') as { readConfig(): any; saveConfig(content: string, revision: string): Promise<any>; resetConfig(revision: string): Promise<any> }
+  const first = api.readConfig()
+  assert.equal(first.shell.platform, process.platform)
+  const saved = await api.saveConfig('{"windowsBash":false}', String(first.revision))
+  assert.equal(saved.ok, true)
+  assert.equal(saved.snapshot.shell.platform, process.platform)
+  const reset = await api.resetConfig(String(saved.snapshot.revision))
+  assert.equal(reset.ok, true)
+  assert.equal(reset.snapshot.shell.platform, process.platform)
 })
 
 test('all deletion modes persist and validate through both host and JSON schemas', async t => {
@@ -147,13 +178,15 @@ test('retained presets read a separate creation-time snapshot for each Agent', a
   await ctx.plugin({ apply(owner: Context) { applyBudgetSettings(owner, {}) } })
   await ctx.inject(['superCodeBudgets'], () => {})
   const first = {} as any, second = {} as any
-  await settings.replace('super-code-budgets', { applyToOfficialPresets: true, maxTasks: 1, budgets: { summaryMaxTokens: 2048 } })
+  await settings.replace('super-code-budgets', { windowsBash: false, applyToOfficialPresets: true, maxTasks: 1, budgets: { summaryMaxTokens: 2048 } })
   ctx.emit(scopeTarget(first, first), 'agent/created', { agent: first })
-  await settings.replace('super-code-budgets', { applyToOfficialPresets: false, maxTasks: 2, budgets: { summaryMaxTokens: 4096 } })
+  await settings.replace('super-code-budgets', { windowsBash: true, applyToOfficialPresets: false, maxTasks: 2, budgets: { summaryMaxTokens: 4096 } })
   ctx.emit(scopeTarget(second, second), 'agent/created', { agent: second })
   assert.equal(configurationOf(ctx, first).maxTasks, 1)
   assert.equal(configurationOf(ctx, first).applyToOfficialPresets, true)
   assert.equal(configurationOf(ctx, second).applyToOfficialPresets, false)
+  assert.equal(configurationOf(ctx, first).windowsBash, false)
+  assert.equal(configurationOf(ctx, second).windowsBash, true)
   assert.equal(configurationOf(ctx, first).budgets?.summaryMaxTokens, 2048)
   assert.equal(configurationOf(ctx, second).maxTasks, 2)
   assert.equal(configurationOf(ctx, second).budgets?.summaryMaxTokens, 4096)

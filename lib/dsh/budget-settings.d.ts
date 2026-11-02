@@ -3,6 +3,7 @@ import type { Context } from '@deepseek-ai/cordis';
 import type { SettingsScope } from '@deepseek-ai/dsh-settings';
 import { TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol';
 import type { Configuration } from './budgets.js';
+import type { ShellStatus } from './windows-shell.js';
 interface SettingsWriter {
     readonly writable: boolean;
     describe(options: {
@@ -14,6 +15,7 @@ interface SettingsWriter {
     replace(namespace: string, config: object, revision: number): Promise<void>;
 }
 export interface BudgetSettingsSnapshot {
+    readonly shell?: ShellStatus;
     readonly configuration: Configuration;
     readonly revision: number;
     readonly writable: boolean;

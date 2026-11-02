@@ -11,6 +11,7 @@ New here? Read the Install and Use sections of the [README](../../README.en.md) 
 - [Sidebar](#sidebar)
 - [Batched tool calls](#batched-tool-calls)
 - [Runtime budgets](#runtime-budgets)
+- [Windows command environment](#windows-command-environment)
 - [Deletion protection](#deletion-protection)
 - [MCP connection](#mcp-connection)
 - [Frontend Skill](#frontend-skill)
@@ -41,7 +42,7 @@ Before plugin 0.2.0, the settings page lives under **Plugins → Plugin configur
 | Tab | Contents |
 |---|---|
 | Home | Preset status and versions, deletion-protection level, MCP switch, connected/past conversation counts |
-| Preset configuration | Install, reinstall, rename |
+| Preset configuration | Install, reinstall, rename, Windows command environment |
 | Context settings | [Runtime budgets](#runtime-budgets) |
 | Deletion protection | [Deletion protection](#deletion-protection) |
 | Connection | [MCP connection](#mcp-connection) |
@@ -182,6 +183,20 @@ maxContextBytes: 32768       # Super Code: task-memory context bytes
 - A shorter deadline set explicitly on a call still applies.
 - Older hosts time PTC by busy CPU time; newer hosts by elapsed time. The two aren't comparable.
 - Raising `maxTasks` or `maxContextBytes` uses more context. The defaults are usually fine.
+
+## Windows command environment
+
+This feature is in development and is not included in the published 0.3.9 package. See the [development checks](Compatibility.md#bundled-windows-bash-development-checks) for tested scope and remaining checks.
+
+On Windows, Super Code defaults to bundled GNU Bash, BusyBox and GNU grep. Common Bash commands work without installing Git for its shell. Developer tools such as Git, Node and Python still need separate installation. macOS and Linux keep the host's existing environment.
+
+Turn off **Preset configuration → Command environment → Use bundled Bash (Windows)** to use the host's PowerShell for new conversations. Changes save automatically; running Agents retain their environment, and child Agents inherit their conversation's shell and tool restrictions. Reinstall an older installed preset to pick up the new shell entry. Selection follows the DSH server's platform, independently of the browser's operating system.
+
+The plugin carries its runtime and prepares it offline under `%LOCALAPPDATA%\dsh-super-code\shell` on first use. It does not change the system PATH. Settings shows readiness and preparation errors; turn the switch off to use the host environment after an error. Failed commands are never replayed through a different shell. DSH continues to own approvals, deletion protection and process management.
+
+The official Windows sandbox blocks the internal named pipes MSYS requires. Bash calls under `read-only` or `workspace-write` therefore fail explicitly before the command runs. If still needed, the Agent can request DSH approval for the **exact same command** with `sandbox_permissions="danger-full-access"` and a justification. Approval permits only that invocation; rejection, cancellation, or disabled approvals leave it unexecuted. The plugin never changes session permissions or switches shells automatically. If the outer PTC `run_code` program also needs wider access, it requires its own host approval; approving Bash does not authorize that outer program.
+
+Programs still run on Windows. BusyBox does not implement every GNU option; `.cmd` quoting and native `/` arguments differ from Linux. MSYS converts some paths automatically. Use `MSYS2_ARG_CONV_EXCL` for an individual invocation that needs literal arguments rather than disabling conversion globally. The bundle does not include `trash`, and permanent deletion is never presented as a recycle-bin operation. On ARM64 Windows, Bash, grep and the MSYS DLLs run through x64 emulation. See [Compatibility](Compatibility.md) for tested scope and the [runtime notes](../../runtime/windows/README.md) for sources and licenses.
 
 ## Deletion protection
 

@@ -299,6 +299,10 @@ const zh = {
   'status.blocked': '受阻',
 
   'settings.homeTab': '首页', 'settings.presetTab': '预设配置', 'settings.protectionTab': '删除保护',
+  'shell.title': '命令环境', 'shell.enabled': '使用内置 Bash（Windows）',
+  'shell.hint': '无需安装 Git。仅用于 Super Code，新启动的会话生效，子 Agent 继承。Windows 限权模式下需由 DSH 逐条审批，不自动修改会话权限。',
+  'shell.host': '使用宿主命令环境', 'shell.pending': '首次使用时自动准备', 'shell.ready': '内置 Bash 已就绪',
+  'shell.error': '内置 Bash 不可用，请关闭此开关使用宿主环境。', 'shell.otherPlatform': '当前宿主沿用系统命令环境，无需启用。',
   "connection.requestTitle": "请求访问工作目录",
   "connection.requestHint": "外部 MCP 客户端申请访问以下目录及其子目录。同意后会加入允许列表，后续委派仍使用 DSH 的权限设置。",
   "connection.requestClient": "请求客户端",
@@ -481,6 +485,10 @@ const en = {
   'status.blocked': 'Blocked',
 
   'settings.homeTab': 'Home', 'settings.presetTab': 'Preset configuration', 'settings.protectionTab': 'Deletion protection',
+  'shell.title': 'Command environment', 'shell.enabled': 'Use bundled Bash (Windows)',
+  'shell.hint': 'No Git installation required. Takes effect when a Super Code conversation starts; child Agents inherit it. Confined Windows modes require DSH approval for each command without changing session permissions.',
+  'shell.host': 'Using the host command environment', 'shell.pending': 'Prepared automatically on first use', 'shell.ready': 'Bundled Bash is ready',
+  'shell.error': 'Bundled Bash is unavailable. Turn this off to use the host environment.', 'shell.otherPlatform': 'This host uses its existing command environment.',
   "connection.requestTitle": "Working directory access request",
   "connection.requestHint": "An external MCP client requests access to this directory and its descendants. Approval adds it to the allowlist. DSH permissions still apply to delegated tasks.",
   "connection.requestClient": "Requesting client",
@@ -2094,7 +2102,7 @@ const budgetFields = [
 ]
 function budgetDraft(configuration) {
   const deletion = configuration.deletionProtection
-  return Object.fromEntries([['deletionProtection', deletion === true ? 'strict' : deletion === false ? 'off' : deletion ?? 'relaxed'], ['deletionProtectionForOfficialPresets', configuration.deletionProtectionForOfficialPresets ?? false], ['applyToOfficialPresets', configuration.applyToOfficialPresets ?? false], ['pressureBasis', configuration.budgets?.pressureBasis ?? ''],
+  return Object.fromEntries([['windowsBash', configuration.windowsBash ?? true], ['deletionProtection', deletion === true ? 'strict' : deletion === false ? 'off' : deletion ?? 'relaxed'], ['deletionProtectionForOfficialPresets', configuration.deletionProtectionForOfficialPresets ?? false], ['applyToOfficialPresets', configuration.applyToOfficialPresets ?? false], ['pressureBasis', configuration.budgets?.pressureBasis ?? ''],
     ...budgetFields.map(field => {
       const value = field.root ? configuration[field.key] : configuration.budgets?.[field.key]
       return [field.key, value === undefined ? '' : String(value / field.factor)]
@@ -2179,12 +2187,15 @@ function ChoiceCards({ name, label, value, choices, onChange, disabled = false }
 
 /** Each budget tab writes only its own fields and carries the other tab's stored values through. */
 function budgetSectionConfiguration(section, draft, snapshot) {
+  if (section === 'shell') return typeof draft.windowsBash === 'boolean'
+    ? { ok: true, configuration: { ...snapshot.configuration, windowsBash: draft.windowsBash } }
+    : { ok: false, error: 'invalid' }
   const parsed = budgetConfiguration(draft)
   if (!parsed.ok) return parsed
   const current = snapshot.configuration
   return { ok: true, configuration: section === 'protection'
     ? { ...current, deletionProtection: draft.deletionProtection, deletionProtectionForOfficialPresets: draft.deletionProtectionForOfficialPresets }
-    : { ...parsed.configuration, deletionProtection: current.deletionProtection, deletionProtectionForOfficialPresets: current.deletionProtectionForOfficialPresets } }
+    : { ...parsed.configuration, windowsBash: current.windowsBash, deletionProtection: current.deletionProtection, deletionProtectionForOfficialPresets: current.deletionProtectionForOfficialPresets } }
 }
 function createBudgetAutosave(api, section = 'context') {
   return createAutosave(api, { draft: budgetDraft({}), toDraft: budgetDraft,
@@ -2207,6 +2218,7 @@ function autosaveState(editing) {
 
 function BudgetSettings({ api, t, active, section = 'context', onSaved = () => {} }) {
   const protection = section === 'protection'
+  const shell = section === 'shell'
   const editor = useMemo(() => createBudgetAutosave(api, section), [api, section])
   const editing = useSyncExternalStore(editor.subscribe, editor.getSnapshot, editor.getSnapshot)
   const { snapshot, draft } = editing
@@ -2236,7 +2248,7 @@ function BudgetSettings({ api, t, active, section = 'context', onSaved = () => {
     const base = current.configuration
     const configuration = protection
       ? { ...base, deletionProtection: 'relaxed', deletionProtectionForOfficialPresets: false }
-      : { deletionProtection: base.deletionProtection, deletionProtectionForOfficialPresets: base.deletionProtectionForOfficialPresets }
+      : { windowsBash: base.windowsBash, deletionProtection: base.deletionProtection, deletionProtectionForOfficialPresets: base.deletionProtectionForOfficialPresets }
     pending.current = true; setLoading(true); setFailure(''); setNotice('')
     try {
       const response = await api.saveConfig(JSON.stringify(configuration), String(current.revision))
@@ -2271,7 +2283,19 @@ function BudgetSettings({ api, t, active, section = 'context', onSaved = () => {
   const saveError = editing.error && !autosaveValidationErrors.includes(editing.error) ? editing.error : ''
   const problem = failure || saveError
   const button = (label, onClick, extra = {}) => React.createElement(ActionButton, { type: 'button', disabled: loading, onClick, ...extra }, label)
-  const content = protection ? React.createElement(React.Fragment, null,
+  const shellStatus = snapshot?.shell
+  const content = shell ? React.createElement(SettingsSection, { id: 'super-code-shell', title: t('shell.title') },
+    React.createElement(SettingRow, { id: 'super-code-windows-bash', label: t('shell.enabled'),
+      hint: shellStatus?.platform !== 'win32' ? t('shell.otherPlatform') : t('shell.hint') }, described =>
+      React.createElement(ConnectionSwitch, { id: 'super-code-windows-bash', checked: draft.windowsBash,
+        disabled: disabled || shellStatus?.platform !== 'win32', 'aria-describedby': described,
+        onChange: value => edit('windowsBash', value) })),
+    shellStatus?.platform === 'win32' && React.createElement('p', { className: 'dsh-super-code-setting-hint', role: 'status' },
+      t(!draft.windowsBash ? 'shell.host' : `shell.${shellStatus.state}`),
+      shellStatus.version && draft.windowsBash && React.createElement('code', null, ' · ' + shellStatus.version)),
+    shellStatus?.state === 'error' && draft.windowsBash && React.createElement(Callout, { tone: 'error' },
+      React.createElement('p', null, shellStatus.error)))
+    : protection ? React.createElement(React.Fragment, null,
     React.createElement(SettingsSection, { id: 'super-code-deletion-mode', title: t('delete.mode'), plain: true },
       React.createElement(ChoiceCards, { name: 'super-code-deletion-mode', label: t('delete.mode'), value: draft.deletionProtection, disabled,
         choices: ['off', 'relaxed', 'strict'].map(mode => [mode, t(`delete.${mode}`), t(`delete.hint.${mode}`)]),
@@ -2299,7 +2323,7 @@ function BudgetSettings({ api, t, active, section = 'context', onSaved = () => {
           snapshot?.ptcMaxTimeoutMs && text(t, 'budget.ptcCeiling', { seconds: snapshot.ptcMaxTimeoutMs / 1000 })] }, ...rows('execution')),
       React.createElement(SettingsSection, { id: 'super-code-budget-exclusive', title: t('budget.superCode'), description: t('budget.superCodeHint') }, ...rows('superCode')))
   return React.createElement('section', { className: 'dsh-super-code-budgets' },
-    React.createElement('form', { className: 'dsh-super-code-stack', 'aria-label': t(protection ? 'delete.title' : 'budget.title'), 'aria-busy': loading || editing.saving,
+    React.createElement('form', { className: 'dsh-super-code-stack', 'aria-label': t(shell ? 'shell.title' : protection ? 'delete.title' : 'budget.title'), 'aria-busy': loading || editing.saving,
       onSubmit: event => { event.preventDefault(); void editor.flush() } },
       problem && React.createElement(Callout, { tone: 'error',
         action: failure === 'connection' || problem === 'conflict' ? button(t('budget.reload'), () => load(true))
@@ -2310,7 +2334,7 @@ function BudgetSettings({ api, t, active, section = 'context', onSaved = () => {
       content,
       React.createElement('div', { className: 'dsh-super-code-settings-footer' },
         React.createElement(SaveIndicator, { state: autosaveState(editing), t }),
-        React.createElement('div', { className: 'dsh-super-code-settings-footer-actions' },
+        !shell && React.createElement('div', { className: 'dsh-super-code-settings-footer-actions' },
           confirmReset ? React.createElement(React.Fragment, null,
             React.createElement('span', null, t('budget.resetQuestion')),
             button(t('preset.cancel'), () => setConfirmReset(false)),
@@ -2902,7 +2926,8 @@ function PresetSettings({ api, budgetApi, connectionApi, openSession = () => {},
         status?.userConflict && status.state !== 'conflict' && React.createElement('p', null, t('preset.userConflict')),
         status?.delivery === 'declaration' && !status.authorable && React.createElement('p', { role: 'note' }, t('preset.declaredReadonly')),
         status?.delivery === 'directory' && !status.authorable && React.createElement('p', { role: 'note' }, t('preset.readonly'))),
-      error && React.createElement('p', { role: 'alert' }, t(error))),
+      error && React.createElement('p', { role: 'alert' }, t(error)),
+      React.createElement(BudgetSettings, { api: budgetApi, t, section: 'shell', active: tab === 'preset', onSaved })),
       React.createElement('div', { role: 'tabpanel', id: 'super-code-panel-context', 'aria-labelledby': 'super-code-tab-context', hidden: tab !== 'context' },
         React.createElement(BudgetSettings, { api: budgetApi, t, active: tab === 'context', onSaved })),
       React.createElement('div', { role: 'tabpanel', id: 'super-code-panel-protection', 'aria-labelledby': 'super-code-tab-protection', hidden: tab !== 'protection' },
@@ -3695,5 +3720,5 @@ function apply(ctx) {
   ctx.effect(() => disposeMemoryType, 'super-code: memory library tab')
 }
 
-return { inject, apply, taskFeedbackRows, feedbackStatus, feedbackListItems, feedbackListLayout, feedbackListIndex, feedbackListWindow, feedbackListAnchor, connectionSessions, createConnectionAutosave, connectionDraft, connectionConfiguration, budgetDraft, budgetConfiguration, synchronizePresetDisplay, agentSessionState, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector, agentHistoryRange, agentHistoryRows, agentHistoryWindow, memoryLibraryAddress, memoryLibraryTarget, memoryLibraryNavigation, memoryLibraryWindow, createMemoryEditor, MemoryLibrary }
+return { inject, apply, taskFeedbackRows, feedbackStatus, feedbackListItems, feedbackListLayout, feedbackListIndex, feedbackListWindow, feedbackListAnchor, connectionSessions, createConnectionAutosave, createBudgetAutosave, connectionDraft, connectionConfiguration, budgetDraft, budgetConfiguration, synchronizePresetDisplay, agentSessionState, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector, agentHistoryRange, agentHistoryRows, agentHistoryWindow, memoryLibraryAddress, memoryLibraryTarget, memoryLibraryNavigation, memoryLibraryWindow, createMemoryEditor, MemoryLibrary }
 } })

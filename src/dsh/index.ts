@@ -14,6 +14,7 @@ import { applyBudgetSettings } from './budget-settings.js'
 import { applyOfficialBudgets } from './official-budgets.js'
 import { applyConnection } from './connection.js'
 import { applyDeletionProtection } from './deletion-protection.js'
+import { applyWindowsShell } from './windows-shell.js'
 
 export const name = 'super-code'
 export const Config: typeof configurationSchema = configurationSchema
@@ -34,6 +35,7 @@ async function installLongMemory(ctx: Context): Promise<void> {
 
 export async function apply(ctx: Context, config: Configuration = {}): Promise<void> {
   applyBudgetSettings(ctx, config)
+  applyWindowsShell(ctx)
   applyOfficialBudgets(ctx)
   applyDeletionProtection(ctx)
   applyPresetInstallation(ctx)

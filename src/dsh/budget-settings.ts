@@ -5,6 +5,7 @@ import { Remote, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
 import { settingsConfigurationSchema, configurationValues, validateConfiguration } from './budgets.js'
 import type { Configuration } from './budgets.js'
 import { BasicCompactionEngine } from '@deepseek-ai/dsh-compaction-basic'
+import type { ShellStatus } from './windows-shell.js'
 
 const namespace = 'super-code-budgets'
 
@@ -15,6 +16,7 @@ interface SettingsWriter {
 }
 
 export interface BudgetSettingsSnapshot {
+  readonly shell?: ShellStatus
   readonly configuration: Configuration
   readonly revision: number
   readonly writable: boolean
@@ -83,11 +85,17 @@ export class BudgetSettings {
 export class SuperCodeBudgets extends TypertRemoteService {
   constructor(ctx: Context, private readonly settings: BudgetSettings) { super(ctx, 'superCodeBudgets') }
   @Remote
-  readConfig(): BudgetSettingsSnapshot { return this.settings.read() }
+  readConfig(): BudgetSettingsSnapshot { return { ...this.settings.read(), shell: this.ctx.get('superCodeShell')?.status() } }
   @Remote
-  saveConfig(content: string, expected: string): Promise<BudgetSettingsResult> { return this.settings.save(content, expected) }
+  async saveConfig(content: string, expected: string): Promise<BudgetSettingsResult> {
+    const result = await this.settings.save(content, expected)
+    return result.ok ? { ...result, snapshot: { ...result.snapshot, shell: this.ctx.get('superCodeShell')?.status() } } : result
+  }
   @Remote
-  resetConfig(expected: string): Promise<BudgetSettingsResult> { return this.settings.reset(expected) }
+  async resetConfig(expected: string): Promise<BudgetSettingsResult> {
+    const result = await this.settings.reset(expected)
+    return result.ok ? { ...result, snapshot: { ...result.snapshot, shell: this.ctx.get('superCodeShell')?.status() } } : result
+  }
 }
 
 export function applyBudgetSettings(ctx: Context, config: Configuration): void {

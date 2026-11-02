@@ -11,6 +11,7 @@
 - [侧边栏](#侧边栏)
 - [批量工具调用](#批量工具调用)
 - [运行预算](#运行预算)
+- [Windows 命令环境](#windows-命令环境)
 - [删除保护](#删除保护)
 - [MCP 连接](#mcp-连接)
 - [前端 Skill](#前端-skill)
@@ -41,7 +42,7 @@
 | 标签页 | 内容 |
 |---|---|
 | 首页 | 预设状态与版本、删除保护等级、MCP 开关、在线与历史对话数 |
-| 预设配置 | 安装、重装、重命名 |
+| 预设配置 | 安装、重装、重命名、Windows 命令环境 |
 | 上下文配置 | [运行预算](#运行预算) |
 | 删除保护 | [删除保护](#删除保护) |
 | 连接 | [MCP 连接](#mcp-连接) |
@@ -182,6 +183,20 @@ maxContextBytes: 32768       # Super Code：任务记忆上下文字节数
 - 调用中显式指定的更短时限仍然有效。
 - 旧宿主的 PTC 按 CPU 忙碌时间计时，新宿主按总耗时计时，两者不可直接比较。
 - 调大 `maxTasks`、`maxContextBytes` 会占用更多上下文，一般保持默认即可。
+
+## Windows 命令环境
+
+本功能仍在开发，尚未随已发布的 0.3.9 提供。验证范围与待验收项见[开发验证记录](Compatibility.md#内置-windows-bash开发验证)。
+
+Windows 宿主默认在 Super Code 预设中使用内置 GNU Bash、BusyBox 和 GNU grep，运行常见 Bash 命令无需额外安装 Git。Git、Node、Python 等开发工具仍需自行安装。macOS、Linux 沿用宿主原有环境。
+
+在「预设配置 → 命令环境」关闭「使用内置 Bash（Windows）」，新启动的会话将改用宿主的 PowerShell。设置自动保存，运行中的 Agent 保留原有环境，子 Agent 继承会话环境和工具限制；已安装的旧预设需要先重新安装，才能使用新的命令环境入口。判断依据是 DSH 服务端系统，浏览器所在系统不影响选择。
+
+运行时随插件提供，首次使用时离线准备到 `%LOCALAPPDATA%\dsh-super-code\shell`，不更改系统 PATH。设置页显示准备状态；准备失败时显示原因，关闭开关后可用宿主环境。命令失败不会换 Shell 重放。审批、删除保护和进程管理继续使用 DSH 的工具链。
+
+官方 Windows 限权沙箱会阻止 MSYS 创建内部命名管道，因此 `read-only`、`workspace-write` 下的 Bash 调用会在命令执行前明确报错。确需运行时，Agent 可为**同一条命令**请求 DSH 的 `sandbox_permissions="danger-full-access"` 单次审批，并说明原因。只有批准的这次调用可以执行；拒绝、取消或禁用审批时不执行，也不会自动修改会话权限或切换 Shell。PTC 的 `run_code` 本身若需更大权限，仍须经过宿主对该程序的独立审批，Bash 的批准不授予外层程序权限。
+
+这仍是 Windows 环境：BusyBox 不包含所有 GNU 选项，`.cmd` 的引号及原生程序的 `/` 参数也不等同于 Linux。MSYS 会自动转换部分路径；确需传递原样参数时，可仅对该次调用设置 `MSYS2_ARG_CONV_EXCL`，不要全局关闭转换。内置工具不包含 `trash`，也不会把永久删除伪装成回收站操作。ARM64 Windows 上的 Bash、grep 和 MSYS DLL 使用 x64 兼容执行。验证范围见[兼容性](Compatibility.md)，组件来源与许可证见[运行时说明](../runtime/windows/README.md)。
 
 ## 删除保护
 

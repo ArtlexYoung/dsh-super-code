@@ -1,0 +1,45 @@
+{
+  "portableGit": {
+    "version": "2.56.0.4",
+    "url": "https://github.com/git-for-windows/git/releases/download/v2.56.0.windows.4/PortableGit-2.56.0.4-arm64.7z.exe",
+    "sha256": "044110f9d951858452ddb5e4b5415ea0f2b5b2598e794d6fec77fe28b9aa8cc0"
+  },
+  "busybox": {
+    "version": "FRP-6354-g5f09fb446",
+    "binaryUrls": {
+      "x64": "https://frippery.org/files/busybox/busybox-w64u-FRP-6354-g5f09fb446.exe",
+      "arm64": "https://frippery.org/files/busybox/busybox-w64a-FRP-6354-g5f09fb446.exe"
+    },
+    "source": {
+      "url": "https://frippery.org/files/busybox/busybox-w32-FRP-6354-g5f09fb446.tgz",
+      "bundled": "sources/busybox-w32-FRP-6354-g5f09fb446.tgz",
+      "bytes": 3715260,
+      "sha256": "950d2c73e979e54c65c7723668406d1d6e740fc474f41516a82ddae805fbf24b"
+    }
+  },
+  "assembly": [
+    "Extract only bash.exe, msys-2.0.dll, grep.exe, msys-pcre-1.dll, msys-intl-8.dll and msys-iconv-2.dll from PortableGit/usr/bin.",
+    "Verify every decompressed SHA-256 against manifest.json. No stripping, patching or recompilation is performed.",
+    "Compress each binary separately using gzip level 9 with mtime=0. Include both pinned BusyBox Unicode binaries under their architecture-specific asset names.",
+    "The immutable runtime id is bash-busybox- followed by the first 12 hex characters of SHA-256 over Python json.dumps(files, sort_keys=True).",
+    "At runtime create BusyBox applet hard links; sh.exe links to GNU bash.exe. GNU grep is a separate program.",
+    "Keep matching license notices and corresponding source directions. BusyBox complete source is included in this package."
+  ],
+  "sourcePackages": [
+    {
+      "name": "msys2-runtime-3.6.10-4.src.tar.zst",
+      "url": "https://repo.msys2.org/msys/sources/msys2-runtime-3.6.10-4.src.tar.zst",
+      "sha256": "47e6e49710116d1bb57adaa24530306ee5841b58b8abca66ffcc107736393cec"
+    },
+    {
+      "name": "pcre-8.45-5.src.tar.zst",
+      "url": "https://repo.msys2.org/msys/sources/pcre-8.45-5.src.tar.zst",
+      "sha256": "f7104aa31f29655689b404ead9923332e2fa6aadfe97c060d0dfc02f4661d6b5"
+    },
+    {
+      "name": "ncurses-6.6-2.src.tar.zst",
+      "url": "https://repo.msys2.org/msys/sources/ncurses-6.6-2.src.tar.zst",
+      "sha256": "f5df12bd297e6b6930e2aa68e8014347b2193592645d93acce6774e05cbf15e6"
+    }
+  ]
+}

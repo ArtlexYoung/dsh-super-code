@@ -2,6 +2,22 @@
 
 [中文](../EvaluationResults.md) · English
 
+## Pro100: continuous-environment comparison
+
+All runs use Harness `0.2.1-rc.2`, `deepseek-v4.1-flash-1017`, high reasoning effort, and legacy budgets. Each group reuses its environment continuously across tasks. These are full 100-task results, sorted by tasks passed.
+
+| Configuration | Passed/valid | Mean total tokens (M) | Mean time (min) | Mean model calls | Mean tool calls | Cache rate |
+|---|---:|---:|---:|---:|---:|---:|
+| Super Code 0.3.5 | **51/100** | 6.435 | 24.751 | 76.660 | 75.840 | 98.927% |
+| Official Standard | 50/100 | 8.030 | 17.198 | 91.990 | 113.880 | 99.167% |
+| Unmodified dsh-ops 0.4.4 · Standard | 49/100 | 7.099 | 23.132 | 82.500 | 102.360 | 99.062% |
+| Official Standard + billion-context 0.1.209 | 45/100 | 6.359 | 18.471 | 108.950 | 131.140 | 97.654% |
+| Unmodified dsh-ops 0.4.4 · PTC | 44/100 | 7.322 | 23.695 | 81.490 | 80.960 | 99.056% |
+
+M means one million tokens, including reasoning tokens. Time includes some in-run service waits. Super Code `0.3.5` is the continuous legacy-budget baseline for this batch.
+
+This batch uses different environment-reuse and time-accounting conventions from the historical budget experiments below. They remain separate; pass counts, times, and efficiency percentages are not mixed. The historical `49/100` and `46/100` results are from earlier runs, rather than the `51/100` and `50/100` in this table. Existing per-task files still describe their original runs.
+
 ## Evaluation design
 
 ### Task set
@@ -10,17 +26,17 @@ SWE-bench Pro hard-100 (frozen ID `swebench-pro-hard-100-ddd22492f1c38839`), gra
 
 - "hard-100" is this project's selection of 100 tasks by an existing difficulty method, not an official hardest-100 list.
 - Tuning uses only 33 valid hard tasks selected from the SWE-bench dev split. hard-100 is used only to evaluate frozen candidates and investigate issues, **never for tuning**, to avoid overfitting to the evaluation tasks.
-- All scores include later reviews (see [Grading corrections](#grading-corrections)); every run has 100 valid scores.
+- The historical scores below include later reviews (see [Grading corrections](#grading-corrections)); every run has 100 valid scores.
 
 ### Baseline
 
-The baseline is the official Standard preset rather than Minimal. On the old host, Standard + high passed 51 tasks and Minimal + high passed 46, with Standard using 23.5% fewer tokens per task. Comparing against the stronger baseline gives a stricter conclusion.
+Baselines include the official Standard preset and third-party plugin configurations. The historical official-preset comparison uses Standard rather than Minimal: on the old host, Standard + high passed 51 tasks and Minimal + high passed 46, with Standard using 23.5% fewer tokens per task.
 
 ### Controlled variables
 
-Within each comparison, host, model, reasoning effort, and budgets are held constant; only the Agent preset differs. Where the host or model changes, this is stated explicitly.
+Comparisons on the same host keep model, reasoning effort, and budgets fixed while comparing preset and plugin combinations. Host or model changes are identified separately. The continuous-environment table above includes some in-run service waits; historical budget experiments use net time, excluding failed requests and retry waits.
 
-### Process
+### Historical process
 
 1. **Old-host baseline**: official presets and plugin versions were evaluated on DSH `0.1.5-rc.2` with `deepseek-v4.1-flash`. The Super Code `0.3.0` candidate passed 56 tasks, above the best official result (Standard + high, 51).
 2. **Regression after the host upgrade**: on DSH `0.2.1-rc.2` with `deepseek-v4.1-flash-1017`, under default budgets Standard fell to 46 and Super Code `0.3.4` to 41, below Standard.
@@ -28,7 +44,7 @@ Within each comparison, host, model, reasoning effort, and budgets are held cons
 4. **Retest with legacy budgets**: both sides switched to legacy budgets. Standard stayed at 46; Super Code `0.3.5` rose to 49. Based on this, the plugin uses legacy budgets by default from `0.3.6`.
 5. **Cross-model check**: compared with native ZCode on `glm-5.3-flash` to test whether the approach depends on a specific model.
 
-## Summary
+## Historical summary
 
 | Comparison | Result |
 |---|---|

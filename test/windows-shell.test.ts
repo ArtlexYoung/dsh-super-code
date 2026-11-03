@@ -10,10 +10,11 @@ import Tools from '@deepseek-ai/dsh-tools'
 import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
 import { Session, SessionId } from '@deepseek-ai/dsh-session'
 import { ToolCallId } from '@deepseek-ai/dsh-llm'
-import { createScope, scopeTarget } from '@deepseek-ai/dsh-scope'
+import { createScope, scopeTarget, scopeParentOf, scopeOf, bindScopeParent } from '@deepseek-ai/dsh-scope'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import { applyBudgetSettings } from '../src/dsh/budget-settings.js'
 import * as shell from '../src/dsh/windows-shell.js'
+import { applyOfficialWindowsShell } from '../src/dsh/official-windows-shell.js'
 
 test('Windows confinement refuses Bash before execution and accepts only the host-approved invocation mode', () => {
   class Provider {
@@ -42,7 +43,7 @@ test('Windows confinement refuses Bash before execution and accepts only the hos
 })
 
 /** Fake host executors avoid platform binaries; the real scope, tool and prompt engines run. */
-async function fixture(t: test.TestContext, options: { platform?: NodeJS.Platform; customProvider?: boolean; preparationGate?: Promise<void>; profileContext?: boolean } = {}) {
+async function fixture(t: test.TestContext, options: { platform?: NodeJS.Platform; customProvider?: boolean; preparationGate?: Promise<void>; profileContext?: boolean; official?: string; brokenTool?: boolean; sharedGeneration?: boolean } = {}) {
   const ctx = new Context(), root = await mkdtemp(join(tmpdir(), 'super-code-shell-test-'))
   t.after(async () => { await ctx.fiber.dispose(); await rm(root, { recursive: true, force: true }) })
   const require = createRequire(import.meta.url)
@@ -65,6 +66,7 @@ async function fixture(t: test.TestContext, options: { platform?: NodeJS.Platfor
     import { defineTool } from ${JSON.stringify(url('@deepseek-ai/dsh-tools'))}
     export const inject = ['tools', 'systemPrompt', 'shell']
     export function apply(ctx) {
+      if (${options.brokenTool && name === 'bash' ? 'true' : 'false'}) throw new Error('Fixture Bash tool registration failed')
       ctx.systemPrompt.section({ name: 'tool:${name}', order: 10, text: '${name} host instructions' })
       ctx.tools.register(defineTool({ name: '${name}', description: 'Fixture executor without subprocesses',
         parameters: { command: { type: 'string', required: true } },
@@ -77,7 +79,7 @@ async function fixture(t: test.TestContext, options: { platform?: NodeJS.Platfor
   if (options.customProvider) ctx.provide('shell', { config: {}, resolve: (request: unknown) => request,
     argv: (spec: { command: string }) => ['custom-shell', spec.command] })
   else new Provider(ctx, {})
-  const policy = { windowsBash: true }
+  const policy = { windowsBash: true, windowsBashForOfficialPresets: false }
   applyBudgetSettings(ctx, policy)
   let preparations = 0, broken = false
   const started = Promise.withResolvers<void>()
@@ -94,16 +96,40 @@ async function fixture(t: test.TestContext, options: { platform?: NodeJS.Platfor
   if (options.profileContext === false) ctx.baseUrl = pathToFileURL(root + '/').href
   else ctx.provide('profileContext', { installAnchor: join(root, 'package.json') })
   const generation = {}, preset = createScope(ctx, generation)
+  const pwshUrl = pathToFileURL(join(root, 'node_modules/@deepseek-ai/dsh-tool-pwsh/index.js')).href
+  let stopOfficial = async () => {}
+  const ids = new WeakMap<object, string>([[generation, options.official ?? 'super-code']])
+  const creators = new Map<Agent, Agent | undefined>()
+  if (options.official) {
+    ctx.provide('agentPresets', { composedPreset(context: Context) {
+      const key = scopeParentOf(scopeOf(context)!)
+      return key && ids.get(key)
+    } })
+  }
+  if (options.official || options.sharedGeneration) ctx.provide('agents', { list: () => [...creators.keys()], isOwnedBy: (id: string, parent: Agent) =>
+    [...creators].some(([agent, creator]) => agent.id === id && creator === parent) })
   const platform = process.platform
   Object.defineProperty(process, 'platform', { value: options.platform ?? 'win32' })
-  try { await preset.ctx.plugin(shell) }
+  try {
+    if (options.official) {
+      await preset.ctx.plugin(await import(pwshUrl))
+      const feature = ctx.plugin({ apply: applyOfficialWindowsShell })
+      await feature
+      stopOfficial = async () => { await feature.dispose() }
+      // Wait for the public injection's async setup before emitting lifecycle events.
+      await new Promise<void>(resolve => setImmediate(resolve))
+    } else await preset.ctx.plugin(shell)
+  }
   finally { Object.defineProperty(process, 'platform', { value: platform }) }
   const make = (id: string, parent?: Agent, deny?: string[]) => {
     const agent = { id, session: Session.create(SessionId(id)) } as unknown as Agent
-    const scope = createScope(parent?.ctx ?? preset.ctx, agent, { parent: parent ?? generation })
+    const scope = createScope(parent?.ctx ?? preset.ctx, agent)
+    const binding = bindScopeParent(agent, options.official || options.sharedGeneration ? generation : parent ?? generation)
     Object.assign(agent, { ctx: scope.ctx })
+    creators.set(agent, parent)
+    scope.ctx.effect(() => () => { creators.delete(agent) })
     if (deny) scope.ctx.get('tools')!.restrict({ deny })
-    return { agent, scope,
+    return { agent, scope, binding,
       ready: () => ctx.serial(scopeTarget(agent, agent), 'agent/created', { agent, source: 'fresh' as never }),
       step: () => ctx.waterfall(scopeTarget(agent, agent), 'agent/pre-step', {
         agent, messages: [], turn: 1, step: 1, signal: new AbortController().signal,
@@ -114,7 +140,13 @@ async function fixture(t: test.TestContext, options: { platform?: NodeJS.Platfor
   const prompt = (agent: Agent) => ctx.systemPrompt.assemble({ agent, scope: agent }).then(value => value.sections.map(section => section.text).join('\n'))
   const call = (agent: Agent, name: string) => ctx.tools.execute({ name, arguments: { command: 'literal command' },
     callId: ToolCallId('shell-fixture-' + crypto.randomUUID()), agent, signal: new AbortController().signal })
-  return { ctx, policy, make, names, prompt, call, started: started.promise,
+  const anotherPreset = async (id: string) => {
+    const key = {}, next = createScope(ctx, key)
+    ids.set(key, id)
+    await next.ctx.plugin(await import(pwshUrl))
+    return key
+  }
+  return { ctx, policy, make, names, prompt, call, generation, anotherPreset, stopOfficial, started: started.promise,
     preparations: () => preparations, broken(value: boolean) { broken = value } }
 }
 
@@ -143,6 +175,159 @@ test('pending parent preparation is shared by duplicate events and children with
   await next.ready()
   assert.equal((await f.call(next.agent, 'pwsh')).isError, false)
   assert.equal(f.preparations(), 1)
+})
+
+test('official presets opt in independently, freeze each conversation and preserve child capability restrictions', async t => {
+  for (const official of ['standard', 'ptc', 'cordis']) {
+    const f = await fixture(t, { official }), first = f.make(official + '-default')
+    await first.ready()
+    assert.equal(f.preparations(), 0)
+    assert.deepEqual(await f.names(first.agent), ['pwsh'])
+    f.policy.windowsBashForOfficialPresets = true
+    const enabled = f.make(official + '-on')
+    await enabled.ready()
+    assert.deepEqual(await f.names(enabled.agent), ['bash'])
+    assert.match(JSON.stringify(await f.call(enabled.agent, 'bash')), /verified-bash.exe/)
+    assert.match(await f.prompt(enabled.agent), /Windows with GNU Bash/)
+    assert.doesNotMatch(await f.prompt(enabled.agent), /pwsh host instructions/)
+    assert.deepEqual(await f.names(first.agent), ['pwsh'])
+    f.policy.windowsBashForOfficialPresets = false
+    const child = f.make(official + '-child', enabled.agent, ['bash'])
+    await child.ready()
+    assert.deepEqual(await f.names(child.agent), [])
+    assert.equal((await f.call(child.agent, 'bash')).isError, true)
+    assert.equal((await f.call(child.agent, 'pwsh')).isError, true)
+    const host = f.make(official + '-off')
+    await host.ready()
+    assert.deepEqual(await f.names(host.agent), ['pwsh'])
+    assert.doesNotMatch(await f.prompt(host.agent), /Windows with GNU Bash|bash host instructions/)
+    assert.equal(f.ctx.tools.get('bash'), undefined)
+    await enabled.scope.dispose()
+    assert.deepEqual(await f.names(host.agent), ['pwsh'], 'a sibling survives another Agent closing')
+    f.policy.windowsBashForOfficialPresets = true; f.policy.windowsBash = false
+    const masterOff = f.make(official + '-master-off')
+    await masterOff.ready()
+    assert.deepEqual(await f.names(masterOff.agent), ['pwsh'])
+  }
+})
+
+test('official shell excludes custom, Minimal and non-Windows and restores filters on blank preset changes', async t => {
+  for (const official of ['minimal', 'custom']) {
+    const f = await fixture(t, { official }); f.policy.windowsBashForOfficialPresets = true
+    const item = f.make(official)
+    await item.ready()
+    assert.deepEqual(await f.names(item.agent), ['pwsh'])
+    assert.equal(f.preparations(), 0)
+    assert.equal(f.ctx.tools.get('bash', f.generation), undefined)
+  }
+  for (const platform of ['darwin', 'linux'] as const) {
+    const f = await fixture(t, { official: 'standard', platform }); f.policy.windowsBashForOfficialPresets = true
+    await f.make(platform).ready()
+    assert.equal(f.preparations(), 0)
+    assert.equal(f.ctx.tools.get('bash', f.generation), undefined)
+  }
+  const f = await fixture(t, { official: 'standard' }); f.policy.windowsBashForOfficialPresets = true
+  const item = f.make('blank-switch')
+  await item.ready()
+  const other = await f.anotherPreset('custom')
+  item.binding.rebind(other); await item.step()
+  assert.deepEqual(await f.names(item.agent), ['pwsh'], 'the old deny-pwsh restriction is removed')
+  item.binding.rebind(f.generation); await item.step()
+  assert.deepEqual(await f.names(item.agent), ['bash'])
+})
+
+test('official generation teardown, simultaneous creation and failed runtime recovery remain isolated', async t => {
+  const gate = Promise.withResolvers<void>(), f = await fixture(t, { official: 'standard', preparationGate: gate.promise })
+  f.policy.windowsBashForOfficialPresets = true
+  const first = f.make('official-pending'), second = f.make('official-pending-sibling')
+  const pending = [first.ready(), second.ready()]
+  await f.started
+  assert.equal((await f.call(first.agent, 'pwsh')).isError, true)
+  gate.resolve(); await Promise.all(pending)
+  await first.scope.dispose()
+  assert.equal((await f.call(second.agent, 'bash')).isError, false)
+  await second.scope.dispose()
+  const fresh = f.make('official-after-last-disposal')
+  await fresh.ready()
+  assert.equal((await f.call(fresh.agent, 'bash')).isError, false)
+  f.broken(true)
+  const failed = f.make('official-failed')
+  await assert.rejects(failed.ready(), /Fixture payload unavailable/)
+  f.broken(false)
+  const recovered = f.make('official-recovered')
+  await recovered.ready()
+  assert.equal((await f.call(recovered.agent, 'bash')).isError, false)
+  assert.equal((await f.call(failed.agent, 'bash')).isError, true)
+  assert.equal((await f.call(failed.agent, 'pwsh')).isError, true)
+  await assert.rejects(failed.step(), /Fixture payload unavailable/)
+  const failedChild = f.make('official-failed-child', failed.agent)
+  await assert.rejects(failedChild.ready(), /Fixture payload unavailable/)
+  assert.equal((await f.call(failedChild.agent, 'bash')).isError, true)
+})
+
+test('official shell handles unsupported providers, pending disposal and plugin unload without leaving filters', async t => {
+  const unsupported = await fixture(t, { official: 'standard', customProvider: true })
+  const off = unsupported.make('custom-provider-off')
+  await off.ready()
+  assert.deepEqual(await unsupported.names(off.agent), ['pwsh'])
+  unsupported.policy.windowsBashForOfficialPresets = true
+  const on = unsupported.make('custom-provider-on')
+  await assert.rejects(on.ready(), /Unsupported host shell provider/)
+  assert.equal((await unsupported.call(on.agent, 'pwsh')).isError, true)
+  await unsupported.stopOfficial()
+  assert.equal((await unsupported.call(on.agent, 'pwsh')).isError, false)
+
+  const gate = Promise.withResolvers<void>(), f = await fixture(t, { official: 'standard', preparationGate: gate.promise })
+  f.policy.windowsBashForOfficialPresets = true
+  const item = f.make('dispose-during-prepare'), pending = item.ready()
+  await f.started
+  await item.scope.dispose()
+  gate.resolve(); await pending
+  const next = f.make('after-pending-disposal')
+  await next.ready()
+  assert.deepEqual(await f.names(next.agent), ['bash'])
+  await f.stopOfficial()
+  assert.deepEqual(await f.names(next.agent), ['pwsh'])
+  assert.doesNotMatch(await f.prompt(next.agent), /Windows with GNU Bash/)
+})
+
+test('a broken optional Bash tool does not break an official Agent while its scope is off', async t => {
+  const f = await fixture(t, { official: 'standard', brokenTool: true })
+  const original = f.make('broken-tool-off')
+  await original.ready()
+  assert.equal((await f.call(original.agent, 'pwsh')).isError, false)
+  f.policy.windowsBashForOfficialPresets = true
+  const enabled = f.make('broken-tool-on')
+  await assert.rejects(enabled.ready(), /Fixture Bash tool registration failed/)
+  assert.equal((await f.call(enabled.agent, 'pwsh')).isError, true)
+})
+
+test('Super Code children sharing a preset generation retain their live creator shell choice', async t => {
+  for (const customProvider of [false, true]) {
+    const f = await fixture(t, { sharedGeneration: true, customProvider })
+    f.policy.windowsBash = false
+    const parent = f.make('shared-disabled-parent')
+    await parent.ready()
+    f.policy.windowsBash = true
+    const child = f.make('shared-child', parent.agent)
+    await child.ready()
+    assert.deepEqual(await f.names(child.agent), ['pwsh'])
+    assert.equal((await f.call(child.agent, 'pwsh')).isError, false)
+    if (customProvider) {
+      const failed = f.make('shared-unsupported-on')
+      await assert.rejects(failed.ready(), /Unsupported host shell provider/)
+      f.policy.windowsBash = false
+      const failedChild = f.make('shared-unsupported-child', failed.agent)
+      await assert.rejects(failedChild.ready(), /Unsupported host shell provider/)
+      assert.equal((await f.call(failedChild.agent, 'pwsh')).isError, true)
+    }
+  }
+  const f = await fixture(t, { sharedGeneration: true })
+  const parent = f.make('shared-enabled-parent')
+  await parent.ready();f.policy.windowsBash = false
+  const child = f.make('shared-enabled-child', parent.agent)
+  await child.ready()
+  assert.deepEqual(await f.names(child.agent), ['bash'])
 })
 
 test('a child waiting for failed parent preparation stays blocked after a sibling recovers', async t => {

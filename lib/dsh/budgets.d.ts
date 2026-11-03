@@ -21,6 +21,7 @@ export interface Budgets {
 export type DeletionProtectionMode = 'off' | 'relaxed' | 'strict';
 export interface Configuration {
     readonly windowsBash?: boolean;
+    readonly windowsBashForOfficialPresets?: boolean;
     readonly applyToOfficialPresets?: boolean;
     readonly deletionProtection?: DeletionProtectionMode | boolean;
     readonly deletionProtectionForOfficialPresets?: boolean;

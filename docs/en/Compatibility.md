@@ -4,7 +4,7 @@
 
 Web is verified from Harness `0.1.5-alpha.1` through `0.2.1-rc.4`, with incremental rc.4 coverage detailed below. Official Desktop is verified through `0.2.1-rc.4` (x64 archive under Rosetta), and NEXT at `2.0.19-next` (bundled `0.2.1-rc.2`).
 
-The bundled Windows Bash under development also passes full-process Windows acceptance on official Desktop `0.2.1-rc.5` and NEXT `2.0.21-next` (bundled `0.2.1-rc.4`), within the scope below.
+The bundled Windows Bash in 0.3.10 also passes full-process Windows acceptance on official Desktop `0.2.1-rc.5` and NEXT `2.0.21-next` (bundled `0.2.1-rc.4`), within the scope below.
 
 ## Verified hosts
 
@@ -26,7 +26,7 @@ The 0.3.8 incremental features were also checked on NEXT `2.0.19-next` (bundled 
 
 - Each host runs in an isolated profile with pinned, audited host dependencies. Daily apps and configuration are untouched.
 - A local deterministic program supplies model responses through the real host Agents and tools. **No external model is called**; these are not effectiveness evaluations.
-- Web uses Chromium; historical native tests run on macOS arm64, with the official rc.4 x64 archive additionally tested under Rosetta. Windows Bash development checks also run actual x64 desktop releases in a Windows 11 ARM64 VM, not Intel hardware.
+- Web uses Chromium; historical native tests run on macOS arm64, with the official rc.4 x64 archive additionally tested under Rosetta. Windows Bash checks also run actual x64 desktop releases in a Windows 11 ARM64 VM, not Intel hardware.
 - Every release also runs the full unit tests, type checking, build, and client syntax checks.
 
 ## Not covered
@@ -51,12 +51,13 @@ The test environments use exact overrides, but that does not fix the upstream de
 
 Under npm rules, a range like `>=0.1.5-alpha.1 <0.3.0` excludes prereleases such as `0.1.6-alpha.1` and `0.2.0-rc.2`, so peer dependencies have to list each series separately.
 
-`zod`, `js-yaml`, and `@modelcontextprotocol/sdk` are runtime dependencies and are not bundled. The Windows shell under development also packages separately licensed programs that run as subprocesses; see [runtime notes](../../runtime/windows/README.md) for sources, licenses, and corresponding source.
+`zod`, `js-yaml`, and `@modelcontextprotocol/sdk` are runtime dependencies and are not bundled. The Windows shell also packages separately licensed programs that run as subprocesses; see [runtime notes](../../runtime/windows/README.md) for sources, licenses, and corresponding source.
 
-## Bundled Windows Bash: development checks
+## 0.3.10 · 2026-11-03
 
-2026-11-02–03. Unreleased work; the historical release records below are unchanged.
+These Windows Bash checks ran at successive stages on November 2–3, 2026. Each batch retains its code baseline and scope; historical release records below are unchanged.
 
+- **Release checks**: all 326 tests, type checking, build, and client syntax checks pass for 0.3.10. Release preparation changes only version metadata and documentation; execution code retains the tested implementation. The complete host matrix was not repeated for the version change.
 - **Official-preset shell settings**: a separate **Also apply to official presets** switch defaults off. When enabled, Standard, PTC and Create use bundled Bash; Minimal keeps its persistent terminal, and custom presets are unchanged. Autosave is independent of budget and deletion-protection scopes, and the main switch retains the saved scope choice when disabled. Running Agents keep their selection; children inherit through actual runtime ownership. Failed parent/child preparation cannot be reactivated by another conversation recovering. All 325 unit tests, type checking, build and client syntax checks pass, together with 15 shell-component checks on each of 24 versions, 360 total. Component checks do not substitute for full Windows-host acceptance.
 - **Official-preset host checks**: six Windows Web hosts each pass 13 check groups, 78 total: `0.1.5-alpha.1`, `0.1.6-alpha.1`, `0.1.7-rc.2`, `0.2.0-rc.2`, `0.2.1-alpha.3`, and `0.2.1-rc.5`. After the final failed-parent readiness fix, the final runtime package passes another 13 groups each on minimum-version and rc.5 Web, official rc.5 Desktop, and NEXT `2.0.21-next` (bundled rc.4). Checks cover actual Standard/PTC/Create Bash, default-off PowerShell, Minimal's persistent terminal, both autosave directions, running-Agent selection, confined refusal and single-command host approval, Chinese paths with spaces, file side effects, and complete process cold restart. The final package was not used to rerun the other four Web hosts or every historical desktop suite; the earlier 155/558 groups predate the official-scope setting.
 - **Command environment UI follow-up**: switches are editable only on Windows hosts. Other platforms show both switches in gray with a top-side **Only available on Windows** tooltip. Bash defaults on and the official scope defaults off, retaining saved choices. Readiness text aligns with the setting labels and long versions wrap. All 326 unit tests and client syntax checks pass, alongside 192 browser check groups across 32 official static frontend targets (24 Web, 8 Desktop/NEXT). Coverage includes both tooltip languages, no writes while disabled, defaults, existing button tooltips, and narrow layouts. These UI checks use fixture services and do not represent a full Windows-host acceptance rerun.

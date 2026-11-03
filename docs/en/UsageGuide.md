@@ -186,7 +186,7 @@ maxContextBytes: 32768       # Super Code: task-memory context bytes
 
 ## Windows command environment
 
-This feature is in development and is not included in the published 0.3.9 package. See the [development checks](Compatibility.md#bundled-windows-bash-development-checks) for tested scope and remaining checks.
+See [Compatibility](Compatibility.md) for the tested scope.
 
 On Windows, Super Code defaults to bundled GNU Bash, BusyBox and GNU grep. Common Bash commands work without installing Git for its shell. Developer tools such as Git, Node and Python still need separate installation. macOS and Linux keep the host's existing environment.
 

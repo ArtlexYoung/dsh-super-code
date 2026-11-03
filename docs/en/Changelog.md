@@ -4,6 +4,22 @@
 
 Versions are `major.performance.maintenance`. The second number changes when coding results or efficiency improve; the third covers fixes, UI, and compatibility. See [Compatibility](Compatibility.md) for what each release was tested on.
 
+## 0.3.10 · 2026-11-03
+
+**Windows command environment**
+
+- Bundles GNU Bash, required MSYS DLLs, BusyBox, and GNU grep, so Git is not required just to run Bash commands. Developer tools such as Git, Node, and Python still need separate installation.
+- Bundled Bash defaults on. **Also apply to official presets** defaults off and covers Standard, PTC, and Create when enabled; Minimal retains its persistent terminal. Settings autosave, running Agents retain their selection, and children inherit it.
+- Command environment switches are editable only on Windows hosts; other platforms show gray switches with an **Only available on Windows** tooltip. Fixed readiness alignment and long-version wrapping; tooltips follow light and dark themes.
+- Fixed host-shell module resolution for legacy directory presets with nested dependencies, Windows PATH aliases and overrides of fixed BusyBox options, and failed parent/child Agents being reactivated by another conversation's recovery.
+- Strict deletion protection recognizes MSYS `cmd.exe //c` and `//k` deletion commands. Confined Bash calls refuse before execution and require DSH approval for that invocation, without automatic permission changes or replay through another shell.
+
+**Documentation and checks**
+
+- Appended full Pro100 comparisons with official and third-party configurations to README, sorted by tasks passed, preserving the opening results and each batch's accounting conventions.
+- Added Windows Web process records from the minimum version through rc.5, plus official rc.5 Desktop and NEXT Windows acceptance. Component and static-frontend checks remain separate. Historical native Windows desktops have not been accepted version by version; see [Compatibility](Compatibility.md) for full scope.
+- The fixed command suite passes 97/100; remaining differences concern `.cmd` quoting and MSYS conversion of native arguments. This is not a complete Linux environment. No new 100-task effectiveness evaluation was run for this release.
+
 ## 0.3.9 · 2026-10-28
 
 **UI**

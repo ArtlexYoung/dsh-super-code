@@ -186,7 +186,7 @@ maxContextBytes: 32768       # Super Code：任务记忆上下文字节数
 
 ## Windows 命令环境
 
-本功能仍在开发，尚未随已发布的 0.3.9 提供。验证范围与待验收项见[开发验证记录](Compatibility.md#内置-windows-bash开发验证)。
+验证范围见[兼容性记录](Compatibility.md)。
 
 Windows 宿主默认在 Super Code 预设中使用内置 GNU Bash、BusyBox 和 GNU grep，运行常见 Bash 命令无需额外安装 Git。Git、Node、Python 等开发工具仍需自行安装。macOS、Linux 沿用宿主原有环境。
 

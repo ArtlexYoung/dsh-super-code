@@ -45,13 +45,13 @@ dsh plugin --profile web add ./dsh-super-code-0.3.9.tgz
 
 </details>
 
-### Windows commands (main development version)
+### Windows commands
 
 Bundles GNU Bash, the required MSYS DLLs, BusyBox, and GNU grep, so Git does not need to be installed just to run Bash commands. Developer tools such as Git, Node, and Python still need separate installation. macOS and Linux keep the host environment.
 
 Under **Settings → Super Code → Preset configuration → Command environment**, bundled Bash defaults on and **Also apply to official presets** defaults off. Enabling the latter covers Standard, PTC, and Create; Minimal retains its persistent terminal. Switches are editable only on Windows hosts, and are gray with a hover tooltip on other platforms.
 
-In confined environments, Bash commands require DSH approval for that command. This feature is on main and is not included in the published `0.3.9` package. See the [usage guide](docs/en/UsageGuide.md#windows-command-environment) for configuration and compatibility limits.
+In confined environments, Bash commands require DSH approval for that command. See the [usage guide](docs/en/UsageGuide.md#windows-command-environment) for configuration and compatibility limits.
 
 ## Usage
 
@@ -86,7 +86,7 @@ Screenshots use the current UI with sample data to illustrate the plugin.
 | Layered memory | Current task, project lessons, and global preferences are stored separately, each with its source |
 | Runtime budgets | Uses the better-performing legacy compression budgets by default; adjustable in Settings |
 | Deletion protection | Directs Agents to use recoverable `trash` by default; can switch to strict confirmation |
-| Windows commands | Bundled Bash and common utilities, optionally applied to official presets (main development version) |
+| Windows commands | Bundled Bash and common utilities, optionally applied to official presets |
 | MCP connection | Allows external MCP clients to delegate tasks to DSH. Off by default |
 | Frontend Skill | Loaded on demand for UI work to check alignment, hit areas, and browser behavior |
 

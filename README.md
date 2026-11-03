@@ -45,13 +45,13 @@ dsh plugin --profile web add ./dsh-super-code-0.3.9.tgz
 
 </details>
 
-### Windows 命令支持（main 开发版）
+### Windows 命令支持
 
 内置 GNU Bash、必要的 MSYS DLL、BusyBox 和 GNU grep，无需为了运行 Bash 命令额外安装 Git。Git、Node、Python 等开发工具仍需自行安装；macOS、Linux 沿用宿主环境。
 
 在「设置 → Super Code 模式 → 预设配置 → 命令环境」中，内置 Bash 默认开启，「同时应用到官方预设」默认关闭。开启后可用于官方标准、PTC、创建模式；极简模式保留持久终端。仅 Windows 宿主可修改开关，其他平台显示为灰色并提供悬浮提示。
 
-受限环境下，Bash 命令需要通过 DSH 对该条命令的审批。此功能已纳入 main，尚未包含在已发布的 `0.3.9` 包中；配置和兼容边界见[使用说明](docs/UsageGuide.md#windows-命令环境)。
+受限环境下，Bash 命令需要通过 DSH 对该条命令的审批。配置和兼容边界见[使用说明](docs/UsageGuide.md#windows-命令环境)。
 
 ## 使用
 
@@ -86,7 +86,7 @@ dsh plugin --profile web add ./dsh-super-code-0.3.9.tgz
 | 分层记忆 | 当前任务、项目经验和全局偏好分别存储，每条记录均标注来源 |
 | 运行预算 | 默认使用效果更好的旧压缩预算，可在设置中调整 |
 | 删除保护 | 默认引导 Agent 使用可恢复的 `trash`，可切换为严格确认 |
-| Windows 命令环境 | 内置 Bash 与常用命令，可选应用到官方预设（main 开发版） |
+| Windows 命令环境 | 内置 Bash 与常用命令，可选应用到官方预设 |
 | MCP 连接 | 允许外部 MCP 客户端将任务委派给 DSH 执行，默认关闭 |
 | 前端 Skill | 开发页面时按需加载，检查对齐、点击区域和浏览器表现 |
 

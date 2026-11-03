@@ -177,7 +177,7 @@ function AgentMessage({ record, saved, t, toolName }) {
       : React.createElement(React.Fragment, null, label, React.createElement(DetailText, { text: item.text, t }))))
 }
 
-/* Keep the native button and its refs/events; mount name bubbles outside clipped
+/* Keep native controls and their refs/events; mount name bubbles outside clipped
  * panels, or in the active dialog's top layer. No host-private UI is needed. */
 let actionTooltipSequence = 0
 let actionTooltipDismiss = () => {}
@@ -188,7 +188,7 @@ function actionButtonText(children) {
     return actionButtonText(child.props.children)
   }).filter(Boolean).join(' ').replace(/\s+/g, ' ').trim()
 }
-const ActionButton = React.forwardRef(function ActionButton({ children, title, ...props }, forwardedRef) {
+const ActionButton = React.forwardRef(function ActionButton({ as: Tag = 'button', children, title, ...props }, forwardedRef) {
   const button = useRef(null), pending = useRef(0), cleanup = useRef(() => {})
   const name = props['aria-label'] || title || actionButtonText(children)
   const attach = React.useCallback(node => {
@@ -244,7 +244,7 @@ const ActionButton = React.forwardRef(function ActionButton({ children, title, .
   }
   useEffect(() => { hide() }, [name])
   useEffect(() => () => hide(), [])
-  return React.createElement('button', {
+  return React.createElement(Tag, {
     ...props, ref: attach, 'data-tooltip-name': name,
     onPointerEnter: event => {
       props.onPointerEnter?.(event)
@@ -300,7 +300,10 @@ const zh = {
 
   'settings.homeTab': '首页', 'settings.presetTab': '预设配置', 'settings.protectionTab': '删除保护',
   'shell.title': '命令环境', 'shell.enabled': '使用内置 Bash（Windows）',
-  'shell.hint': '无需安装 Git。仅用于 Super Code，新启动的会话生效，子 Agent 继承。Windows 限权模式下需由 DSH 逐条审批，不自动修改会话权限。',
+  'shell.hint': '无需安装 Git。新启动的会话生效，子 Agent 继承。Windows 限权模式下需由 DSH 逐条审批，不自动修改会话权限。',
+  'shell.official': '同时应用到官方预设',
+  'shell.officialHint': '用于标准、PTC、创建模式，默认关闭。极简模式保留原有持久终端；自定义预设不受影响。',
+  'shell.windowsOnly': '仅 Windows 生效',
   'shell.host': '使用宿主命令环境', 'shell.pending': '首次使用时自动准备', 'shell.ready': '内置 Bash 已就绪',
   'shell.error': '内置 Bash 不可用，请关闭此开关使用宿主环境。', 'shell.otherPlatform': '当前宿主沿用系统命令环境，无需启用。',
   "connection.requestTitle": "请求访问工作目录",
@@ -486,7 +489,10 @@ const en = {
 
   'settings.homeTab': 'Home', 'settings.presetTab': 'Preset configuration', 'settings.protectionTab': 'Deletion protection',
   'shell.title': 'Command environment', 'shell.enabled': 'Use bundled Bash (Windows)',
-  'shell.hint': 'No Git installation required. Takes effect when a Super Code conversation starts; child Agents inherit it. Confined Windows modes require DSH approval for each command without changing session permissions.',
+  'shell.hint': 'No Git installation required. Takes effect when a conversation starts; child Agents inherit it. Confined Windows modes require DSH approval for each command without changing session permissions.',
+  'shell.official': 'Also apply to official presets',
+  'shell.officialHint': 'Applies to Standard, PTC and Create; off by default. Minimal keeps its persistent terminal. Custom presets are unaffected.',
+  'shell.windowsOnly': 'Only available on Windows',
   'shell.host': 'Using the host command environment', 'shell.pending': 'Prepared automatically on first use', 'shell.ready': 'Bundled Bash is ready',
   'shell.error': 'Bundled Bash is unavailable. Turn this off to use the host environment.', 'shell.otherPlatform': 'This host uses its existing command environment.',
   "connection.requestTitle": "Working directory access request",
@@ -2102,7 +2108,7 @@ const budgetFields = [
 ]
 function budgetDraft(configuration) {
   const deletion = configuration.deletionProtection
-  return Object.fromEntries([['windowsBash', configuration.windowsBash ?? true], ['deletionProtection', deletion === true ? 'strict' : deletion === false ? 'off' : deletion ?? 'relaxed'], ['deletionProtectionForOfficialPresets', configuration.deletionProtectionForOfficialPresets ?? false], ['applyToOfficialPresets', configuration.applyToOfficialPresets ?? false], ['pressureBasis', configuration.budgets?.pressureBasis ?? ''],
+  return Object.fromEntries([['windowsBash', configuration.windowsBash ?? true], ['windowsBashForOfficialPresets', configuration.windowsBashForOfficialPresets ?? false], ['deletionProtection', deletion === true ? 'strict' : deletion === false ? 'off' : deletion ?? 'relaxed'], ['deletionProtectionForOfficialPresets', configuration.deletionProtectionForOfficialPresets ?? false], ['applyToOfficialPresets', configuration.applyToOfficialPresets ?? false], ['pressureBasis', configuration.budgets?.pressureBasis ?? ''],
     ...budgetFields.map(field => {
       const value = field.root ? configuration[field.key] : configuration.budgets?.[field.key]
       return [field.key, value === undefined ? '' : String(value / field.factor)]
@@ -2146,7 +2152,7 @@ function budgetConfiguration(draft) {
  * one callout style for notices, and one autosave indicator. */
 function SettingsSection({ id, title, description, actions, plain = false, children }) {
   const lines = [].concat(description ?? []).filter(Boolean)
-  return React.createElement('section', { className: 'dsh-super-code-section', 'aria-labelledby': `${id}-title` },
+  return React.createElement('section', { id, className: 'dsh-super-code-section', 'aria-labelledby': `${id}-title` },
     React.createElement('header', { className: 'dsh-super-code-section-head' },
       React.createElement('div', { className: 'dsh-super-code-section-heading' },
         React.createElement('h3', { id: `${id}-title` }, title),
@@ -2187,15 +2193,15 @@ function ChoiceCards({ name, label, value, choices, onChange, disabled = false }
 
 /** Each budget tab writes only its own fields and carries the other tab's stored values through. */
 function budgetSectionConfiguration(section, draft, snapshot) {
-  if (section === 'shell') return typeof draft.windowsBash === 'boolean'
-    ? { ok: true, configuration: { ...snapshot.configuration, windowsBash: draft.windowsBash } }
+  if (section === 'shell') return typeof draft.windowsBash === 'boolean' && typeof draft.windowsBashForOfficialPresets === 'boolean'
+    ? { ok: true, configuration: { ...snapshot.configuration, windowsBash: draft.windowsBash, windowsBashForOfficialPresets: draft.windowsBashForOfficialPresets } }
     : { ok: false, error: 'invalid' }
   const parsed = budgetConfiguration(draft)
   if (!parsed.ok) return parsed
   const current = snapshot.configuration
   return { ok: true, configuration: section === 'protection'
     ? { ...current, deletionProtection: draft.deletionProtection, deletionProtectionForOfficialPresets: draft.deletionProtectionForOfficialPresets }
-    : { ...parsed.configuration, windowsBash: current.windowsBash, deletionProtection: current.deletionProtection, deletionProtectionForOfficialPresets: current.deletionProtectionForOfficialPresets } }
+    : { ...parsed.configuration, windowsBash: current.windowsBash, windowsBashForOfficialPresets: current.windowsBashForOfficialPresets, deletionProtection: current.deletionProtection, deletionProtectionForOfficialPresets: current.deletionProtectionForOfficialPresets } }
 }
 function createBudgetAutosave(api, section = 'context') {
   return createAutosave(api, { draft: budgetDraft({}), toDraft: budgetDraft,
@@ -2248,7 +2254,7 @@ function BudgetSettings({ api, t, active, section = 'context', onSaved = () => {
     const base = current.configuration
     const configuration = protection
       ? { ...base, deletionProtection: 'relaxed', deletionProtectionForOfficialPresets: false }
-      : { windowsBash: base.windowsBash, deletionProtection: base.deletionProtection, deletionProtectionForOfficialPresets: base.deletionProtectionForOfficialPresets }
+      : { windowsBash: base.windowsBash, windowsBashForOfficialPresets: base.windowsBashForOfficialPresets, deletionProtection: base.deletionProtection, deletionProtectionForOfficialPresets: base.deletionProtectionForOfficialPresets }
     pending.current = true; setLoading(true); setFailure(''); setNotice('')
     try {
       const response = await api.saveConfig(JSON.stringify(configuration), String(current.revision))
@@ -2284,15 +2290,21 @@ function BudgetSettings({ api, t, active, section = 'context', onSaved = () => {
   const problem = failure || saveError
   const button = (label, onClick, extra = {}) => React.createElement(ActionButton, { type: 'button', disabled: loading, onClick, ...extra }, label)
   const shellStatus = snapshot?.shell
+  const windowsHost = shellStatus?.platform === 'win32'
+  const shellTooltip = shellStatus && !windowsHost ? t('shell.windowsOnly') : undefined
   const content = shell ? React.createElement(SettingsSection, { id: 'super-code-shell', title: t('shell.title') },
     React.createElement(SettingRow, { id: 'super-code-windows-bash', label: t('shell.enabled'),
-      hint: shellStatus?.platform !== 'win32' ? t('shell.otherPlatform') : t('shell.hint') }, described =>
+      hint: !windowsHost ? t('shell.otherPlatform') : t('shell.hint') }, described =>
       React.createElement(ConnectionSwitch, { id: 'super-code-windows-bash', checked: draft.windowsBash,
-        disabled: disabled || shellStatus?.platform !== 'win32', 'aria-describedby': described,
+        disabled: disabled || !windowsHost, tooltip: shellTooltip, 'aria-describedby': described,
         onChange: value => edit('windowsBash', value) })),
-    shellStatus?.platform === 'win32' && React.createElement('p', { className: 'dsh-super-code-setting-hint', role: 'status' },
-      t(!draft.windowsBash ? 'shell.host' : `shell.${shellStatus.state}`),
-      shellStatus.version && draft.windowsBash && React.createElement('code', null, ' · ' + shellStatus.version)),
+    React.createElement(SettingRow, { id: 'super-code-windows-bash-official', label: t('shell.official'), hint: t('shell.officialHint') }, described =>
+      React.createElement(ConnectionSwitch, { id: 'super-code-windows-bash-official', checked: draft.windowsBashForOfficialPresets,
+        disabled: disabled || !windowsHost || !draft.windowsBash, tooltip: shellTooltip, 'aria-describedby': described,
+        onChange: value => edit('windowsBashForOfficialPresets', value) })),
+    windowsHost && React.createElement('p', { className: 'dsh-super-code-shell-status', role: 'status' },
+      React.createElement('span', null, t(!draft.windowsBash ? 'shell.host' : `shell.${shellStatus.state}`)),
+      shellStatus.version && draft.windowsBash && React.createElement('code', null, shellStatus.version)),
     shellStatus?.state === 'error' && draft.windowsBash && React.createElement(Callout, { tone: 'error' },
       React.createElement('p', null, shellStatus.error)))
     : protection ? React.createElement(React.Fragment, null,
@@ -2448,9 +2460,11 @@ function createConnectionAutosave(api) {
   return createAutosave(api, { draft: connectionDraft({ enabled: false, port: 23457, allowedDirectories: [] }),
     toDraft: connectionDraft, toConfiguration: draft => connectionConfiguration(draft) })
 }
-/** The single switch control for every settings toggle; extra props go to the input. */
-function ConnectionSwitch({ checked, disabled, onChange, children, ...input }) {
-  return React.createElement('label', { className: 'dsh-super-code-connection-switch' },
+/** Disabled inputs do not receive hover; their label hosts the shared top-side tooltip. */
+function ConnectionSwitch({ checked, disabled, onChange, children, tooltip, ...input }) {
+  return React.createElement(tooltip ? ActionButton : 'label', {
+    className: 'dsh-super-code-connection-switch', ...(tooltip ? { as: 'label', title: tooltip } : {}),
+  },
     React.createElement('input', { ...input, type: 'checkbox', role: 'switch', checked, disabled, onChange: event => onChange(event.target.checked) }),
     React.createElement('span', { className: 'dsh-super-code-connection-track', 'aria-hidden': true }, React.createElement('i')), children)
 }
@@ -3103,6 +3117,12 @@ function apply(ctx) {
 .dsh-super-code-setting-row-control{display:flex;justify-content:flex-end;min-width:0}
 .dsh-super-code-setting-row-control>:is(input,.dsh-super-code-select){width:180px}
 .dsh-super-code-setting-row-control>input{height:32px;padding:5px 10px;border-radius:8px;font-variant-numeric:tabular-nums;text-align:right}
+.dsh-super-code-shell-status{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 8px;margin:0;padding:12px 16px;border-top:1px solid var(--sc-line);color:var(--sc-muted);font-size:12px;line-height:1.6;overflow-wrap:anywhere}
+.dsh-super-code-shell-status code{max-width:100%;font-size:11px}
+#super-code-shell .dsh-super-code-connection-switch:has(input:disabled){cursor:not-allowed}
+#super-code-shell .dsh-super-code-connection-switch input:disabled{pointer-events:none}
+#super-code-shell .dsh-super-code-connection-switch input:disabled+.dsh-super-code-connection-track{background:var(--sc-line);border-color:var(--sc-line);opacity:1}
+#super-code-shell .dsh-super-code-connection-switch input:disabled+.dsh-super-code-connection-track i{background:var(--sc-muted)}
 .dsh-super-code-setting-row[data-invalid] input{border-color:var(--sc-error)}
 .dsh-super-code-settings input[type=number]{appearance:textfield}
 .dsh-super-code-settings input::-webkit-inner-spin-button{appearance:none}
@@ -3657,9 +3677,9 @@ function apply(ctx) {
 
 /* Shared action-name bubble. Fixed outside the panel avoids graph transforms
  * and scroll clipping; dialog bubbles remain in the modal's top layer. */
-.dsh-super-code-tooltip{position:fixed;z-index:1400;max-width:min(260px,calc(100vw - 16px));padding:5px 8px;border-radius:6px;background:var(--sc-text);color:var(--sc-bg);box-shadow:0 2px 8px #0002;font-size:12px;line-height:1.5;font-weight:400;text-align:left;overflow-wrap:anywhere;pointer-events:none}
-.dsh-super-code-tooltip:after{content:"";position:absolute;left:var(--sc-tooltip-arrow-left);width:6px;height:6px;background:inherit;transform:translateX(-50%) rotate(45deg)}
-.dsh-super-code-tooltip[data-side=top]:after{bottom:-3px}
+.dsh-super-code-tooltip{position:fixed;z-index:1400;max-width:min(260px,calc(100vw - 16px));padding:5px 8px;border:1px solid var(--sc-line);border-radius:6px;background:var(--sc-bg);color:var(--sc-text);box-shadow:0 2px 8px var(--sc-shadow);font-size:12px;line-height:1.5;font-weight:400;text-align:left;overflow-wrap:anywhere;pointer-events:none}
+.dsh-super-code-tooltip:after{content:"";position:absolute;left:var(--sc-tooltip-arrow-left);width:7px;height:7px;box-sizing:border-box;background:inherit;border-right:1px solid var(--sc-line);border-bottom:1px solid var(--sc-line);transform:translateX(-50%) rotate(45deg)}
+.dsh-super-code-tooltip[data-side=top]:after{bottom:-4px}
 `
     document.head.appendChild(style)
     return () => { style.remove() }

@@ -48,7 +48,7 @@ export function bundledBashProvider(Base: ShellConstructor, runtime: WindowsRunt
 }
 
 /** Resolve the running host's modules, including installed directory presets and Desktop profiles. */
-async function hostModule(ctx: Context, name: string): Promise<Record<string, unknown>> {
+export async function hostModule(ctx: Context, name: string): Promise<Record<string, unknown>> {
   const profile = ctx.get('profileContext') as { installAnchor?: string } | undefined
   // Directory-preset hosts predate profileContext; their root retains the profile's module fallback links.
   const anchor = profile?.installAnchor ?? (ctx.root.baseUrl
@@ -99,6 +99,33 @@ export function applyWindowsShell(ctx: Context): void {
 export const name = 'super-code-shell'
 export const inject: string[] = ['tools', 'systemPrompt', 'shell']
 
+/** Runtime ownership is distinct from durable session lineage or shared preset scope. */
+export function creatorOf(ctx: Context, agent: Agent): Agent | false {
+  const agents = ctx.get('agents')
+  return agents?.list().find(candidate => agents.isOwnedBy(agent.id, candidate)) ?? false
+}
+
+/** Contribute an inherited tool without changing the host provider or session policy. */
+export async function mountBundledBash(ctx: Context): Promise<false | (() => Promise<void>)> {
+  const host = ctx.get('shell') as unknown as HostShell
+  const provider = await hostModule(ctx, host.sandboxMode === undefined ? '@deepseek-ai/dsh-pwsh-local' : '@deepseek-ai/dsh-pwsh-sandbox')
+  const Base = provider.default as ShellConstructor
+  if (typeof Base !== 'function' || !(host instanceof Base)) return false
+  let runtime: WindowsRuntime | false = false
+  const Bundled = bundledBashProvider(Base, () => {
+    if (!runtime) throw new Error('Bundled Bash is not ready for this conversation')
+    return runtime
+  })
+  const bash = ctx.isolate('shell').isolate('settings')
+  await bash.plugin({ inject: [...Base.inject ?? []], apply(scope: Context) { new Bundled(scope, host.config) } })
+  await bash.plugin(await hostTool(ctx, '@deepseek-ai/dsh-tool-bash'))
+  return async () => {
+    const service = ctx.get('superCodeShell')
+    if (!service) throw new Error('Super Code shell service is unavailable')
+    runtime = await service.prepare()
+  }
+}
+
 /** Keep tools inherited so both root and child capability restrictions still apply. */
 export async function apply(ctx: Context): Promise<void> {
   if (process.platform !== 'win32') {
@@ -106,21 +133,22 @@ export async function apply(ctx: Context): Promise<void> {
     return
   }
   const { scopeParentOf } = await hostModule(ctx, '@deepseek-ai/dsh-scope') as { scopeParentOf(key: object): object | undefined }
-  const host = ctx.get('shell') as unknown as HostShell
-  const provider = await hostModule(ctx, host.sandboxMode === undefined ? '@deepseek-ai/dsh-pwsh-local' : '@deepseek-ai/dsh-pwsh-sandbox')
-  const Base = provider.default as ShellConstructor
-  if (typeof Base !== 'function' || !(host instanceof Base)) {
+  const prepare = await mountBundledBash(ctx)
+  if (!prepare) {
     await ctx.plugin(await hostTool(ctx, '@deepseek-ai/dsh-tool-pwsh'))
-    const disabled = new WeakSet<object>()
+    const choices = new WeakMap<object, boolean>()
     const check = (agent: Agent): void => {
+      const creator = creatorOf(ctx, agent)
+      let enabled = creator ? choices.get(creator) : undefined
       for (let current: object | undefined = agent; current; current = scopeParentOf(current)) {
-        if (disabled.has(current)) { disabled.add(agent); return }
+        if (choices.has(current)) { enabled = choices.get(current); break }
       }
-      if (configurationOf(ctx, agent).windowsBash !== false) {
+      enabled ??= configurationOf(ctx, agent).windowsBash !== false
+      choices.set(agent, enabled)
+      if (enabled) {
         agent.ctx.get('tools')!.restrict({ deny: ['pwsh'] })
         throw new Error('Unsupported host shell provider; disable bundled Bash to use the host shell')
       }
-      disabled.add(agent)
     }
     ctx.on('agent/created', ({ agent }) => { check(agent) })
     ctx.on('agent/pre-step', async ({ agent }, next) => { check(agent); return next() })
@@ -134,17 +162,8 @@ export async function apply(ctx: Context): Promise<void> {
     }
     return configurationOf(ctx, agent).windowsBash !== false
   }
-  let runtime: WindowsRuntime | false = false
-  const Bundled = bundledBashProvider(Base, () => {
-    if (!runtime) throw new Error('Bundled Bash is not ready for this conversation')
-    return runtime
-  })
-  // The host owns settings; the private provider consumes its existing config.
-  const bash = ctx.isolate('shell').isolate('settings')
-  await bash.plugin({ inject: [...Base.inject ?? []], apply(scope: Context) { new Bundled(scope, host.config) } })
-  await bash.plugin(await hostTool(ctx, '@deepseek-ai/dsh-tool-bash'))
   await ctx.plugin(await hostTool(ctx, '@deepseek-ai/dsh-tool-pwsh'))
-  bash.systemPrompt.section({ name: 'super-code:windows-shell', order: 94,
+  ctx.systemPrompt.section({ name: 'super-code:windows-shell', order: 94,
     text: ({ agent }) => agent && choice(agent)
       ? 'Command environment: Windows with GNU Bash and BusyBox utilities. Native programs still run on Windows.' : '' })
   ctx.on('system-prompt/assemble', async (_assembly, { agent }, next) => {
@@ -160,15 +179,15 @@ export async function apply(ctx: Context): Promise<void> {
       const inherited = installed.get(parent as Agent)
       if (inherited) { installed.set(agent, inherited); return inherited.ready }
     }
-    const enabled = configurationOf(ctx, agent).windowsBash !== false
+    const creator = creatorOf(ctx, agent), inherited = creator && installed.get(creator)
+    const enabled = inherited ? inherited.enabled : configurationOf(ctx, agent).windowsBash !== false
     const tools = agent.ctx.get('tools')!
     tools.restrict({ deny: [enabled ? 'pwsh' : 'bash'] })
     const ready = (async () => {
-      if (enabled) {
+      if (enabled || inherited) {
         try {
-          const service = ctx.get('superCodeShell')
-          if (!service) throw new Error('Super Code shell service is unavailable')
-          runtime = await service.prepare()
+          if (inherited) await inherited.ready
+          else await prepare()
         } catch (error) {
           // Sibling recovery must not activate a conversation that failed preparation.
           tools.restrict({ deny: ['bash'] })

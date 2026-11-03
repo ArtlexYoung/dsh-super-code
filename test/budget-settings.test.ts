@@ -90,6 +90,19 @@ test('the Windows shell choice persists and rejects invalid input', async t => {
   }
 })
 
+test('official-preset Bash choice is saved independently of budget and deletion scope', async t => {
+  const { api, scope } = await fixture(t)
+  for (const enabled of [true, false]) {
+    const configuration = { windowsBash: true, windowsBashForOfficialPresets: enabled,
+      applyToOfficialPresets: false, deletionProtectionForOfficialPresets: false, budgets: { summaryMaxTokens: 8192 } }
+    assert.equal((await api.save(JSON.stringify(configuration), String(api.read().revision))).ok, true)
+    assert.deepEqual(scope.get(), configuration)
+  }
+  for (const value of [null, 'true', 1, []]) {
+    assert.equal((await api.save(JSON.stringify({ windowsBashForOfficialPresets: value }), String(api.read().revision))).ok, false)
+  }
+})
+
 test('settings responses retain host shell status after saving and resetting', async t => {
   const ctx = new Context()
   t.after(() => ctx.fiber.dispose())

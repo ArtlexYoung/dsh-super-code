@@ -4,17 +4,16 @@
 
 A smarter, leaner, faster, and easier-to-use coding plugin for DeepSeek Harness.
 
-Full SWE-bench Pro hard-100 results, sorted by tasks passed. All runs use Harness `0.2.1-rc.2`, `deepseek-v4.1-flash-1017`, high reasoning effort, and legacy budgets. Each group reuses its environment continuously across tasks.
+On SWE-bench Pro hard-100, compared with the official Standard preset (same host DSH `0.2.1-rc.2`, same model, both on high reasoning effort and legacy budgets):
 
-| Configuration | Passed/valid | Mean total tokens (M) | Mean time (min) | Mean model calls | Mean tool calls | Cache rate |
-|---|---:|---:|---:|---:|---:|---:|
-| Super Code 0.3.5 | **51/100** | 6.435 | 24.751 | 76.660 | 75.840 | 98.927% |
-| Official Standard | 50/100 | 8.030 | 17.198 | 91.990 | 113.880 | 99.167% |
-| Unmodified dsh-ops 0.4.4 · Standard | 49/100 | 7.099 | 23.132 | 82.500 | 102.360 | 99.062% |
-| Official Standard + billion-context 0.1.209 | 45/100 | 6.359 | 18.471 | 108.950 | 131.140 | 97.654% |
-| Unmodified dsh-ops 0.4.4 · PTC | 44/100 | 7.322 | 23.695 | 81.490 | 80.960 | 99.056% |
+| | Standard + high | Super Code |
+|---|---:|---:|
+| Passed | 46/100 | **49/100** |
+| Net time per task | 20.9 min | **16.4 min** (-21.3%) |
+| Tokens per task | 7.81 M | **5.11 M** (-34.6%) |
+| Model calls per task | 92 | **69** (-25.5%) |
 
-M means one million tokens, including reasoning tokens. Time includes some in-run service waits. These continuous-environment results are recorded separately from the historical budget experiments below. [Full results and methodology](docs/en/EvaluationResults.md#pro100-continuous-environment-comparison)
+Tested on version `0.3.5`. [Full results and limitations](docs/en/EvaluationResults.md)
 
 ## Install
 
@@ -105,12 +104,26 @@ Versions follow `major.performance.maintenance`: a change in the second number i
 
 ## Evaluation
 
+### Plugin comparison
+
+Full SWE-bench Pro hard-100 results, sorted by tasks passed. All runs use Harness `0.2.1-rc.2`, `deepseek-v4.1-flash-1017`, high reasoning effort, and legacy budgets. Each group reuses its environment continuously across tasks.
+
+| Configuration | Passed/valid | Mean total tokens (M) | Mean time (min) | Mean model calls | Mean tool calls | Cache rate |
+|---|---:|---:|---:|---:|---:|---:|
+| Super Code 0.3.5 | **51/100** | 6.435 | 24.751 | 76.660 | 75.840 | 98.927% |
+| Official Standard | 50/100 | 8.030 | 17.198 | 91.990 | 113.880 | 99.167% |
+| Unmodified dsh-ops 0.4.4 · Standard | 49/100 | 7.099 | 23.132 | 82.500 | 102.360 | 99.062% |
+| Official Standard + billion-context 0.1.209 | 45/100 | 6.359 | 18.471 | 108.950 | 131.140 | 97.654% |
+| Unmodified dsh-ops 0.4.4 · PTC | 44/100 | 7.322 | 23.695 | 81.490 | 80.960 | 99.056% |
+
+M means one million tokens, including reasoning tokens. Time includes some in-run service waits. These additional results are recorded separately from the opening comparison and the historical budget experiments below. [Full results and methodology](docs/en/EvaluationResults.md#pro100-continuous-environment-comparison)
+
 ### Method
 
 - **Task set**: SWE-bench Pro hard-100, graded with the official grader. Tuning uses only 33 hard tasks selected from the SWE-bench dev split; hard-100 is used only to evaluate frozen candidates and investigate issues, never for tuning, to avoid overfitting to the evaluation tasks.
 - **Baselines**: the official Standard preset and third-party plugin configurations. In the historical official-preset comparison on the old host, Standard + high passed 51 tasks and Minimal + high passed 46, with Standard using 23.5% fewer tokens per task, so Standard was selected as the baseline.
 - **Controlled variables**: comparisons on the same host keep model, reasoning effort, and budgets fixed while comparing preset and plugin combinations. Cross-host and cross-model experiments are identified separately.
-- **Metrics**: tasks passed, mean total tokens, time, model and tool calls, and cache rate. The continuous-environment table above includes some in-run service waits; the historical budget experiments below use net time, excluding failed requests and retry waits.
+- **Metrics**: tasks passed, mean total tokens, time, model and tool calls, and cache rate. The plugin comparison table above includes some in-run service waits; the historical budget experiments below use net time, excluding failed requests and retry waits.
 
 ### Historical process
 
@@ -121,7 +134,7 @@ Versions follow `major.performance.maintenance`: a change in the second number i
 
 ### Historical summary
 
-These are earlier evaluation runs and are not pooled with the continuous-environment results above.
+These are earlier evaluation runs and are not pooled with the plugin comparison results above.
 
 | Comparison | Passed | Efficiency |
 |---|---|---|

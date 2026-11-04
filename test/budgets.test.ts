@@ -133,6 +133,23 @@ test('PTC policy isolates concurrent scopes, preserves explicit deadlines and re
   assert.equal(runtime.resolve, original)
 })
 
+test('PTC unload restores an inherited resolve method without leaving an own property', async t => {
+  const ctx = new Context()
+  t.after(() => ctx.fiber.dispose())
+  class Runtime {
+    readonly timeout = { defaultMs: 120, maxMs: 600 }
+    resolve(request: { timeoutMs?: number }) { return { timeoutMs: request.timeoutMs ?? 120 } }
+  }
+  const runtime = new Runtime(), original = runtime.resolve
+  ctx.provide('ptcRuntime', runtime)
+  const feature = ctx.plugin({ apply(owner: Context) { applyPtcBudget(owner, { ptcTimeoutMs: 300 }) } })
+  await feature
+  assert.ok(Object.hasOwn(runtime, 'resolve'))
+  await feature.dispose()
+  assert.equal(runtime.resolve, original)
+  assert.equal(Object.getOwnPropertyDescriptor(runtime, 'resolve'), undefined)
+})
+
 test('an unconfigured plugin applies legacy compaction and elapsed budgets to a real Agent', async t => {
   const ctx = new Context()
   t.after(() => ctx.fiber.dispose())
@@ -308,6 +325,27 @@ test('official shared engines isolate concurrent snapshots, manual compaction an
   assert.equal(f.engine.compactIfNeeded, f.original)
   assert.equal(f.runtime.resolve, f.originalResolve)
   assert.deepEqual(f.engine.config, f.nativeConfig)
+})
+
+test('official budget unload preserves a later plugin wrapper and deactivates a captured budget method', async t => {
+  const f = await officialFixture(t)
+  const agent = f.agent('standard', { applyToOfficialPresets: true,
+    budgets: { pressureBasis: 'window', thresholdRatio: 0.001, retainRatio: 0, summaryMaxTokens: 2048 } })
+  Object.assign(agent, { session: conversation(20) })
+  const captured = f.engine.compactIfNeeded
+  const config = Object.getOwnPropertyDescriptor(f.engine, 'config')!
+  const laterConfig = function () { return config.get!.call(this) }
+  Object.defineProperty(f.engine, 'config', { ...config, get: laterConfig })
+  let calls = 0
+  const later: typeof captured = function (...args) { calls++; return captured.apply(this, args) }
+  f.engine.compactIfNeeded = later
+  await f.fiber.dispose()
+  assert.equal(f.engine.compactIfNeeded, later, 'the later plugin still owns the method')
+  assert.equal(Object.getOwnPropertyDescriptor(f.engine, 'config')?.get, laterConfig)
+  assert.deepEqual(f.engine.config, f.nativeConfig)
+  assert.equal(await f.engine.compactIfNeeded(agent, 'pressure', new AbortController().signal), null)
+  assert.equal(calls, 1)
+  assert.equal(f.adapter.calls.length, 0, 'captured Super Code code no longer applies its pressure policy')
 })
 
 test('official overflow retry limits are read in the calling Agent policy before compaction', async t => {

@@ -32,6 +32,7 @@ export declare class ConnectionService {
     private directoryRequests;
     private timer;
     private tail;
+    private closing;
     private state;
     private error;
     private observing;
@@ -53,6 +54,7 @@ export declare class ConnectionService {
         token: string;
     };
     rotate(revision: string): Promise<ConnectionSaveResult>;
+    private restart;
     private listen;
     close(): Promise<void>;
 }

@@ -1,10 +1,11 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtemp, mkdir, rm } from 'node:fs/promises'
+import { mkdtemp, mkdir, rm, access } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createServer } from 'node:net'
 import { createServer as createHttpServer } from 'node:http'
+import type { Server } from 'node:http'
 import { spawn } from 'node:child_process'
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
@@ -17,6 +18,7 @@ import type { ConnectionConfig, DelegationHost, HistoryCursor, HistoryPage, Host
 import { ConnectionHost, connectionSessionFacts } from '../src/dsh/connection-host.js'
 import { connectionHistoryPage } from '../src/dsh/connection-history.js'
 import { invokeConnectionTool } from '../src/connection/client.js'
+import { ConnectionHttp } from '../src/connection/http.js'
 
 const log = (rows: [string, object][]): SessionEvent[] => rows.map(([type, data], seq) => ({ type, seq, data, time: Date.now() })) as SessionEvent[]
 class Host implements DelegationHost {
@@ -35,14 +37,18 @@ async function port(): Promise<number> {
   const address = server.address(); if (!address || typeof address === 'string') throw new Error('port unavailable')
   await new Promise<void>(resolve => server.close(() => resolve())); return address.port
 }
-async function fixture(t: test.TestContext) {
+async function fixture(t: test.TestContext, expectedCloseFailure?: RegExp) {
   const root = await mkdtemp(join(tmpdir(), 'super-code-reliability-')), host = new Host()
   const store = new ConnectionStore(join(root, 'profile')), service = new ConnectionService(store, host)
   await service.initialize()
   assert.equal((await service.save(JSON.stringify({ ...defaultConnectionConfig, enabled: true, maxConnections: 1, port: await port(), allowedDirectories: [root] }), '0')).ok, true)
-  t.after(async () => { await service.close(); await rm(root, { recursive: true, force: true }) })
+  t.after(async () => {
+    try { await service.close() }
+    catch (error) { if (!expectedCloseFailure?.test(String(error))) throw error }
+    finally { await rm(root, { recursive: true, force: true }) }
+  })
   const call = (tool: string, args: Record<string, unknown> = {}, signal?: AbortSignal) => invokeConnectionTool({ url: service.read().url, token: service.reveal().token, tool, arguments: args }, signal)
-  return { root, host, service, call }
+  return { root, host, store, service, call }
 }
 
 test('public history pages retain complete Unicode text across both tool-result layouts and exclude private events', () => {
@@ -170,6 +176,135 @@ test('SDK close alone leaks a quota slot; DELETE and packaged calls release only
   assert.equal((await f.call('dsh_nonexistent')).isError, true)
   assert.equal(f.service.overview().connections.length, 0)
   assert.equal(f.host.cancellations, 0)
+})
+
+test('closing MCP during connection admission cannot leave a late client behind', { timeout: 5000 }, async t => {
+  const f = await fixture(t), http = (f.service as unknown as { http: ConnectionHttp }).http
+  const gate = Promise.withResolvers<void>(), entered = Promise.withResolvers<void>()
+  const internal = http as unknown as { prune(): Promise<void>; requests: number }
+  const prune = internal.prune
+  internal.prune = async function () { entered.resolve(); await gate.promise; await prune.call(this) }
+  t.after(() => { gate.resolve(); internal.prune = prune })
+  const call = f.call('dsh_status').then(() => 'finished', () => 'closed')
+  await entered.promise
+  await f.service.close()
+  gate.resolve()
+  await call
+  for (let i = 0; internal.requests && i < 100; i++) await new Promise(resolve => setTimeout(resolve, 1))
+  assert.equal(internal.requests, 0)
+  assert.equal(http.connections().length, 0)
+  assert.equal(f.host.prompts, 0)
+})
+
+test('an abandoned MCP initialization releases its quota without closing the listener', { timeout: 5000 }, async t => {
+  const f = await fixture(t), http = (f.service as unknown as { http: ConnectionHttp }).http
+  const gate = Promise.withResolvers<void>(), entered = Promise.withResolvers<void>(), controller = new AbortController()
+  const internal = http as unknown as { prune(): Promise<void>; requests: number; pending: Set<AbortController> }, prune = internal.prune
+  internal.prune = async function () { entered.resolve(); await gate.promise; await prune.call(this) }
+  t.after(() => { gate.resolve(); internal.prune = prune })
+  const call = f.call('dsh_status', {}, controller.signal).then(() => 'finished', () => 'cancelled')
+  await entered.promise
+  controller.abort()
+  assert.equal(await call, 'cancelled')
+  for (let i = 0; ![...internal.pending].some(pending => pending.signal.aborted) && i < 200; i++) await new Promise(resolve => setTimeout(resolve, 1))
+  assert.ok([...internal.pending].some(pending => pending.signal.aborted), 'the server observed the client disconnect before admission resumed')
+  gate.resolve()
+  for (let i = 0; internal.requests && i < 100; i++) await new Promise(resolve => setTimeout(resolve, 1))
+  assert.equal(internal.requests, 0)
+  assert.equal(http.connections().length, 0)
+  assert.equal((await f.call('dsh_status')).isError, undefined)
+  assert.equal(f.host.prompts, 0)
+})
+
+test('restarting the MCP listener rejects an old admission and accepts a fresh connection', { timeout: 5000 }, async t => {
+  const f = await fixture(t), http = (f.service as unknown as { http: ConnectionHttp }).http
+  const gate = Promise.withResolvers<void>(), entered = Promise.withResolvers<void>()
+  const internal = http as unknown as { prune(): Promise<void>; requests: number }, prune = internal.prune
+  internal.prune = async function () { entered.resolve(); await gate.promise; await prune.call(this) }
+  t.after(() => { gate.resolve(); internal.prune = prune })
+  const old = f.call('dsh_status').then(() => 'finished', () => 'restarted')
+  await entered.promise
+  const snapshot = f.service.read()
+  assert.equal((await f.service.save(JSON.stringify({ ...snapshot.configuration, port: await port() }), String(snapshot.revision))).ok, true)
+  assert.equal(f.service.read().state, 'listening')
+  gate.resolve()
+  assert.equal(await old, 'restarted')
+  for (let i = 0; internal.requests && i < 100; i++) await new Promise(resolve => setTimeout(resolve, 1))
+  assert.equal(internal.requests, 0)
+  assert.equal(http.connections().length, 0)
+  assert.equal((await f.call('dsh_status')).isError, undefined)
+})
+
+test('repeated MCP shutdown is safe and never rewrites already closed storage', async t => {
+  const f = await fixture(t)
+  await Promise.all([f.service.close(), f.service.close()])
+  await f.service.close()
+  await assert.rejects(access(join(f.root, 'profile/owner.lock')))
+})
+
+test('failed task persistence during MCP shutdown still releases the profile lock', async t => {
+  const failure = new Error('fixture task persistence failure'), f = await fixture(t, /fixture task persistence failure/)
+  const save = f.store.saveTasks
+  f.store.saveTasks = async () => { throw failure }
+  try {
+    await assert.rejects(f.service.close(), error => error === failure)
+    await assert.rejects(access(join(f.root, 'profile/owner.lock')))
+    await assert.rejects(fetch(f.service.read().url))
+  } finally { f.store.saveTasks = save }
+})
+
+test('a client teardown failure still closes the MCP listener and releases storage', async t => {
+  const failure = new Error('fixture transport close failure'), f = await fixture(t, /fixture transport close failure/)
+  const client = new Client({ name: 'shutdown-failure', version: '1' })
+  const transport = new StreamableHTTPClientTransport(new URL(f.service.read().url), {
+    requestInit: { headers: { authorization: `Bearer ${f.service.reveal().token}` } },
+  })
+  await client.connect(transport)
+  const http = (f.service as unknown as { http: ConnectionHttp }).http
+  const internal = http as unknown as { server: Server; clients: Map<string, { mcp: { close(): Promise<void> } }> }
+  const server = internal.server, mcp = internal.clients.get(transport.sessionId!)!.mcp, close = mcp.close
+  mcp.close = async function () { await close.call(this); throw failure }
+  try {
+    await assert.rejects(f.service.close(), error => error === failure)
+    await assert.rejects(fetch(f.service.read().url))
+    await assert.rejects(access(join(f.root, 'profile/owner.lock')))
+  } finally {
+    mcp.close = close
+    await client.close()
+    server.closeAllConnections()
+    await new Promise<void>(resolve => server.close(() => resolve()))
+  }
+})
+
+test('multiple MCP shutdown errors are reported together after the remaining resources are released', async t => {
+  const f = await fixture(t, /MCP resource cleanup failed/)
+  const http = (f.service as unknown as { http: ConnectionHttp }).http, close = http.close, save = f.store.saveTasks
+  const transportFailure = new Error('fixture HTTP shutdown failure'), persistenceFailure = new Error('fixture task shutdown failure')
+  http.close = async function () { await close.call(this); throw transportFailure }
+  f.store.saveTasks = async () => { throw persistenceFailure }
+  try {
+    await assert.rejects(f.service.close(), error => error instanceof AggregateError
+      && error.errors.length === 2 && error.errors[0] === transportFailure && error.errors[1] === persistenceFailure)
+    await assert.rejects(access(join(f.root, 'profile/owner.lock')))
+    await assert.rejects(fetch(f.service.read().url))
+  } finally { http.close = close; f.store.saveTasks = save }
+})
+
+test('a rejected initialization releases HTTP request counters even when its teardown fails', async t => {
+  const f = await fixture(t), http = (f.service as unknown as { http: ConnectionHttp }).http, disconnect = http.disconnect
+  const internal = http as unknown as { requests: number; pending: Set<AbortController> }
+  http.disconnect = async function (id) { await disconnect.call(this, id); throw new Error('fixture admission teardown failure') }
+  try {
+    const response = await fetch(f.service.read().url, { method: 'POST', headers: {
+      authorization: `Bearer ${f.service.reveal().token}`, 'content-type': 'application/json', accept: 'application/json, text/event-stream',
+    }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'initialize', params: {} }) })
+    await response.arrayBuffer()
+    for (let i = 0; internal.requests && i < 100; i++) await new Promise(resolve => setTimeout(resolve, 1))
+    assert.equal(http.connections().length, 0)
+    assert.equal(internal.requests, 0)
+    assert.equal(internal.pending.size, 0)
+  } finally { http.disconnect = disconnect }
+  assert.equal((await f.call('dsh_status')).isError, undefined)
 })
 
 test('HTTP recovery identifies blockers; public history and cancellation of a wait need no UI or new prompt', async t => {

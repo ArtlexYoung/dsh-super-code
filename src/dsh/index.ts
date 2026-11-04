@@ -16,6 +16,7 @@ import { applyConnection } from './connection.js'
 import { applyDeletionProtection } from './deletion-protection.js'
 import { applyWindowsShell } from './windows-shell.js'
 import { applyOfficialWindowsShell } from './official-windows-shell.js'
+import { applyPresetRecovery } from './preset-recovery.js'
 
 export const name = 'super-code'
 export const Config: typeof configurationSchema = configurationSchema
@@ -41,6 +42,7 @@ export async function apply(ctx: Context, config: Configuration = {}): Promise<v
   applyOfficialBudgets(ctx)
   applyDeletionProtection(ctx)
   applyPresetInstallation(ctx)
+  applyPresetRecovery(ctx)
   applyConnection(ctx)
   ctx.inject(['superCodeLongMemory', 'sessions'], owner => {
     new SuperCodeMemory(owner, owner.get('superCodeLongMemory') as LongMemoryStore)

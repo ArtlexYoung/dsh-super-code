@@ -166,17 +166,125 @@ test('minimal complete prompts receive a logged policy notice and later setting 
   }
   assert.deepEqual((await step()).messages, [])
   f.configure({ deletionProtectionForOfficialPresets: true })
-  const relaxed = JSON.stringify((await step()).messages)
-  assert.match(relaxed, /以下规则取代先前/)
+  const relaxedDecision = await step(), relaxed = JSON.stringify(relaxedDecision.messages)
   assert.match(relaxed, /当前为宽松模式/)
   assert.doesNotMatch(relaxed, /脚本、内联脚本和间接调用也不允许直接使用 rm/)
+  for (const message of relaxedDecision.messages) f.officialAgent.session.append('user/message', message, { surfaceOp: 'append' })
   assert.deepEqual((await step()).messages, [])
   f.configure({ deletionProtection: 'off', deletionProtectionForOfficialPresets: true })
-  assert.match(JSON.stringify((await step()).messages), /删除保护已关闭/)
+  assert.deepEqual((await step()).messages, [])
+  assert.doesNotMatch(JSON.stringify(f.officialAgent.session.deriveMessages()), /脚本、内联脚本和间接调用也不允许直接使用 rm/)
+  assert.match(JSON.stringify(f.officialAgent.session.deriveMessages()), /删除保护规则已撤销/)
+  assert.deepEqual(f.officialAgent.session.eventAt(notice.seq), notice, 'the original notice remains in history')
   assert.deepEqual((await step()).messages, [])
   f.configure({ deletionProtection: 'strict', deletionProtectionForOfficialPresets: true })
-  assert.match(JSON.stringify((await step()).messages), /以下规则取代先前.*脚本、内联脚本和间接调用也不允许直接使用 rm/)
+  const reenabled = await step()
+  assert.match(JSON.stringify(reenabled.messages), /脚本、内联脚本和间接调用也不允许直接使用 rm/)
+  for (const message of reenabled.messages) f.officialAgent.session.append('user/message', message, { surfaceOp: 'append' })
   assert.deepEqual((await step()).messages, [])
+})
+
+test('disabling official opt-in after a cold reload revokes old minimal instructions before downstream hooks', async t => {
+  const f = await fixture(t)
+  f.preset('minimal')
+  const source = { kind: 'dsh-super-code/deletion-protection' as const }
+  const { createUserMessage } = await import('@deepseek-ai/dsh-llm')
+  const history = f.officialAgent.session.append('user/message', createUserMessage({ source,
+    content: [{ type: 'text', text: DELETION_INSTRUCTION }] }), { surfaceOp: 'append' })
+  await f.plugin.dispose()
+  let observed = ''
+  f.ctx.on('agent/pre-step', async ({ agent }, next) => {
+    observed = JSON.stringify(agent.session.deriveMessages())
+    return next()
+  })
+  f.configure({ deletionProtection: 'strict', deletionProtectionForOfficialPresets: false })
+  await f.ctx.plugin({ apply: applyDeletionProtection })
+  const decision = await f.ctx.waterfall(scopeTarget({}, f.officialAgent), 'agent/pre-step', {
+    agent: f.officialAgent, messages: [], turn: 2, step: 1, signal: new AbortController().signal,
+  } as any, async () => ({ kind: 'enter' as const, messages: [] }))
+  assert.deepEqual(decision.messages, [])
+  assert.doesNotMatch(observed, /Use trash/)
+  assert.match(observed, /have been revoked/)
+  assert.deepEqual(f.officialAgent.session.eventAt(history.seq), history)
+  assert.equal((await f.execute('rm build', f.officialAgent)).isError, false)
+})
+
+async function loggedMinimalStep(f: Awaited<ReturnType<typeof fixture>>) {
+  const decision = await f.ctx.waterfall(scopeTarget({}, f.officialAgent), 'agent/pre-step', {
+    agent: f.officialAgent, messages: [], turn: 1, step: 1, signal: new AbortController().signal,
+  } as any, async () => ({ kind: 'enter' as const, messages: [] }))
+  if (decision.kind === 'enter') for (const message of decision.messages) {
+    f.officialAgent.session.append('user/message', message, { surfaceOp: 'append' })
+  }
+  return decision
+}
+
+test('strict to relaxed retires the old minimal rule before downstream hooks instead of accumulating contradictory rules', async t => {
+  const f = await fixture(t)
+  f.preset('minimal'); f.configure({ deletionProtection: 'strict', deletionProtectionForOfficialPresets: true })
+  await loggedMinimalStep(f)
+  const before = f.officialAgent.session.snapshotEvents()
+  let downstream = ''
+  f.ctx.on('agent/pre-step', async ({ agent }, next) => { downstream = JSON.stringify(agent.session.deriveMessages()); return next() })
+  f.configure({ deletionProtection: 'relaxed', deletionProtectionForOfficialPresets: true })
+  await loggedMinimalStep(f)
+  assert.doesNotMatch(downstream, /脚本、内联脚本和间接调用也不允许直接使用 rm/)
+  const active = f.officialAgent.session.deriveMessages().filter(m => m.source.kind === 'dsh-super-code/deletion-protection')
+  assert.equal(active.length, 1)
+  assert.match(JSON.stringify(active), /当前为宽松模式/)
+  assert.deepEqual(f.officialAgent.session.snapshotEvents().slice(0, before.length), before)
+})
+
+test('cold plugin reload keeps one unchanged minimal rule and switching out of minimal retires it', async t => {
+  const f = await fixture(t)
+  f.preset('minimal'); f.configure({ deletionProtection: 'strict', deletionProtectionForOfficialPresets: true })
+  await loggedMinimalStep(f)
+  const count = f.officialAgent.session.seq
+  await f.plugin.dispose()
+  await f.ctx.plugin({ apply: applyDeletionProtection })
+  await loggedMinimalStep(f)
+  assert.equal(f.officialAgent.session.seq, count, 'unchanged policy is not appended on a cold plugin reload')
+  f.preset('standard')
+  await loggedMinimalStep(f)
+  assert.equal(f.officialAgent.session.deriveMessages().filter(m => m.source.kind === 'dsh-super-code/deletion-protection').length, 0)
+  assert.match(await f.prompt(f.officialAgent), /脚本、内联脚本和间接调用也不允许直接使用 rm/, 'current system protection remains active')
+})
+
+test('legacy duplicate minimal notices collapse without changing identical user instructions', async t => {
+  const f = await fixture(t), { createUserMessage } = await import('@deepseek-ai/dsh-llm')
+  f.preset('minimal'); f.configure({ deletionProtection: 'strict', deletionProtectionForOfficialPresets: true })
+  const user = f.officialAgent.session.append('user/message', createUserMessage({ source: { kind: 'user' },
+    content: [{ type: 'text', text: DELETION_INSTRUCTION }] }), { surfaceOp: 'append' })
+  for (let i = 0; i < 2; i++) f.officialAgent.session.append('user/message', createUserMessage({ source: { kind: 'dsh-super-code/deletion-protection' },
+    content: [{ type: 'text', text: DELETION_INSTRUCTION }] }), { surfaceOp: 'append' })
+  await loggedMinimalStep(f)
+  const messages = f.officialAgent.session.deriveMessages()
+  assert.equal(messages.filter(m => m.source.kind === 'dsh-super-code/deletion-protection').length, 1)
+  assert.ok(messages.some(m => m.id === user.data.id && JSON.stringify(m.content).includes(DELETION_INSTRUCTION.split('\n')[0]!)))
+  const count = f.officialAgent.session.seq
+  await loggedMinimalStep(f)
+  assert.equal(f.officialAgent.session.seq, count)
+})
+
+test('minimal reconciles a configuration change during pre-step and cancelled updates preserve history', async t => {
+  const f = await fixture(t)
+  f.preset('minimal'); f.configure({ deletionProtection: 'strict', deletionProtectionForOfficialPresets: true })
+  await loggedMinimalStep(f)
+  await f.ctx.waterfall(scopeTarget({}, f.officialAgent), 'agent/pre-step', {
+    agent: f.officialAgent, messages: [], turn: 1, step: 1, signal: new AbortController().signal,
+  } as any, async () => {
+    f.configure({ deletionProtection: 'off', deletionProtectionForOfficialPresets: true })
+    return { kind: 'enter' as const, messages: [] }
+  })
+  assert.equal(f.officialAgent.session.deriveMessages().filter(m => m.source.kind === 'dsh-super-code/deletion-protection').length, 0)
+  f.configure({ deletionProtection: 'strict', deletionProtectionForOfficialPresets: true })
+  await loggedMinimalStep(f)
+  const before = f.officialAgent.session.snapshotEvents()
+  f.configure({ deletionProtection: 'relaxed', deletionProtectionForOfficialPresets: true })
+  await assert.rejects(f.ctx.waterfall(scopeTarget({}, f.officialAgent), 'agent/pre-step', {
+    agent: f.officialAgent, messages: [], turn: 1, step: 1, signal: AbortSignal.abort(),
+  } as any, async () => ({ kind: 'enter' as const, messages: [] })), /abort/i)
+  assert.deepEqual(f.officialAgent.session.snapshotEvents(), before)
 })
 
 test('only an actual one-time outcome grants execution; repeats and changed commands ask again', async t => {

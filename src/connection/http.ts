@@ -147,7 +147,7 @@ export class ConnectionHttp {
   }
   async start(port: number, token: string, maxConnections = 3): Promise<void> {
     if (this.server) throw new ConnectionError('already-listening')
-    const server = createServer((req, res) => { void this.handle(req, res, port, token, maxConnections).catch(() => { if (!res.headersSent) reply(res, 500, 'Request failed'); else res.end() }) })
+    const server = createServer((req, res) => { void this.handle(req, res, server, port, token, maxConnections).catch(() => { if (!res.headersSent) reply(res, 500, 'Request failed'); else res.end() }) })
     server.requestTimeout = 15000; server.headersTimeout = 10000; server.keepAliveTimeout = 1000
     server.maxHeadersCount = 40
     await new Promise<void>((resolve, reject) => {
@@ -157,9 +157,11 @@ export class ConnectionHttp {
     this.server = server
     this.timer = setInterval(() => { void this.prune().catch(() => {}) }, 5000); this.timer.unref()
   }
-  private async admit(body: unknown, maxConnections: number): Promise<ClientConnection | false> {
+  private async admit(body: unknown, maxConnections: number, server: Server, signal: AbortSignal): Promise<ClientConnection | false> {
     if (!body || typeof body !== 'object' || (body as { method?: string }).method !== 'initialize') return false
     await this.prune()
+    // Closing or restarting the listener invalidates admissions already awaiting I/O.
+    if (this.server !== server || signal.aborted) return false
     if (this.clients.size >= maxConnections) throw new ConnectionError('connection-limit')
     const id = randomUUID(), now = Date.now(), lifetime = new AbortController(), calls = new Map<string | number, AbortController>()
     const mcp = delegationMcpServer(this.tasks, requestId => calls.get(requestId)?.signal ?? lifetime.signal, id,
@@ -177,9 +179,11 @@ export class ConnectionHttp {
       client.name = (info?.name ?? 'MCP client').slice(0, 80); client.version = (info?.version ?? '').slice(0, 80)
     }
     try { await mcp.connect(transport) } catch (error) { await this.disconnect(id); throw error }
+    if (this.server !== server || signal.aborted || lifetime.signal.aborted) { await this.disconnect(id); return false }
     return client
   }
-  private async handle(req: IncomingMessage, res: ServerResponse, port: number, token: string, maxConnections: number): Promise<void> {
+  private async handle(req: IncomingMessage, res: ServerResponse, server: Server, port: number, token: string, maxConnections: number): Promise<void> {
+    if (this.server !== server) { reply(res, 503, 'MCP listener has closed'); return }
     const address = '127.0.0.1:' + port
     if (req.headers.host !== address && req.headers.host !== 'localhost:' + port) { reply(res, 403, 'Invalid Host'); return }
     if (req.headers.origin !== undefined) { reply(res, 403, 'Origin not allowed'); return }
@@ -205,12 +209,13 @@ export class ConnectionHttp {
         try { body = JSON.parse(Buffer.concat(chunks).toString('utf8')) } catch { reply(res, 400, 'Invalid JSON'); return }
         if (Array.isArray(body)) { reply(res, 400, 'Batch requests are not supported'); return }
       }
+      if (this.server !== server) { reply(res, 503, 'MCP listener has closed'); return }
       const session = req.headers['mcp-session-id']
       if (session !== undefined) {
         client = typeof session === 'string' ? this.clients.get(session) ?? false : false
         if (!client) { reply(res, 404, 'MCP session not found; initialize again'); return }
       } else {
-        try { client = await this.admit(body, maxConnections); admitted = !!client }
+        try { client = await this.admit(body, maxConnections, server, abort.signal); admitted = !!client }
         catch (error) { if (error instanceof ConnectionError && error.code === 'connection-limit') { res.setHeader('Retry-After', '30'); reply(res, 429, 'Maximum MCP connections reached. Reuse an existing MCP session; terminate only your own unused sessions with HTTP DELETE (SDK transport.terminateSession before client.close). Do not initialize repeatedly or disconnect other clients.'); return }; throw error }
         if (!client) { reply(res, 400, 'Initialize an MCP session first'); return }
       }
@@ -224,21 +229,28 @@ export class ConnectionHttp {
       }
       await client.transport.handleRequest(req, res, body)
     } finally {
-      if (client) {
-        client.active--; client.lastSeen = Date.now()
-        if (requestId !== false && client.calls.get(requestId) === abort) client.calls.delete(requestId)
-        if (admitted && (!client.transport.sessionId || res.statusCode >= 400)) await this.disconnect(client.id)
+      try {
+        if (client) {
+          client.active--; client.lastSeen = Date.now()
+          if (requestId !== false && client.calls.get(requestId) === abort) client.calls.delete(requestId)
+          if (admitted && (!client.transport.sessionId || res.statusCode >= 400 || res.destroyed && !res.writableFinished)) await this.disconnect(client.id)
+        }
+      } finally {
+        this.pending.delete(abort); this.requests--
       }
-      this.pending.delete(abort); this.requests--
     }
   }
   async close(): Promise<void> {
     const server = this.server; this.server = false
     if (this.timer) { clearInterval(this.timer); this.timer = false }
     for (const pending of this.pending) pending.abort()
-    await Promise.all([...this.clients.keys()].map(id => this.disconnect(id)))
-    if (!server) return
-    server.closeAllConnections()
-    await new Promise<void>(resolve => server.close(() => resolve()))
+    const clients = await Promise.allSettled([...this.clients.keys()].map(id => this.disconnect(id)))
+    if (server) {
+      server.closeAllConnections()
+      await new Promise<void>(resolve => server.close(() => resolve()))
+    }
+    const failures = clients.filter(result => result.status === 'rejected').map(result => result.reason)
+    if (failures.length === 1) throw failures[0]
+    if (failures.length > 1) throw new AggregateError(failures, 'MCP client cleanup failed')
   }
 }

@@ -11,7 +11,7 @@ interface Runtime {
   resolve(request: Request): Request
 }
 const current = new AsyncLocalStorage<Budgets>()
-const bridges = new WeakMap<Runtime, { users: number; original: Runtime['resolve']; wrapped: Runtime['resolve'] }>()
+const bridges = new WeakMap<Runtime, { users: number; original: Runtime['resolve']; wrapped: Runtime['resolve']; descriptor: PropertyDescriptor | undefined }>()
 
 /** One reference-counted adapter per provider, removed when its last scope unloads. */
 function retainBridge(service: Runtime): () => void {
@@ -31,7 +31,7 @@ function retainBridge(service: Runtime): () => void {
       const selected = request.timeoutMs === null && budget.ptcMaxTimeoutMs === undefined ? null : Math.min(timeout, cap)
       return original.call(this, { ...request, timeoutMs: selected })
     }
-    bridge = { users: 0, original, wrapped }
+    bridge = { users: 0, original, wrapped, descriptor: Object.getOwnPropertyDescriptor(runtime, 'resolve') }
     runtime.resolve = wrapped
     bridges.set(runtime, bridge)
   }
@@ -41,7 +41,10 @@ function retainBridge(service: Runtime): () => void {
     if (released) return
     released = true
     if (--bridge.users !== 0) return
-    if (runtime.resolve === bridge.wrapped) runtime.resolve = bridge.original
+    if (runtime.resolve === bridge.wrapped && Object.getOwnPropertyDescriptor(runtime, 'resolve')?.configurable) {
+      if (bridge.descriptor) Object.defineProperty(runtime, 'resolve', bridge.descriptor)
+      else Reflect.deleteProperty(runtime, 'resolve')
+    }
     bridges.delete(runtime)
   }
 }

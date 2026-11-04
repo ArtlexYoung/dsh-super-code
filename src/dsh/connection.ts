@@ -80,6 +80,17 @@ export function applyConnection(ctx: Context): void {
   })
   const profileServices = 'profileContext' in ctx ? ['profileContext'] : []
   ctx.inject([...profileServices, 'sessionController', 'agents', 'sessionQuery', 'subagents', 'superCodePresets'], async owner => {
+    let disposed = false
+    let startup: { connection: ConnectionService; initialized: Promise<void> } | false = false
+    // Own teardown before profile discovery too: early hosts read it from disk.
+    owner.effect(() => async (): Promise<void> => {
+      disposed = true
+      if (!startup) return
+      const { connection, initialized } = startup
+      try { await initialized } catch { return }
+      if (service === connection) service = false
+      await connection.close()
+    })
     let directory: string
     try {
       if (profileServices.length) {
@@ -94,14 +105,15 @@ export function applyConnection(ctx: Context): void {
         if (!Array.isArray(manifest.dsh?.profile?.bundles)) throw new Error('Not a profile')
       }
     } catch { owner.logger.warn('Super Code connection requires a persistent host profile.'); return }
+    if (disposed) return
     const host = new ConnectionHost({ presets: owner.get('superCodePresets'), controller: owner.get('sessionController'),
       workspaceRegistry: owner.get('workspaceRegistry'), agents: owner.get('agents'), query: owner.get('sessionQuery'),
       subagents: owner.get('subagents') } as ConnectionHostServices)
     const connection = new ConnectionService(new ConnectionStore(join(directory, 'super-code-connection')), host)
     try {
-      await connection.initialize()
-      service = connection
-      owner.effect(() => () => { service = false; return connection.close() })
+      startup = { connection, initialized: connection.initialize() }
+      await startup.initialized
+      if (!disposed) service = connection
     } catch { owner.logger.warn('Super Code connection storage is unavailable or already owned by another host. No endpoint was started.') }
   })
 }

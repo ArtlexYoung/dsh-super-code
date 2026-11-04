@@ -98,16 +98,24 @@ export async function compositionContent(ctx: Context, id: string): Promise<stri
   return entries.length === 1 ? JSON.stringify((entries[0]!.options.config as { plugins: unknown }).plugins) : ''
 }
 
+async function recoveryContent(path: string): Promise<string | false> {
+  try {
+    const stat = await lstat(path)
+    if (!stat.isFile() || stat.isSymbolicLink()) throw new Error('Unsafe recovery record')
+    return await readFile(path, 'utf8')
+  } catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return false; throw error }
+}
+
 /** Invalid or unrelated records fail closed; never replace them with an empty ownership record. */
 export class RecoveryState {
   private tail: Promise<void> = Promise.resolve()
-  private constructor(readonly path: string, readonly value: State) {}
-  static async open(path: string): Promise<RecoveryState> {
+  private constructor(readonly path: string, readonly value: State, private content: string | false) {}
+  static async open(path: string, required = false): Promise<RecoveryState> {
     let value: State = { plugin: 'dsh-super-code', format: 1, sessions: {} }
-    try {
-      const stat = await lstat(path)
-      if (!stat.isFile() || stat.isSymbolicLink()) throw new Error('Unsafe recovery record')
-      const data = JSON.parse(await readFile(path, 'utf8')) as State
+    const content = await recoveryContent(path)
+    if (content === false && required) throw new Error('Missing recovery record')
+    if (content !== false) {
+      const data = JSON.parse(content) as State
       if (data?.plugin !== 'dsh-super-code' || data.format !== 1 || !data.sessions || typeof data.sessions !== 'object' || Array.isArray(data.sessions)) throw new Error('Invalid recovery record')
       for (const [id, row] of Object.entries(data.sessions)) {
         if (!id || !row || typeof row.preset !== 'string' || !row.preset || official.has(row.preset)
@@ -115,22 +123,21 @@ export class RecoveryState {
           || typeof row.fingerprint !== 'string' || !/^[a-f0-9]{64}$/.test(row.fingerprint)) throw new Error('Invalid recovery session')
       }
       value = data
-    } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error }
-    return new RecoveryState(path, value)
+    }
+    return new RecoveryState(path, value, content)
   }
   async save(id: string, record: Record): Promise<void> {
     const next = this.tail.then(async () => {
       if (JSON.stringify(this.value.sessions[id]) === JSON.stringify(record)) return
       const value: State = { ...this.value, sessions: { ...this.value.sessions, [id]: record } }
-      try {
-        const stat = await lstat(this.path)
-        if (!stat.isFile() || stat.isSymbolicLink()) throw new Error('Unsafe recovery record')
-      } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error }
+      if (await recoveryContent(this.path) !== this.content) throw new Error('Recovery record changed since loading')
       const stage = await mkdtemp(join(dirname(this.path), '.state-'))
       try {
-        const file = join(stage, 'state.json')
-        await writeFile(file, JSON.stringify(value), { mode: 0o600 })
+        const file = join(stage, 'state.json'), content = JSON.stringify(value)
+        await writeFile(file, content, { mode: 0o600 })
+        if (await recoveryContent(this.path) !== this.content) throw new Error('Recovery record changed during save')
         await rename(file, this.path)
+        this.content = content
         this.value.sessions = value.sessions
       } finally { await rm(stage, { recursive: true, force: true }) }
     })
@@ -250,8 +257,8 @@ export function installRecovery(ctx: Context, state: RecoveryState, config: Reco
 
 export const name = 'super-code-session-recovery'
 export function apply(ctx: Context, config: RecoveryConfig): void {
-  // Duplicate loaders remain subscribed to host services; they must never
-  // compete with a newer generation when those services become available again.
+  // Duplicate or failed loaders remain subscribed to host services; they must
+  // never compete with a newer generation when those services return.
   let redundant = false
   ctx.inject(['agentPresets', 'sessionProjections', 'tools'], async owner => {
     if (redundant) return
@@ -268,9 +275,10 @@ export function apply(ctx: Context, config: RecoveryConfig): void {
         }
         // A content-addressed runtime is rooted outside the main bundle. Retire
         // its hooks and drain its writer before loading the next generation.
+        await RecoveryState.open(config.statePath, true)
         await previous.dispose()
       }
-      const state = await RecoveryState.open(config.statePath)
+      const state = await RecoveryState.open(config.statePath, !!previous)
       if (owner.get('superCodeSessionRecovery')) { redundant = true; return }
       const service = installRecovery(owner, state, config, { scopeOf: scope.scopeOf, message: llm.createUserMessage })
       service.lifetime = { ...config, source: import.meta.url, dispose: () => ctx.fiber.dispose() }
@@ -281,7 +289,10 @@ export function apply(ctx: Context, config: RecoveryConfig): void {
       }
       owner.on('agent/created', async ({ agent }) => { await remember(agent) })
       owner.on('agent/pre-step', async ({ agent }, next) => { await remember(agent); return next() }, true)
-    } catch { owner.logger.warn('Super Code continuation recovery is unavailable; the local recovery record could not be loaded.') }
+    } catch {
+      redundant = true
+      owner.logger.warn('Super Code continuation recovery could not be loaded; check the local recovery record and restart DSH.')
+    }
   })
 }
 

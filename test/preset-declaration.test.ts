@@ -212,6 +212,51 @@ test('declarative ownership records survive restart and reject unsafe or foreign
   assert.equal(await readFile(join(f.root, 'foreign.json'), 'utf8'), original)
 })
 
+for (const change of ['foreign', 'corrupt', 'removed', 'other-writer'] as const) {
+  test(`installation ownership refuses a stale write after ${change} state changes`, async t => {
+    const f = await fixture(t, false), path = join(f.root, 'ownership.json')
+    const state = await DeclarationStateFile.open(path)
+    await state.update({ declarationDisplay: { name: 'Before' } })
+    const before = state.get()
+    let content: string | false
+    if (change === 'removed') { await rm(path); content = false }
+    else if (change === 'other-writer') {
+      const other = await DeclarationStateFile.open(path)
+      await other.update({ declarationDisplay: { name: 'External' } })
+      content = await readFile(path, 'utf8')
+    } else {
+      content = change === 'foreign' ? JSON.stringify({ plugin: 'another-plugin', format: 1 }) : '{corrupt'
+      await writeFile(path, content)
+    }
+    await assert.rejects(state.update({ declarationDisplay: { name: 'Late' } }), /changed|record/i)
+    assert.deepEqual(state.get(), before)
+    if (content === false) await assert.rejects(readFile(path), { code: 'ENOENT' })
+    else assert.equal(await readFile(path, 'utf8'), content)
+  })
+}
+
+test('concurrent ownership updates preserve both fields instead of losing a completed update', async t => {
+  const f = await fixture(t, false), path = join(f.root, 'ownership.json')
+  const state = await DeclarationStateFile.open(path)
+  const declaration = { entryId: 'owned', id: 'owned', token: '00000000-0000-0000-0000-000000000001' }
+  await Promise.all([state.update({ declaration }), state.update({ declarationDisplay: { name: 'Display' } })])
+  assert.deepEqual(state.get(), { declaration, declarationDisplay: { name: 'Display' } })
+  assert.deepEqual((await DeclarationStateFile.open(path)).get(), state.get())
+})
+
+test('a stale ownership record aborts installation and restores the previous profile patch', async t => {
+  const f = await fixture(t, false), path = join(f.root, 'ownership.json')
+  const state = await DeclarationStateFile.open(path)
+  await state.update({ declarationDisplay: {} })
+  const installer = new DeclaredPresetInstaller(f.registry, state, f.host, f.bundlePath)
+  const original = await readFile(f.patchPath, 'utf8'), foreign = JSON.stringify({ plugin: 'another-plugin', format: 1 })
+  await writeFile(path, foreign)
+  assert.equal((await installer.install('owned')).error, 'install-failed')
+  assert.equal(await readFile(path, 'utf8'), foreign)
+  assert.equal(await readFile(f.patchPath, 'utf8'), original)
+  assert.deepEqual(await f.registry.list(), [])
+})
+
 test('a disabled owned declaration cannot claim an unrelated active preset with the same id', async t => {
   const f = await fixture(t)
   f.base[0].disabled = true

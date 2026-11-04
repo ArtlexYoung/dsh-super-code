@@ -17,12 +17,14 @@ async function fixture(t: test.TestContext) {
   t.after(async () => { await ctx.fiber.dispose(); await rm(directory, { recursive: true, force: true }) })
   const source = await readFile(new URL('../src/dsh/preset-recovery-runtime.ts', import.meta.url), 'utf8')
   const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText
-  const modules = await Promise.all(['first', 'second'].map(async generation => {
+  const modules = await Promise.all(['first', 'second', 'third'].map(async generation => {
     const path = join(directory, generation + '.mjs')
     await writeFile(path, compiled.replace('Super Code 插件已卸载，', `GENERATION_${generation} Super Code 插件已卸载，`))
     return { url: pathToFileURL(path).href, plugin: await import(pathToFileURL(path).href) }
   }))
   const config = { statePath: join(directory, 'state.json'), packagePath: join(directory, 'package.json') }
+  // prepareRecovery creates this owned record before loading a profile module.
+  await writeFile(config.statePath, JSON.stringify({ plugin: 'dsh-super-code', format: 1, sessions: {} }))
   let content: string | false = 'owned Super Code composition'
   const bound = new WeakMap<Context, string>(), mounts: string[] = []
   const registry = {
@@ -129,4 +131,38 @@ test('a skipped duplicate cannot revive an older generation when host services r
   await f.waitFor(second.url)
   await new Promise(resolve => setTimeout(resolve, 30))
   assert.equal(f.ctx.get('superCodeSessionRecovery')?.lifetime?.source, second.url)
+})
+
+for (const failure of ['corrupt', 'missing'] as const) test(`a ${failure} replacement state does not tear down the working recovery service`, async t => {
+  const f = await fixture(t), first = f.modules[0]!, second = f.modules[1]!, agent = f.agent('registered')
+  await f.ctx.plugin(first.plugin, f.config)
+  const current = await f.waitFor(first.url)
+  await current.remember(agent)
+  const original = await readFile(f.config.statePath, 'utf8')
+  if (failure === 'missing') await rm(f.config.statePath)
+  else await writeFile(f.config.statePath, '{temporarily invalid')
+  await f.ctx.plugin(second.plugin, f.config)
+  await new Promise(resolve => setTimeout(resolve, 50))
+  assert.equal(f.ctx.get('superCodeSessionRecovery'), current, 'failed upgrade retains the current service')
+  await writeFile(f.config.statePath, original)
+  f.removePreset()
+  await f.registry.mount(agent.ctx, 'owned')
+  assert.deepEqual(f.mounts, ['standard'])
+})
+
+test('a failed candidate cannot replace a later successful generation after services reload', async t => {
+  const f = await fixture(t), first = f.modules[0]!, second = f.modules[1]!, third = f.modules[2]!
+  await f.ctx.plugin(first.plugin, f.config)
+  await f.waitFor(first.url)
+  const original = await readFile(f.config.statePath, 'utf8')
+  await writeFile(f.config.statePath, '{temporarily invalid')
+  await f.ctx.plugin(second.plugin, f.config)
+  await new Promise(resolve => setTimeout(resolve, 50))
+  await writeFile(f.config.statePath, original)
+  await f.ctx.plugin(third.plugin, f.config)
+  await f.waitFor(third.url)
+  await f.reloadRegistry()
+  await f.waitFor(third.url)
+  await new Promise(resolve => setTimeout(resolve, 30))
+  assert.equal(f.ctx.get('superCodeSessionRecovery')?.lifetime?.source, third.url)
 })

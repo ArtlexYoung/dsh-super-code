@@ -46,15 +46,23 @@ export interface DeclarationState {
   update(patch: Partial<DeclarationSettings>): Promise<void>
 }
 
+async function installationContent(path: string): Promise<string | false> {
+  try {
+    const stat = await lstat(path)
+    if (!stat.isFile() || stat.isSymbolicLink()) throw new Error('Unsafe installation record')
+    return await readFile(path, 'utf8')
+  } catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return false; throw error }
+}
+
 /** Newer settings providers edit Loader forms; installation records stay local. */
 export class DeclarationStateFile implements DeclarationState {
-  private constructor(private readonly path: string, private value: DeclarationSettings) {}
+  private tail: Promise<void> = Promise.resolve()
+  private constructor(private readonly path: string, private value: DeclarationSettings, private content: string | false) {}
   static async open(path: string): Promise<DeclarationStateFile> {
     let value: DeclarationSettings = {}
-    try {
-      const stat = await lstat(path)
-      if (!stat.isFile() || stat.isSymbolicLink()) throw new Error('Unsafe installation record')
-      const record = JSON.parse(await readFile(path, 'utf8'))
+    const content = await installationContent(path)
+    if (content !== false) {
+      const record = JSON.parse(content)
       if (!record || record.plugin !== 'dsh-super-code' || record.format !== 1) throw new Error('Unknown installation record')
       const saved = record.declaration
       if (saved !== undefined && (!saved || typeof saved !== 'object' || Array.isArray(saved)
@@ -64,21 +72,26 @@ export class DeclarationStateFile implements DeclarationState {
       if (display && (typeof display !== 'object' || Array.isArray(display)
         || ['name', 'description'].some(key => display[key] !== undefined && typeof display[key] !== 'string'))) throw new Error('Invalid display record')
       value = { declaration: saved, declarationDisplay: display }
-    } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error }
-    return new DeclarationStateFile(path, value)
+    }
+    return new DeclarationStateFile(path, value, content)
   }
   get(): DeclarationSettings { return structuredClone(this.value) }
-  async update(patch: Partial<DeclarationSettings>): Promise<void> {
-    try {
-      const stat = await lstat(this.path)
-      if (!stat.isFile() || stat.isSymbolicLink()) throw new Error('Unsafe installation record')
-    } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error }
+  update(patch: Partial<DeclarationSettings>): Promise<void> {
+    const changes = structuredClone(patch)
+    const next = this.tail.then(() => this.write(changes))
+    this.tail = next.catch(() => {})
+    return next
+  }
+  private async write(patch: Partial<DeclarationSettings>): Promise<void> {
+    if (await installationContent(this.path) !== this.content) throw new Error('Installation record changed since loading')
     const value = { ...this.value, ...patch }
     const stage = await mkdtemp(join(dirname(this.path), '.super-code-record-'))
     try {
-      const file = join(stage, 'record.json')
-      await writeFile(file, JSON.stringify({ plugin: 'dsh-super-code', format: 1, ...value }), { mode: 0o600 })
+      const file = join(stage, 'record.json'), content = JSON.stringify({ plugin: 'dsh-super-code', format: 1, ...value })
+      await writeFile(file, content, { mode: 0o600 })
+      if (await installationContent(this.path) !== this.content) throw new Error('Installation record changed during save')
       await rename(file, this.path)
+      this.content = content
       this.value = value
     } finally { await rm(stage, { recursive: true, force: true }) }
   }

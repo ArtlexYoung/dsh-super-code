@@ -63,6 +63,18 @@ export async function prepareRecovery(patchPath: string, packagePath: string, so
   return { modulePath, config }
 }
 
+export async function registerRecoverySessions(ctx: Context): Promise<void> {
+  const registry = ctx.get('agentPresets') as { list(): Promise<{ id: string }[]> }
+  const ids: string[] = []
+  for (const row of await registry.list()) {
+    try {
+      const plugins = yaml.load(await compositionContent(ctx, row.id), { schema: declarationSchema })
+      if (Array.isArray(plugins) && plugins.filter(plugin => plugin?.name === 'dsh-super-code/super-code' && plugin.disabled !== true).length === 1) ids.push(row.id)
+    } catch { ctx.logger.warn('A preset could not be inspected for Super Code uninstall recovery; other presets will still be registered.') }
+  }
+  await ctx.superCodeSessionRecovery.backfill(ids)
+}
+
 export function applyPresetRecovery(ctx: Context): void {
   ctx.inject(['agentPresets', 'sessionProjections', 'tools'], async owner => {
     const profile = owner.get('profileContext') as { patchPath?: string } | undefined
@@ -86,13 +98,7 @@ export function applyPresetRecovery(ctx: Context): void {
       await owner.root.plugin(await import(pathToFileURL(prepared.modulePath).href) as Plugin.Object, prepared.config)
       owner.inject(['superCodeSessionRecovery', 'sessionQuery'], async ready => {
         try {
-          const registry = ready.get('agentPresets') as { list(): Promise<{ id: string }[]> }
-          const ids: string[] = []
-          for (const row of await registry.list()) {
-            const plugins = yaml.load(await compositionContent(ready, row.id), { schema: declarationSchema })
-            if (Array.isArray(plugins) && plugins.filter(plugin => plugin?.name === 'dsh-super-code/super-code').length === 1) ids.push(row.id)
-          }
-          await ready.superCodeSessionRecovery.backfill(ids)
+          await registerRecoverySessions(ready)
         } catch { ready.logger.warn('Some existing Super Code sessions could not be registered for uninstall recovery.') }
       })
     } catch { owner.logger.warn('Super Code uninstall recovery is unavailable; check the profile recovery files and patch permissions.') }

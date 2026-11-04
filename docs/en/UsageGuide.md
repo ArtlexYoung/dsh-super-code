@@ -88,6 +88,8 @@ Disabling or uninstalling the plugin also releases its command filters, budget a
 
 If the plugin is reinstalled or the selected preset changes during recovery, the current installation and latest selection take precedence over the fallback. Recovery module updates retain existing conversation registrations and stop late writes from the retired module.
 
+If another process changes local recovery or preset ownership records while DSH is running, the plugin stops writing and preserves those files. Check the files, then restart DSH to reload them. An unrelated broken preset does not prevent other usable conversations from being registered.
+
 The profile retains `.super-code-recovery` and its configuration entry so recovery works after a cold start without the npm package. It restores registered conversations and revokes old plugin deletion rules; it contains no Super Code tools or model configuration. An upgrade registers older conversations whose preset definitions still exist. If a preset was deleted or renamed before registration, first restore its definition from the installation backup, then reinstall and load the plugin to register the conversation. If Standard is also unavailable, the error is preserved rather than silently choosing another preset.
 
 ## Sidebar

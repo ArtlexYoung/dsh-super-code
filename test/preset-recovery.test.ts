@@ -13,7 +13,7 @@ import { RecoveryState, installRecovery } from '../src/dsh/preset-recovery-runti
 import { prepareRecovery } from '../src/dsh/preset-recovery.js'
 import { declarationSchema } from '../src/dsh/preset-declaration.js'
 
-async function fixture(t: test.TestContext, forms = false) {
+async function fixture(t: test.TestContext, forms = false, beforeMount: (id: string) => Promise<void> = async () => {}) {
   const root = await mkdtemp(join(tmpdir(), 'super-code-recovery-')), ctx = new Context()
   t.after(async () => { await ctx.fiber.dispose(); await rm(root, { recursive: true, force: true }) })
   const config = { statePath: join(root, 'state.json'), packagePath: join(root, 'package.json') }
@@ -27,7 +27,7 @@ async function fixture(t: test.TestContext, forms = false) {
     async resolve(id = 'standard') { const preset = records.get(id); if (!preset) throw new Error('Missing ' + id); return preset },
     async list() { return [...records.values()] },
     async readDocument(id: string) { const row = records.get(id); if (!row) throw new Error('Missing'); return { agentPreset: id, content: row.content } },
-    async mount(ctx: Context, id = 'standard') { const row = records.get(id); if (!row || row.broken) throw new Error('Unusable ' + id); mounts.push(id); bound.set(ctx, id); return row },
+    async mount(ctx: Context, id = 'standard') { const row = records.get(id); if (!row || row.broken) throw new Error('Unusable ' + id); await beforeMount(id); mounts.push(id); bound.set(ctx, id); return row },
     composedPreset(ctx: Context) { return bound.get(ctx) },
   }
   ctx.provide('agentPresets', registry)
@@ -144,6 +144,107 @@ test('concurrent mounts append one paired result and one durable selection', asy
   assert.equal(events.filter(e => e.type === 'command/done').length, 1)
   assert.equal(events.filter(e => e.type === 'user/message').length, 0)
   assert.equal(agent.session.snapshotEvents().filter(e => e.type === 'agent-preset/selected').length, 1)
+})
+
+test('re-enabling the plugin during roster loading cancels a pending fallback', async t => {
+  const f = await fixture(t), agent = f.agent()
+  await f.service.remember(agent)
+  f.records.delete('renamed-code')
+  const entered = Promise.withResolvers<void>(), gate = Promise.withResolvers<void>()
+  t.after(() => gate.resolve())
+  f.registry.list = async () => { entered.resolve(); await gate.promise; return [] }
+  const mounting = f.registry.mount(agent.ctx, 'renamed-code')
+  await entered.promise
+  f.ctx.provide('superCodeConfiguration', {})
+  f.records.set('renamed-code', { id: 'renamed-code', content: 'restored owned composition' })
+  gate.resolve()
+  await mounting
+  assert.deepEqual(f.mounts, ['renamed-code'])
+  assert.equal(agent.session.seq, 1, 'a live plugin never receives an uninstall notice')
+})
+
+test('a selection changed while the roster loads is not overwritten by recovery', async t => {
+  const f = await fixture(t), agent = f.agent()
+  await f.service.remember(agent)
+  f.records.delete('renamed-code')
+  const entered = Promise.withResolvers<void>(), gate = Promise.withResolvers<void>()
+  t.after(() => gate.resolve())
+  f.registry.list = async () => { entered.resolve(); await gate.promise; return [] }
+  const mounting = f.registry.mount(agent.ctx, 'renamed-code')
+  await entered.promise
+  agent.session.append('agent-preset/selected', { agentPreset: 'ptc' })
+  const before = agent.session.snapshotEvents()
+  gate.resolve()
+  await assert.rejects(mounting, /Unusable renamed-code/)
+  assert.deepEqual(f.mounts, [], 'stale requests go back to the host rather than mounting standard')
+  assert.deepEqual(agent.session.snapshotEvents(), before)
+})
+
+test('disposing recovery during roster loading retires the pending wrapper too', async t => {
+  const f = await fixture(t), agent = f.agent()
+  await f.service.remember(agent)
+  f.records.delete('renamed-code')
+  const entered = Promise.withResolvers<void>(), gate = Promise.withResolvers<void>()
+  t.after(() => gate.resolve())
+  f.registry.list = async () => { entered.resolve(); await gate.promise; return [] }
+  const mounting = f.registry.mount(agent.ctx, 'renamed-code')
+  await entered.promise
+  await f.owner.fiber.dispose()
+  gate.resolve()
+  await assert.rejects(mounting, /Unusable renamed-code/)
+  assert.deepEqual(f.mounts, [])
+  assert.equal(agent.session.seq, 1)
+})
+
+test('resolve cannot return a recovery placeholder after the main plugin becomes active', async t => {
+  const f = await fixture(t), agent = f.agent()
+  await f.service.remember(agent)
+  f.records.delete('renamed-code')
+  const entered = Promise.withResolvers<void>(), gate = Promise.withResolvers<void>()
+  t.after(() => gate.resolve())
+  f.registry.list = async () => { entered.resolve(); await gate.promise; return [] }
+  const resolving = f.registry.resolve('renamed-code')
+  await entered.promise
+  f.ctx.provide('superCodeConfiguration', {})
+  gate.resolve()
+  await assert.rejects(resolving, /Missing renamed-code/)
+})
+
+test('reinstallation during standard composition restores the live preset without an uninstall notice', async t => {
+  const entered = Promise.withResolvers<void>(), gate = Promise.withResolvers<void>()
+  t.after(() => gate.resolve())
+  const f = await fixture(t, false, async id => { if (id === 'standard') { entered.resolve(); await gate.promise } })
+  const agent = f.agent()
+  await f.service.remember(agent)
+  f.records.delete('renamed-code')
+  const mounting = f.registry.mount(agent.ctx, 'renamed-code')
+  await entered.promise
+  f.ctx.provide('superCodeConfiguration', {})
+  f.records.set('renamed-code', { id: 'renamed-code', content: 'reinstalled composition' })
+  gate.resolve()
+  await mounting
+  assert.deepEqual(f.mounts, ['standard', 'renamed-code'])
+  assert.equal(f.registry.composedPreset(agent.ctx), 'renamed-code')
+  assert.equal(agent.session.seq, 1)
+})
+
+test('a newer selection during standard composition remains the actual mounted preset', async t => {
+  const entered = Promise.withResolvers<void>(), gate = Promise.withResolvers<void>()
+  t.after(() => gate.resolve())
+  const f = await fixture(t, false, async id => { if (id === 'standard') { entered.resolve(); await gate.promise } })
+  const agent = f.agent()
+  await f.service.remember(agent)
+  f.records.delete('renamed-code')
+  f.records.set('ptc', { id: 'ptc', content: 'official ptc' })
+  const mounting = f.registry.mount(agent.ctx, 'renamed-code')
+  await entered.promise
+  agent.session.append('agent-preset/selected', { agentPreset: 'ptc' })
+  const before = agent.session.snapshotEvents()
+  gate.resolve()
+  await mounting
+  assert.deepEqual(f.mounts, ['standard', 'ptc'])
+  assert.equal(f.registry.composedPreset(agent.ctx), 'ptc')
+  assert.deepEqual(agent.session.snapshotEvents(), before)
 })
 
 test('English recovery result is log-only and attributed to the plugin', async t => {

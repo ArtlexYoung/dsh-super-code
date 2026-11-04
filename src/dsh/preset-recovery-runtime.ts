@@ -27,7 +27,11 @@ interface Query {
 interface Record { preset: string; createdAt: number; cwd?: string; fingerprint: string }
 interface State { plugin: 'dsh-super-code'; format: 1; sessions: { [id: string]: Record } }
 export interface RecoveryConfig { statePath: string; packagePath: string }
-export interface RecoveryService { remember(agent: Agent): Promise<void>; backfill(presets: readonly string[]): Promise<void> }
+export interface RecoveryService {
+  remember(agent: Agent): Promise<void>
+  backfill(presets: readonly string[]): Promise<void>
+  lifetime?: RecoveryConfig & { source: string; dispose(): Promise<void> }
+}
 
 const noticePlugin = 'dsh-super-code/preset-recovery'
 const deletionSource = 'dsh-super-code/deletion-protection'
@@ -133,6 +137,7 @@ export class RecoveryState {
     this.tail = next.catch(() => {})
     await next
   }
+  async flush(): Promise<void> { await this.tail }
 }
 
 function selected(session: Session, ctx: Context): string | undefined {
@@ -146,7 +151,8 @@ export function installRecovery(ctx: Context, state: RecoveryState, config: Reco
   const originalResolve = registry.resolve, originalMount = registry.mount
   const resolveDescriptor = Object.getOwnPropertyDescriptor(registry, 'resolve')
   const mountDescriptor = Object.getOwnPropertyDescriptor(registry, 'mount')
-  const unavailable = (): boolean => !existsSync(config.packagePath) && !ctx.get('superCodeConfiguration')
+  let active = true
+  const unavailable = (): boolean => active && !existsSync(config.packagePath) && !ctx.get('superCodeConfiguration')
   ctx.on('agent/pre-step', async ({ agent, signal }, next) => {
     // Disabling a bundle leaves its package on disk but removes its policy owner.
     if (!ctx.get('superCodeConfiguration')) { signal.throwIfAborted(); revokeDeletionNotices(agent.session, host.message) }
@@ -158,21 +164,22 @@ export function installRecovery(ctx: Context, state: RecoveryState, config: Reco
     return content ? fingerprint(content) : ''
   }
   const rememberHeader = async (header: SessionHeader, preset: string): Promise<void> => {
-    if (official.has(preset)) return
+    if (!active || official.has(preset)) return
     const hash = await documentHash(preset)
-    if (hash) await state.save(header.id, { preset, createdAt: header.createdAt, ...(header.cwd === undefined ? {} : { cwd: header.cwd }), fingerprint: hash })
+    if (active && hash) await state.save(header.id, { preset, createdAt: header.createdAt, ...(header.cwd === undefined ? {} : { cwd: header.cwd }), fingerprint: hash })
   }
   const service: RecoveryService = {
     async remember(agent) {
-      if (!ctx.get('tools')?.get('super_code_task', agent)) return
+      if (!active || !ctx.get('tools')?.get('super_code_task', agent)) return
       const preset = registry.composedPreset(agent.ctx)
       if (preset) await rememberHeader(agent.session.header, preset)
     },
     async backfill(presets) {
       const query = ctx.get('sessionQuery') as Query | undefined
-      if (!query || !presets.length) return
+      if (!active || !query || !presets.length) return
       const owned = new Set(presets)
       for (const { header } of await query.listSessions()) {
+        if (!active) return
         // A blank conversation can switch from an official preset before its
         // first turn; its immutable header then differs from the selected one.
         try {
@@ -188,6 +195,7 @@ export function installRecovery(ctx: Context, state: RecoveryState, config: Reco
     try { return await originalResolve.call(this, id) }
     catch (error) {
       if (!id || !unavailable() || !known(id) || (await this.list()).some(row => row.id === id)) throw error
+      if (!unavailable() || !known(id)) throw error
       // The actual mount below requires an exact previously recorded Session.
       return { id }
     }
@@ -196,12 +204,20 @@ export function installRecovery(ctx: Context, state: RecoveryState, config: Reco
     const scope = host.scopeOf(agentCtx)
     const agent = scope && typeof scope === 'object' && 'session' in scope ? scope as Agent : undefined
     const saved = agent && state.value.sessions[agent.session.id]
-    if (!agent || !id || !saved || !unavailable() || saved.preset !== id || selected(agent.session, ctx) !== id
-      || saved.createdAt !== agent.session.header.createdAt || saved.cwd !== agent.session.header.cwd) return originalMount.call(this, agentCtx, id)
+    if (!agent || !id || !saved) return originalMount.call(this, agentCtx, id)
+    const eligible = (): boolean => unavailable() && state.value.sessions[agent.session.id] === saved && saved.preset === id
+      && selected(agent.session, ctx) === id && saved.createdAt === agent.session.header.createdAt && saved.cwd === agent.session.header.cwd
+    if (!eligible()) return originalMount.call(this, agentCtx, id)
     const preset = (await this.list()).find(row => row.id === id)
     if (preset && (!preset.broken || await documentHash(id) !== saved.fingerprint)) return originalMount.call(this, agentCtx, id)
+    // Roster/document reads can yield to reinstallation, a selection change or
+    // teardown. A stale wrapper must return control to the host in each case.
+    if (!eligible()) return originalMount.call(this, agentCtx, id)
     const mounted = await originalMount.call(this, agentCtx, 'standard')
-    if (selected(agent.session, ctx) !== id) return mounted
+    const current = selected(agent.session, ctx)
+    if (!unavailable()) return originalMount.call(this, agentCtx, current ?? id)
+    if (current !== id) return current === 'standard' ? mounted : originalMount.call(this, agentCtx, current)
+    if (!eligible()) return originalMount.call(this, agentCtx, id)
     const settings = ctx.get('settings') as { get?(namespace: string): { preference?: string } | undefined
       describe?(): { ns: string; value?: { preference?: string } }[] } | undefined
     const language = (settings?.get ? settings.get('locale')?.preference
@@ -220,28 +236,44 @@ export function installRecovery(ctx: Context, state: RecoveryState, config: Reco
   }
   registry.resolve = resolve
   registry.mount = mount
-  ctx.effect(() => () => {
+  ctx.effect(() => async () => {
+    active = false
     for (const [key, wrapper, descriptor] of [['resolve', resolve, resolveDescriptor], ['mount', mount, mountDescriptor]] as const) {
       if (registry[key] !== wrapper) continue
       if (descriptor) Object.defineProperty(registry, key, descriptor)
       else Reflect.deleteProperty(registry, key)
     }
+    await state.flush()
   })
   return service
 }
 
 export const name = 'super-code-session-recovery'
 export function apply(ctx: Context, config: RecoveryConfig): void {
+  // Duplicate loaders remain subscribed to host services; they must never
+  // compete with a newer generation when those services become available again.
+  let redundant = false
   ctx.inject(['agentPresets', 'sessionProjections', 'tools'], async owner => {
+    if (redundant) return
     try {
-      if (owner.get('superCodeSessionRecovery')) return
-      const state = await RecoveryState.open(config.statePath)
       const profile = owner.get('profileContext') as { installAnchor?: string } | undefined
       const require = createRequire(profile?.installAnchor ?? new URL('package.json', owner.root.baseUrl))
       const scope = await import(pathToFileURL(require.resolve('@deepseek-ai/dsh-scope')).href)
       const llm = await import(pathToFileURL(require.resolve('@deepseek-ai/dsh-llm')).href)
-      if (owner.get('superCodeSessionRecovery')) return
+      const previous = (owner.get('superCodeSessionRecovery') as RecoveryService | undefined)?.lifetime
+      if (owner.get('superCodeSessionRecovery')) {
+        if (!previous || previous.source === import.meta.url || previous.statePath !== config.statePath || previous.packagePath !== config.packagePath) {
+          redundant = true
+          return
+        }
+        // A content-addressed runtime is rooted outside the main bundle. Retire
+        // its hooks and drain its writer before loading the next generation.
+        await previous.dispose()
+      }
+      const state = await RecoveryState.open(config.statePath)
+      if (owner.get('superCodeSessionRecovery')) { redundant = true; return }
       const service = installRecovery(owner, state, config, { scopeOf: scope.scopeOf, message: llm.createUserMessage })
+      service.lifetime = { ...config, source: import.meta.url, dispose: () => ctx.fiber.dispose() }
       owner.provide('superCodeSessionRecovery', service)
       const remember = async (agent: Agent): Promise<void> => {
         try { await service.remember(agent) }

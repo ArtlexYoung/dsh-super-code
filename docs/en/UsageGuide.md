@@ -86,6 +86,8 @@ Turning off deletion protection, disabling its official-preset scope, or disabli
 
 Disabling or uninstalling the plugin also releases its command filters, budget adapters, and MCP service. Host permission restrictions and changes owned by other plugins are preserved.
 
+If the plugin is reinstalled or the selected preset changes during recovery, the current installation and latest selection take precedence over the fallback. Recovery module updates retain existing conversation registrations and stop late writes from the retired module.
+
 The profile retains `.super-code-recovery` and its configuration entry so recovery works after a cold start without the npm package. It restores registered conversations and revokes old plugin deletion rules; it contains no Super Code tools or model configuration. An upgrade registers older conversations whose preset definitions still exist. If a preset was deleted or renamed before registration, first restore its definition from the installation backup, then reinstall and load the plugin to register the conversation. If Standard is also unavailable, the error is preserved rather than silently choosing another preset.
 
 ## Sidebar

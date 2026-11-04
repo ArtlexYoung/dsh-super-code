@@ -43,10 +43,13 @@ export interface DeclarationState {
 export declare class DeclarationStateFile implements DeclarationState {
     private readonly path;
     private value;
+    private content;
+    private tail;
     private constructor();
     static open(path: string): Promise<DeclarationStateFile>;
     get(): DeclarationSettings;
     update(patch: Partial<DeclarationSettings>): Promise<void>;
+    private write;
 }
 /** Only marked bundle rows or UUID-matched manual installations may be replaced. */
 export declare class DeclaredPresetInstaller {

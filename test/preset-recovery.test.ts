@@ -10,7 +10,7 @@ import { createScope, scopeOf, scopeTarget } from '@deepseek-ai/dsh-scope'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import yaml from 'js-yaml'
 import { RecoveryState, installRecovery } from '../src/dsh/preset-recovery-runtime.js'
-import { prepareRecovery } from '../src/dsh/preset-recovery.js'
+import { prepareRecovery, registerRecoverySessions } from '../src/dsh/preset-recovery.js'
 import { declarationSchema } from '../src/dsh/preset-declaration.js'
 
 async function fixture(t: test.TestContext, forms = false, beforeMount: (id: string) => Promise<void> = async () => {}) {
@@ -297,6 +297,31 @@ test('upgrading registers existing owned sessions without modifying their event 
   assert.equal(agent.session.seq, 1)
 })
 
+test('an unreadable unrelated preset cannot block registration of healthy Super Code histories', async t => {
+  const f = await fixture(t), agent = f.agent()
+  f.ctx.provide('superCodeSessionRecovery', f.service)
+  f.ctx.provide('sessionQuery', { listSessions: async () => [{ header: agent.session.header }],
+    readSession: async () => ({ session: agent.session.header, events: agent.session.snapshotEvents() }) })
+  f.registry.list = async () => [{ id: 'unrelated-broken', content: '' }, { id: 'renamed-code', content: '' }]
+  f.registry.readDocument = async id => {
+    if (id === 'unrelated-broken') throw new Error('Unrelated malformed preset')
+    return { agentPreset: id, content: '- name: dsh-super-code/super-code\n' }
+  }
+  await registerRecoverySessions(f.ctx)
+  assert.equal(f.state.value.sessions[agent.session.id]?.preset, 'renamed-code')
+  assert.equal(agent.session.seq, 1)
+})
+
+test('a disabled Super Code component is not sufficient to claim a historical preset', async t => {
+  const f = await fixture(t), agent = f.agent()
+  f.ctx.provide('superCodeSessionRecovery', f.service)
+  f.ctx.provide('sessionQuery', { listSessions: async () => [{ header: agent.session.header }],
+    readSession: async () => ({ session: agent.session.header, events: agent.session.snapshotEvents() }) })
+  f.registry.readDocument = async id => ({ agentPreset: id, content: '- name: dsh-super-code/super-code\n  disabled: true\n' })
+  await registerRecoverySessions(f.ctx)
+  assert.equal(f.state.value.sessions[agent.session.id], undefined)
+})
+
 test('upgrade registration uses the latest selection and continues past an unreadable history', async t => {
   const f = await fixture(t), switched = f.agent('switched', 'standard'), official = f.agent('official', 'renamed-code')
   switched.session.append('agent-preset/selected', { agentPreset: 'renamed-code' })
@@ -381,6 +406,38 @@ test('serialized concurrent session records survive a cold read', async t => {
   await Promise.all([f.service.remember(a), f.service.remember(b)])
   const restored = await RecoveryState.open(f.config.statePath)
   assert.deepEqual(Object.keys(restored.value.sessions).sort(), ['first', 'second'])
+})
+
+for (const change of ['foreign', 'corrupt', 'removed', 'other-writer'] as const) {
+  test(`recovery state refuses to overwrite a ${change} record changed after opening`, async t => {
+    const f = await fixture(t)
+    await f.service.remember(f.agent('before'))
+    let changed: string | false
+    if (change === 'removed') { await rm(f.config.statePath); changed = false }
+    else if (change === 'foreign') changed = JSON.stringify({ plugin: 'another-plugin', format: 1, sessions: {} })
+    else if (change === 'corrupt') changed = '{corrupt'
+    else {
+      const other = await RecoveryState.open(f.config.statePath)
+      await other.save('external', { ...other.value.sessions.before! })
+      changed = await readFile(f.config.statePath, 'utf8')
+    }
+    if (typeof changed === 'string' && change !== 'other-writer') await writeFile(f.config.statePath, changed)
+    await assert.rejects(f.service.remember(f.agent('late')), /changed|missing|record/i)
+    if (changed === false) await assert.rejects(readFile(f.config.statePath), { code: 'ENOENT' })
+    else assert.equal(await readFile(f.config.statePath, 'utf8'), changed)
+    assert.equal(f.state.value.sessions.late, undefined)
+  })
+}
+
+test('reopening an externally updated owned record retains both writers registrations', async t => {
+  const f = await fixture(t)
+  await f.service.remember(f.agent('before'))
+  const other = await RecoveryState.open(f.config.statePath)
+  await other.save('external', { ...other.value.sessions.before! })
+  await assert.rejects(f.service.remember(f.agent('late')), /changed/)
+  const reopened = await RecoveryState.open(f.config.statePath)
+  await reopened.save('late', { ...reopened.value.sessions.before! })
+  assert.deepEqual(Object.keys((await RecoveryState.open(f.config.statePath)).value.sessions).sort(), ['before', 'external', 'late'])
 })
 
 test('uninstalled recovery revokes official minimal rules before downstream hooks and respects live installations', async t => {

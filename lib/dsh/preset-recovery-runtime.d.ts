@@ -38,9 +38,10 @@ export declare function compositionContent(ctx: Context, id: string): Promise<st
 export declare class RecoveryState {
     readonly path: string;
     readonly value: State;
+    private content;
     private tail;
     private constructor();
-    static open(path: string): Promise<RecoveryState>;
+    static open(path: string, required?: boolean): Promise<RecoveryState>;
     save(id: string, record: Record): Promise<void>;
     flush(): Promise<void>;
 }

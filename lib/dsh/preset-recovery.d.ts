@@ -8,6 +8,7 @@ interface PreparedRecovery {
 }
 /** Preserve the user's YAML and expressions, with a concrete backup and stale-write check. */
 export declare function prepareRecovery(patchPath: string, packagePath: string, source: string): Promise<PreparedRecovery>;
+export declare function registerRecoverySessions(ctx: Context): Promise<void>;
 export declare function applyPresetRecovery(ctx: Context): void;
 export {};
 //# sourceMappingURL=preset-recovery.d.ts.map

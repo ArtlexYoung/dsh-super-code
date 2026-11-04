@@ -28,11 +28,19 @@ function isBasicEngine(value: unknown): value is BasicCompactionEngine {
     && typeof engine.compactNow === 'function' && !!engine.config && Array.isArray(engine.config.modelPolicies)
 }
 
-function restoreOnDispose(ctx: Context, reference: WeakRef<BasicCompactionEngine>, descriptors: Record<string, PropertyDescriptor | undefined>): void {
+function restoreOnDispose(ctx: Context, reference: WeakRef<BasicCompactionEngine>, descriptors: Record<string, PropertyDescriptor | undefined>, lifetime: { active: boolean }): void {
+  // Weak references keep obsolete preset generations collectible.
+  const installed = Object.fromEntries(Object.keys(descriptors).map(key => {
+    const descriptor = Object.getOwnPropertyDescriptor(reference.deref()!, key)!
+    return [key, new WeakRef<Function>(descriptor.get ?? descriptor.value)]
+  }))
   ctx.effect(() => () => {
+    lifetime.active = false
     const target = reference.deref()
     if (!target) return
     for (const [key, descriptor] of Object.entries(descriptors)) {
+      const present = Object.getOwnPropertyDescriptor(target, key)
+      if (!present?.configurable || (present.get ?? present.value) !== installed[key]!.deref()) continue
       if (descriptor) Object.defineProperty(target, key, descriptor)
       else Reflect.deleteProperty(target, key)
     }
@@ -54,8 +62,10 @@ function mergedConfig(base: EngineConfig, budgets: Budgets): EngineConfig {
 
 function bridge(ctx: Context, engine: BasicCompactionEngine, select: (agent: Agent) => Budgets | false): RunPolicy {
   const base = engine.config
+  const lifetime = { active: true }
   const cached = new WeakMap<Agent, Policy>()
   const policy = (agent: Agent): Policy | false => {
+    if (!lifetime.active) return false
     const budgets = select(agent)
     if (!budgets) return false
     let value = cached.get(agent)
@@ -66,7 +76,7 @@ function bridge(ctx: Context, engine: BasicCompactionEngine, select: (agent: Age
     .map(key => [key, Object.getOwnPropertyDescriptor(engine, key)]))
   Object.defineProperty(engine, 'config', { configurable: true, get: () => {
     const active = current.getStore()
-    return active && active.engine === engine ? active.config : base
+    return lifetime.active && active && active.engine === engine ? active.config : base
   } })
   const pressure = engine.compactIfNeeded, region = engine.compactRegion, now = engine.compactNow
   const run: RunPolicy = (agent, action) => {
@@ -78,7 +88,7 @@ function bridge(ctx: Context, engine: BasicCompactionEngine, select: (agent: Age
   engine.compactRegion = (start, end, agent, signal) => run(agent, () => region.call(engine, start, end, agent, signal))
   engine.compactNow = (agent, signal, command) => run(agent, () => now.call(engine, agent, signal, command))
   // Weak ownership avoids retaining obsolete preset generations for a long conversation.
-  restoreOnDispose(ctx, new WeakRef(engine), descriptors)
+  restoreOnDispose(ctx, new WeakRef(engine), descriptors, lifetime)
   return run
 }
 

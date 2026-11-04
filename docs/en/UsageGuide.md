@@ -78,6 +78,16 @@ Settings shows the **plugin version** and the **preset version** separately.
 - The old content is backed up in `.super-code-backup-*`: under the user preset root for directory hosts, under the current profile for declarative hosts (ownership records in `.super-code-presets.json`).
 - A failed install restores automatically. After an unexpected crash, restore manually from the backup.
 
+### Continuing after uninstall
+
+After loading a plugin version with recovery support, you can still read existing history when Super Code is uninstalled. Former Super Code conversations continue with the official Standard preset and display a one-time switch notice. The model, working directory and host permissions are preserved. Conversations already using an official preset keep that preset.
+
+Turning off deletion protection, disabling its official-preset scope, or disabling or uninstalling the plugin revokes previously injected deletion rules on the next continuation, including Minimal's rules. Switching between strict and relaxed modes retires the previous rule; cold restarts do not add the same rule again. Original history and your own deletion instructions are preserved. If an older rule has already been compacted into a summary, an explicit revocation is added without discarding the summary's other context.
+
+Disabling or uninstalling the plugin also releases its command filters, budget adapters, and MCP service. Host permission restrictions and changes owned by other plugins are preserved.
+
+The profile retains `.super-code-recovery` and its configuration entry so recovery works after a cold start without the npm package. It restores registered conversations and revokes old plugin deletion rules; it contains no Super Code tools or model configuration. An upgrade registers older conversations whose preset definitions still exist. If a preset was deleted or renamed before registration, first restore its definition from the installation backup, then reinstall and load the plugin to register the conversation. If Standard is also unavailable, the error is preserved rather than silently choosing another preset.
+
 ## Sidebar
 
 In the right sidebar choose **Super Code**. Three sections, at most one open at a time, Tasks by default. Click the open heading to collapse all sections. Switching keeps reading position, filters, and drafts. The UI follows Harness's Chinese/English setting.
@@ -244,6 +254,7 @@ Directories:
 
 - The DSH workspace list is reread every time you open the tab. On first setup, existing workspaces are preselected; workspaces added later are **not** granted access automatically.
 - Add directories with the directory picker. Uncheck to revoke; unchecking the last one also turns MCP off.
+- After revocation, the old directory request reports rejection. The caller must submit a new request to ask for access again.
 
 Connections:
 
@@ -251,7 +262,7 @@ Connections:
 - Disconnect clients from the Connection tab; idle connections drop after 10 minutes. Disconnecting doesn't cancel accepted tasks.
 - "Connected conversations" on Home means the linked MCP connection is still online, regardless of whether the task finished. After disconnect they count as past conversations.
 
-Port conflicts are reported directly. Use the URL shown on the page.
+Port conflicts are reported directly. Choose another port, or resolve the conflict and click **Retry**. If settings were saved but connection cleanup failed, **Retry** restores the connection using those settings. Failed saves retain your draft for retry. Use the URL shown on the page.
 
 ### Configure the client
 

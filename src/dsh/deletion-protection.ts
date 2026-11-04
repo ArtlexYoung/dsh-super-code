@@ -7,6 +7,7 @@ import type {} from '@deepseek-ai/dsh-system-prompt'
 import { configurationOf, deletionProtectionMode } from './budgets.js'
 import type { DeletionProtectionMode } from './budgets.js'
 import { deletionCommand } from '../core/deletion-command.js'
+import { deletionNoticeMatches, revokeDeletionNotices } from './preset-recovery-runtime.js'
 
 declare module '@deepseek-ai/dsh-llm' {
   interface MessageSourceMap { 'dsh-super-code/deletion-protection': { kind: 'dsh-super-code/deletion-protection' } }
@@ -41,20 +42,26 @@ export function applyDeletionProtection(ctx: Context): void {
       text: ({ agent }) => instruction(modeFor(agent)) })
     // Minimal owns a complete system prompt and suppresses global context.
     // Use its public pre-step message seam so the policy remains logged and replayable.
-    const minimalNotices = new WeakMap<Agent, DeletionProtectionMode>()
-    owner.on('agent/pre-step', async ({ agent }, next) => {
+    owner.on('agent/pre-step', async ({ agent, signal }, next) => {
+      const desired = (): string => (owner.get('agentPresets') as Presets | undefined)?.composedPreset(agent.ctx) === 'minimal'
+        ? instruction(modeFor(agent)) : ''
+      const retireStale = (text: string): void => {
+        if (text && deletionNoticeMatches(agent.session, text)) return
+        signal.throwIfAborted()
+        revokeDeletionNotices(agent.session, createUserMessage)
+      }
+      retireStale(desired())
       const result = await next()
-      const presets = owner.get('agentPresets') as Presets | undefined
-      if (result.kind !== 'enter' || presets?.composedPreset(agent.ctx) !== 'minimal') return result
-      const mode = modeFor(agent), previous = minimalNotices.get(agent)
-      if (previous === mode || mode === 'off' && previous === undefined) return result
-      minimalNotices.set(agent, mode)
+      if (result.kind !== 'enter') return result
+      const text = desired()
+      // Configuration can change while the host waits for pre-step maintenance.
+      retireStale(text)
+      if (!text || deletionNoticeMatches(agent.session, text)) return result
       const notice = createUserMessage({ source: { kind: 'dsh-super-code/deletion-protection' }, content: [{ type: 'text',
-        text: mode === 'off' ? '此预设的删除保护已关闭，先前的删除保护提示不再适用；宿主自身权限检查仍然有效。\nDeletion protection is now disabled for this preset. Earlier deletion-protection notices no longer apply; host permission checks still apply.'
-          : (previous === undefined ? '' : '删除保护模式已切换，以下规则取代先前的删除保护规则。\nThe deletion-protection mode has changed; the following rules replace earlier deletion-protection instructions.\n') + instruction(mode),
+        text,
       }] })
       return { ...result, messages: [...result.messages, notice] }
-    })
+    }, true)
     owner.on('tools/execute', async (exec, next) => {
       if (modeFor(exec.agent) !== 'strict' || !['bash', 'pwsh'].includes(exec.name)) return next()
       const args = exec.arguments as { command?: unknown; workdir?: unknown } | null

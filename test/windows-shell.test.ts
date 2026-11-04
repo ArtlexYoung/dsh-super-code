@@ -97,7 +97,7 @@ async function fixture(t: test.TestContext, options: { platform?: NodeJS.Platfor
   else ctx.provide('profileContext', { installAnchor: join(root, 'package.json') })
   const generation = {}, preset = createScope(ctx, generation)
   const pwshUrl = pathToFileURL(join(root, 'node_modules/@deepseek-ai/dsh-tool-pwsh/index.js')).href
-  let stopOfficial = async () => {}
+  let stopOfficial = async () => {}, stopShell = async () => {}
   const ids = new WeakMap<object, string>([[generation, options.official ?? 'super-code']])
   const creators = new Map<Agent, Agent | undefined>()
   if (options.official) {
@@ -118,7 +118,11 @@ async function fixture(t: test.TestContext, options: { platform?: NodeJS.Platfor
       stopOfficial = async () => { await feature.dispose() }
       // Wait for the public injection's async setup before emitting lifecycle events.
       await new Promise<void>(resolve => setImmediate(resolve))
-    } else await preset.ctx.plugin(shell)
+    } else {
+      const feature = preset.ctx.plugin(shell)
+      await feature
+      stopShell = async () => { await feature.dispose() }
+    }
   }
   finally { Object.defineProperty(process, 'platform', { value: platform }) }
   const make = (id: string, parent?: Agent, deny?: string[]) => {
@@ -146,7 +150,7 @@ async function fixture(t: test.TestContext, options: { platform?: NodeJS.Platfor
     await next.ctx.plugin(await import(pwshUrl))
     return key
   }
-  return { ctx, policy, make, names, prompt, call, generation, anotherPreset, stopOfficial, started: started.promise,
+  return { ctx, policy, make, names, prompt, call, generation, anotherPreset, stopOfficial, stopShell, started: started.promise,
     preparations: () => preparations, broken(value: boolean) { broken = value } }
 }
 
@@ -300,6 +304,34 @@ test('a broken optional Bash tool does not break an official Agent while its sco
   const enabled = f.make('broken-tool-on')
   await assert.rejects(enabled.ready(), /Fixture Bash tool registration failed/)
   assert.equal((await f.call(enabled.agent, 'pwsh')).isError, true)
+})
+
+test('Super Code shell unload releases only its own restrictions before the live Agent uses the official shell', async t => {
+  for (const customProvider of [false, true]) {
+    const f = await fixture(t, { customProvider }), item = f.make('super-code-unload'), restricted = f.make('user-denied-pwsh', undefined, ['pwsh'])
+    if (customProvider) {
+      await assert.rejects(item.ready(), /Unsupported host shell provider/)
+      await assert.rejects(restricted.ready(), /Unsupported host shell provider/)
+    } else { await item.ready(); await restricted.ready() }
+    const official = await f.anotherPreset('standard')
+    item.binding.rebind(official); restricted.binding.rebind(official)
+    await f.stopShell()
+    assert.equal((await f.call(item.agent, 'pwsh')).isError, false)
+    assert.equal((await f.call(restricted.agent, 'pwsh')).isError, true, 'the host/user restriction is preserved')
+    assert.doesNotMatch(await f.prompt(item.agent), /Windows with GNU Bash/)
+  }
+})
+
+test('unloading a Super Code shell during failed preparation leaves no new restrictions on the surviving Agent', async t => {
+  const gate = Promise.withResolvers<void>(), f = await fixture(t, { preparationGate: gate.promise })
+  const item = f.make('unload-during-preparation'), pending = item.ready()
+  await f.started
+  const official = await f.anotherPreset('standard')
+  item.binding.rebind(official)
+  await f.stopShell()
+  f.broken(true); gate.resolve()
+  await pending
+  assert.equal((await f.call(item.agent, 'pwsh')).isError, false)
 })
 
 test('Super Code children sharing a preset generation retain their live creator shell choice', async t => {

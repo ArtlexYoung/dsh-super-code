@@ -132,12 +132,21 @@ export async function apply(ctx: Context): Promise<void> {
     await ctx.plugin(await hostTool(ctx, '@deepseek-ai/dsh-tool-bash'))
     return
   }
+  let disposed = false
+  ctx.effect(() => () => { disposed = true })
+  const restrict = (agent: Agent, deny: string[]): void => {
+    if (disposed) return
+    const tools = agent.ctx.get('tools')!
+    const release = ctx.effect(() => tools.restrict({ deny }))
+    agent.ctx.effect(() => release)
+  }
   const { scopeParentOf } = await hostModule(ctx, '@deepseek-ai/dsh-scope') as { scopeParentOf(key: object): object | undefined }
   const prepare = await mountBundledBash(ctx)
   if (!prepare) {
     await ctx.plugin(await hostTool(ctx, '@deepseek-ai/dsh-tool-pwsh'))
     const choices = new WeakMap<object, boolean>()
     const check = (agent: Agent): void => {
+      if (disposed) return
       const creator = creatorOf(ctx, agent)
       let enabled = creator ? choices.get(creator) : undefined
       for (let current: object | undefined = agent; current; current = scopeParentOf(current)) {
@@ -146,7 +155,7 @@ export async function apply(ctx: Context): Promise<void> {
       enabled ??= configurationOf(ctx, agent).windowsBash !== false
       choices.set(agent, enabled)
       if (enabled) {
-        agent.ctx.get('tools')!.restrict({ deny: ['pwsh'] })
+        restrict(agent, ['pwsh'])
         throw new Error('Unsupported host shell provider; disable bundled Bash to use the host shell')
       }
     }
@@ -172,6 +181,7 @@ export async function apply(ctx: Context): Promise<void> {
     return { ...assembled, sections: assembled.sections.filter(section => section.name !== hidden) }
   })
   const install = (agent: Agent): Promise<void> => {
+    if (disposed) return Promise.resolve()
     const existing = installed.get(agent)
     if (existing) return existing.ready
     // Descendants retain their conversation's shell and capability filters.
@@ -181,16 +191,16 @@ export async function apply(ctx: Context): Promise<void> {
     }
     const creator = creatorOf(ctx, agent), inherited = creator && installed.get(creator)
     const enabled = inherited ? inherited.enabled : configurationOf(ctx, agent).windowsBash !== false
-    const tools = agent.ctx.get('tools')!
-    tools.restrict({ deny: [enabled ? 'pwsh' : 'bash'] })
+    restrict(agent, [enabled ? 'pwsh' : 'bash'])
     const ready = (async () => {
       if (enabled || inherited) {
         try {
           if (inherited) await inherited.ready
           else await prepare()
         } catch (error) {
+          if (disposed) return
           // Sibling recovery must not activate a conversation that failed preparation.
-          tools.restrict({ deny: ['bash'] })
+          restrict(agent, ['bash'])
           throw error
         }
       }

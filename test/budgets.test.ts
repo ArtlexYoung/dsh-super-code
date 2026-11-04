@@ -150,6 +150,122 @@ test('PTC unload restores an inherited resolve method without leaving an own pro
   assert.equal(Object.getOwnPropertyDescriptor(runtime, 'resolve'), undefined)
 })
 
+test('PTC unload revokes a waiting scope policy while another scope remains active', async t => {
+  const ctx = new Context()
+  const entered = Promise.withResolvers<void>(), resume = Promise.withResolvers<void>()
+  t.after(async () => { resume.resolve(); await ctx.fiber.dispose() })
+  const runtime = { timeout: { defaultMs: 120, maxMs: 600 }, resolve: (request: any) => ({ timeoutMs: request.timeoutMs ?? 120 }) }
+  const original = runtime.resolve
+  ctx.provide('ptcRuntime', runtime)
+  const a = {} as Agent, b = {} as Agent
+  const sa = createScope(ctx, a), sb = createScope(ctx, b)
+  await sa.ctx.plugin({ apply(owner: Context) { applyPtcBudget(owner, { ptcTimeoutMs: 600 }) } })
+  await sb.ctx.plugin({ apply(owner: Context) { applyPtcBudget(owner, { ptcTimeoutMs: 300 }) } })
+  const pending = ctx.waterfall(scopeTarget({}, a), 'tools/execute', { agent: a, name: 'run_code' } as any, async () => {
+    entered.resolve(); await resume.promise
+    return { isError: false, content: [], value: runtime.resolve({}) }
+  })
+  await entered.promise
+  await sa.dispose()
+  const active = await ctx.waterfall(scopeTarget({}, b), 'tools/execute', { agent: b, name: 'run_code' } as any,
+    async () => ({ isError: false, content: [], value: runtime.resolve({}) }))
+  resume.resolve()
+  assert.equal(active.value.timeoutMs, 300, 'the surviving scope keeps its own budget')
+  assert.equal((await pending).value.timeoutMs, 120, 'the unloaded scope must not retain its old budget')
+  await sb.dispose()
+  assert.equal(runtime.resolve, original)
+})
+
+test('PTC middleware queued before unload no longer rejects the original provider', async t => {
+  const ctx = new Context()
+  const entered = Promise.withResolvers<void>(), resume = Promise.withResolvers<void>()
+  t.after(async () => { resume.resolve(); await ctx.fiber.dispose() })
+  const runtime = { resolve: () => ({ timeoutMs: 120 }) }
+  ctx.provide('ptcRuntime', runtime)
+  ctx.on('tools/execute', async (_exec, next) => { entered.resolve(); await resume.promise; return next() })
+  const feature = ctx.plugin({ apply(owner: Context) { applyPtcBudget(owner, { ptcTimeoutMs: 600 }) } })
+  await feature
+  const pending = ctx.waterfall('tools/execute', { name: 'run_code' } as any,
+    async () => ({ isError: false, content: [], value: runtime.resolve() }))
+  await entered.promise
+  await feature.dispose()
+  resume.resolve()
+  assert.equal((await pending).value.timeoutMs, 120, 'a disposed listener must not validate an override the host no longer uses')
+})
+
+test('PTC unload leaves a later wrapper intact and deactivates its captured budget method', async t => {
+  const ctx = new Context()
+  const entered = Promise.withResolvers<void>(), resume = Promise.withResolvers<void>()
+  t.after(async () => { resume.resolve(); await ctx.fiber.dispose() })
+  const runtime = { timeout: { defaultMs: 120, maxMs: 600 }, resolve: (request: any) => ({ timeoutMs: request.timeoutMs ?? 120 }) }
+  ctx.provide('ptcRuntime', runtime)
+  const feature = ctx.plugin({ apply(owner: Context) { applyPtcBudget(owner, { ptcTimeoutMs: 600 }) } })
+  await feature
+  const captured = runtime.resolve
+  let calls = 0
+  const later: typeof captured = function (request) { calls++; return captured.call(this, request) }
+  runtime.resolve = later
+  const pending = ctx.waterfall('tools/execute', { name: 'run_code' } as any, async () => {
+    entered.resolve(); await resume.promise
+    return { isError: false, content: [], value: runtime.resolve({}) }
+  })
+  await entered.promise
+  await feature.dispose()
+  assert.equal(runtime.resolve, later)
+  resume.resolve()
+  assert.equal((await pending).value.timeoutMs, 120)
+  assert.equal(calls, 1, 'the later wrapper remains in the call chain')
+})
+
+test('PTC reload keeps a retired bridge transparent to a later provider wrapper', async t => {
+  const ctx = new Context()
+  t.after(() => ctx.fiber.dispose())
+  const runtime = { timeout: { defaultMs: 120, maxMs: 600 }, resolve: (request: any) => ({ timeoutMs: request.timeoutMs ?? 120 }) }
+  ctx.provide('ptcRuntime', runtime)
+  const old = ctx.plugin({ apply(owner: Context) { applyPtcBudget(owner, { ptcTimeoutMs: 600 }) } })
+  await old
+  const captured = runtime.resolve
+  let calls = 0
+  const later: typeof captured = function (request) {
+    calls++
+    // This provider wrapper deliberately chooses the host default deadline.
+    return captured.call(this, { ...request, timeoutMs: undefined })
+  }
+  runtime.resolve = later
+  await old.dispose()
+  const next = ctx.plugin({ apply(owner: Context) { applyPtcBudget(owner, { ptcTimeoutMs: 300 }) } })
+  await next
+  const result = await ctx.waterfall('tools/execute', { name: 'run_code' } as any,
+    async () => ({ isError: false, content: [], value: runtime.resolve({}) }))
+  assert.equal(result.value.timeoutMs, 120, 'the retired bridge cannot reapply the new scope budget after the later wrapper')
+  assert.equal(calls, 1)
+  await next.dispose()
+  assert.equal(runtime.resolve, later)
+})
+
+for (const globalFirst of [true, false]) {
+  test(`PTC nested unconfigured Agents keep host deadlines with the global listener ${globalFirst ? 'first' : 'last'}`, async t => {
+    const ctx = new Context()
+    t.after(() => ctx.fiber.dispose())
+    const runtime = { timeout: { defaultMs: 120, maxMs: 600 }, resolve: (request: any) => ({ timeoutMs: request.timeoutMs ?? 120 }) }
+    ctx.provide('ptcRuntime', runtime)
+    const a = {} as Agent, b = {} as Agent, scope = createScope(ctx, a)
+    const global = () => ctx.plugin({ apply(owner: Context) { applyPtcBudget(owner, () => ({})) } })
+    const scoped = () => scope.ctx.plugin({ apply(owner: Context) { applyPtcBudget(owner, { ptcTimeoutMs: 600 }) } })
+    if (globalFirst) { await global(); await scoped() }
+    else { await scoped(); await global() }
+    const call = (agent: Agent, action: () => Promise<unknown>) => ctx.waterfall(scopeTarget({}, agent), 'tools/execute', { agent, name: 'run_code' } as any, action as any)
+    const observed: number[] = []
+    await call(a, async () => {
+      observed.push(runtime.resolve({}).timeoutMs)
+      await call(b, async () => { observed.push(runtime.resolve({}).timeoutMs); return { isError: false, content: [] } })
+      observed.push(runtime.resolve({}).timeoutMs)
+      return { isError: false, content: [] }
+    })
+    assert.deepEqual(observed, [600, 120, 600], 'the nested Agent has no budget override; the parent policy resumes afterwards')
+  })
+}
+
 test('an unconfigured plugin applies legacy compaction and elapsed budgets to a real Agent', async t => {
   const ctx = new Context()
   t.after(() => ctx.fiber.dispose())

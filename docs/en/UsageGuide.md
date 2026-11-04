@@ -195,6 +195,7 @@ maxContextBytes: 32768       # Super Code: task-memory context bytes
 ```
 
 - A shorter deadline set explicitly on a call still applies.
+- After disabling or uninstalling the plugin, PTC calls whose execution inputs have not yet been resolved use the host deadline. Already-started calls keep their original deadline and are not restarted to restore settings.
 - Older hosts time PTC by busy CPU time; newer hosts by elapsed time. The two aren't comparable.
 - Raising `maxTasks` or `maxContextBytes` uses more context. The defaults are usually fine.
 

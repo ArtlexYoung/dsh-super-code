@@ -10,7 +10,8 @@ interface Runtime {
   readonly timeout?: { defaultMs: number; maxMs: number }
   resolve(request: Request): Request
 }
-const current = new AsyncLocalStorage<Budgets>()
+interface Policy { readonly budgets: Budgets; readonly lifetime: { active: boolean }; readonly execution: object }
+const current = new AsyncLocalStorage<Policy | false>()
 const bridges = new WeakMap<Runtime, { users: number; original: Runtime['resolve']; wrapped: Runtime['resolve']; descriptor: PropertyDescriptor | undefined }>()
 
 /** One reference-counted adapter per provider, removed when its last scope unloads. */
@@ -21,8 +22,10 @@ function retainBridge(service: Runtime): () => void {
   if (!bridge) {
     const original = runtime.resolve
     const wrapped: Runtime['resolve'] = function (this: Runtime, request) {
-      const budget = current.getStore()
-      if (!budget) return original.call(this, request)
+      const policy = current.getStore()
+      // A later provider wrapper may still hold this method after our last scope unloads.
+      if (!bridge?.users || !policy || !policy.lifetime.active) return original.call(this, request)
+      const budget = policy.budgets
       const limits = this.timeout
       if (!limits) throw new Error('This PTC provider does not support configured elapsed budgets')
       const cap = Math.min(budget.ptcMaxTimeoutMs ?? limits.maxMs, limits.maxMs)
@@ -53,15 +56,20 @@ export function applyPtcBudget(ctx: Context, policy: Budgets | ((agent?: Agent) 
   if (typeof policy !== 'function' && policy.ptcTimeoutMs === undefined && policy.ptcMaxTimeoutMs === undefined) return
   ctx.inject(['ptcRuntime'], owner => {
     const runtime = owner.get('ptcRuntime') as Runtime
+    const lifetime = { active: true }
     const release = retainBridge(runtime)
-    owner.effect(() => release)
+    owner.effect(() => () => { lifetime.active = false; release() })
     owner.on('tools/execute', (exec, next) => {
-      if (exec.name !== 'run_code') return next()
+      if (!lifetime.active || exec.name !== 'run_code') return next()
       const budgets = typeof policy === 'function' ? policy(exec.agent) : policy
-      if (budgets.ptcTimeoutMs === undefined && budgets.ptcMaxTimeoutMs === undefined) return next()
+      if (budgets.ptcTimeoutMs === undefined && budgets.ptcMaxTimeoutMs === undefined) {
+        // Keep another listener's policy for this execution, but isolate nested calls.
+        const inherited = current.getStore()
+        return inherited && inherited.execution === exec ? next() : current.run(false, next)
+      }
       if (!runtime.timeout) throw new Error('This PTC provider does not support configured elapsed budgets')
       if ((budgets.ptcTimeoutMs ?? 0) > runtime.timeout.maxMs || (budgets.ptcMaxTimeoutMs ?? 0) > runtime.timeout.maxMs) throw new Error('Configured PTC budget exceeds the host provider ceiling')
-      return current.run(budgets, next)
+      return current.run({ budgets, lifetime, execution: exec }, next)
     })
   })
 }

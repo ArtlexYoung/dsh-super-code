@@ -1,6 +1,6 @@
 /** Manage this plugin's declarations through the host's profile patch layer. */
 import { randomUUID } from 'node:crypto'
-import { lstat, mkdtemp, readFile, rename, rm, writeFile } from 'node:fs/promises'
+import { lstat, mkdtemp, readFile, rename, rm, unlink, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import yaml from 'js-yaml'
 import { displayCopy, type DisplayBaseline } from './preset-metadata.js'
@@ -238,20 +238,15 @@ export class DeclaredPresetInstaller {
   private async save(patch: object, entry: DeclarationEntry | false, persist: () => Promise<void>, validate?: () => Promise<void>): Promise<void> {
     const path = this.host.patchPath
     const expectedEntry = entry ? dump(entry.options) : ''
-    let original = ''
-    try {
-      const stat = await lstat(path)
-      if (!stat.isFile() || stat.isSymbolicLink()) throw new Error('Unsafe patch path')
-      original = await readFile(path, 'utf8')
-    } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error }
-    const rows = original.trim() ? yaml.load(original, { schema: declarationSchema }) : []
+    const original = await this.readPatch(), text = original || ''
+    const rows = text.trim() ? yaml.load(text, { schema: declarationSchema }) : []
     if (!Array.isArray(rows)) throw new Error('Invalid profile patch')
     // Block YAML can be extended without changing the user's comments or fields.
-    const prefix = rows.length && /^[ \t]*-/m.test(original) ? original.trimEnd() + '\n'
-      : rows.length ? dump(rows) : original.replace(/^[ \t]*\[\][ \t]*(?:#.*)?$/m, '').trimEnd() + '\n'
+    const prefix = rows.length && /^[ \t]*-/m.test(text) ? text.trimEnd() + '\n'
+      : rows.length ? dump(rows) : text.replace(/^[ \t]*\[\][ \t]*(?:#.*)?$/m, '').trimEnd() + '\n'
     const content = prefix + dump([patch])
     const backup = await mkdtemp(join(dirname(path), '.super-code-backup-'))
-    await writeFile(join(backup, 'cordis.patch.yml'), original, { flag: 'wx', mode: 0o600 })
+    await writeFile(join(backup, 'cordis.patch.yml'), text, { flag: 'wx', mode: 0o600 })
     if (entry) await writeFile(join(backup, 'preset.yml'), dump(entry.options.config), { flag: 'wx', mode: 0o600 })
     const stored = this.settings.get()
     let committed = false, persisted = false
@@ -266,17 +261,26 @@ export class DeclaredPresetInstaller {
       if (validate) await validate()
     } catch (error) {
       if (committed && await this.readPatch() === content) {
-        await this.atomicWrite(original)
-        if (persisted) await this.settings.update({ declaration: stored.declaration, declarationDisplay: stored.declarationDisplay })
-        await this.host.reload()
+        if (original === false) await unlink(path)
+        else await this.atomicWrite(original)
+        // Reconcile the restored host patch even when ownership persistence is
+        // unavailable; otherwise the failed preset can remain active in memory.
+        const failures: unknown[] = []
+        try { if (persisted) await this.settings.update({ declaration: stored.declaration, declarationDisplay: stored.declarationDisplay }) }
+        catch (failure) { failures.push(failure) }
+        try { await this.host.reload() } catch (failure) { failures.push(failure) }
+        if (failures.length) throw new AggregateError([error, ...failures], 'Preset rollback could not complete')
       }
       throw error
     }
   }
 
-  private async readPatch(): Promise<string> {
-    try { return await readFile(this.host.patchPath, 'utf8') }
-    catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return ''; throw error }
+  private async readPatch(): Promise<string | false> {
+    try {
+      const stat = await lstat(this.host.patchPath)
+      if (!stat.isFile() || stat.isSymbolicLink()) throw new Error('Unsafe patch path')
+      return await readFile(this.host.patchPath, 'utf8')
+    } catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return false; throw error }
   }
 
   private async atomicWrite(content: string): Promise<void> {

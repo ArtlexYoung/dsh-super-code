@@ -1,6 +1,6 @@
 import test, { type TestContext } from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtemp, mkdir, writeFile, readFile, rm, symlink, readdir } from 'node:fs/promises'
+import { mkdtemp, mkdir, writeFile, readFile, rm, symlink, readdir, rename, cp, lstat } from 'node:fs/promises'
 import { pathToFileURL } from 'node:url'
 import { join, resolve } from 'node:path'
 import { tmpdir } from 'node:os'
@@ -172,6 +172,102 @@ test('double installation has one winner; failed persistence cleans only the new
   f.failWrites()
   assert.equal((await installer.install('failed')).error, 'install-failed')
   assert.deepEqual(await readdir(f.user), ['duplicate'])
+})
+
+for (const replacement of ['directory', 'symlink'] as const) test(`failed installation preserves a substituted ${replacement} during settings persistence`, async t => {
+  const f = await fixture(t), target = join(f.user, 'replaced'), saved = join(f.root, 'saved-installation')
+  f.settings.update = async () => {
+    await rename(target, saved)
+    if (replacement === 'symlink') {
+      const external = join(f.root, 'external')
+      await mkdir(external)
+      await symlink(external, target)
+    } else await mkdir(target)
+    await writeFile(join(target, 'keep.txt'), 'User replacement must survive')
+    throw new Error('Persistence failed after replacement')
+  }
+  assert.equal((await f.create().install('replaced')).error, 'install-failed')
+  assert.equal(await readFile(join(target, 'keep.txt'), 'utf8'), 'User replacement must survive')
+  assert.equal(await readFile(join(saved, 'agent.cordis.yml'), 'utf8'), '[]\n')
+  assert.equal((await lstat(target)).isSymbolicLink(), replacement === 'symlink')
+})
+
+for (const substitution of ['missing-marker', 'wrong-token', 'copied-directory', 'symlink-marker'] as const) {
+  test(`stale directory ownership cannot migrate metadata or report installed after ${substitution}`, async t => {
+    const f = await fixture(t), installer = f.create()
+    await writeFile(join(f.source, 'super-code', 'preset.yml'), 'name: Super Code\ndescription: A faster, more efficient, smarter coding mode.\n')
+    assert.equal((await installer.install('owned')).ok, true)
+    const directory = join(f.user, 'owned'), path = join(directory, 'preset.yml')
+    const original = await readFile(path, 'utf8'), marker = join(directory, '.super-code-installation.json')
+    if (substitution === 'missing-marker') await rm(marker)
+    else if (substitution === 'wrong-token') await writeFile(marker, JSON.stringify({ plugin: 'dsh-super-code', id: 'owned', token: 'another-token' }))
+    else if (substitution === 'symlink-marker') {
+      await rename(marker, join(f.root, 'external-marker.json'))
+      await symlink(join(f.root, 'external-marker.json'), marker)
+    }
+    else {
+      await rename(directory, join(f.root, 'original-directory'))
+      await cp(join(f.root, 'original-directory'), directory, { recursive: true })
+    }
+    assert.deepEqual(await installer.synchronize('zh'), { changed: false })
+    assert.equal(await readFile(path, 'utf8'), original)
+    assert.equal((await installer.status()).state, 'conflict')
+    assert.equal((await installer.status()).userConflict, true)
+  })
+}
+
+test('metadata migration revalidates ownership after asynchronous settings persistence', async t => {
+  const f = await fixture(t), installer = f.create()
+  assert.equal((await installer.install('owned')).ok, true)
+  const path = join(f.user, 'owned', 'preset.yml'), original = await readFile(path, 'utf8')
+  const marker = join(f.user, 'owned', '.super-code-installation.json'), content = await readFile(marker, 'utf8')
+  const update = f.settings.update
+  f.settings.update = async patch => {
+    if ('pendingDisplay' in patch && !('display' in patch)) await writeFile(marker, '{}')
+    await update(patch)
+  }
+  await assert.rejects(installer.synchronize('zh'), /ownership changed/)
+  assert.equal(await readFile(path, 'utf8'), original)
+  f.settings.update = update
+  await writeFile(marker, content)
+  assert.deepEqual(await f.create().synchronize('zh'), { changed: true })
+})
+
+test('legacy identity records remain valid but a display baseline alone never establishes ownership', async t => {
+  const f = await fixture(t), installer = f.create()
+  assert.equal((await installer.install('legacy')).ok, true)
+  await f.settings.update({ installations: undefined })
+  assert.equal((await f.create().status()).state, 'installed')
+  assert.deepEqual(await f.create().synchronize('zh'), { changed: true })
+  await f.settings.update({ installation: undefined })
+  const path = join(f.user, 'legacy', 'preset.yml'), content = await readFile(path, 'utf8')
+  assert.deepEqual(await f.create().synchronize('en'), { changed: false })
+  assert.equal(await readFile(path, 'utf8'), content)
+  assert.equal((await f.create().status()).state, 'conflict')
+})
+
+test('a substituted older copy is preserved while other recorded copies still follow language after restart', async t => {
+  const f = await fixture(t), installer = f.create()
+  assert.equal((await installer.install('first')).ok, true)
+  assert.equal((await installer.install('second')).ok, true)
+  const path = join(f.user, 'first', 'preset.yml'), content = await readFile(path, 'utf8')
+  await rename(join(f.user, 'first'), join(f.root, 'original-first'))
+  await cp(join(f.root, 'original-first'), join(f.user, 'first'), { recursive: true })
+  assert.deepEqual(await f.create().synchronize('zh'), { changed: true })
+  assert.equal(await readFile(path, 'utf8'), content)
+  assert.match(await readFile(join(f.user, 'second', 'preset.yml'), 'utf8'), /Super Code 模式/)
+})
+
+test('ownership supports canonical user-root aliases and ignores unavailable unrelated roots', async t => {
+  const f = await fixture(t), alias = join(f.root, 'user-alias')
+  await mkdir(f.user)
+  await symlink(f.user, alias)
+  f.roster.roots.splice(0, 1, { path: alias, trust: 'user' })
+  assert.equal((await f.create().install('aliased')).ok, true)
+  f.roster.roots.push({ path: join(f.root, 'missing-root'), trust: 'user' })
+  assert.equal((await f.create().status()).state, 'installed')
+  assert.equal((await f.create().reinstall('aliased', 'renamed')).ok, true)
+  assert.equal((await f.create().status()).id, 'renamed')
 })
 
 test('a broken bundled source never creates a user copy and first-check failure does not retry', async t => {

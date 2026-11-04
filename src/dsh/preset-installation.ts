@@ -7,17 +7,19 @@ import { createRequire } from 'node:module'
 import type { Context } from '@deepseek-ai/cordis'
 import type {} from '@deepseek-ai/cordis-plugin-loader'
 import s from '@deepseek-ai/schemastery'
-import { copyBundledPreset, writableRoot, type DirectoryPresets } from './preset-files.js'
+import { copyBundledPreset, writableRoot, type DirectoryPreset, type DirectoryPresets } from './preset-files.js'
 import { displayCopy, migrateMetadata, type DisplayBaseline } from './preset-metadata.js'
 import { compositionVersion, directoryVersion, pluginVersion } from './preset-version.js'
 import { DeclarationStateFile, DeclaredPresetInstaller, type DeclarationHost } from './preset-declaration.js'
 import type { SettingsScope } from '@deepseek-ai/dsh-settings'
 import { Remote, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
 
+interface InstallationIdentity { id: string; path: string; token: string; dev: number; ino: number }
 interface InstallationSettings {
   checked: boolean
   installedId: string
-  installation?: { id: string; path: string; token: string; dev: number; ino: number }
+  installation?: InstallationIdentity
+  installations?: Record<string, InstallationIdentity>
   display?: Record<string, DisplayBaseline>
   pendingDisplay?: Record<string, DisplayBaseline>
 }
@@ -48,6 +50,17 @@ async function exists(path: string): Promise<boolean> {
   }
 }
 
+function installationRecords(settings: InstallationSettings): Record<string, InstallationIdentity> {
+  return { ...settings.installations, ...(settings.installation ? { [settings.installation.id]: settings.installation } : {}) }
+}
+
+async function sameDirectory(path: string, identity: { dev: number; ino: number }): Promise<boolean> {
+  try {
+    const stat = await lstat(path)
+    return stat.isDirectory() && !stat.isSymbolicLink() && stat.dev === identity.dev && stat.ino === identity.ino
+  } catch { return false }
+}
+
 /** Serialized writes protect double clicks; mkdir claims only an unoccupied name. */
 export class PresetInstaller {
   private tail: Promise<unknown> = Promise.resolve()
@@ -59,20 +72,39 @@ export class PresetInstaller {
   ) {}
 
   async status(): Promise<PresetInstallationStatus> {
-    const savedId = this.settings.get().installedId
+    const stored = this.settings.get(), savedId = stored.installedId
     const id = validId.test(savedId) ? savedId : 'super-code'
     const presets = await this.roster.list()
     const preset = presets.find(row => row.id === id)
     const authorable = this.roster.roots.some(root => root.trust === 'user')
     const occupied = await this.occupied(id)
-    const userConflict = occupied && this.settings.get().installedId !== id
+    const ownedCopy = !!preset && await this.owns(preset, installationRecords(stored)[id])
+    const userConflict = occupied && !ownedCopy
     if (preset) {
       const owned = preset.trust === 'system' && resolve(preset.path) === join(this.bundledRoot, 'super-code', 'agent.cordis.yml')
       return { id, name: preset.name, authorable, userConflict, delivery: 'directory', pluginVersion,
         ...await directoryVersion(preset.path), state: preset.broken ? 'broken' : owned ? 'available'
-        : preset.trust === 'user' && this.settings.get().installedId === id ? 'installed' : 'conflict' }
+        : ownedCopy ? 'installed' : 'conflict' }
     }
     return { id, authorable, userConflict, delivery: 'directory', pluginVersion, state: occupied ? 'conflict' : 'missing' }
+  }
+
+  private async owns(preset: DirectoryPreset, identity?: InstallationIdentity): Promise<boolean> {
+    if (preset.trust !== 'user' || !identity || identity.id !== preset.id) return false
+    const directory = join(preset.path, '..')
+    try {
+      if (!await sameDirectory(directory, identity) || await realpath(directory) !== identity.path) return false
+      const roots = await Promise.all(this.roster.roots.filter(root => root.trust === 'user')
+        .map(async root => {
+          try { return join(await realpath(writableRoot([root], preset.id)), preset.id) }
+          catch { return false }
+        }))
+      if (!roots.includes(identity.path)) return false
+      const path = join(directory, ownershipFile), stat = await lstat(path)
+      if (!stat.isFile() || stat.isSymbolicLink()) return false
+      const marker = JSON.parse(await readFile(path, 'utf8'))
+      return marker?.plugin === 'dsh-super-code' && marker.id === identity.id && marker.token === identity.token
+    } catch { return false }
   }
 
   async initialize(): Promise<void> {
@@ -90,12 +122,13 @@ export class PresetInstaller {
     if (!/^[a-z]{2,8}(?:-[a-z0-9]{1,8})*$/i.test(language)) throw new Error('Invalid language')
     return await this.enqueue(async () => {
       const stored = this.settings.get()
+      const installations = installationRecords(stored)
       const display = { ...stored.display }
       const pendingDisplay = { ...stored.pendingDisplay }
       let changed = false
       for (const preset of await this.roster.list()) {
         const bundled = preset.trust === 'system' && resolve(preset.path) === join(this.bundledRoot, 'super-code', 'agent.cordis.yml')
-        const owned = preset.trust === 'user' && (preset.id === stored.installedId || Object.hasOwn(display, preset.path))
+        const owned = await this.owns(preset, installations[preset.id])
         if (!bundled && !owned) continue
         if ((await lstat(join(preset.path, '..'))).isSymbolicLink()) continue
         const metadata = join(preset.path, '..', 'preset.yml')
@@ -108,8 +141,10 @@ export class PresetInstaller {
           }
         }
         const result = await migrateMetadata(metadata, preset.id, preset, previous, displayCopy(language), async baseline => {
+          if (owned && !await this.owns(preset, installations[preset.id])) throw new Error('Preset ownership changed during migration')
           pendingDisplay[preset.path] = baseline
           await this.settings.update({ pendingDisplay: { ...pendingDisplay } })
+          if (owned && !await this.owns(preset, installations[preset.id])) throw new Error('Preset ownership changed during migration')
         })
         changed ||= result.changed
         display[preset.path] = result.baseline
@@ -134,24 +169,11 @@ export class PresetInstaller {
       if (name !== undefined && (typeof name !== 'string' || !name.trim() || name.length > 120)) return reject('invalid-display-name')
       const stored = this.settings.get(), installation = stored.installation
       if (!installation || previousId !== stored.installedId || installation.id !== previousId) return reject('ownership-unverified')
-      const roots = this.roster.roots.filter(root => root.trust === 'user')
-      const expected = await Promise.all(roots
-        .map(async root => {
-          try { return join(await realpath(writableRoot([root], previousId)), previousId) }
-          catch { return '' }
-        }))
-      if (!expected.includes(installation.path)) return reject('ownership-unverified')
-      const originalPath = join(writableRoot([roots[expected.indexOf(installation.path)]!], previousId), previousId)
+      const preset = (await this.roster.list()).find(row => row.id === previousId)
+      if (!preset || !await this.owns(preset, installation)) return reject('ownership-unverified')
+      const originalPath = join(preset.path, '..')
       let backup = ''
       try {
-        const directory = await lstat(installation.path)
-        const markerPath = join(installation.path, ownershipFile)
-        const markerStat = await lstat(markerPath)
-        if (!directory.isDirectory() || directory.isSymbolicLink() || !markerStat.isFile() || markerStat.isSymbolicLink()
-          || await realpath(installation.path) !== installation.path
-          || directory.dev !== installation.dev || directory.ino !== installation.ino) return reject('ownership-unverified')
-        const marker = JSON.parse(await readFile(markerPath, 'utf8'))
-        if (marker.plugin !== 'dsh-super-code' || marker.token !== installation.token || marker.id !== previousId) return reject('ownership-unverified')
         if (id !== previousId && ((await this.roster.list()).some(row => row.id === id) || await this.occupied(id))) return reject('name-taken')
         // A container without agent.cordis.yml is not a discoverable preset.
         // Retain it after success as a recovery copy of the removed preset.
@@ -196,7 +218,7 @@ export class PresetInstaller {
     if (!this.roster.roots.some(root => root.trust === 'user')) return reject('no-user-root')
     if ((await this.roster.list()).some(row => row.id === id) || await this.occupied(id)) return reject('name-taken')
     let staging = ''
-    let claimed = false
+    let claimed: { dev: number; ino: number } | false = false
     const target = join(writableRoot(this.roster.roots, id), id)
     try {
       const root = writableRoot(this.roster.roots, id)
@@ -207,22 +229,27 @@ export class PresetInstaller {
       const source = await copyBundledPreset(this.bundledRoot, staging, id, name?.trim() ?? 'Super Code')
       const prepared = source.directory
       await mkdir(target, { mode: 0o700 })
-      claimed = true
+      const claim = await lstat(target)
+      if (!claim.isDirectory() || claim.isSymbolicLink()) throw new Error('Installation directory changed')
+      claimed = { dev: claim.dev, ino: claim.ino }
       for (const entry of await readdir(prepared)) {
         await cp(join(prepared, entry), join(target, entry), { recursive: true, force: false, errorOnExist: true })
       }
       const token = randomUUID()
       await writeFile(join(target, ownershipFile), JSON.stringify({ plugin: 'dsh-super-code', id, token }), { flag: 'wx', mode: 0o600 })
       const directory = await lstat(target)
+      if (!await sameDirectory(target, claimed)) throw new Error('Installation directory changed')
       const installation = { id, path: await realpath(target), token, dev: directory.dev, ino: directory.ino }
-      const display = { ...this.settings.get().display }, pendingDisplay = { ...this.settings.get().pendingDisplay }
+      const stored = this.settings.get(), installations = installationRecords(stored)
+      const display = { ...stored.display }, pendingDisplay = { ...stored.pendingDisplay }
       if (replacedPath) {
         delete display[join(replacedPath, 'agent.cordis.yml')]
         delete pendingDisplay[join(replacedPath, 'agent.cordis.yml')]
+        if (stored.installation) delete installations[stored.installation.id]
       }
       const status: PresetInstallationStatus = { id, authorable: true, userConflict: false, state: 'installed',
         delivery: 'directory', pluginVersion, ...await directoryVersion(join(target, 'agent.cordis.yml')) }
-      await this.settings.update({ checked: true, installedId: id, installation, pendingDisplay, display: {
+      await this.settings.update({ checked: true, installedId: id, installation, installations: { ...installations, [id]: installation }, pendingDisplay, display: {
         ...display,
         [join(target, 'agent.cordis.yml')]: {
           ...(name === undefined ? { name: 'Super Code' } : {}),
@@ -232,7 +259,7 @@ export class PresetInstaller {
       claimed = false
       return { ok: true, status }
     } catch (error) {
-      if (claimed) await rm(target, { recursive: true, force: true })
+      if (claimed && await sameDirectory(target, claimed)) await rm(target, { recursive: true, force: true })
       return reject((error as NodeJS.ErrnoException).code === 'EEXIST' ? 'name-taken' : 'install-failed')
     } finally {
       if (staging) await rm(staging, { recursive: true, force: true })
@@ -342,6 +369,7 @@ export function applyPresetInstallation(ctx: Context): void {
       checked: s.boolean().default(false),
       installedId: s.string().default(''),
       installation: s.object({ id: s.string(), path: s.string(), token: s.string(), dev: s.number(), ino: s.number() }).required(false),
+      installations: s.dict(s.object({ id: s.string(), path: s.string(), token: s.string(), dev: s.number(), ino: s.number() })).required(false),
       pendingDisplay: s.dict(s.object({ name: s.string().required(false), description: s.string().required(false) })).default({}),
       display: s.dict(s.object({ name: s.string().required(false), description: s.string().required(false) })).default({}),
     }))

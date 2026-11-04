@@ -74,9 +74,9 @@ Settings shows the **plugin version** and the **preset version** separately.
 
 **Safety**:
 
-- Only presets verifiably installed by this plugin are replaced (directory: install record, UUID, path, directory identity; declarative: source marker or install record). Unmarked old copies and same-name declarations are left alone.
+- Directory preset status, language synchronization, and reinstallation verify the install record, UUID, path, and directory identity. Declarative presets verify the source marker or install record. Older copies and same-name declarations with unverified ownership are left unchanged and remain readable.
 - The old content is backed up in `.super-code-backup-*`: under the user preset root for directory hosts, under the current profile for declarative hosts (ownership records in `.super-code-presets.json`).
-- A failed install restores automatically. After an unexpected crash, restore manually from the backup.
+- Failed installs roll back their writes and check directory identity before cleanup; substituted directories are preserved. The host then attempts to reload the restored configuration. An originally absent configuration file stays absent. After a crash, or if ownership records remain unwritable, inspect the backup before restoring manually.
 
 ### Continuing after uninstall
 

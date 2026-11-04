@@ -34,7 +34,11 @@ async function fixture(t: TestContext, bundled = true) {
     patchPath,
     entries: () => entries.map((options: any) => ({ id: options.id, options })),
     reload: async () => {
-      const patches = yaml.load(await readFile(patchPath, 'utf8'), { schema: declarationSchema }) as any[]
+      const content = await readFile(patchPath, 'utf8').catch(error => {
+        if (error.code === 'ENOENT') return '[]\n'
+        throw error
+      })
+      const patches = yaml.load(content, { schema: declarationSchema }) as any[]
       entries = applyEntryPatches(base, patches)
       if (fail && patches.some(row => row.config?.id === 'new-code')) { fail = false; throw new Error('Activation failed') }
     },
@@ -314,4 +318,27 @@ test('a host-reported broken activation restores the previous preset and ownersh
   assert.equal((await installer.status()).id, 'super-code')
   assert.equal((await installer.status()).reinstallable, true)
   assert.equal(f.settings.get().declaration, undefined)
+})
+
+test('failed activation still reloads the restored patch when ownership rollback cannot persist', async t => {
+  const f = await fixture(t), installer = f.create(), original = await readFile(f.patchPath, 'utf8')
+  const update = f.settings.update
+  let writes = 0
+  f.settings.update = async patch => {
+    if (++writes === 2) throw new Error('Ownership rollback failed')
+    await update(patch)
+  }
+  f.fail()
+  assert.equal((await installer.reinstall('super-code', 'new-code')).error, 'install-failed')
+  assert.equal(await readFile(f.patchPath, 'utf8'), original)
+  assert.deepEqual((await f.registry.list()).map(row => row.id), ['super-code'])
+})
+
+test('failed installation restores an originally absent profile patch to absence', async t => {
+  const f = await fixture(t), installer = f.create()
+  await rm(f.patchPath)
+  f.failPersistence()
+  assert.equal((await installer.reinstall('super-code', 'new-code')).error, 'install-failed')
+  await assert.rejects(readFile(f.patchPath), { code: 'ENOENT' })
+  assert.deepEqual((await f.registry.list()).map(row => row.id), ['super-code'])
 })

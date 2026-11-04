@@ -3,16 +3,18 @@ import { type DirectoryPresets } from './preset-files.js';
 import { type DisplayBaseline } from './preset-metadata.js';
 import type { SettingsScope } from '@deepseek-ai/dsh-settings';
 import { TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol';
+interface InstallationIdentity {
+    id: string;
+    path: string;
+    token: string;
+    dev: number;
+    ino: number;
+}
 interface InstallationSettings {
     checked: boolean;
     installedId: string;
-    installation?: {
-        id: string;
-        path: string;
-        token: string;
-        dev: number;
-        ino: number;
-    };
+    installation?: InstallationIdentity;
+    installations?: Record<string, InstallationIdentity>;
     display?: Record<string, DisplayBaseline>;
     pendingDisplay?: Record<string, DisplayBaseline>;
 }
@@ -41,6 +43,7 @@ export declare class PresetInstaller {
     private tail;
     constructor(roster: DirectoryPresets, settings: SettingsScope<InstallationSettings>, bundledRoot?: string, baseUrl?: string);
     status(): Promise<PresetInstallationStatus>;
+    private owns;
     initialize(): Promise<void>;
     synchronize(language: string): Promise<{
         changed: boolean;

@@ -22,6 +22,10 @@ export interface RecoveryConfig {
 export interface RecoveryService {
     remember(agent: Agent): Promise<void>;
     backfill(presets: readonly string[]): Promise<void>;
+    lifetime?: RecoveryConfig & {
+        source: string;
+        dispose(): Promise<void>;
+    };
 }
 export declare function fingerprint(content: string): string;
 /** The durable producer record survives cold reloads and compaction. */
@@ -38,6 +42,7 @@ export declare class RecoveryState {
     private constructor();
     static open(path: string): Promise<RecoveryState>;
     save(id: string, record: Record): Promise<void>;
+    flush(): Promise<void>;
 }
 /** Wrap only the public roster seam; mounting still belongs to the running host. */
 export declare function installRecovery(ctx: Context, state: RecoveryState, config: RecoveryConfig, host: {

@@ -35,12 +35,22 @@ export interface TaskFeedbackView {
     omittedActivities: number;
     omittedFiles: number;
     omittedTodos: number;
+    history: {
+        seq: number;
+        request: string;
+        todos: TaskFeedbackView['todos'];
+        omittedTodos: number;
+    }[];
+    omittedRequests: number;
 }
 export interface TaskFeedbackState extends TaskFeedbackView {
     inherited: number;
     cursor: number;
     cwd: string;
     approvals: string[];
+    requestSeq: number;
+    lastTodos: TaskFeedbackView['todos'];
+    lastOmittedTodos: number;
     pending: {
         callId: string;
         turn: number;

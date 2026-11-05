@@ -173,8 +173,8 @@ function AgentMessage({ record, saved, t, toolName }) {
           if (event.currentTarget.open) saved.open.add(item.seq); else saved.open.delete(item.seq)
         } },
         React.createElement('summary', null, label, React.createElement(Glyph, { type: 'chevron' })),
-        React.createElement(DetailText, { text: item.text, t }))
-      : React.createElement(React.Fragment, null, label, React.createElement(DetailText, { text: item.text, t }))))
+        React.createElement(DetailText, { text: item.text, format: item.format, t }))
+      : React.createElement(React.Fragment, null, label, React.createElement(DetailText, { text: item.text, format: item.format, t }))))
 }
 
 /* Keep native controls and their refs/events; mount name bubbles outside clipped
@@ -268,6 +268,9 @@ const zh = {
   'feedback.source.record': '任务记录',
   'feedback.source.request': '用户原文',
   'feedback.latest': '本轮要求',
+  'feedback.previous': '此前要求',
+  'feedback.historicalStatus': '{status}（历史记录）',
+  'feedback.historyPartial': '部分较早的要求或步骤未展示，完整记录见执行记录。',
   'feedback.progress': '步骤 {done} / {total}',
   'feedback.progressPartial': '已记录步骤 {done} / {total}',
   'feedback.steps': '步骤进度',
@@ -388,6 +391,7 @@ const zh = {
   'workspace.title': 'Super Code', 'workspace.description': '任务状态、Agent 执行树与记忆库', 'workspace.resize': '调整执行树与记忆库高度',
   'tree.collapsedLabel': '已收起', 'tree.organizeLabel': '自动整理',
   'detail.toolCall': '工具调用', 'detail.toolResult': '工具结果', 'detail.toolError': '工具失败',
+  'detail.copy': '复制', 'detail.copied': '已复制', 'detail.footnotes': '脚注',
   'detail.cache': '缓存', 'detail.info': '详情', 'tree.countCompact': '{shown}/{total} · 运行 {running}',
   'memory.loading': '正在读取记忆…', 'memory.topics': '知识主题', 'memory.allTopics': '全部主题', 'memory.related': '同主题知识', 'preset.configuration': '预设配置',
   'memory.title': '记忆', 'memory.project': '当前项目', 'memory.global': '全局偏好', 'memory.search': '搜索主题或记忆',
@@ -457,6 +461,9 @@ const en = {
   'feedback.source.record': 'Recorded objective',
   'feedback.source.request': 'User request',
   'feedback.latest': 'Latest request',
+  'feedback.previous': 'Earlier request',
+  'feedback.historicalStatus': '{status} (historical record)',
+  'feedback.historyPartial': 'Some earlier requests or steps are omitted; open the execution log for the full record.',
   'feedback.progress': 'Steps {done} / {total}',
   'feedback.progressPartial': 'Recorded steps {done} / {total}',
   'feedback.steps': 'Step progress',
@@ -577,6 +584,7 @@ const en = {
   'workspace.title': 'Super Code', 'workspace.description': 'Task status, Agent tree and memory library', 'workspace.resize': 'Resize agent tree and memory library',
   'tree.collapsedLabel': 'Collapsed', 'tree.organizeLabel': 'Organize',
   'detail.toolCall': 'Tool call', 'detail.toolResult': 'Tool result', 'detail.toolError': 'Tool failed',
+  'detail.copy': 'Copy', 'detail.copied': 'Copied', 'detail.footnotes': 'Footnotes',
   'detail.cache': 'Cache', 'detail.info': 'Details', 'tree.countCompact': '{shown}/{total} · Running {running}',
   'memory.loading': 'Loading memories…', 'memory.topics': 'Knowledge topics', 'memory.allTopics': 'All topics', 'memory.related': 'More in this topic', 'preset.configuration': 'Preset configuration',
   'memory.title': 'Memory', 'memory.project': 'This project', 'memory.global': 'Global preferences', 'memory.search': 'Search topics or memories',
@@ -1024,19 +1032,24 @@ function FeedbackTools({ tools, t }) {
 function feedbackListItems(model, root, partial) {
   const items = []
   const add = (kind, key, data = {}, row) => items.push({ kind, key: JSON.stringify(key), row, ...data,
-    signature: JSON.stringify([kind, data.content, data.todo, data.tools, data.label, data.count,
+    signature: JSON.stringify([kind, data.content, data.todo, data.historical, data.tools, data.label, data.count,
       data.file && [data.file.name, data.file.directory, [...data.file.operations]], kind === 'task' &&
       [row.title, row.owner, row.done, row.total, row.complete, row.taskStatus, row.facts?.phase, row.node.running]]) })
   for (const row of model.tasks) {
     const facts = row.facts
     add('task', [row.id, 'task'], {}, row)
     if (row.goal && row.goal !== row.title) add('text', [row.id, 'goal'], { content: row.goal }, row)
-    if (facts?.latestRequest && facts.latestRequest !== facts.request) add('request', [row.id, 'request'], { content: facts.latestRequest }, row)
+    if (facts?.latestRequest && (facts.latestRequest !== row.title || facts.history?.length)) add('request', [row.id, 'request'], { content: facts.latestRequest }, row)
     row.todos.forEach((todo, index) => add('step', [row.id, 'step', index], { todo }, row))
     const tools = feedbackToolSummary(facts?.activities)
     if (tools.length) add('tools', [row.id, 'tools'], { tools }, row)
     if (!row.total && !tools.length) add('note', [row.id, 'empty'], { label: facts ? 'feedback.noSteps' : 'feedback.loading' }, row)
     if (facts?.omittedActivities) add('note', [row.id, 'recent'], { label: 'feedback.recentOnly' }, row)
+    for (const previous of [...(facts?.history || [])].reverse()) {
+      add('request', [row.id, 'history', previous.seq], { content: previous.request, historical: true }, row)
+      previous.todos.forEach((todo, index) => add('step', [row.id, 'history', previous.seq, index], { todo, historical: true }, row))
+    }
+    if (facts?.omittedRequests || facts?.history?.some(previous => previous.omittedTodos)) add('note', [row.id, 'historyPartial'], { label: 'feedback.historyPartial' }, row)
     add('open', [row.id, 'open'], { focusable: !row.node.unavailable }, row)
   }
   if (root) {
@@ -1096,8 +1109,9 @@ function FeedbackRowContent({ item, root, openDetail, t }) {
       row.total > 0 && React.createElement('span', { className: 'dsh-super-code-feedback-count', 'aria-label': progressLabel, title: progressLabel }, `${row.done}/${row.total}${row.complete ? '' : '+'}`),
       row.total > 0 && row.complete && React.createElement('progress', { max: row.total, value: row.done, 'aria-label': text(t, 'feedback.steps') }))
   }
-  if (item.kind === 'step') return React.createElement('div', { className: 'dsh-super-code-feedback-step', 'data-step-state': item.todo.status },
-    React.createElement(FeedbackMark, { tone: item.todo.status === 'completed' ? 'success' : item.todo.status === 'in_progress' ? 'active' : 'pending', label: text(t, 'feedback.todo.' + item.todo.status) }),
+  if (item.kind === 'step') return React.createElement('div', { className: 'dsh-super-code-feedback-step', 'data-step-state': item.todo.status, 'data-step-history': item.historical || undefined },
+    React.createElement(FeedbackMark, { tone: item.todo.status === 'completed' ? 'success' : !item.historical && item.todo.status === 'in_progress' ? 'active' : 'pending',
+      label: item.historical ? text(t, 'feedback.historicalStatus', { status: text(t, 'feedback.todo.' + item.todo.status) }) : text(t, 'feedback.todo.' + item.todo.status) }),
     React.createElement('span', null, item.todo.content))
   if (item.kind === 'tools') return React.createElement(FeedbackTools, { tools: item.tools, t })
   if (item.kind === 'open') return React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-feedback-open', disabled: !item.focusable,
@@ -1115,7 +1129,7 @@ function FeedbackRowContent({ item, root, openDetail, t }) {
   if (item.label === 'tree.empty') return React.createElement('p', { className: 'dsh-super-code-state', 'data-tone': 'empty' }, React.createElement(Glyph, { type: 'context' }), text(t, item.label))
   if (item.kind === 'note') return React.createElement('p', { className: 'dsh-super-code-feedback-muted' }, text(t, item.label))
   return React.createElement('p', { className: 'dsh-super-code-feedback-text' },
-    item.kind === 'request' && React.createElement('small', null, text(t, 'feedback.latest')), item.content)
+    item.kind === 'request' && React.createElement('small', null, text(t, item.historical ? 'feedback.previous' : 'feedback.latest')), item.content)
 }
 
 /** One measured, variable-height viewport for tasks, steps, activity and files. */
@@ -1592,13 +1606,13 @@ function detailRecord(entry, t = key => zh[key] || key) {
   const base = { seq: event.seq, time: event.time, entry }
   if (event.type === 'user/message') {
     if (data.source?.kind !== 'user') return { kind: 'skip' }
-    return { ...base, kind: 'message', label: text(t, 'detail.task'), text: contentText(data.content, t) }
+    return { ...base, kind: 'message', format: 'text', label: text(t, 'detail.task'), text: contentText(data.content, t) }
   }
-  if (event.type === 'assistant/message') return { ...base, kind: 'message', label: data.interrupted ? text(t, 'detail.interrupted') : text(t, 'detail.agent'), text: contentText(data.message?.content, t) }
+  if (event.type === 'assistant/message') return { ...base, kind: 'message', format: 'markdown', label: data.interrupted ? text(t, 'detail.interrupted') : text(t, 'detail.agent'), text: contentText(data.message?.content, t) }
   if (event.type === 'tool/call' && typeof data.name === 'string' && data.name) {
     let value = typeof data.arguments === 'string' ? data.arguments : JSON.stringify(data.arguments ?? {})
     try { value = JSON.stringify(JSON.parse(value), null, 2) } catch { /* Incomplete arguments remain readable. */ }
-    return { ...base, kind: 'tool', collapsed: true, toolName: data.name, callId: data.callId,
+    return { ...base, kind: 'tool', format: 'json', collapsed: true, toolName: data.name, callId: data.callId,
       label: text(t, 'detail.toolCall') + ' · ' + data.name, text: value }
   }
   if (event.type === 'tool/result') {
@@ -1607,12 +1621,12 @@ function detailRecord(entry, t = key => zh[key] || key) {
     const direct = data.message?.role === 'tool'
     if (!blocks.length && !direct) return { kind: 'skip' }
     const failed = direct ? data.message.isError : blocks.some(block => block.isError)
-    return { ...base, kind: failed ? 'error' : 'tool', collapsed: true,
+    return { ...base, kind: failed ? 'error' : 'tool', format: 'code', collapsed: true,
       callId: direct ? data.message.toolCallId : blocks[0]?.toolCallId,
       label: text(t, failed ? 'detail.toolError' : 'detail.toolResult'),
       text: contentText(direct ? data.message.content : blocks.flatMap(block => block.content || []), t) }
   }
-  if (event.type === 'turn/error') return { ...base, kind: 'error', label: text(t, 'detail.error'), text: data.message || text(t, 'detail.incomplete') }
+  if (event.type === 'turn/error') return { ...base, kind: 'error', format: 'text', label: text(t, 'detail.error'), text: data.message || text(t, 'detail.incomplete') }
   return { kind: 'skip' }
 }
 
@@ -1683,10 +1697,17 @@ function createAgentInspector(createStream, address, readPage, initial, t = key 
   }
 }
 
-function DetailText({ text: value, t = key => zh[key] || key }) {
+function DetailText({ text: value, format = 'text', t = key => zh[key] || key }) {
   const [full, setFull] = useState(false)
+  const copyLabel = text(t, 'detail.copy'), copiedLabel = text(t, 'detail.copied'), footnotes = text(t, 'detail.footnotes')
+  const labels = useMemo(() => ({ code: { copyLabel, copiedLabel }, footnotes }), [copyLabel, copiedLabel, footnotes])
+  const content = full ? value : value.slice(0, 12000)
   return React.createElement(React.Fragment, null,
-    React.createElement('pre', null, full ? value : value.slice(0, 12000)),
+    React.createElement('div', { className: 'dsh-super-code-detail-content' },
+      format === 'markdown' ? React.createElement(icons.MarkdownText, { text: content, labels })
+        : format === 'json' || format === 'code' ? React.createElement(icons.CodeBlock, { code: content,
+          lang: format === 'json' ? 'json' : 'text', copyLabel, copiedLabel })
+        : React.createElement('pre', { className: 'dsh-super-code-detail-plain' }, content)),
     !full && value.length > 12000 && React.createElement(ActionButton, { type: 'button', onClick: () => setFull(true) }, text(t, 'detail.open')))
 }
 
@@ -3375,7 +3396,7 @@ function apply(ctx) {
 .dsh-super-code-feedback-step[data-step-state=completed]{color:var(--sc-muted)}
 .dsh-super-code-feedback-step[data-step-state=completed]>span:last-child{text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--sc-muted) 40%,transparent)}
 .dsh-super-code-feedback-step[data-step-state=pending]{color:var(--sc-muted)}
-.dsh-super-code-feedback-step[data-step-state=in_progress]{background:color-mix(in srgb,var(--sc-accent) 7%,transparent);box-shadow:inset 2px 0 color-mix(in srgb,var(--sc-accent) 55%,transparent);color:var(--sc-text)}
+.dsh-super-code-feedback-step[data-step-state=in_progress]:not([data-step-history]){background:color-mix(in srgb,var(--sc-accent) 7%,transparent);box-shadow:inset 2px 0 color-mix(in srgb,var(--sc-accent) 55%,transparent);color:var(--sc-text)}
 .dsh-super-code-feedback-mark{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;width:14px;height:14px;margin-top:3px;color:var(--sc-muted);font-size:11px;line-height:14px}
 .dsh-super-code-feedback-mark>svg{width:14px;height:14px}
 .dsh-super-code-feedback-mark.pending:before,.dsh-super-code-feedback-mark.idle:before,.dsh-super-code-feedback-mark.unavailable:before{content:"";width:7px;height:7px;border:1px solid var(--sc-faint);border-radius:50%}
@@ -3652,8 +3673,8 @@ function apply(ctx) {
 .dsh-super-code-detail-entry-label>span{min-width:0;overflow-wrap:anywhere}
 .dsh-super-code-detail-entry.user .dsh-super-code-detail-entry-label{color:var(--sc-accent)}
 .dsh-super-code-detail-entry time{flex:none;font-family:var(--sc-mono);font-size:11px;font-weight:400;color:var(--sc-faint)}
-.dsh-super-code-detail-entry pre{min-width:0;font:inherit;font-size:14px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere;margin:6px 0 0}
-.dsh-super-code-detail-entry.tool pre{font-family:var(--sc-mono);font-size:12px;line-height:1.6;color:var(--sc-muted)}
+.dsh-super-code-detail-content{min-width:0;margin-top:6px}
+.dsh-super-code-detail-plain{min-width:0;font:inherit;font-size:14px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
 .dsh-super-code-detail-message>details{min-width:0;color:var(--sc-muted)}
 .dsh-super-code-detail-message>details[open]{color:var(--sc-text)}
 .dsh-super-code-detail-message summary{display:flex;align-items:center;gap:6px;cursor:pointer;overflow-wrap:anywhere;list-style:none}
@@ -3661,8 +3682,8 @@ function apply(ctx) {
 .dsh-super-code-detail-message summary .dsh-super-code-detail-entry-label{flex:1;min-width:0;font-size:12px}
 .dsh-super-code-detail-message summary>.dsh-super-code-glyph{width:14px;height:14px;transition:transform .12s}
 .dsh-super-code-detail-message details[open] summary>.dsh-super-code-glyph{transform:rotate(180deg)}
-.dsh-super-code-detail-message details pre{margin-top:10px;padding:8px 10px;border:1px solid var(--sc-line);border-radius:7px;background:var(--sc-bg)}
-.dsh-super-code-detail-entry button{margin:8px 0 0}
+.dsh-super-code-detail-message details .dsh-super-code-detail-content{margin-top:10px}
+.dsh-super-code-detail-message>button,.dsh-super-code-detail-message>details>button{margin:8px 0 0}
 .dsh-super-code-new-content{flex:none;align-self:center;margin:8px 16px 12px;border:1px solid var(--sc-line);border-radius:8px;padding:6px 12px;background:var(--sc-bg);font-size:13px}
 @media(hover:none) and (pointer:coarse){:where(.dsh-super-code-workspace,.dsh-super-code-settings,.dsh-super-code-memory,.dsh-super-code-tree) input{font-size:16px}}
 @media(prefers-reduced-motion:reduce){:where(.dsh-super-code-workspace,.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-detail,.dsh-super-code-memory,.dsh-super-code-confirm,.dsh-super-code-select) *{transition:none!important;animation:none!important}.dsh-super-code-graph-node>.dsh-super-code-circle:after{animation:none!important}}

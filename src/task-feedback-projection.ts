@@ -5,7 +5,7 @@ import type { SessionEvent } from '@deepseek-ai/dsh-session'
 import type { ProjectionDefinition } from '@deepseek-ai/dsh-session-projection'
 import { recordedToolResult } from './core/host-messages.js'
 
-const LIMIT = { activities: 80, files: 160, pending: 64, todos: 200 }
+const LIMIT = { activities: 80, files: 160, pending: 64, todos: 200, history: 20 }
 const phaseSchema = z.enum(['idle', 'running', 'waiting', 'error', 'interrupted'])
 const fileSchema = z.object({ path: z.string(), operation: z.enum(['write', 'edit', 'create', 'patch']),
   seq: z.number(), tool: z.string(), callId: z.string() }).strict()
@@ -15,14 +15,17 @@ const pendingSchema = z.object({ callId: z.string(), turn: z.number(), step: z.n
   files: z.array(fileSchema.omit({ seq: true, tool: true, callId: true })),
 }).strict()
 const todoSchema = z.object({ content: z.string(), status: z.enum(['pending', 'in_progress', 'completed']) })
+const historySchema = z.object({ seq: z.number(), request: z.string(), todos: z.array(todoSchema).max(LIMIT.todos), omittedTodos: z.number() }).strict()
 const goalSchema = z.discriminatedUnion('kind', [z.object({ kind: z.literal('none') }).strict(),
   z.object({ kind: z.literal('recorded'), text: z.string(), status: z.string() }).strict()])
 const viewSchema = z.object({ request: z.string(), latestRequest: z.string(), phase: phaseSchema, goal: goalSchema,
   todos: z.array(todoSchema).max(LIMIT.todos), activities: z.array(activitySchema).max(LIMIT.activities),
   files: z.array(fileSchema).max(LIMIT.files), omittedActivities: z.number(), omittedFiles: z.number(), omittedTodos: z.number(),
+  history: z.array(historySchema).max(LIMIT.history), omittedRequests: z.number(),
 }).strict()
 const stateSchema = viewSchema.extend({ inherited: z.number(), cursor: z.number(), cwd: z.string(),
   pending: z.array(pendingSchema).max(LIMIT.pending), approvals: z.array(z.string()).max(LIMIT.pending),
+  requestSeq: z.number(), lastTodos: z.array(todoSchema).max(LIMIT.todos), lastOmittedTodos: z.number(),
 }).strict()
 interface FileFact { path: string; operation: 'write' | 'edit' | 'create' | 'patch'; seq: number; tool: string; callId: string }
 interface Activity { callId: string; tool: string; description: string; seq: number;
@@ -32,9 +35,12 @@ export interface TaskFeedbackView {
   goal: { kind: 'none' } | { kind: 'recorded'; text: string; status: string }
   todos: { content: string; status: 'pending' | 'in_progress' | 'completed' }[]
   activities: Activity[]; files: FileFact[]; omittedActivities: number; omittedFiles: number; omittedTodos: number
+  history: { seq: number; request: string; todos: TaskFeedbackView['todos']; omittedTodos: number }[]
+  omittedRequests: number
 }
 export interface TaskFeedbackState extends TaskFeedbackView {
   inherited: number; cursor: number; cwd: string; approvals: string[]
+  requestSeq: number; lastTodos: TaskFeedbackView['todos']; lastOmittedTodos: number
   pending: { callId: string; turn: number; step: number; files: { path: string; operation: FileFact['operation'] }[] }[]
 }
 
@@ -120,6 +126,22 @@ function finish(state: TaskFeedbackState, callId: string, isError: boolean, seq:
     omittedFiles: state.omittedFiles + Math.max(0, files.length - LIMIT.files) }
 }
 
+/** A new user request archives the preceding facts, even after turn/start reset the live todos. */
+function archiveRequest(state: TaskFeedbackState): Pick<TaskFeedbackView, 'history' | 'omittedRequests'> {
+  if (state.requestSeq < 0) return { history: state.history, omittedRequests: state.omittedRequests }
+  const all = [...state.history, { seq: state.requestSeq, request: state.latestRequest,
+    todos: state.lastTodos, omittedTodos: state.lastOmittedTodos }]
+  const history = all.slice(-LIMIT.history)
+  // The history has one shared checklist budget, rather than 200 steps per request.
+  let remaining = LIMIT.todos
+  for (let i = history.length - 1; i >= 0; i--) {
+    const row = history[i]!, kept = Math.min(remaining, row.todos.length)
+    if (kept < row.todos.length) history[i] = { ...row, todos: row.todos.slice(0, kept), omittedTodos: row.omittedTodos + row.todos.length - kept }
+    remaining -= kept
+  }
+  return { history, omittedRequests: state.omittedRequests + all.length - history.length }
+}
+
 /** Pure, bounded and idempotent for repeated event delivery. Fork history is not attributed to a child. */
 export function foldTaskFeedback(state: TaskFeedbackState, event: SessionEvent): TaskFeedbackState {
   if (event.seq < state.inherited || event.seq <= state.cursor) return state
@@ -128,7 +150,8 @@ export function foldTaskFeedback(state: TaskFeedbackState, event: SessionEvent):
   if (type === 'user/message' && data.source?.kind === 'user') {
     const request = text((Array.isArray(data.content) ? data.content : []).map(object)
       .filter(block => block.type === 'text' && typeof block.text === 'string').map(block => block.text).join('\n'), 4000)
-    if (request) next = { ...next, request: state.request || request, latestRequest: request }
+    if (request) next = { ...next, ...archiveRequest(state), request: state.request || request, latestRequest: request,
+      requestSeq: event.seq, lastTodos: [], lastOmittedTodos: 0 }
   }
   if (type === 'goal/change') {
     if (data.operation === 'clear') next = { ...next, goal: { kind: 'none' } }
@@ -139,7 +162,8 @@ export function foldTaskFeedback(state: TaskFeedbackState, event: SessionEvent):
       const parsed = todoSchema.safeParse(item)
       return parsed.success ? [{ ...parsed.data, content: text(parsed.data.content, 800) }] : []
     })
-    next = { ...next, todos, omittedTodos: data.todos.length - todos.length }
+    next = { ...next, todos, omittedTodos: data.todos.length - todos.length,
+      lastTodos: todos, lastOmittedTodos: data.todos.length - todos.length }
   }
   if (type === 'turn/start') next = { ...next, phase: 'running', todos: [], omittedTodos: 0, approvals: [],
     pending: [], activities: state.activities.map(row => row.status === 'running' ? { ...row, status: 'interrupted' } : row) }
@@ -165,12 +189,15 @@ export function foldTaskFeedback(state: TaskFeedbackState, event: SessionEvent):
 export const taskFeedbackProjection: ProjectionDefinition<'superCodeFeedback', TaskFeedbackState> & {
   wire: NonNullable<ProjectionDefinition<'superCodeFeedback', TaskFeedbackState>['wire']>
 } = {
-  key: 'superCodeFeedback', stateVersion: 1, stateSchema,
+  // Rebuild cached histories that only retained the first and latest requests.
+  key: 'superCodeFeedback', stateVersion: 2, stateSchema,
   init: (header, inherited) => ({ request: '', latestRequest: '', goal: { kind: 'none' }, phase: 'idle', todos: [], activities: [], files: [],
-    omittedActivities: 0, omittedFiles: 0, omittedTodos: 0, pending: [], approvals: [], inherited, cursor: -1, cwd: header.cwd ?? '' }),
+    omittedActivities: 0, omittedFiles: 0, omittedTodos: 0, pending: [], approvals: [], history: [], omittedRequests: 0,
+    requestSeq: -1, lastTodos: [], lastOmittedTodos: 0, inherited, cursor: -1, cwd: header.cwd ?? '' }),
   apply: foldTaskFeedback,
   wire: { viewSchema, view: state => {
-    const { inherited: _inherited, cursor: _cursor, cwd: _cwd, pending: _pending, approvals: _approvals, ...view } = state
+    const { inherited: _inherited, cursor: _cursor, cwd: _cwd, pending: _pending, approvals: _approvals,
+      requestSeq: _requestSeq, lastTodos: _lastTodos, lastOmittedTodos: _lastOmittedTodos, ...view } = state
     return view
   } },
 }

@@ -48,6 +48,81 @@ test('unknown tools remain visible and unrelated events keep the same projection
   assert.equal(next.files.length, 0)
 })
 
+test('earlier requests retain their explicit steps after the host clears the live checklist for a new turn', () => {
+  let state = fold(initial(), event(1, 'turn/start', { turn: 1 }))
+  state = fold(state, event(2, 'user/message', { source: { kind: 'user' }, content: [{ type: 'text', text: 'Original task' }] }))
+  state = fold(state, event(3, 'todo/write', { todos: [{ content: 'First step', status: 'in_progress' }] }))
+  state = fold(state, event(4, 'turn/end', { reason: { kind: 'completed' } }))
+  state = fold(state, event(5, 'turn/start', { turn: 2 }))
+  assert.deepEqual(state.todos, [], 'live todos follow the host turn boundary')
+  // Restoring a checkpoint between turn/start and user/message must retain the old plan.
+  state = projection.stateSchema.parse(JSON.parse(JSON.stringify(state)))
+  state = fold(state, event(6, 'user/message', { source: { kind: 'user' }, content: [{ type: 'text', text: 'Follow-up task' }] }))
+  assert.deepEqual(state.history, [{ seq: 2, request: 'Original task', todos: [{ content: 'First step', status: 'in_progress' }], omittedTodos: 0 }])
+  state = fold(state, event(7, 'todo/write', { todos: [{ content: 'Next step', status: 'pending' }] }))
+  const saved = structuredClone(state.history)
+  state = fold(state, event(8, 'user/message', { source: { kind: 'user' }, content: [{ type: 'text', text: 'Final request' }] }))
+  assert.equal(state.request, 'Original task')
+  assert.equal(state.latestRequest, 'Final request')
+  assert.equal(state.history.length, 2)
+  assert.deepEqual(state.history[0], saved[0], 'later plans must not rewrite an earlier request')
+  assert.equal(state.history[1]?.request, 'Follow-up task')
+  assert.equal(state.history[1]?.todos[0]?.content, 'Next step')
+  assert.equal(state.history[0]?.todos[0]?.status, 'in_progress', 'ending a turn never invents task completion')
+  const view = projection.wire.view(state)
+  assert.equal('lastTodos' in view, false)
+  assert.equal('requestSeq' in view, false)
+  assert.doesNotThrow(() => projection.wire.viewSchema.parse(view))
+  assert.ok(projection.stateVersion > 1, 'old cached projections must rebuild to recover historical requests')
+})
+
+test('historical requests are bounded, source-isolated and idempotent without losing duplicate user requests', () => {
+  let state = initial(10)
+  const user = (seq: number, source = 'user') => event(seq, 'user/message', { source: { kind: source }, content: [{ type: 'text', text: 'Same request' }] })
+  state = fold(state, user(1))
+  state = fold(state, user(10, 'plugin'))
+  assert.deepEqual(state.history, [])
+  assert.equal(state.latestRequest, '')
+  for (let i = 0; i < 24; i++) {
+    const e = user(11 + i * 3)
+    state = fold(state, e)
+    assert.equal(fold(state, e), state)
+    state = fold(state, event(12 + i * 3, 'todo/write', { todos: Array.from({ length: 30 }, (_, n) => ({ content: `Step ${i}/${n}`, status: 'pending' })) }))
+    state = fold(state, event(13 + i * 3, 'turn/start', { turn: i + 1 }))
+  }
+  assert.equal(state.history.length, 20)
+  assert.equal(new Set(state.history.map(row => row.seq)).size, 20)
+  assert.equal(state.omittedRequests, 3)
+  assert.ok(state.history.reduce((sum, row) => sum + row.todos.length, 0) <= 200)
+  assert.ok(state.history.some(row => row.omittedTodos > 0))
+  assert.equal(state.history.at(-1)?.todos.length, 30, 'recent explicit plans take priority within the history budget')
+  assert.doesNotThrow(() => projection.stateSchema.parse(state))
+})
+
+test('upgrading a v1 host checkpoint rebuilds intermediate requests and plans from the original journal', async t => {
+  const ctx = new Context()
+  t.after(() => ctx.fiber.dispose())
+  new SessionStore(ctx)
+  new SessionProjectionRegistry(ctx)
+  ctx.sessionProjections.register(projection)
+  const user = (seq: number, text: string) => event(seq, 'user/message', { source: { kind: 'user' }, content: [{ type: 'text', text }] })
+  const events = [event(0, 'turn/start', { turn: 1 }), user(1, 'First request'),
+    event(2, 'todo/write', { todos: [{ content: 'First plan', status: 'pending' }] }), event(3, 'turn/end', { reason: { kind: 'completed' } }),
+    event(4, 'turn/start', { turn: 2 }), user(5, 'Middle request'),
+    event(6, 'todo/write', { todos: [{ content: 'Middle plan', status: 'completed' }] }), event(7, 'turn/end', { reason: { kind: 'completed' } }),
+    event(8, 'turn/start', { turn: 3 }), user(9, 'Latest request')]
+  const old = { superCodeFeedback: { ver: 1, seq: events.at(-1)!.seq, val: { request: 'First request', latestRequest: 'Latest request', todos: [] } } }
+  assert.equal(ctx.sessionProjections.restoreFloor(old), 0)
+  const restored = ctx.sessionProjections.restore(old, events, 0 as SessionLogOffset, { cwd: '/project' } as SessionHeader, 0 as SessionLogOffset)
+  const facts = restored.snapshot.values.superCodeFeedback!
+  assert.deepEqual(facts.history.map(row => row.request), ['First request', 'Middle request'])
+  assert.equal(facts.history[0]?.todos[0]?.content, 'First plan')
+  assert.equal(facts.history[1]?.todos[0]?.status, 'completed')
+  assert.equal(facts.latestRequest, 'Latest request')
+  assert.equal(restored.checkpoint.superCodeFeedback?.ver, projection.stateVersion)
+  assert.throws(() => ctx.sessionProjections.restore(old, events.slice(5), 5 as SessionLogOffset, { cwd: '/project' } as SessionHeader, 0 as SessionLogOffset), /re-read from seq 0/)
+})
+
 test('both published result layouts require matching successful completion for file attribution', () => {
   for (const modern of [true, false]) {
     const before = fold(initial(), call(1, 'edit', 'edit', { file_path: './src/app.ts' }))

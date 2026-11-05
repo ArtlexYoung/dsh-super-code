@@ -11,7 +11,7 @@ const fileSchema = z.object({ path: z.string(), operation: z.enum(['write', 'edi
   seq: z.number(), tool: z.string(), callId: z.string() }).strict()
 const activitySchema = z.object({ callId: z.string(), tool: z.string(), description: z.string(), seq: z.number(),
   status: z.enum(['running', 'succeeded', 'failed', 'interrupted']), parent: z.string() }).strict()
-const pendingSchema = z.object({ callId: z.string(), turn: z.number(), step: z.number(),
+const pendingSchema = z.object({ callId: z.string(), tool: z.string(), turn: z.number(), step: z.number(),
   files: z.array(fileSchema.omit({ seq: true, tool: true, callId: true })),
 }).strict()
 const todoSchema = z.object({ content: z.string(), status: z.enum(['pending', 'in_progress', 'completed']) })
@@ -41,7 +41,7 @@ export interface TaskFeedbackView {
 export interface TaskFeedbackState extends TaskFeedbackView {
   inherited: number; cursor: number; cwd: string; approvals: string[]
   requestSeq: number; lastTodos: TaskFeedbackView['todos']; lastOmittedTodos: number
-  pending: { callId: string; turn: number; step: number; files: { path: string; operation: FileFact['operation'] }[] }[]
+  pending: { callId: string; tool: string; turn: number; step: number; files: { path: string; operation: FileFact['operation'] }[] }[]
 }
 
 declare module '@deepseek-ai/dsh-session-projection/types' {
@@ -88,14 +88,14 @@ function description(name: string, args: Record<string, any>): string {
 }
 function begin(state: TaskFeedbackState, data: Record<string, any>, seq: number, nested: boolean): TaskFeedbackState {
   const callId = text(nested ? data.subCallId : data.callId, 512), name = text(data.name, 120)
-  if (!callId || !name || state.activities.some(row => row.callId === callId)) return state
+  if (!callId || !name || state.activities.some(row => row.callId === callId) || state.pending.some(row => row.callId === callId)) return state
   const args = parse(data.arguments)
   const activity: Activity = { callId, tool: name, description: description(name, args), seq, status: 'running',
     parent: nested ? text(data.parentCallId, 512) : '' }
   const activities = [...state.activities, activity]
   return { ...state, activities: activities.slice(-LIMIT.activities),
     omittedActivities: state.omittedActivities + Math.max(0, activities.length - LIMIT.activities),
-    pending: [...state.pending, { callId, turn: data.turn ?? -1, step: data.step ?? -1,
+    pending: [...state.pending, { callId, tool: name, turn: data.turn ?? -1, step: data.step ?? -1,
       files: fileCandidates(name, args, state.cwd) }].slice(-LIMIT.pending) }
 }
 /** New tools can expose applied diffs through the existing presentation metadata. */
@@ -117,10 +117,11 @@ function finish(state: TaskFeedbackState, callId: string, isError: boolean, seq:
   const activities = state.activities.map(row => row.callId === callId ? { ...row, status: isError ? 'failed' as const : 'succeeded' as const } : row)
   const files = [...state.files]
   const applied = metadataFiles(meta, state.cwd)
-  if (!isError && activity && call) for (const file of applied.length ? applied : call.files) {
+  // Completion evidence outlives the bounded display window of recent activity.
+  if (!isError && call) for (const file of applied.length ? applied : call.files) {
     const index = files.findIndex(row => row.path === file.path)
     if (index >= 0) files.splice(index, 1)
-    files.push({ ...file, seq, tool: activity.tool, callId })
+    files.push({ ...file, seq, tool: call.tool, callId })
   }
   return { ...state, activities, pending: state.pending.filter(row => row !== call), files: files.slice(-LIMIT.files),
     omittedFiles: state.omittedFiles + Math.max(0, files.length - LIMIT.files) }
@@ -189,8 +190,8 @@ export function foldTaskFeedback(state: TaskFeedbackState, event: SessionEvent):
 export const taskFeedbackProjection: ProjectionDefinition<'superCodeFeedback', TaskFeedbackState> & {
   wire: NonNullable<ProjectionDefinition<'superCodeFeedback', TaskFeedbackState>['wire']>
 } = {
-  // Rebuild cached histories that only retained the first and latest requests.
-  key: 'superCodeFeedback', stateVersion: 2, stateSchema,
+  // Rebuild old checkpoints whose file evidence depended on retained display activity.
+  key: 'superCodeFeedback', stateVersion: 3, stateSchema,
   init: (header, inherited) => ({ request: '', latestRequest: '', goal: { kind: 'none' }, phase: 'idle', todos: [], activities: [], files: [],
     omittedActivities: 0, omittedFiles: 0, omittedTodos: 0, pending: [], approvals: [], history: [], omittedRequests: 0,
     requestSeq: -1, lastTodos: [], lastOmittedTodos: 0, inherited, cursor: -1, cwd: header.cwd ?? '' }),

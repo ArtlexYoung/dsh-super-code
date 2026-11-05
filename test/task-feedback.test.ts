@@ -147,6 +147,77 @@ test('pending native calls match turn and step and parallel results may finish o
   assert.equal(state.pending.length, 0)
 })
 
+test('slow successful calls retain file evidence after their activity leaves the display window', () => {
+  for (const modern of [true, false]) for (const metadata of [true, false]) {
+    let seq = 1
+    let state = fold(initial(), call(seq++, 'slow', metadata ? 'future_editor' : 'edit', { file_path: 'slow.ts' }))
+    state = fold(state, call(seq++, 'outer', 'run_code', {}))
+    for (let i = 0; i < 81; i++) {
+      const data = { subCallId: `read-${i}`, parentCallId: 'outer', rootCallId: 'outer', name: 'read', arguments: { file_path: `read-${i}.ts` } }
+      state = fold(state, event(seq++, 'tool/ptc-dispatch-start', data))
+      state = fold(state, event(seq++, 'tool/ptc-dispatch', { ...data, isError: false }))
+    }
+    assert.equal(state.activities.some(row => row.callId === 'slow'), false)
+    assert.equal(state.pending.length, 2)
+    state = projection.stateSchema.parse(JSON.parse(JSON.stringify(state)))
+    const meta = metadata ? { diffs: [{ path: 'applied.ts', oldText: 'before', newText: 'after' }] } : {}
+    assert.deepEqual(fold(state, result(seq, 'slow', true, modern, meta)).files, [], 'failed calls never claim file changes')
+    const completed = fold(state, result(seq++, 'slow', false, modern, meta))
+    assert.deepEqual(completed.files, [{ path: metadata ? '/project/applied.ts' : '/project/slow.ts',
+      operation: metadata ? 'patch' : 'edit', seq: seq - 1, tool: metadata ? 'future_editor' : 'edit', callId: 'slow' }])
+    assert.equal(completed.pending.length, 1)
+    assert.equal(fold(completed, result(seq++, 'outer', false, modern)).pending.length, 0)
+    assert.deepEqual(completed.activities, state.activities, 'completion must not reinsert an evicted display activity')
+  }
+})
+
+test('slow PTC completion does not duplicate pending calls after its activity is evicted', () => {
+  const data = { subCallId: 'slow-ptc', parentCallId: 'outer', rootCallId: 'outer', name: 'str_replace_editor',
+    arguments: { command: 'create', path: 'slow-ptc.ts' } }
+  let seq = 1
+  let state = fold(initial(), call(seq++, 'outer', 'run_code', {}))
+  state = fold(state, event(seq++, 'tool/ptc-dispatch-start', data))
+  for (let i = 0; i < 81; i++) {
+    const read = { ...data, subCallId: `read-${i}`, name: 'read', arguments: {} }
+    state = fold(state, event(seq++, 'tool/ptc-dispatch-start', read))
+    state = fold(state, event(seq++, 'tool/ptc-dispatch', { ...read, isError: false }))
+  }
+  assert.equal(state.activities.some(row => row.callId === data.subCallId), false)
+  assert.equal(state.pending.length, 2)
+  const completed = fold(state, event(seq++, 'tool/ptc-dispatch', { ...data, isError: false }))
+  assert.deepEqual(completed.pending.map(row => row.callId), ['outer'], 'the final PTC event must consume the existing pending call exactly once')
+  assert.equal(fold(completed, result(seq++, 'outer')).pending.length, 0)
+  assert.equal(completed.files[0]?.path, '/project/slow-ptc.ts')
+  assert.equal(completed.files[0]?.tool, 'str_replace_editor')
+  assert.equal(completed.files.length, 1)
+  assert.deepEqual(completed.activities, state.activities)
+  assert.doesNotThrow(() => projection.stateSchema.parse(completed))
+})
+
+test('a v2 checkpoint rebuilds evicted file evidence and the current checkpoint retains pending tool identity', async t => {
+  const ctx = new Context()
+  t.after(() => ctx.fiber.dispose())
+  new SessionStore(ctx)
+  new SessionProjectionRegistry(ctx)
+  ctx.sessionProjections.register(projection)
+  const events = [event(0, 'turn/start', { turn: 1 }), call(1, 'slow', 'edit', { file_path: 'slow.ts' }), call(2, 'outer', 'run_code', {})]
+  for (let i = 0; i < 81; i++) {
+    const data = { subCallId: `read-${i}`, parentCallId: 'outer', rootCallId: 'outer', name: 'read', arguments: {} }
+    events.push(event(events.length, 'tool/ptc-dispatch-start', data), event(events.length + 1, 'tool/ptc-dispatch', { ...data, isError: false }))
+  }
+  const before = events.reduce(fold, initial())
+  const oldPending = before.pending.map(({ tool: _tool, ...pending }) => pending)
+  const old = { superCodeFeedback: { ver: 2, seq: events.at(-1)!.seq, val: { ...before, pending: oldPending } } }
+  assert.equal(ctx.sessionProjections.restoreFloor(old), 0)
+  const restored = ctx.sessionProjections.restore(old, events, 0 as SessionLogOffset, { cwd: '/project' } as SessionHeader, 0 as SessionLogOffset)
+  assert.equal(restored.checkpoint.superCodeFeedback?.ver, projection.stateVersion)
+  const completion = result(events.length, 'slow')
+  const cold = ctx.sessionProjections.restore(JSON.parse(JSON.stringify(restored.checkpoint)), [completion], completion.seq as SessionLogOffset,
+    { cwd: '/project' } as SessionHeader, 0 as SessionLogOffset)
+  assert.equal(cold.snapshot.values.superCodeFeedback?.files[0]?.path, '/project/slow.ts')
+  assert.equal(cold.snapshot.values.superCodeFeedback?.files[0]?.tool, 'edit')
+})
+
 test('PTC nested activity and file results work with and without dispatch-start and do not duplicate the outer call', () => {
   const data = { subCallId: 'nested', rootCallId: 'outer', parentCallId: 'outer', name: 'str_replace_editor', arguments: { command: 'create', path: 'hello.ts' } }
   let state = fold(initial(), call(1, 'outer', 'run_code', { description: 'Create file' }))

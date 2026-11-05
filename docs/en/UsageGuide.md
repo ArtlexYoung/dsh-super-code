@@ -102,6 +102,7 @@ Read-only. Shows what's already recorded in the session:
 
 - **Goal**: the recorded task goal, or the user's original message if there is none.
 - **Steps**: todos the model wrote down, shown as done/total. No steps means no invented plan or progress.
+- **Earlier requests**: prior user requests and their recorded steps stay visible as history, separate from current progress.
 - **Tool calls**: success, failure, and running counts grouped by tool.
 - **Files**: successful file changes that can be confirmed from tool arguments or diffs, including nested PTC calls.
 
@@ -118,7 +119,7 @@ The Agent tree, with status, usage, and cache rate for each Agent.
 
 - Drag empty space to pan; zoom with the wheel or buttons.
 - Click a node to open its details in a new sidebar tab. The main conversation stays put.
-- Details are shown as a chat: user task, Agent replies, expandable tool calls and results. The header shows status, tokens, and cache; open **Details** for more usage, task records, and memory activity.
+- Details are shown as a chat: user task, Agent replies, expandable tool calls and results. Harness's Markdown and code components render lists, tables, and highlighted code, while tool arguments and output remain literal. The header shows status, tokens, and cache; open **Details** for more usage, task records, and memory activity.
 - Running animations respect the system's reduced-motion setting.
 
 The [task](../images/task-status.png) and [tree screenshots](../images/agent-tree.png) render the current plugin with official frontend components and sample data. They illustrate the UI, not model quality.

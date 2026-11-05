@@ -28,7 +28,7 @@ interface Client {
   apply(ctx: object): void
   agentDetailAddress(node: Node): string
   agentDetailTarget(address: string): object
-  detailRecord(entry: object): { kind: string; label?: string; text?: string }
+  detailRecord(entry: object): { kind: string; label?: string; text?: string; format?: string }
   createAgentInspector(create: (address: object, callbacks: any) => any, address: string, readPage: (request: any, signal: AbortSignal) => Promise<any>, initial?: object): any
 }
 
@@ -684,6 +684,27 @@ test('tool details accept old and new journals, preserve incomplete arguments an
   inspector.dispose()
 })
 
+test('execution records distinguish assistant Markdown from literal user input, tool payloads and errors', () => {
+  const record = (type: string, data: object) => plugin.detailRecord({ event: { seq: 1, time: 1, type, data } })
+  const markdown = '## Result\n\n- **Verified**\n\n```ts\nconst count = 1\n```'
+  const assistant = record('assistant/message', { message: { content: [{ type: 'text', text: markdown }] } })
+  assert.equal(assistant.format, 'markdown')
+  assert.equal(assistant.text, markdown)
+  assert.equal(record('user/message', { source: { kind: 'user' }, content: [{ type: 'text', text: markdown }] }).format, 'text')
+  assert.equal(record('tool/call', { name: 'custom', arguments: '{"command":"<script>literal</script>"}' }).format, 'json')
+  assert.equal(record('tool/call', { name: 'custom', arguments: '{"partial":' }).format, 'json')
+  for (const failed of [false, true]) {
+    const content = [{ type: 'text', text: '# literal output\n<script>literal</script>' }]
+    for (const message of [{ role: 'tool', toolCallId: 'c', isError: failed, content },
+      { content: [{ type: 'tool-result', toolCallId: 'c', isError: failed, content }] }]) {
+      const result = record('tool/result', { message })
+      assert.equal(result.format, 'code')
+      assert.equal(result.text, content[0].text)
+    }
+  }
+  assert.equal(record('turn/error', { message: markdown }).format, 'text')
+})
+
 test('reopening a historical page preserves its records and cursor across stream reconnects', async () => {
   let callbacks: any
   const initial = { status: 'ready', earlier: true, items: [{ seq: 10, text: 'Historical task' }], firstSeq: 10, cursor: 90, hasMore: true, projections: {}, error: '' }
@@ -876,6 +897,31 @@ test('task feedback degrades for unknown tools, missing records and new host pro
   assert.equal(model.partial, true)
   assert.equal(plugin.feedbackStatus(model.tasks[0]).label, '运行中')
   assert.equal(plugin.feedbackStatus({ node: { running: true }, facts: { phase: 'waiting' } }).label, '等待确认')
+})
+
+test('task feedback shows earlier requirements and their recorded steps separately from the live plan', () => {
+  const facts = { request: 'Initial task', latestRequest: 'Latest task', goal: { kind: 'none' }, todos: [{ content: 'Current step', status: 'pending' }],
+    history: [{ seq: 1, request: 'Initial task', todos: [{ content: 'Earlier step', status: 'in_progress' }], omittedTodos: 0 },
+      { seq: 4, request: 'Middle task', todos: [{ content: 'Verified step', status: 'completed' }], omittedTodos: 2 }],
+    omittedRequests: 1, activities: [], files: [] }
+  const view = plugin.buildAgentView({ current: 'root', byId: { root: { id: 'root', projectionValues: { superCodeFeedback: facts } } } })
+  const model = plugin.taskFeedbackRows(view), items = plugin.feedbackListItems(model, view.root, false)
+  assert.equal(model.tasks[0].total, 1, 'historical steps must not inflate current progress')
+  const requests = items.filter(item => item.kind === 'request')
+  assert.equal(requests.map(item => item.content).join(','), 'Latest task,Middle task,Initial task')
+  assert.equal(requests[0].historical, undefined)
+  assert.ok(requests.slice(1).every(item => item.historical))
+  const steps = items.filter(item => item.kind === 'step')
+  assert.equal(steps.map(item => item.todo.content).join(','), 'Current step,Verified step,Earlier step')
+  assert.equal(steps[0].historical, undefined)
+  assert.equal(steps[2].historical, true)
+  assert.equal(steps[2].todo.status, 'in_progress', 'a historical step is not completed by inference')
+  assert.equal(items.filter(item => item.label === 'feedback.historyPartial').length, 1)
+  assert.equal(new Set(items.map(item => item.key)).size, items.length)
+  const repeated = plugin.feedbackListItems(plugin.taskFeedbackRows(plugin.buildAgentView({ current: 'root', byId: {
+    root: { id: 'root', projectionValues: { superCodeFeedback: { ...facts, latestRequest: 'Initial task' } } },
+  } })), 'root', false)
+  assert.equal(repeated.filter(item => item.kind === 'request' && !item.historical).length, 1, 'repeated requests still have a distinct current entry')
 })
 
 

@@ -69,7 +69,7 @@ export class DeclarationStateFile implements DeclarationState {
         || typeof saved.entryId !== 'string' || typeof saved.id !== 'string' || !validId.test(saved.id)
         || typeof saved.token !== 'string' || !/^[0-9a-f-]{36}$/.test(saved.token))) throw new Error('Invalid installation record')
       const display = record.declarationDisplay
-      if (display && (typeof display !== 'object' || Array.isArray(display)
+      if (display !== undefined && (!display || typeof display !== 'object' || Array.isArray(display)
         || ['name', 'description'].some(key => display[key] !== undefined && typeof display[key] !== 'string'))) throw new Error('Invalid display record')
       value = { declaration: saved, declarationDisplay: display }
     }

@@ -233,6 +233,30 @@ test('metadata migration revalidates ownership after asynchronous settings persi
   assert.deepEqual(await f.create().synchronize('zh'), { changed: true })
 })
 
+test('language synchronization preserves metadata replaced by a symlink during persistence', async t => {
+  const f = await fixture(t), installer = f.create()
+  assert.equal((await installer.install('owned')).ok, true)
+  const path = join(f.user, 'owned', 'preset.yml'), external = join(f.root, 'user-metadata.yml')
+  const original = await readFile(path, 'utf8'), update = f.settings.update
+  f.settings.update = async patch => {
+    if ('pendingDisplay' in patch && !('display' in patch)) {
+      await rename(path, external)
+      await symlink(external, path)
+    }
+    await update(patch)
+  }
+  await assert.rejects(installer.synchronize('zh'), /metadata changed/)
+  assert.equal((await lstat(path)).isSymbolicLink(), true)
+  assert.equal(await readFile(external, 'utf8'), original)
+  assert.equal(await readFile(path, 'utf8'), original)
+  f.settings.update = update
+  assert.deepEqual(await installer.synchronize('zh'), { changed: false })
+  assert.equal((await lstat(path)).isSymbolicLink(), true)
+  await rm(path)
+  await rename(external, path)
+  assert.deepEqual(await f.create().synchronize('zh'), { changed: true })
+})
+
 test('legacy identity records remain valid but a display baseline alone never establishes ownership', async t => {
   const f = await fixture(t), installer = f.create()
   assert.equal((await installer.install('legacy')).ok, true)

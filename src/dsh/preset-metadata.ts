@@ -69,7 +69,9 @@ export async function migrateMetadata(
     }
     await beforeWrite(baseline)
     // Persistence can await I/O; check once more before replacing the file.
-    if (await readFile(path, 'utf8') !== original) throw new Error('Preset metadata changed during migration')
+    if (!(await lstat(path)).isFile() || await readFile(path, 'utf8') !== original) {
+      throw new Error('Preset metadata changed during migration')
+    }
     await rename(temporary, path)
   } finally { await rm(staging, { recursive: true, force: true }) }
   return { changed: true, baseline }

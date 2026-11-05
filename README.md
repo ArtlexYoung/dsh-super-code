@@ -70,7 +70,7 @@ dsh plugin --profile web add ./dsh-super-code-0.3.10.tgz
 - **协作执行**：Agent 执行树，点击节点可查看详情。
 - **记忆**：查看、新增、编辑和删除项目记忆与全局偏好。
 
-三个部分互斥展开，默认显示任务；点击当前标题可收起。
+三个部分始终只展开一项，默认显示任务；再次点击当前标题会保持展开。
 
 [![任务侧边栏](docs/images/task-status-preview.png)](docs/images/task-status.png)
 

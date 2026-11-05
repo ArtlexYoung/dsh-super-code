@@ -747,7 +747,7 @@ function workspaceFixture() {
   return { props, tab, render: () => slot.component(props) }
 }
 
-test('workspace defaults to tasks and clicking the open section collapses it', () => {
+test('workspace defaults to tasks and always keeps exactly one section expanded', () => {
   const { props, tab, render } = workspaceFixture()
   let layout = render().children[0]
   assert.equal(layout.props['data-active-section'], 'tasks')
@@ -765,13 +765,24 @@ test('workspace defaults to tasks and clicking the open section collapses it', (
   assert.equal(props.workspaceStates.get(tab.signal).active, 'memory')
   click(2)
   layout = render().children[0]
-  assert.equal(layout.props['data-active-section'], '', 'clicking the open section collapses it')
-  assert.equal(layout.props.style.gridTemplateRows, '44px 44px 44px')
-  assert.deepEqual(layout.children.map((node: any) => node.props.key), ['tasks-collapsed', 'tree-collapsed', 'memory-collapsed'])
+  assert.equal(layout.props['data-active-section'], 'memory', 'clicking the open section retains it')
+  assert.equal(layout.props.style.gridTemplateRows, '44px 44px minmax(280px, 1fr)')
+  assert.deepEqual(layout.children.map((node: any) => node.props.key), ['tasks-collapsed', 'tree-collapsed', 'memory'])
   click(0)
   assert.equal(render().children[0].props['data-active-section'], 'tasks')
   click(0)
-  assert.equal(render().children[0].props['data-active-section'], '')
+  assert.equal(render().children[0].props['data-active-section'], 'tasks')
+})
+
+test('workspace restores legacy collapsed and invalid states with the tasks section expanded', () => {
+  for (const active of ['', 'removed-section', undefined]) {
+    const { props, tab, render } = workspaceFixture()
+    props.workspaceStates.set(tab.signal, { active })
+    const layout = render().children[0]
+    assert.equal(layout.props['data-active-section'], 'tasks')
+    assert.equal(props.workspaceStates.get(tab.signal).active, 'tasks')
+    assert.equal(layout.children.filter((node: any) => node.props.onToggle).length, 1)
+  }
 })
 
 test('memory links expand their section once and repeated explicit navigation reopens it', () => {
@@ -780,8 +791,8 @@ test('memory links expand their section once and repeated explicit navigation re
   tab.navigation = { revision: 2, params: { memory: 'dsh-resource://super-code-memory/root?topic=notes&id=entry' } }
   let layout = render().children[0]
   assert.equal(layout.props['data-active-section'], 'memory')
-  layout.children[2].props.onToggle()
-  assert.equal(render().children[0].props['data-active-section'], '', 'unchanged link does not undo a user toggle')
+  layout.children[0].children[0].props.onToggle()
+  assert.equal(render().children[0].props['data-active-section'], 'tasks', 'unchanged link does not undo a user switch')
   tab.navigation.revision++
   assert.equal(render().children[0].props['data-active-section'], 'memory')
   tab.signal = new AbortController().signal
@@ -807,11 +818,11 @@ test('hidden workspace remount after memory navigation keeps the editor attached
   assert.equal(props.memoryStates.get(tab.signal), original, 'navigation must not replace the state captured by pending operations')
   original.editorStore.update({ draft: { sessionId: 'root', scope: 'project', topic: 'notes', id: 'new', expected: '',
     kind: 'constraint', summary: 'Title', detail: 'Content' } })
-  render().children[0].children[2].props.onToggle()
-  assert.equal(render().children[0].props['data-active-section'], '')
+  render().children[0].children[0].children[0].props.onToggle()
+  assert.equal(render().children[0].props['data-active-section'], 'tasks')
   render().children[0].children[2].children[0].props.onToggle()
   assert.equal(render().children[0].props['data-active-section'], 'memory')
-  assert.equal(props.memoryStates.get(tab.signal).editorStore.getSnapshot().draft.summary, 'Title', 'collapse retains the draft')
+  assert.equal(props.memoryStates.get(tab.signal).editorStore.getSnapshot().draft.summary, 'Title', 'switching sections retains the draft')
   await original.editorStore.save()
   assert.equal(props.memoryStates.get(tab.signal).selected.id, 'new', 'saving after tab navigation opens the saved entry')
 })

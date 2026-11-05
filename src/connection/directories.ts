@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import type { BigIntStats } from 'node:fs'
 import { realpath, stat } from 'node:fs/promises'
 import { isAbsolute } from 'node:path'
 import { ConnectionError } from './types.js'
@@ -12,7 +13,7 @@ export interface DirectoryRequest {
 /** Pending consent is deliberately ephemeral; only an approved allowlist is persisted. */
 export class DirectoryRequests {
   private readonly requests = new Map<string, DirectoryRequest>()
-  private readonly sources = new Map<string, string>()
+  private readonly sources = new Map<string, { path: string; dev: bigint; ino: bigint }>()
   constructor(private readonly allowed: () => string[], private readonly now: () => number = Date.now) {}
   private expire(): void {
     for (const row of this.requests.values()) {
@@ -24,12 +25,12 @@ export class DirectoryRequests {
     this.expire()
     const existing = this.requests.get(input.requestId)
     if (existing) {
-      if (this.sources.get(input.requestId) !== input.path || existing.reason !== input.reason) throw new ConnectionError('request-conflict')
+      if (this.sources.get(input.requestId)?.path !== input.path || existing.reason !== input.reason) throw new ConnectionError('request-conflict')
       return { ...existing }
     }
     if (!isAbsolute(input.path)) throw new ConnectionError('absolute-directory-required')
-    let path: string
-    try { path = await realpath(input.path); if (!(await stat(path)).isDirectory()) throw new Error() }
+    let path: string, identity: BigIntStats
+    try { path = await realpath(input.path); identity = await stat(path, { bigint: true }); if (!identity.isDirectory()) throw new Error() }
     catch { throw new ConnectionError('directory-unavailable') }
     if (this.pending().length >= 8) throw new ConnectionError('directory-request-limit')
     if (this.requests.size >= 100) {
@@ -39,7 +40,7 @@ export class DirectoryRequests {
     const row: DirectoryRequest = { id: randomUUID(), ...input, path, client: client.slice(0, 80), createdAt: this.now(),
       status: this.allowed().some(parent => withinDirectory(parent, path)) ? 'approved' : 'pending' }
     this.requests.set(input.requestId, row)
-    this.sources.set(input.requestId, input.path)
+    this.sources.set(input.requestId, { path: input.path, dev: identity.dev, ino: identity.ino })
     return { ...row }
   }
   pending(): DirectoryRequest[] { this.expire(); return [...this.requests.values()].filter(row => row.status === 'pending').map(row => ({ ...row })) }
@@ -49,8 +50,14 @@ export class DirectoryRequests {
     if (!row) throw new ConnectionError('directory-request-not-found')
     if (row.status !== 'pending') return { status: row.status }
     if (decision === 'approved') {
-      try { if (await realpath(row.path) !== row.path || !(await stat(row.path)).isDirectory()) throw new Error() }
+      try {
+        if (await realpath(row.path) !== row.path) throw new Error()
+        const source = this.sources.get(row.requestId), identity = await stat(row.path, { bigint: true })
+        if (!source || !identity.isDirectory() || identity.dev !== source.dev || identity.ino !== source.ino) throw new Error()
+      }
       catch { row.status = 'rejected'; throw new ConnectionError('directory-changed') }
+      this.expire()
+      if (row.status !== 'pending') return { status: row.status }
       await grant(row.path)
     }
     row.status = decision

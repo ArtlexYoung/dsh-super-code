@@ -8,10 +8,12 @@ export declare class ConnectionStore {
     readonly directory: string;
     private lock;
     private owned;
+    private writable;
     constructor(directory: string);
     initialize(): Promise<void>;
     private claim;
     close(): Promise<void>;
+    private release;
     settings(): Promise<ConnectionSettings>;
     saveSettings(value: ConnectionSettings): Promise<void>;
     tasks(): Promise<DelegatedTask[]>;

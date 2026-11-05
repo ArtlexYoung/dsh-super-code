@@ -33,6 +33,7 @@ export declare class ConnectionService {
     private timer;
     private tail;
     private closing;
+    private cleanupFailed;
     private state;
     private error;
     private observing;

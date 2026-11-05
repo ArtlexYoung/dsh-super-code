@@ -8,6 +8,8 @@ export function connectionRecovery(code: string): Recovery {
       return { action: 'inspect-capacity', message: 'No prompt was admitted. Call dsh_status, wait for blocking tasks with dsh_wait, then retry the same requestId and input. Do not change cwd to evade a shared Git worktree lock or cancel another task.', retryable: true, retryAfterMs: 30000 }
     case 'new-conversation-disabled':
       return { action: 'choose-history', message: 'No new conversation was created. Call dsh_sessions and choose an existing taskId, or ask the user to enable creation.', retryable: false }
+    case 'task-id-required': case 'conflicting-session-options':
+      return { action: 'choose-history', message: 'No prompt was sent. Call dsh_sessions and choose an exact taskId to reuse. newConversation=false requires taskId; newConversation=true cannot be combined with taskId. Do not automatically choose the latest conversation.', retryable: false }
     case 'directory-not-allowed':
       return { action: 'request-directory', message: 'Use dsh_status to inspect grants or dsh_request_directory to request user consent. Do not edit DSH settings or bypass this boundary.', retryable: false }
     case 'caller-approval-disabled':
@@ -20,6 +22,10 @@ export function connectionRecovery(code: string): Recovery {
       return { action: 'recover-task-id', message: 'Call dsh_sessions for the same cwd or dsh_wait without taskId to recover service-owned IDs. Do not recreate or resend an uncertain request.', retryable: false }
     case 'request-conflict':
       return { action: 'check-request', message: 'This requestId already identifies different input. Inspect the prior task; use a new requestId only for a genuinely new operation.', retryable: false }
+    case 'request-aborted':
+      return { action: 'inspect-task', message: 'This call stopped before dispatching its next action. Inspect the same requestId, taskId or pending approval; saved prompt intents are never automatically resent. Cancellation does not cancel prompts already submitted to DSH or undo approvals already decided.', retryable: false }
+    case 'task-storage-full':
+      return { action: 'report-storage-limit', message: 'The task history exceeds the 64 MiB storage limit. This write was refused without replacing the saved history. Do not resend an uncertain request or edit the serving profile; report the limit to the user.', retryable: false }
     default:
       return { action: 'report-error', message: 'Report the failure and inspect service/task state through MCP. Do not fall back to controlling the serving DSH application or editing its profile.', retryable: false }
   }

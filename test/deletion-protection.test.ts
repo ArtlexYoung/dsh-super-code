@@ -87,6 +87,19 @@ async function fixture(t: test.TestContext) {
     configure(value: Configuration) { configuration = value }, preset(value: string) { preset = value } }
 }
 
+test('strict execution protects wrapped command positions without blocking positional text', async t => {
+  const f = await fixture(t)
+  for (const command of ['exec -a cleaner rm build.txt', 'xargs -E STOP rm build.txt',
+    'find . -exec printf ok \\; -exec rm -- {} \\;']) {
+    const result = await f.execute(command)
+    assert.equal(result.isError, true, command)
+    assert.match(JSON.stringify(result.content), /SUPER_CODE_DELETE_PROTECTED/)
+  }
+  assert.equal(f.bodies(), 0)
+  assert.equal((await f.execute(`bash -c 'printf "%s" "$1"' ignored '; rm build.txt'`)).isError, false)
+  assert.equal(f.bodies(), 1)
+})
+
 test('strict protection injects the script rule in Super Code and blocks without approval', async t => {
   const f = await fixture(t)
   assert.ok((await f.prompt()).includes(DELETION_INSTRUCTION))

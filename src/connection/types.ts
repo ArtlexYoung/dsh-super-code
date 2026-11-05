@@ -20,6 +20,7 @@ export interface DelegatedTask {
   status: TaskStatus; cancellationRequested: boolean; createdAt: number; updatedAt: number; currentRequest: string; output: string;
   sequence: number; events: TaskEvent[]; operations: Record<string, string>; baseline: GitSnapshot;
   connectionId?: string;
+  previousRequest?: string;
   modelSelection?: ModelSelection;
   observation?: ObservationDetails;
 }

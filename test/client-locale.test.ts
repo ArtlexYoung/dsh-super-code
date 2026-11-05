@@ -433,6 +433,37 @@ test('memory drafts, failed saves, hidden completion, and delete cancellation ha
   assert.equal(saved.selected, null); assert.equal(store.getSnapshot().confirmation, null)
 })
 
+test('a restored memory editor uses the current Remote without replaying its pending save', async () => {
+  const { plugin } = fixture()
+  const saved: any = {}, calls: string[] = []
+  let finish!: (value: any) => void
+  const previous = {
+    saveEntry: async () => {
+      calls.push('previous-save')
+      if (calls.length !== 1) throw new Error('Retired Remote')
+      return await new Promise(resolve => { finish = resolve })
+    },
+    deleteEntry: async () => { throw new Error('Retired Remote') },
+  }
+  const current = {
+    saveEntry: async () => { calls.push('current-save'); return { ok: true, value: { kind: 'saved' } } },
+    deleteEntry: async () => { calls.push('current-delete'); return { ok: true, value: { kind: 'removed' } } },
+  }
+  const store = plugin.createMemoryEditor(saved, previous)
+  store.update({ draft: { sessionId: 'root', scope: 'project', topic: 'notes', id: 'same', expected: '',
+    kind: 'fact', summary: 'Keep this draft', detail: 'User content' } })
+  const pending = store.save()
+  assert.equal(plugin.createMemoryEditor(saved, current), store)
+  assert.deepEqual(calls, ['previous-save'], 'rebinding never sends another request')
+  finish({ ok: true, value: { kind: 'conflict' } }); await pending
+  assert.equal(store.getSnapshot().draft.summary, 'Keep this draft')
+  assert.equal((await store.save()).kind, 'saved')
+  assert.deepEqual(calls, ['previous-save', 'current-save'])
+  store.update({ confirmation: { sessionId: 'root', scope: 'project', topic: 'notes', id: 'same', expected: 'token' } })
+  assert.equal((await store.remove()).kind, 'removed')
+  assert.deepEqual(calls, ['previous-save', 'current-save', 'current-delete'])
+})
+
  test('connection drafts preserve a disabled default and validate independent settings', () => {
   const { plugin, dictionaries } = fixture()
   const config = { enabled: false, allowNewConversations: true, allowCallerApproval: false, port: 23457, maxConcurrent: 4, maxConnections: 4, directoriesConfigured: true, knownDirectories: [], allowedDirectories: [] }

@@ -1744,7 +1744,10 @@ function memoryLibraryWindow(items, query, top, height) {
 
 /** Drafts and in-flight operations survive the host unmounting a hidden tab. */
 function createMemoryEditor(saved, api) {
-  if (saved.editorStore) return saved.editorStore
+  if (saved.editorStore) {
+    saved.editorStore.bindApi(api)
+    return saved.editorStore
+  }
   let snapshot = { draft: null, confirmation: null, busy: false, error: '', refresh: 0 }
   const listeners = new Set()
   const update = patch => { snapshot = { ...snapshot, ...patch }; for (const listener of listeners) listener() }
@@ -1772,6 +1775,8 @@ function createMemoryEditor(saved, api) {
     }
   }
   saved.editorStore = { getSnapshot: () => snapshot, subscribe: listener => { listeners.add(listener); return () => listeners.delete(listener) },
+    // The host may replace its Remote while the retained draft is still open.
+    bindApi: value => { api = value },
     update, save: () => run('save', snapshot.draft), remove: () => run('remove', snapshot.confirmation) }
   return saved.editorStore
 }

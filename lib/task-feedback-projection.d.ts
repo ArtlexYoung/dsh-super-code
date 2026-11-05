@@ -53,6 +53,7 @@ export interface TaskFeedbackState extends TaskFeedbackView {
     lastOmittedTodos: number;
     pending: {
         callId: string;
+        tool: string;
         turn: number;
         step: number;
         files: {

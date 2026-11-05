@@ -60,6 +60,7 @@ export interface DelegatedTask {
     operations: Record<string, string>;
     baseline: GitSnapshot;
     connectionId?: string;
+    previousRequest?: string;
     modelSelection?: ModelSelection;
     observation?: ObservationDetails;
 }

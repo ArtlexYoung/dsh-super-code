@@ -10,22 +10,25 @@ export declare class DelegatedTasks {
     private records;
     private tail;
     private closed;
+    private closing;
     readonly approvals: CallerApprovals;
     constructor(store: ConnectionStore, host: DelegationHost, configuration: () => ConnectionConfig);
     initialize(): Promise<void>;
     private exclusive;
     private event;
     private persist;
+    private replace;
     private owned;
     private enabled;
     requestApproval(input: Omit<CallerApproval, 'id' | 'createdAt' | 'expiresAt' | 'taskId' | 'cwd'>, roots: readonly string[], signal?: AbortSignal): Promise<ApprovalAnswer>;
-    approve(taskId: string, approvalId: string, decision: CallerApprovalDecision): Promise<{
+    approve(taskId: string, approvalId: string, decision: CallerApprovalDecision, signal?: AbortSignal): Promise<{
         outcome: string;
         repeated: boolean;
     }>;
     approvalsChanged(): void;
     private selectModel;
     models(): Promise<unknown>;
+    private authorization;
     private directory;
     private capacity;
     run(input: {
@@ -35,7 +38,7 @@ export declare class DelegatedTasks {
         client?: string;
         connectionId?: string;
         modelSelection?: ModelSelection;
-    }): Promise<TaskView>;
+    }, signal?: AbortSignal): Promise<TaskView>;
     send(input: {
         taskId: string;
         requestId: string;
@@ -43,7 +46,7 @@ export declare class DelegatedTasks {
         prompt: string;
         connectionId?: string;
         modelSelection?: ModelSelection;
-    }): Promise<TaskView>;
+    }, signal?: AbortSignal): Promise<TaskView>;
     cancel(id: string): Promise<TaskView>;
     private refresh;
     private refreshPending;

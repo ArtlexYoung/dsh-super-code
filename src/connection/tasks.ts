@@ -18,6 +18,7 @@ export class DelegatedTasks {
   private records: DelegatedTask[] = []
   private tail: Promise<unknown> = Promise.resolve()
   private closed: boolean = false
+  private closing: Promise<void> | false = false
   readonly approvals: CallerApprovals = new CallerApprovals()
   constructor(private readonly store: ConnectionStore, private readonly host: DelegationHost,
     private readonly configuration: () => ConnectionConfig) {}
@@ -37,13 +38,18 @@ export class DelegatedTasks {
     task.events = task.events.slice(-200)
   }
   private async persist(): Promise<void> { await this.store.saveTasks(this.records) }
+  private async replace(task: DelegatedTask, candidate: DelegatedTask): Promise<void> {
+    await this.store.saveTasks(this.records.map(row => row === task ? candidate : row))
+    Object.assign(task, candidate)
+  }
   private owned(id: string): DelegatedTask {
     const task = this.records.find(row => row.id === id)
     if (!task) throw new ConnectionError('task-not-found')
     return task
   }
-  private enabled(): void {
+  private enabled(signal?: AbortSignal): void {
     if (this.closed || !this.configuration().enabled) throw new ConnectionError('connection-disabled')
+    if (signal?.aborted) throw new ConnectionError('request-aborted')
   }
   async requestApproval(input: Omit<CallerApproval, 'id' | 'createdAt' | 'expiresAt' | 'taskId' | 'cwd'>, roots: readonly string[], signal?: AbortSignal): Promise<ApprovalAnswer> {
     const config = this.configuration()
@@ -54,11 +60,13 @@ export class DelegatedTasks {
     if (!this.configuration().enabled || !this.configuration().allowCallerApproval || this.closed || task.cancellationRequested || !activeTask(task.status)) return 'host'
     return this.approvals.request({ ...input, taskId: task.id, cwd: task.cwd }, signal)
   }
-  async approve(taskId: string, approvalId: string, decision: CallerApprovalDecision): Promise<{ outcome: string; repeated: boolean }> {
-    this.enabled()
+  async approve(taskId: string, approvalId: string, decision: CallerApprovalDecision, signal?: AbortSignal): Promise<{ outcome: string; repeated: boolean }> {
+    this.enabled(signal)
     if (!this.configuration().allowCallerApproval) throw new ConnectionError('caller-approval-disabled')
     const task = this.owned(taskId)
-    await this.directory(task.cwd)
+    const authorization = await this.authorization(task.cwd, signal)
+    authorization.check(task.cwd)
+    if (!this.configuration().allowCallerApproval) throw new ConnectionError('caller-approval-disabled')
     if (task.cancellationRequested) throw new ConnectionError('approval-not-found')
     if (!activeTask(task.status) && this.approvals.pending(task.id).length) {
       this.approvals.withdraw(task.id, 'cancelled')
@@ -76,14 +84,29 @@ export class DelegatedTasks {
     if (!this.host.models) throw new ConnectionError('model-catalog-unavailable')
     return this.host.models()
   }
-  private async directory(cwd: string): Promise<string> {
+  private async authorization(cwd: string, signal?: AbortSignal, creating = false): Promise<{ canonical: string; check: (expected?: string) => void }> {
+    this.enabled(signal)
     if (!isAbsolute(cwd)) throw new ConnectionError('absolute-directory-required')
     let canonical: string
     try { canonical = await realpath(cwd); if (!(await stat(canonical)).isDirectory()) throw new Error() }
     catch { throw new ConnectionError('directory-unavailable') }
-    const roots = await Promise.all(this.configuration().allowedDirectories.map(path => realpath(path).catch(() => false as const)))
-    if (!roots.some(root => root !== false && withinDirectory(root, canonical))) throw new ConnectionError('directory-not-allowed')
-    return canonical
+    const allowed = [...this.configuration().allowedDirectories]
+    const roots = await Promise.all(allowed.map(async path => ({ path, root: await realpath(path).catch(() => false as const) })))
+    const grants = roots.filter(({ root }) => root !== false && withinDirectory(root, canonical)).map(({ path }) => path)
+    // The caller checks again synchronously after awaiting, immediately before each host mutation.
+    const check = (expected = canonical): void => {
+      this.enabled(signal)
+      if (!grants.some(path => this.configuration().allowedDirectories.includes(path))) throw new ConnectionError('directory-not-allowed')
+      if (canonical !== expected) throw new ConnectionError('task-directory-mismatch')
+      if (creating && !this.configuration().allowNewConversations) throw new ConnectionError('new-conversation-disabled')
+    }
+    check()
+    return { canonical, check }
+  }
+  private async directory(cwd: string, signal?: AbortSignal): Promise<string> {
+    const authorization = await this.authorization(cwd, signal)
+    authorization.check()
+    return authorization.canonical
   }
   private async capacity(cwd: string, except = ''): Promise<void> {
     await this.refreshPending(except)
@@ -95,10 +118,10 @@ export class DelegatedTasks {
     if (pending.some((row, index) => withinDirectory(row.cwd, cwd) || withinDirectory(cwd, row.cwd)
       || root !== false && root === roots[index])) throw new ConnectionError('workspace-busy', details)
   }
-  async run(input: { requestId: string; cwd: string; prompt: string; client?: string; connectionId?: string; modelSelection?: ModelSelection }): Promise<TaskView> {
+  async run(input: { requestId: string; cwd: string; prompt: string; client?: string; connectionId?: string; modelSelection?: ModelSelection }, signal?: AbortSignal): Promise<TaskView> {
     const task = await this.exclusive(async () => {
       this.enabled()
-      const cwd = await this.directory(input.cwd)
+      const cwd = await this.directory(input.cwd, signal)
       const request = { cwd, prompt: input.prompt, client: input.client ?? 'mcp' }
       const fingerprint = input.modelSelection ? digest({ ...request, modelSelection: input.modelSelection }) : digest(request)
       const prior = this.records.find(row => row.requestId === input.requestId)
@@ -114,28 +137,42 @@ export class DelegatedTasks {
       const row: DelegatedTask = { id, sessionId: id, requestId: input.requestId, fingerprint, cwd, preset,
         client: input.client ?? 'mcp', status: 'starting', cancellationRequested: false, createdAt: now, updatedAt: now, currentRequest: randomUUID(),
         output: '', sequence: 0, events: [], operations: {}, baseline: await gitSnapshot(cwd), ...(input.connectionId ? { connectionId: input.connectionId } : {}) }
+      ;(await this.authorization(cwd, signal, true)).check(cwd)
       this.event(row, 'starting', 'Dispatch intent saved. A DSH turn ending does not verify task acceptance.')
-      this.records.push(row); await this.persist()
-      try { await this.host.create(row.sessionId, cwd, preset, `[MCP] ${input.client ?? 'conversation'}`) }
-      catch { this.event(row, 'failed', 'Session creation failed. No prompt was sent.'); await this.persist(); return row }
-      try { await this.selectModel(row, input.modelSelection) }
-      catch { this.event(row, 'failed', 'Requested model or reasoning effort could not be selected. No prompt was sent.'); await this.persist(); return row }
+      await this.store.saveTasks([...this.records, row]); this.records.push(row)
+      let phase: 'authorization' | 'creation' | 'model' | 'prompt' = 'authorization'
       try {
+        ;(await this.authorization(cwd, signal, true)).check(cwd)
+        phase = 'creation'
+        await this.host.create(row.sessionId, cwd, preset, `[MCP] ${input.client ?? 'conversation'}`)
+        phase = 'authorization'
+        ;(await this.authorization(cwd, signal, true)).check(cwd)
+        phase = 'model'
+        await this.selectModel(row, input.modelSelection)
+        phase = 'authorization'
+        ;(await this.authorization(cwd, signal, true)).check(cwd)
+        phase = 'prompt'
         await this.host.prompt(row.sessionId, row.currentRequest, input.prompt)
         this.event(row, 'running', 'Prompt accepted by DSH.')
-      } catch { this.event(row, 'interrupted', 'Prompt admission could not be confirmed. No automatic retry; inspect the DSH session before continuing.') }
+      } catch (error) {
+        const message = phase === 'authorization' ? `Admission stopped (${error instanceof ConnectionError ? error.code : 'directory-unavailable'}). No prompt was sent.`
+          : phase === 'creation' ? 'Session creation failed. No prompt was sent.'
+          : phase === 'model' ? 'Requested model or reasoning effort could not be selected. No prompt was sent.'
+          : 'Prompt admission could not be confirmed. No automatic retry; inspect the DSH session before continuing.'
+        this.event(row, phase === 'prompt' ? 'interrupted' : 'failed', message)
+      }
       await this.persist()
       return row
     })
     return this.view(task.id, 0)
   }
-  async send(input: { taskId: string; requestId: string; cwd?: string; prompt: string; connectionId?: string; modelSelection?: ModelSelection }): Promise<TaskView> {
+  async send(input: { taskId: string; requestId: string; cwd?: string; prompt: string; connectionId?: string; modelSelection?: ModelSelection }, signal?: AbortSignal): Promise<TaskView> {
     await this.exclusive(async () => {
       this.enabled()
       const task = this.owned(input.taskId), fingerprint = input.modelSelection
         ? digest({ prompt: input.prompt, modelSelection: input.modelSelection })
         : digest(input.prompt)
-      const cwd = await this.directory(input.cwd ?? task.cwd)
+      const cwd = await this.directory(input.cwd ?? task.cwd, signal)
       if (cwd !== task.cwd) throw new ConnectionError('task-directory-mismatch')
       if (input.requestId === task.requestId) {
         const request = { cwd, prompt: input.prompt, client: task.client }
@@ -154,17 +191,43 @@ export class DelegatedTasks {
       await this.refresh(task)
       if (task.status === 'cancelling' || task.status === 'waiting_confirmation') throw new ConnectionError('resolve-in-dsh-first')
       await this.capacity(task.cwd, task.id)
+      ;(await this.authorization(task.cwd, signal)).check(task.cwd)
+      const previous = { currentRequest: task.currentRequest, cancellationRequested: task.cancellationRequested, status: task.status, previousRequest: task.previousRequest }
       // Persist the operation before admission. A retry observes this intent; it never resends it.
-      Object.defineProperty(task.operations, input.requestId, { value: fingerprint, enumerable: true, configurable: true, writable: true })
-      task.currentRequest = randomUUID(); task.cancellationRequested = false
-      if (input.connectionId) task.connectionId = input.connectionId
-      this.event(task, 'starting', 'Explicit continuation intent saved.'); await this.persist()
-      try { await this.selectModel(task, input.modelSelection) }
-      catch { this.event(task, 'failed', 'Requested model or reasoning effort could not be selected. No prompt was sent.'); await this.persist(); return }
+      const intent = structuredClone(task)
+      Object.defineProperty(intent.operations, input.requestId, { value: fingerprint, enumerable: true, configurable: true, writable: true })
+      if (input.connectionId) intent.connectionId = input.connectionId
+      this.event(intent, intent.status, 'Explicit continuation intent saved; the previous turn remains tracked during preparation.')
+      await this.replace(task, intent)
+      let phase: 'authorization' | 'model' | 'persistence' | 'prompt' = 'authorization'
       try {
+        ;(await this.authorization(task.cwd, signal)).check(task.cwd)
+        phase = 'model'
+        await this.selectModel(task, input.modelSelection)
+        phase = 'authorization'
+        ;(await this.authorization(task.cwd, signal)).check(task.cwd)
+        const dispatch = structuredClone(task)
+        dispatch.previousRequest = task.previousRequest ?? task.currentRequest
+        dispatch.currentRequest = randomUUID(); dispatch.cancellationRequested = false
+        this.event(dispatch, 'starting', 'Continuation dispatch checkpoint saved. Admission is not yet confirmed.')
+        phase = 'persistence'
+        await this.replace(task, dispatch)
+        phase = 'authorization'
+        ;(await this.authorization(task.cwd, signal)).check(task.cwd)
+        phase = 'prompt'
         await this.host.prompt(task.sessionId, task.currentRequest, input.prompt)
         this.event(task, 'running', 'Continuation accepted by DSH.')
-      } catch { this.event(task, 'interrupted', 'Continuation admission could not be confirmed; no automatic retry.') }
+      } catch (error) {
+        if (phase === 'persistence') throw error
+        if (phase === 'prompt') this.event(task, 'interrupted', 'Continuation admission could not be confirmed; no automatic retry.')
+        else {
+          Object.assign(task, previous)
+          if (!previous.previousRequest) delete task.previousRequest
+          this.event(task, previous.status, phase === 'model'
+            ? 'Requested model or reasoning effort could not be selected. No prompt was sent.'
+            : `Continuation stopped (${error instanceof ConnectionError ? error.code : 'directory-unavailable'}). No prompt was sent.`)
+        }
+      }
       await this.persist()
     })
     return this.view(input.taskId, 0)
@@ -175,10 +238,12 @@ export class DelegatedTasks {
       const task = this.owned(id)
       await this.refresh(task)
       if (!activeTask(task.status) && task.status !== 'interrupted') return
-      task.cancellationRequested = true
+      this.enabled()
+      const cancellation = structuredClone(task)
+      cancellation.cancellationRequested = true
       this.approvals.withdraw(task.id, 'cancelled')
-      this.event(task, 'cancelling', 'Cancellation requested; waiting for the root and managed descendants to stop.')
-      await this.persist()
+      this.event(cancellation, 'cancelling', 'Cancellation requested; waiting for the root and managed descendants to stop.')
+      await this.replace(task, cancellation)
       try { await this.host.cancel(task.sessionId) }
       catch { this.event(task, 'unavailable', 'Could not confirm cancellation of the complete task tree. Check DSH.'); await this.persist(); return }
       await this.refresh(task); await this.persist()
@@ -188,12 +253,23 @@ export class DelegatedTasks {
   private async refresh(task: DelegatedTask): Promise<void> {
     if (!activeTask(task.status) && task.status !== 'interrupted') return
     if (task.cancellationRequested) await this.host.cancel(task.sessionId).catch(() => {})
-    const observation = await this.host.observe(task.sessionId, task.currentRequest, task.cancellationRequested)
+    let observation = await this.host.observe(task.sessionId, task.currentRequest, task.cancellationRequested)
+    let checkpointChanged = false
+    if (task.previousRequest && observation.observation) {
+      if (observation.observation.lastEventSeq >= 0) {
+        delete task.previousRequest; checkpointChanged = true
+      } else if (!task.cancellationRequested) {
+        const previous = await this.host.observe(task.sessionId, task.previousRequest)
+        observation = ['finished', 'failed', 'interrupted'].includes(previous.status)
+          ? { ...previous, status: 'interrupted', detail: 'Continuation admission has not been confirmed; the previous turn settled. No automatic retry.' }
+          : previous
+      }
+    }
     const status: TaskStatus = task.cancellationRequested
       ? ['finished', 'interrupted', 'failed'].includes(observation.status) ? 'cancelled' : observation.status === 'unavailable' ? 'unavailable' : 'cancelling'
       : observation.status
     const output = observation.status === 'unavailable' && !observation.output ? task.output : observation.output.slice(-12000)
-    const changed = task.output !== output || JSON.stringify(task.observation) !== JSON.stringify(observation.observation ?? task.observation)
+    const changed = checkpointChanged || task.output !== output || JSON.stringify(task.observation) !== JSON.stringify(observation.observation ?? task.observation)
     task.output = output
     if (observation.observation) task.observation = observation.observation
     if (task.status !== status || changed) {
@@ -213,7 +289,7 @@ export class DelegatedTasks {
     })
   }
   private async snapshot(id: string): Promise<DelegatedTask> {
-    return this.exclusive(async () => { const row = this.owned(id); await this.refresh(row); return structuredClone(row) })
+    return this.exclusive(async () => { const row = this.owned(id); if (!this.closed) await this.refresh(row); return structuredClone(row) })
   }
   async view(id: string, cursor: number): Promise<TaskView> {
     return this.describe(await this.snapshot(id), cursor)
@@ -291,7 +367,7 @@ export class DelegatedTasks {
   async wait(id: string, cursor: number, waitMs: number, signal?: AbortSignal): Promise<TaskView> {
     const deadline = Date.now() + Math.min(Math.max(waitMs, 0), 30000)
     let task = await this.snapshot(id)
-    while (activeTask(task.status) && task.status !== 'waiting_confirmation' && !this.approvals.pending(task.id).length && task.sequence <= cursor && Date.now() < deadline) {
+    while (!this.closed && activeTask(task.status) && task.status !== 'waiting_confirmation' && !this.approvals.pending(task.id).length && task.sequence <= cursor && Date.now() < deadline) {
       signal?.throwIfAborted()
       await pause(Math.min(1000, Math.max(1, deadline - Date.now())), undefined, { signal })
       task = await this.snapshot(id)
@@ -299,5 +375,11 @@ export class DelegatedTasks {
     // Git observations are needed once per response, not at every internal status poll.
     return this.describe(task, cursor)
   }
-  async close(): Promise<void> { this.approvals.withdraw(); await this.exclusive(async () => { this.closed = true; await this.persist() }) }
+  close(): Promise<void> {
+    if (this.closing) return this.closing
+    this.closed = true
+    this.approvals.withdraw()
+    this.closing = this.exclusive(() => this.persist())
+    return this.closing
+  }
 }

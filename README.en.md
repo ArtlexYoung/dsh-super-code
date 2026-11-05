@@ -70,7 +70,7 @@ Select **Super Code** in the right sidebar. It contains three sections:
 - **Collaborative execution**: the Agent execution tree. Click a node to view details.
 - **Memory**: view, add, edit, and delete project memory and global preferences.
 
-The three sections open one at a time. Tasks opens by default; click the current heading to collapse it.
+Exactly one of the three sections stays open. Tasks opens by default; clicking its heading keeps it expanded.
 
 [![Task sidebar](docs/images/task-status-preview.png)](docs/images/task-status.png)
 

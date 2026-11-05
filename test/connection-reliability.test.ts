@@ -277,7 +277,7 @@ test('a client teardown failure still closes the MCP listener and releases stora
 })
 
 test('multiple MCP shutdown errors are reported together after the remaining resources are released', async t => {
-  const f = await fixture(t, /MCP resource cleanup failed/)
+  const f = await fixture(t, /MCP resource cleanup failed|fixture task shutdown failure/)
   const http = (f.service as unknown as { http: ConnectionHttp }).http, close = http.close, save = f.store.saveTasks
   const transportFailure = new Error('fixture HTTP shutdown failure'), persistenceFailure = new Error('fixture task shutdown failure')
   http.close = async function () { await close.call(this); throw transportFailure }
@@ -288,6 +288,9 @@ test('multiple MCP shutdown errors are reported together after the remaining res
     await assert.rejects(access(join(f.root, 'profile/owner.lock')))
     await assert.rejects(fetch(f.service.read().url))
   } finally { http.close = close; f.store.saveTasks = save }
+  // Retrying released resources must still report the unrecoverable task save,
+  // without repeating that save after the store has closed.
+  await assert.rejects(f.service.close(), error => error === persistenceFailure)
 })
 
 test('a rejected initialization releases HTTP request counters even when its teardown fails', async t => {

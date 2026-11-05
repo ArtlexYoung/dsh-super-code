@@ -1272,7 +1272,7 @@ function WorkspaceSectionToggle({ section, expanded, onToggle, children, t }) {
     React.createElement('strong', null, label), children)
 }
 
-/** Accordion: at most one open view; clicking the open heading collapses it. Tab state retains drafts. */
+/** Accordion: exactly one open view. Tab state retains drafts across section switches. */
 function SuperCodeWorkspace(props) {
   const { tab } = props.useTabInfo()
   const address = typeof tab.navigation?.params?.memory === 'string' ? tab.navigation.params.memory : tab.contentId
@@ -1280,6 +1280,7 @@ function SuperCodeWorkspace(props) {
   const memoryTarget = memoryLibraryTarget(address, '')
   const saved = useMemo(() => {
     const value = props.workspaceStates.get(tab.signal) || { active: 'tasks' }
+    if (!['tasks', 'tree', 'memory'].includes(value.active)) value.active = 'tasks'
     if (value.navigationKey !== navigationKey) {
       value.navigationKey = navigationKey
       if (memoryTarget.id) value.active = 'memory'
@@ -1287,11 +1288,11 @@ function SuperCodeWorkspace(props) {
     props.workspaceStates.set(tab.signal, value)
     return value
   }, [props.workspaceStates, tab.signal])
-  const [active, setActive] = useState(['tasks', 'tree', 'memory', ''].includes(saved.active) ? saved.active : 'tasks')
+  const [active, setActive] = useState(saved.active)
   const layout = useRef(null), focusSection = useRef('')
   const toggle = section => {
-    const next = active === section ? '' : section
-    saved.active = next; focusSection.current = section; setActive(next)
+    if (active === section) return
+    saved.active = section; focusSection.current = section; setActive(section)
   }
   useLayoutEffect(() => {
     if (saved.navigationKey === navigationKey) return

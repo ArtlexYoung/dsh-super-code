@@ -94,7 +94,7 @@ The profile retains `.super-code-recovery` and its configuration entry so recove
 
 ## Sidebar
 
-In the right sidebar choose **Super Code**. Three sections, at most one open at a time, Tasks by default. Click the open heading to collapse all sections. Switching keeps reading position, filters, and drafts. The UI follows Harness's Chinese/English setting.
+In the right sidebar choose **Super Code**. Exactly one of the three sections stays open, Tasks by default. Clicking the open heading keeps it expanded. Switching keeps reading position, filters, and drafts. The UI follows Harness's Chinese/English setting.
 
 ### Tasks
 
@@ -286,7 +286,7 @@ Whether a client can set up MCP from the prompt by itself depends on the client.
 | `dsh_read` | Page through owned conversations and managed children, including public messages, tool results, and failure details; excludes reasoning and private configuration |
 | `dsh_approve` | Approve or reject one exact pending operation only when caller approval is enabled |
 | `dsh_sessions` | Call first after connecting: lists recent conversations per directory with status, whether they can be reused, connection capacity, and task concurrency |
-| `dsh_run` | Start a task. Pass `taskId` to reuse a specific conversation, or `newConversation: true` for a new one (passing neither also creates new). It **never** picks the latest conversation on its own. Same `requestId` + same input won't dispatch twice; different input is a conflict |
+| `dsh_run` | Start a task. Pass `taskId` to reuse a specific conversation, or `newConversation: true` for a new one (passing neither also creates new). `newConversation: false` requires `taskId` and never creates or automatically picks the latest conversation. Same `requestId` + same input won't dispatch twice; different input is a conflict |
 | `dsh_wait` | Read task status, output, workspace changes, and new events, waiting up to 30 seconds. Without a task ID, lists all tasks page by page |
 | `dsh_send` | Add a follow-up or continue in the same conversation, with a new `requestId`. Never approves permissions for you |
 | `dsh_request_directory` | Ask for a new working directory; you approve it in DSH |
@@ -295,6 +295,8 @@ Whether a client can set up MCP from the prompt by itself depends on the client.
 ### Requesting a new directory
 
 The client calls `dsh_request_directory` with a `requestId`, an existing absolute `path`, and a `reason`. DSH shows a global dialog (Settings doesn't need to be open) with the client name, directory, and reason.
+
+Before approval, DSH rechecks the requested directory's identity and the request status. Replacing the directory at the same path, expiry, or withdrawal prevents the old request from granting access; use a new `requestId` to request consent again. Ordinary file changes inside that directory do not invalidate consent.
 
 - Access is granted only when you click **Allow access**. A model's auto-approval can't do it for you.
 - Repeat the same call to check status: `pending` / `approved` / `rejected` / `expired`.
@@ -311,6 +313,9 @@ The client calls `dsh_request_directory` with a `requestId`, an existing absolut
 - `finished`: execution ended, but `acceptance` is always `not-verified`. The caller must check the result.
 - Returned file info is an observation of the Git workspace, including changes that existed before the task, so it doesn't prove the task made them. Non-Git directories or exceeded limits are marked unavailable.
 - Wait timeouts and client disconnects don't cancel tasks. Turning off the connection just stops new requests.
+- Requests still being prepared recheck authorization before creating a conversation, selecting a model, and sending a prompt. Closing the service, revoking its directory, or disconnecting stops unsent prompts; submitted tasks keep running. Reconnecting never automatically resends a saved intent, and an unsent continuation preserves the previous turn's state.
+- Creation, continuation, and cancellation stop if saving their intent fails. A restart during continuation preparation preserves the previous turn's tracking. An unconfirmed new prompt never inherits completion from the previous turn. Task records share a 64 MiB read/write limit; oversized writes are refused without replacing the saved file.
+- Cancelling an MCP wait or approval request prevents a late form answer from granting permission. Service, directory and caller-approval settings are checked again before the decision. A one-time approval already decided is neither undone nor granted again by a later cancellation.
 - After a restart, prompts are never resent automatically. Find the ID via `dsh_sessions` or the task list, check the state, then continue explicitly. If the state can't be confirmed, it shows `interrupted` or `unavailable`; tasks not confirmed as stopped keep their concurrency slot.
 
 On capacity refusal, retain the same `requestId` and input and wait through `dsh_status` and `dsh_wait`. Do not cancel other clients' tasks or reconfigure the serving app. Release SDK sessions with `transport.terminateSession()` before `client.close()`; closing alone does not release server capacity. The packaged `super-code-mcp` CLI accepts JSON on stdin and reads its token from the private `DSH_MCP_TOKEN` environment variable.

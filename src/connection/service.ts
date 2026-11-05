@@ -24,6 +24,7 @@ export class ConnectionService {
   private timer: ReturnType<typeof setInterval> | false = false
   private tail: Promise<unknown> = Promise.resolve()
   private closing: Promise<void> | false = false
+  private cleanupFailed: boolean = false
   private state: ConnectionSnapshot['state'] = 'disabled'
   private error: string = ''
   private observing: boolean = false
@@ -32,7 +33,7 @@ export class ConnectionService {
     await this.store.initialize()
     try {
       this.settings = await this.store.settings()
-      this.tasks = new DelegatedTasks(this.store, this.host, () => this.settings.config)
+      this.tasks = new DelegatedTasks(this.store, this.host, () => this.closing ? { ...this.settings.config, enabled: false } : this.settings.config)
       await this.tasks.initialize()
       this.directoryRequests = new DirectoryRequests(() => this.settings.config.allowedDirectories)
       this.http = new ConnectionHttp(this.tasks, (input, client) => this.exclusive(async () => {
@@ -136,7 +137,8 @@ export class ConnectionService {
     catch (error) { this.state = 'error'; this.error = error instanceof ConnectionError ? error.code : 'unavailable' }
   }
   close(): Promise<void> {
-    if (this.closing) return this.closing
+    if (this.closing && !this.cleanupFailed) return this.closing
+    this.cleanupFailed = false
     this.closing = this.exclusive(async () => {
       if (this.timer) { clearInterval(this.timer); this.timer = false }
       this.state = 'disabled'
@@ -148,7 +150,7 @@ export class ConnectionService {
       }
       if (failures.length === 1) throw failures[0]
       if (failures.length > 1) throw new AggregateError(failures, 'MCP resource cleanup failed')
-    })
+    }).catch(error => { this.cleanupFailed = true; throw error })
     return this.closing
   }
 }

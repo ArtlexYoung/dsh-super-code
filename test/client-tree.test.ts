@@ -634,6 +634,119 @@ test('detail history failures can retry and late pages cannot revive a closed in
   assert.equal(inspector.getSnapshot(), snapshot)
 })
 
+test('a reconnect during history paging keeps one request and the original history boundary', async () => {
+  let callbacks: any, finish!: (value: object) => void
+  const requests: any[] = []
+  const entry = (seq: number) => ({ event: { seq, time: seq, type: 'assistant/message',
+    data: { message: { content: [{ type: 'text', text: `Message ${seq}` }] } } } })
+  const inspector = plugin.createAgentInspector((_address, next) => {
+    callbacks = next
+    return { open: async () => {}, signal: new AbortController().signal, dispose: async () => {} }
+  }, plugin.agentDetailAddress({ id: 'root' }), async request => {
+    requests.push(request)
+    return new Promise(resolve => { finish = resolve })
+  })
+  callbacks.publish({ type: 'replace', entries: [entry(10), entry(11)], hasMore: true, page: {} })
+  const pending = inspector.older()
+  callbacks.carrierFailed()
+  callbacks.publish({ type: 'replace', entries: [entry(11), entry(12)], hasMore: true, page: {} })
+  assert.equal(inspector.getSnapshot().status, 'paging', 'a replacement stream does not finish the in-flight page request')
+  await inspector.older()
+  assert.equal(requests.length, 1, 'reconnect must not permit a second pagination request')
+  assert.equal(requests[0].beforeSeq, 10)
+  assert.equal(requests[0].throughSeq, 11)
+  finish({ ok: true, value: { records: [entry(8), entry(9)], hasMore: false } })
+  await pending
+  assert.equal(inspector.getSnapshot().cursor, 11)
+  assert.equal(inspector.getSnapshot().items.map((row: any) => row.seq).join(','), '8,9')
+  assert.equal(inspector.getSnapshot().status, 'ready')
+  inspector.dispose()
+})
+
+test('execution records include nested PTC calls and outcomes using their own identities', async () => {
+  const data = { rootCallId: 'outer', parentCallId: 'outer', subCallId: 'outer:ptc:1', name: 'read_file', arguments: { path: '中文 文件.ts' } }
+  const entry = (seq: number, type: string, payload: object) => ({ event: { seq, time: seq, type, data: payload } })
+  const start = entry(1, 'tool/ptc-dispatch-start', data)
+  const end = entry(2, 'tool/ptc-dispatch', { ...data, isError: true,
+    content: [{ type: 'text', text: 'literal **failure**' }, { type: 'reasoning', text: 'private' }] })
+  const started = plugin.detailRecord(start) as any, settled = plugin.detailRecord(end) as any
+  assert.equal(started.kind, 'tool')
+  assert.equal(started.format, 'json')
+  assert.equal(started.toolName, 'read_file')
+  assert.equal(started.callId, data.subCallId)
+  assert.equal(started.parentCallId, data.parentCallId)
+  assert.equal(started.text, JSON.stringify(data.arguments, null, 2))
+  for (const args of ['{"literal":true}', null, ['entry'], 7, false]) {
+    assert.equal(plugin.detailRecord(entry(3, 'tool/ptc-dispatch-start', { ...data, arguments: args })).text,
+      JSON.stringify(args, null, 2), 'PTC arguments are already decoded JSON values, including strings and null')
+  }
+  assert.equal(settled.kind, 'error')
+  assert.equal(settled.format, 'code')
+  assert.equal(settled.toolName, 'read_file', 'a completion-only page must retain the tool name')
+  assert.equal(settled.callId, data.subCallId)
+  assert.equal(settled.parentCallId, data.parentCallId)
+  assert.equal(settled.text, 'literal **failure**')
+  assert.match(settled.label, /read_file/)
+  assert.equal(plugin.detailRecord(entry(3, 'tool/ptc-dispatch', { ...data, isError: false, content: [{ type: 'text', text: 'File contents' }] })).kind, 'tool')
+  let callbacks: any
+  const inspector = plugin.createAgentInspector((_address, next) => {
+    callbacks = next
+    return { open: async () => {}, dispose: async () => {} }
+  }, plugin.agentDetailAddress({ id: 'root' }), async () => ({ ok: true, value: { records: [start], hasMore: false } }))
+  callbacks.publish({ type: 'replace', entries: [end], hasMore: true, page: {} })
+  assert.equal(inspector.getSnapshot().items.length, 1)
+  assert.equal(inspector.getSnapshot().items[0].callId, data.subCallId)
+  await inspector.older()
+  assert.equal(inspector.getSnapshot().items.length, 1)
+  assert.equal(inspector.getSnapshot().items[0].format, 'json')
+  inspector.dispose()
+})
+
+test('paging an already historical view stays locked through reconnect and releases after a failed request', async () => {
+  let callbacks: any, finish!: (value: object) => void, reads = 0
+  const initial = { status: 'ready', earlier: true, items: [], firstSeq: 10, cursor: 90, hasMore: true, projections: {}, error: '' }
+  const inspector = plugin.createAgentInspector((_address, next) => {
+    callbacks = next
+    return { open: async () => {}, signal: new AbortController().signal, dispose: async () => {} }
+  }, plugin.agentDetailAddress({ id: 'root' }), async request => {
+    reads++
+    assert.equal(request.beforeSeq, 10)
+    assert.equal(request.throughSeq, 90)
+    return new Promise(resolve => { finish = resolve })
+  }, initial)
+  const pending = inspector.older()
+  callbacks.failed()
+  await inspector.older()
+  callbacks.publish({ type: 'replace', entries: [], hasMore: true, page: {} })
+  assert.equal(inspector.getSnapshot().status, 'paging')
+  await inspector.older()
+  assert.equal(reads, 1)
+  finish({ ok: false })
+  await pending
+  assert.equal(inspector.getSnapshot().status, 'error')
+  const retry = inspector.older()
+  assert.equal(reads, 2)
+  finish({ ok: true, value: { records: [], hasMore: true } })
+  await retry
+  assert.equal(inspector.getSnapshot().status, 'ready')
+  inspector.dispose()
+  await inspector.older()
+  assert.equal(reads, 2, 'disposed readers never start new page requests')
+})
+
+test('terminal turn failures use the published end reason and never render raw authentication diagnostics', () => {
+  const record = (reason: object) => plugin.detailRecord({ event: { seq: 1, time: 1, type: 'turn/end', data: { turn: 1, reason } } })
+  const failed = record({ kind: 'error', error: { code: 'NETWORK', message: 'Provider connection failed' } })
+  assert.equal(failed.kind, 'error')
+  assert.equal(failed.format, 'text')
+  assert.equal(failed.text, 'Provider connection failed')
+  const auth = record({ kind: 'error', error: { code: 'AUTH', message: 'Do not display fixture-credential' } })
+  assert.equal(auth.kind, 'error')
+  assert.equal(auth.text, '模型身份验证失败，请检查模型配置。')
+  assert.equal(record({ kind: 'error', error: { future: 'unrecognized payload' } }).text, '执行未完成，请稍后重试。')
+  for (const kind of ['completed', 'aborted', 'blocked', 'interrupted', 'future']) assert.equal(record({ kind }).kind, 'skip')
+})
+
 test('detail records show user tasks, public replies, tools and execution errors without private reasoning', () => {
   const record = (type: string, data: object) => plugin.detailRecord({ type: 'event', event: { seq: 1, time: 1, type, data } })
   assert.equal(record('user/message', { source: { kind: 'user' }, content: [{ type: 'text', text: 'Task' }] }).label, '任务')

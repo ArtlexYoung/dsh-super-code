@@ -168,7 +168,7 @@ export function foldTaskFeedback(state: TaskFeedbackState, event: SessionEvent):
   }
   if (type === 'turn/start') next = { ...next, phase: 'running', todos: [], omittedTodos: 0, approvals: [],
     pending: [], activities: state.activities.map(row => row.status === 'running' ? { ...row, status: 'interrupted' } : row) }
-  if (type === 'turn/end') next = { ...next, phase: data.reason?.kind === 'error' ? 'error' : data.reason?.kind === 'aborted' ? 'interrupted' : 'idle',
+  if (type === 'turn/end') next = { ...next, phase: data.reason?.kind === 'error' ? 'error' : ['aborted', 'interrupted'].includes(data.reason?.kind) ? 'interrupted' : 'idle',
     pending: [], approvals: [], activities: state.activities.map(row => row.status === 'running' ? { ...row, status: 'interrupted' } : row) }
   if (type === 'approval/asked' && typeof data.id === 'string') next = { ...next, phase: 'waiting', approvals: [...new Set([...state.approvals, data.id])].slice(-LIMIT.pending) }
   if (type === 'approval/decided' && state.approvals.includes(data.id)) {
@@ -190,8 +190,8 @@ export function foldTaskFeedback(state: TaskFeedbackState, event: SessionEvent):
 export const taskFeedbackProjection: ProjectionDefinition<'superCodeFeedback', TaskFeedbackState> & {
   wire: NonNullable<ProjectionDefinition<'superCodeFeedback', TaskFeedbackState>['wire']>
 } = {
-  // Rebuild old checkpoints whose file evidence depended on retained display activity.
-  key: 'superCodeFeedback', stateVersion: 3, stateSchema,
+  // Rebuild old file evidence and explicit crash-interruption states from the journal.
+  key: 'superCodeFeedback', stateVersion: 4, stateSchema,
   init: (header, inherited) => ({ request: '', latestRequest: '', goal: { kind: 'none' }, phase: 'idle', todos: [], activities: [], files: [],
     omittedActivities: 0, omittedFiles: 0, omittedTodos: 0, pending: [], approvals: [], history: [], omittedRequests: 0,
     requestSeq: -1, lastTodos: [], lastOmittedTodos: 0, inherited, cursor: -1, cwd: header.cwd ?? '' }),

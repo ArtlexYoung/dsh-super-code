@@ -391,6 +391,7 @@ const zh = {
   'workspace.title': 'Super Code', 'workspace.description': '任务状态、Agent 执行树与记忆库', 'workspace.resize': '调整执行树与记忆库高度',
   'tree.collapsedLabel': '已收起', 'tree.organizeLabel': '自动整理',
   'detail.toolCall': '工具调用', 'detail.toolResult': '工具结果', 'detail.toolError': '工具失败',
+  'detail.authError': '模型身份验证失败，请检查模型配置。',
   'detail.copy': '复制', 'detail.copied': '已复制', 'detail.footnotes': '脚注',
   'detail.cache': '缓存', 'detail.info': '详情', 'tree.countCompact': '{shown}/{total} · 运行 {running}',
   'memory.loading': '正在读取记忆…', 'memory.topics': '知识主题', 'memory.allTopics': '全部主题', 'memory.related': '同主题知识', 'preset.configuration': '预设配置',
@@ -584,6 +585,7 @@ const en = {
   'workspace.title': 'Super Code', 'workspace.description': 'Task status, Agent tree and memory library', 'workspace.resize': 'Resize agent tree and memory library',
   'tree.collapsedLabel': 'Collapsed', 'tree.organizeLabel': 'Organize',
   'detail.toolCall': 'Tool call', 'detail.toolResult': 'Tool result', 'detail.toolError': 'Tool failed',
+  'detail.authError': 'Model authentication failed. Check the model settings.',
   'detail.copy': 'Copy', 'detail.copied': 'Copied', 'detail.footnotes': 'Footnotes',
   'detail.cache': 'Cache', 'detail.info': 'Details', 'tree.countCompact': '{shown}/{total} · Running {running}',
   'memory.loading': 'Loading memories…', 'memory.topics': 'Knowledge topics', 'memory.allTopics': 'All topics', 'memory.related': 'More in this topic', 'preset.configuration': 'Preset configuration',
@@ -1609,11 +1611,21 @@ function detailRecord(entry, t = key => zh[key] || key) {
     return { ...base, kind: 'message', format: 'text', label: text(t, 'detail.task'), text: contentText(data.content, t) }
   }
   if (event.type === 'assistant/message') return { ...base, kind: 'message', format: 'markdown', label: data.interrupted ? text(t, 'detail.interrupted') : text(t, 'detail.agent'), text: contentText(data.message?.content, t) }
-  if (event.type === 'tool/call' && typeof data.name === 'string' && data.name) {
-    let value = typeof data.arguments === 'string' ? data.arguments : JSON.stringify(data.arguments ?? {})
+  const nestedCall = event.type === 'tool/ptc-dispatch-start'
+  if ((event.type === 'tool/call' || nestedCall) && typeof data.name === 'string' && data.name) {
+    // Native arguments are raw JSON; PTC arguments are already decoded values.
+    let value = !nestedCall && typeof data.arguments === 'string' ? data.arguments
+      : JSON.stringify(data.arguments === undefined ? {} : data.arguments)
     try { value = JSON.stringify(JSON.parse(value), null, 2) } catch { /* Incomplete arguments remain readable. */ }
-    return { ...base, kind: 'tool', format: 'json', collapsed: true, toolName: data.name, callId: data.callId,
+    return { ...base, kind: 'tool', format: 'json', collapsed: true, toolName: data.name,
+      callId: nestedCall ? data.subCallId : data.callId, ...(nestedCall ? { parentCallId: data.parentCallId } : {}),
       label: text(t, 'detail.toolCall') + ' · ' + data.name, text: value }
+  }
+  if (event.type === 'tool/ptc-dispatch' && typeof data.name === 'string' && data.name) {
+    return { ...base, kind: data.isError ? 'error' : 'tool', format: 'code', collapsed: true,
+      callId: data.subCallId, parentCallId: data.parentCallId, toolName: data.name,
+      label: text(t, data.isError ? 'detail.toolError' : 'detail.toolResult') + ' · ' + data.name,
+      text: contentText(data.content, t) }
   }
   if (event.type === 'tool/result') {
     const blocks = (data.message?.content || []).filter(block => block.type === 'tool-result')
@@ -1626,6 +1638,13 @@ function detailRecord(entry, t = key => zh[key] || key) {
       label: text(t, failed ? 'detail.toolError' : 'detail.toolResult'),
       text: contentText(direct ? data.message.content : blocks.flatMap(block => block.content || []), t) }
   }
+  if (event.type === 'turn/end' && data.reason?.kind === 'error') {
+    const failure = data.reason.error
+    // Match the host's AUTH handling: provider diagnostics can echo credentials.
+    const message = failure?.code === 'AUTH' ? text(t, 'detail.authError')
+      : (typeof failure?.message === 'string' && failure.message) || text(t, 'detail.incomplete')
+    return { ...base, kind: 'error', format: 'text', label: text(t, 'detail.error'), text: message }
+  }
   if (event.type === 'turn/error') return { ...base, kind: 'error', format: 'text', label: text(t, 'detail.error'), text: data.message || text(t, 'detail.incomplete') }
   return { kind: 'skip' }
 }
@@ -1635,7 +1654,7 @@ function detailRecord(entry, t = key => zh[key] || key) {
 function createAgentInspector(createStream, address, readPage, initial, t = key => zh[key] || key) {
   let snapshot = initial || { status: 'loading', items: [], hasMore: false, earlier: false, truncated: false, projections: {}, error: '', firstSeq: 0, cursor: -1 }
   let cursor = snapshot.cursor
-  let disposed = false, stream
+  let disposed = false, paging = false, stream
   const listeners = new Set()
   const publish = patch => {
     if (disposed) return
@@ -1649,7 +1668,7 @@ function createAgentInspector(createStream, address, readPage, initial, t = key 
       if (disposed) return
       if (change.type === 'replace') {
         if (snapshot.earlier) {
-          publish({ status: 'ready', projections: change.page.projections?.values || {}, error: '' })
+          publish({ status: paging ? 'paging' : 'ready', projections: change.page.projections?.values || {}, error: '' })
           return
         }
         const fresh = itemsOf(change.entries)
@@ -1658,7 +1677,7 @@ function createAgentInspector(createStream, address, readPage, initial, t = key 
         // A resumed tail page can start later than the user's reading window.
         // Immutable journal records can be merged without moving that window.
         const items = overlaps ? [...new Map([...snapshot.items, ...fresh].map(item => [item.seq, item])).values()].sort((a, b) => a.seq - b.seq) : fresh
-        publish({ status: 'ready', items: items.slice(-200), hasMore: (overlaps ? snapshot.hasMore : change.hasMore) || items.length > 200, earlier: false, truncated: items.length > 200,
+        publish({ status: paging ? 'paging' : 'ready', items: items.slice(-200), hasMore: (overlaps ? snapshot.hasMore : change.hasMore) || items.length > 200, earlier: false, truncated: items.length > 200,
           firstSeq: items.length > 200 ? items.at(-200).seq : overlaps ? snapshot.firstSeq : change.entries[0]?.event.seq ?? 0,
           cursor: change.entries.at(-1)?.event.seq ?? -1,
           projections: change.page.projections?.values || {}, error: '' })
@@ -1680,7 +1699,8 @@ function createAgentInspector(createStream, address, readPage, initial, t = key 
     subscribe: listener => { listeners.add(listener); return () => listeners.delete(listener) },
     start: () => { stream.open({ maxMessages: 40 }).catch(() => publish({ status: 'error', error: 'detail.loadError' })) },
     older: async () => {
-      if (snapshot.status === 'paging' || !snapshot.hasMore) return
+      if (disposed || paging || !snapshot.hasMore) return
+      paging = true
       publish({ status: 'paging', error: '' })
       const throughSeq = cursor
       try {
@@ -1692,6 +1712,7 @@ function createAgentInspector(createStream, address, readPage, initial, t = key 
           hasMore: result.value.hasMore || items.length > 200 })
       }
       catch { publish({ status: 'error', error: 'detail.historyError' }) }
+      finally { paging = false }
     },
     dispose: () => { disposed = true; listeners.clear(); void stream.dispose() },
   }

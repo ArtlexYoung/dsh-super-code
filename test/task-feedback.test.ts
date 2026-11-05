@@ -289,6 +289,28 @@ test('approvals use request identities and wait for all outstanding decisions; i
   assert.equal(state.pending.length, 0)
 })
 
+test('the host crash-recovery end marker remains interrupted when rebuilding an old checkpoint', async t => {
+  const events = [event(0, 'turn/start', { turn: 1 }),
+    event(1, 'todo/write', { todos: [{ content: 'Pending work', status: 'in_progress' }] }),
+    call(2, 'unfinished', 'edit', { file_path: 'unfinished.ts' }), event(3, 'turn/end', { turn: 1, reason: { kind: 'interrupted' } })]
+  const state = events.reduce(fold, initial())
+  assert.equal(state.phase, 'interrupted', 'an explicit host interruption must not be presented as idle')
+  assert.equal(state.activities[0]?.status, 'interrupted')
+  assert.equal(state.todos[0]?.status, 'in_progress', 'interruption never completes the plan')
+  assert.deepEqual(state.files, [])
+  assert.deepEqual(state.pending, [])
+  const ctx = new Context()
+  t.after(() => ctx.fiber.dispose())
+  new SessionStore(ctx)
+  new SessionProjectionRegistry(ctx)
+  ctx.sessionProjections.register(projection)
+  const old = { superCodeFeedback: { ver: 3, seq: 3, val: { ...state, phase: 'idle' } } }
+  assert.equal(ctx.sessionProjections.restoreFloor(old), 0)
+  const rebuilt = ctx.sessionProjections.restore(old, events, 0 as SessionLogOffset, { cwd: '/project' } as SessionHeader, 0 as SessionLogOffset)
+  assert.equal(rebuilt.snapshot.values.superCodeFeedback?.phase, 'interrupted')
+  assert.equal(rebuilt.checkpoint.superCodeFeedback?.ver, projection.stateVersion)
+})
+
 test('malformed/future payloads degrade, bounded windows and checkpoints remain valid', () => {
   const initialState = initial()
   const unknownTodos = fold(initialState, event(1, 'todo/write', { todos: [{ text: 'unknown shape' }] }))

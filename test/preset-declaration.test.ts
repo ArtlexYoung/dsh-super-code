@@ -309,6 +309,22 @@ test('installation records reject missing id and malformed ownership objects', a
   }
 })
 
+test('installation records reject malformed display baselines without modifying the profile', async t => {
+  const f = await fixture(t), path = join(f.root, 'record.json')
+  const original = await readFile(f.patchPath, 'utf8')
+  for (const declarationDisplay of [null, false, 0, '', [], { name: false }, { description: 1 }]) {
+    const content = JSON.stringify({ plugin: 'dsh-super-code', format: 1, declarationDisplay })
+    await writeFile(path, content)
+    await assert.rejects(DeclarationStateFile.open(path), /Invalid display record/)
+    assert.equal(await readFile(path, 'utf8'), content)
+    assert.equal(await readFile(f.patchPath, 'utf8'), original)
+  }
+  for (const declarationDisplay of [undefined, {}, { name: '', description: 'Custom description' }]) {
+    await writeFile(path, JSON.stringify({ plugin: 'dsh-super-code', format: 1, declarationDisplay }))
+    assert.deepEqual((await DeclarationStateFile.open(path)).get().declarationDisplay, declarationDisplay)
+  }
+})
+
 test('a host-reported broken activation restores the previous preset and ownership record', async t => {
   const f = await fixture(t), list = f.registry.list
   f.registry.list = async () => (await list()).map(row => row.id === 'new-code' ? { ...row, broken: 'Missing dependency' } : row)

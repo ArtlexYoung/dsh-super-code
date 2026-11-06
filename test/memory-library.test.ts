@@ -116,3 +116,41 @@ test('manual saves serialize double clicks and enforce the existing topic capaci
   assert.equal((await api.remove('archived', 'project', 'notes', 'same', archived.entry.token)).kind, 'removed')
   assert.equal(ctx.sessions.get(SessionId('archived')), undefined, 'manual maintenance must not resume an Agent')
 })
+
+test('deleting the last entry releases topic capacity without resetting revision checks', async t => {
+  const root = await mkdtemp(join(tmpdir(), 'super-code-topic-capacity-'))
+  const ctx = new Context(); new SessionStore(ctx)
+  t.after(async () => { await ctx.fiber.dispose(); await rm(root, { recursive: true, force: true }) })
+  const session = ctx.sessions.create(SessionId('topic-capacity'), { meta: { cwd: root } })
+  const data = new Map<string, LongMemoryTopic>()
+  const store = new LongMemoryStore({ get: (key: string) => data.get(key), entries: () => data.entries(),
+    put: async (key: string, value: LongMemoryTopic) => { data.set(key, value) } } as unknown as KvTable<string, LongMemoryTopic>)
+  const api = new MemoryLibraryReader(ctx, store), workspace = memoryWorkspace(session)
+  const content = JSON.stringify({ expected: '', kind: 'constraint', summary: 'Current preference', detail: 'Keep current entries' })
+  const entry = { id: 'entry', kind: 'constraint' as const, summary: 'Current preference', detail: 'Keep current entries',
+    source: { kind: 'manual' as const, sessionId: session.id } }
+  const remove = async (topic: string) => {
+    const read = await api.read(session.id, 'project', topic, 'entry')
+    if (read.kind !== 'found') throw new Error('missing entry')
+    assert.equal((await api.remove(session.id, 'project', topic, 'entry', read.entry.token)).kind, 'removed')
+  }
+  for (let index = 0; index < 200; index++)
+    assert.equal((await api.save(session.id, 'project', `topic-${index}`, 'entry', content)).kind, 'saved')
+  assert.equal((await api.save(session.id, 'project', 'overflow', 'entry', content)).kind, 'full')
+  await remove('topic-0')
+  assert.equal((await api.list(session.id, 'project')).items.length, 199)
+  assert.equal((await api.save(session.id, 'project', 'replacement', 'entry', content)).kind, 'saved',
+    'deleting the last entry must free a slot for another topic')
+  await remove('topic-1')
+  const remembered = await store.remember(workspace, 'agent-replacement', 0, [entry])
+  assert.equal(remembered.revision, 1, 'the Agent writer must use the same active-topic capacity')
+  assert.equal((await api.save(session.id, 'project', 'topic-0', 'entry', content)).kind, 'full',
+    'an empty historical topic must not bypass a full active-topic limit')
+  await remove('topic-2')
+  assert.equal((await api.save(session.id, 'project', 'topic-0', 'entry', content)).kind, 'saved')
+  const restored = store.read(workspace, 'topic-0')
+  if (restored.kind !== 'found') throw new Error('missing restored topic')
+  assert.equal(restored.value.revision, 3, 'retiring a topic must not reset its revision')
+  await assert.rejects(store.remember(workspace, 'topic-0', 1, [entry]), /Stale topic/)
+  assert.equal((await api.list(session.id, 'project')).items.length, 200)
+})

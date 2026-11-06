@@ -40,7 +40,7 @@ Desktop: enter the full path of the package in "Package name or address", then c
 Web: run the following command (use the actual file name):
 
 ```bash
-dsh plugin --profile web add ./dsh-super-code-0.3.10.tgz
+dsh plugin --profile web add ./dsh-super-code-0.3.11.tgz
 ```
 
 </details>
@@ -94,9 +94,9 @@ See the [usage guide](docs/en/UsageGuide.md).
 
 ## Recent releases
 
+- **0.3.11**: Fixed numerous bugs.
 - **0.3.10**: Added bundled Bash on Windows and an official-preset switch, with legacy-host compatibility and tooltip fixes.
 - **0.3.9**: Polished Settings and the task sidebar, improved MCP conversation control, fixed PTC child-tool approvals, and verified rc.4 Web compatibility.
-- **0.3.8**: Added MCP connection; external clients can delegate, inspect, continue, and cancel DSH conversations. Added a Home overview in Settings.
 
 [Full changelog](docs/en/Changelog.md)
 
@@ -148,7 +148,7 @@ These are earlier evaluation runs and are not pooled with the plugin comparison 
 
 - Each configuration was run once. The same task can pass in one run and fail in another; run-to-run variance for a fixed configuration has not been estimated.
 - The default-budget and legacy-budget runs used different plugin versions (`0.3.4` → `0.3.5`), so the gain cannot be attributed entirely to budgets.
-- `0.3.6` – `0.3.10` have not been re-evaluated on the 100 tasks.
+- `0.3.6` – `0.3.11` have not been re-evaluated on the 100 tasks.
 - The cross-model comparison is between two complete systems and cannot isolate the plugin's contribution.
 
 [Results and methodology](docs/en/EvaluationResults.md) · [All result tables](eval/results/swebench-pro-final-100/ResultsTables.md)

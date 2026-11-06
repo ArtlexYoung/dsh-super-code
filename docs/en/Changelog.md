@@ -4,6 +4,49 @@
 
 Versions are `major.performance.maintenance`. The second number changes when coding results or efficiency improve; the third covers fixes, UI, and compatibility. See [Compatibility](Compatibility.md) for what each release was tested on.
 
+## 0.3.11 · 2026-11-06
+
+**Uninstall recovery and preset management**
+
+- Fixed Super Code conversations failing to continue after uninstall: registered conversations with matching ownership continue with the official Standard preset and show one switch notice. Existing parent/child history, model, directory, and permissions are preserved.
+- Fixed stale deletion-protection rules in official Minimal after protection is disabled, official-preset coverage is removed, or the plugin is disabled or uninstalled. Changing levels no longer stacks duplicate rules. Existing summaries remain intact, followed by an explicit revocation notice.
+- Fixed stale preset recovery during asynchronous reads, user selection changes, plugin re-enablement, and module replacement. Retired instances no longer overwrite newer records or take over the service again.
+- Fixed installation/reinstallation rollback and locale synchronization overwriting external changes or losing ownership records. User edits and symbolic links are preserved, invalid records are rejected, and conflicting writes stop.
+
+**Task sidebar, execution records, and usage**
+
+- Fixed the task sidebar showing only the current request. It retains the latest 20 earlier requests and their recorded steps, with a notice when display limits are exceeded.
+- Fixed unrendered execution details by using the host's Markdown and code components, preserving literal user/tool output and allowing long content to expand.
+- Completed PTC child-tool call, result, failure, and terminal-error records, with correct interrupted status after crash recovery. Successful file-change evidence survives slow calls leaving the recent activity window.
+- Fixed duplicate history reads, shifting boundaries, and lost reading positions during pagination and reconnection. Failed history reads can be retried, and closed views ignore late responses.
+- Fixed inherited fork history being counted again in child and tree usage, and distinct model IDs being merged when they contain separator characters. Old caches are rebuilt.
+- Fixed all sidebar sections collapsing: exactly one of Tasks, Collaborative execution, and Memory stays open, with Tasks as the default. Switching preserves reading positions and drafts.
+
+**Settings, budgets, and memory**
+
+- Fixed Home reverting to stale settings when a save succeeds but the following refresh fails. Reset now waits with controls locked during pending autosave, preventing duplicate submissions and revision conflicts.
+- Fixed cancellation during a model-information lookup being ignored by automatic compaction or still allowing tool-record pruning. Existing compaction policy and budget defaults are preserved.
+- Fixed retained legacy-memory drafts using a retired API after reconnection. Drafts are kept, explicit retries use the current API, and in-flight writes are not replayed automatically.
+- Fixed empty topics continuing to consume the 200-topic allowance after their last entry is deleted. Capacity counts non-empty topics while retaining concurrent-edit checks, without adding content version history.
+
+**MCP connection**
+
+- Fixed asynchronous preparation using revoked directory access or disabled settings. Current authorization and cancellation are checked again before conversation creation, model selection, and prompt submission.
+- Fixed `newConversation: false` creating a conversation without `taskId`. The caller must now choose a specific conversation first.
+- Fixed failed create, continuation, or cancellation saves changing in-memory state prematurely, consuming capacity, or causing delayed cancellation. Preparation retains previous-request tracking; restart and reconnection never automatically replay saved requests.
+- Fixed late approval being accepted after an approval wait is cancelled. One-time decisions recheck cancellation, directory access, and settings; undecided requests can return to DSH.
+- Fixed directory requests being approved after path replacement, expiry during validation, or withdrawal. Reusing an old request cannot restore revoked access.
+- Fixed symbolic-link aliases producing duplicate allowed directories that reappear after removal. Each real directory appears once, and unavailable entries remain removable.
+- Added missing public PTC child-call records to `dsh_read`. Child-tool activity now counts toward progress observation instead of being mistaken for a long idle period.
+- Fixed connection-capacity, port, and lock leaks during initialization, token rotation, shutdown, and unload races. Successful saves return the actual settings; cleanup failures are explicit and retryable without resending tasks.
+
+**Commands and runtime**
+
+- Fixed missed and false deletion detections in some shell wrappers, `find`, `xargs`, and PowerShell launch arguments. Existing protection levels and host approval still decide execution.
+- Fixed Windows shell filters, official-budget adapters, and PTC wrappers surviving unload or overwriting other wrappers. Plugin resources are released after asynchronous initialization settles, preserving host and other-plugin state.
+
+Fixes have regression checks scoped to their changes. Version contracts, frontend checks, and full-host acceptance are recorded separately; this does not mean every version on every platform has passed full-process tests. No new 100-task effectiveness evaluation was run.
+
 ## 0.3.10 · 2026-11-03
 
 **Windows command environment**

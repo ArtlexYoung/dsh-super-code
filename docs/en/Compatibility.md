@@ -6,6 +6,8 @@ Web is verified from Harness `0.1.5-alpha.1` through `0.2.1-rc.4`, with incremen
 
 The bundled Windows Bash in 0.3.10 also passes full-process Windows acceptance on official Desktop `0.2.1-rc.5` and NEXT `2.0.21-next` (bundled `0.2.1-rc.4`), within the scope below.
 
+The 0.3.11 fixes add staged version-contract and official-frontend checks through `0.2.2-alpha.3`. Full-host coverage is recorded separately in the 0.3.11 section below.
+
 ## Verified hosts
 
 The 26 targets below were each checked as a full set for 0.3.6, 0.3.7, and 0.3.8.
@@ -52,6 +54,17 @@ The test environments use exact overrides, but that does not fix the upstream de
 Under npm rules, a range like `>=0.1.5-alpha.1 <0.3.0` excludes prereleases such as `0.1.6-alpha.1` and `0.2.0-rc.2`, so peer dependencies have to list each series separately.
 
 `zod`, `js-yaml`, and `@modelcontextprotocol/sdk` are runtime dependencies and are not bundled. The Windows shell also packages separately licensed programs that run as subprocesses; see [runtime notes](../../runtime/windows/README.md) for sources, licenses, and corresponding source.
+
+## 0.3.11 · 2026-11-06
+
+This release includes successive fixes from November 4–6. Results below apply to the code tested at each stage; full-host results from an earlier development package are not presented as a complete platform rerun of the final release package.
+
+- **Release candidate**: all 560 tests, type checking, build, and client syntax checks pass. The package, lockfile, directory preset, and declarative preset all use 0.3.11.
+- **Version contracts and frontends**: 26 exact published Harness versions, from `0.1.5-alpha.1` through `0.2.2-alpha.3`, cover the listed 0.1.5, 0.1.6, 0.1.7, 0.2.0, and 0.2.1 alpha/rc releases, plus `0.2.2-alpha.2`, `0.2.2-rc.1`, and `0.2.2-alpha.3`. Change-specific checks cover Session/LLM recovery, task projections, usage, compaction cancellation, and legacy memory. Frontend checks use actual official React and plugin components with fixture Remote boundaries; they are not 26 complete hosts.
+- **Recent targeted evidence**: PTC history has 26-version contract and frontend checks; fork usage has 157 contract checks across 26 versions; compaction cancellation has 170 checks; directory aliases have 156 frontend checks; memory capacity has 156 storage-contract checks plus frontend interactions on the earliest/latest versions; settings reset has 182 frontend checks across 26 versions. All pass. Counts from separate batches are not added up as distinct hosts.
+- **Full Web and macOS hosts**: uninstall-recovery and MCP lifecycle fixes were checked on Web `0.1.5-alpha.1`, `0.2.1-rc.5`, `0.2.2-rc.1`, and `0.2.2-alpha.3`, official macOS Desktop `0.2.1-rc.5`, and NEXT `2.0.19-next` (bundled `0.2.1-rc.2`). Later task-history/rendering fixes additionally checked real tools, three turns, and cold restart on the earliest/latest Web hosts and official macOS rc.5. Subsequent usage, compaction, directory, memory-capacity, and reset fixes did not rerun the full desktop matrix.
+- **Windows and Linux**: an earlier stage ran actual official x64 Desktop rc.5 and NEXT `2.0.21-next` (bundled rc.4) in a Windows 11 ARM64 VM, with 37 passing groups each for MCP, Bash, PowerShell, deletion protection, physical uninstall, cold restart, and history continuation. All 118 Windows regression tests pass, with three POSIX-specific skips, plus 22 PowerShell 5/7 comparisons. A staged non-root Linux ARM64 full suite passes 527 tests. Later fixes did not rerun those complete operating-system suites.
+- **Preservation and limits**: within the accepted scenarios, parent/child history remains readable; Super Code continues with official Standard after uninstall and shows one notice, while Minimal revokes stale plugin rules. Public memory remains legacy CRUD. Host models use deterministic adapters, with no external-model calls, new 100-task evaluation, Safari-specific acceptance, or per-version historical native Windows desktop acceptance.
 
 ## 0.3.10 · 2026-11-03
 

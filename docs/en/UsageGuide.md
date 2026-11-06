@@ -115,7 +115,7 @@ Notes:
 
 ### Agent execution
 
-The Agent tree, with status, usage, and cache rate for each Agent.
+The Agent tree, with status, usage, and cache rate for each Agent. Usage counts only calls made by that Agent; forked history is not charged again to the child or the tree total.
 
 - Drag empty space to pan; zoom with the wheel or buttons.
 - Click a node to open its details in a new sidebar tab. The main conversation stays put.
@@ -284,7 +284,7 @@ Whether a client can set up MCP from the prompt by itself depends on the client.
 |---|---|
 | `dsh_status` | Inspect directories, policies, capacity, blocking tasks, and recovery guidance |
 | `dsh_models` | List exact model/effort IDs for `dsh_run` and `dsh_send`; omission retains the current/default selection |
-| `dsh_read` | Page through owned conversations and managed children, including public messages, tool results, and failure details; excludes reasoning and private configuration |
+| `dsh_read` | Page through owned conversations and managed children, including public messages, tool calls/results (also PTC sub-calls), and failure details; excludes reasoning and private configuration |
 | `dsh_approve` | Approve or reject one exact pending operation only when caller approval is enabled |
 | `dsh_sessions` | Call first after connecting: lists recent conversations per directory with status, whether they can be reused, connection capacity, and task concurrency |
 | `dsh_run` | Start a task. Pass `taskId` to reuse a specific conversation, or `newConversation: true` for a new one (passing neither also creates new). `newConversation: false` requires `taskId` and never creates or automatically picks the latest conversation. Same `requestId` + same input won't dispatch twice; different input is a conflict |

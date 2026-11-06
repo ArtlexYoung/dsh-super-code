@@ -88,7 +88,7 @@ Screenshots use the current UI with sample data to illustrate the plugin.
 | Deletion protection | Directs Agents to use recoverable `trash` by default; can switch to strict confirmation |
 | Windows commands | Bundled Bash and common utilities, optionally applied to official presets |
 | MCP connection | Allows external MCP clients to delegate tasks to DSH. Off by default |
-| Frontend Skill | Loaded on demand for UI work to check alignment, hit areas, and browser behavior |
+| Frontend Skill | Bundled oil-ui, loaded on demand for design, style comparisons, and rendered UI review |
 
 See the [usage guide](docs/en/UsageGuide.md).
 
@@ -162,7 +162,7 @@ This project recognizes the [LINUX DO](https://linux.do) community.
 | [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (MIT) | Host runtime: Agents, sessions, tools, PTC, Skills, UI extensions |
 | [ZCode](https://github.com/zai-org/ZCode) (Apache-2.0) | UI design |
 | [Agent Skills](https://agentskills.io/specification) | File format of the frontend Skill |
-| [Apple HIG](https://developer.apple.com/design/human-interface-guidelines), [WCAG 2.2](https://www.w3.org/TR/WCAG22/) | Interaction and accessibility principles in the frontend Skill |
+| [oil-ui](https://github.com/oil-oil/oil-ui) (MIT) | Bundled frontend design Skill: design workflow, style comparisons, and rendered UI review |
 | [SWE-bench](https://github.com/SWE-bench/SWE-bench), [SWE-bench Pro](https://github.com/scaleapi/SWE-bench_Pro-os) (code MIT) | Tuning and evaluation tasks |
 | [js-yaml](https://github.com/nodeca/js-yaml), [Zod](https://github.com/colinhacks/zod) (MIT) | YAML parsing, data validation |
 

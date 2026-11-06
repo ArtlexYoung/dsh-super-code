@@ -88,7 +88,7 @@ dsh plugin --profile web add ./dsh-super-code-0.3.11.tgz
 | 删除保护 | 默认引导 Agent 使用可恢复的 `trash`，可切换为严格确认 |
 | Windows 命令环境 | 内置 Bash 与常用命令，可选应用到官方预设 |
 | MCP 连接 | 允许外部 MCP 客户端将任务委派给 DSH 执行，默认关闭 |
-| 前端 Skill | 开发页面时按需加载，检查对齐、点击区域和浏览器表现 |
+| 前端 Skill | 内置 oil-ui，按需加载设计流程、风格对比与真实画面评审 |
 
 详见[使用说明](docs/UsageGuide.md)。
 
@@ -162,7 +162,7 @@ M 为百万 Token，包含思考 Token；耗时包含部分运行内服务等待
 | [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（MIT） | 运行宿主：Agent、会话、工具、PTC、Skill、界面扩展 |
 | [ZCode](https://github.com/zai-org/ZCode)（Apache-2.0） | 界面设计 |
 | [Agent Skills](https://agentskills.io/specification) | 前端 Skill 的文件格式 |
-| [Apple HIG](https://developer.apple.com/design/human-interface-guidelines)、[WCAG 2.2](https://www.w3.org/TR/WCAG22/) | 前端 Skill 的交互与无障碍原则 |
+| [oil-ui](https://github.com/oil-oil/oil-ui)（MIT） | 内置前端设计 Skill，提供设计流程、风格对比与画面评审 |
 | [SWE-bench](https://github.com/SWE-bench/SWE-bench)、[SWE-bench Pro](https://github.com/scaleapi/SWE-bench_Pro-os)（代码 MIT） | 调优题与评测题 |
 | [js-yaml](https://github.com/nodeca/js-yaml)、[Zod](https://github.com/colinhacks/zod)（MIT） | YAML 解析、数据校验 |
 

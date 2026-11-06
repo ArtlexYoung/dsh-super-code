@@ -31,23 +31,17 @@
 
 内置前端 Skill 按该规范组织：`SKILL.md`、YAML 元数据和 `references/` 目录。平时仅向模型提供名称和简介，需要时才加载正文和参考资料，可与项目及用户自有的 Skill 共存。解析和加载使用 Harness 原生能力。
 
-对应实现：[super-code-frontend](../presets/super-code/skills/super-code-frontend/SKILL.md)
+对应实现：[oil-ui](../presets/super-code/skills/oil-ui/SKILL.md)
 
-## Apple Human Interface Guidelines
+## oil-ui
 
-[布局](https://developer.apple.com/design/human-interface-guidelines/layout) · [无障碍](https://developer.apple.com/design/human-interface-guidelines/accessibility) · [按钮](https://developer.apple.com/design/human-interface-guidelines/buttons) · [反馈](https://developer.apple.com/design/human-interface-guidelines/feedback) · [条款](https://developer.apple.com/support/terms/)
+[源码](https://github.com/oil-oil/oil-ui) · [MIT](../presets/super-code/skills/oil-ui/LICENSE) · [固定版本与改动](../presets/super-code/skills/oil-ui/UPSTREAM.md)
 
-前端 Skill 采纳了其中的原则：以对齐表达关系、布局适应容器和字号、通过控件尺寸和间距降低操作负担、交互可预测、反馈就近且适度。上述原则整理为视觉设计、交互状态和浏览器验证三份参考文档。
+感谢 oil-oil 提供开源前端设计 Skill。本插件内置 oil-ui 0.32.0 的设计流程、参考资料、风格对比页及辅助脚本，通过 Harness 原生 Skill 机制按需加载，替代原来自写的前端 Skill。
 
-仅借鉴原则，产品仍保持自身视觉风格。原生平台的尺寸单位不直接作为 CSS 像素使用，材质、字体和图标也不作为模板。
+内置副本固定到上游 commit `0d64a00f3a5c45bf7a30d35bded9b7c0fdff2128`，仅将独立版本检查和更新入口改为随插件升级，未引入上游安装器或付费插件。MIT 许可证与原作者版权声明随包保留。
 
-## W3C WCAG 2.2
-
-[WCAG 2.2](https://www.w3.org/TR/WCAG22/) · [2.5.8 目标尺寸（最小）](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html)
-
-前端 Skill 检查 Web 控件时，采用 2.5.8 的 24 × 24 CSS 像素标准及其间距例外，并结合实际点击、键盘和内容检查。尺寸达标不代表整个界面满足无障碍要求。
-
-对应实现：[交互状态](../presets/super-code/skills/super-code-frontend/references/interaction-states.md)、[浏览器验证](../presets/super-code/skills/super-code-frontend/references/browser-validation.md)
+风格对比页还包含 [Instrument Serif](https://github.com/Instrument/instrument-serif)，采用 [SIL OFL 1.1](../presets/super-code/skills/oil-ui/assets/fonts/instrument-serif/OFL.txt)，用于对比页字体。
 
 ## SWE-bench
 

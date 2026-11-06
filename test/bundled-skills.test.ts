@@ -1,8 +1,9 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { cp, mkdir, mkdtemp, readFile, realpath, rm } from 'node:fs/promises'
+import { cp, mkdir, mkdtemp, readFile, readdir, realpath, rm, writeFile } from 'node:fs/promises'
+import { createHash } from 'node:crypto'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import yaml from 'js-yaml'
 import { interpolate } from '@deepseek-ai/cordis-plugin-loader'
@@ -11,7 +12,7 @@ import { PresetInstaller } from '../src/dsh/preset-installation.js'
 import { discoverPresets } from '@deepseek-ai/dsh-agent-presets'
 
 const presetRoot = fileURLToPath(new URL('../presets/', import.meta.url))
-const skillName = 'super-code-frontend'
+const skillName = 'oil-ui'
 type Row = { id: string; name: string; config?: Record<string, unknown> }
 const parse = (content: string) => yaml.load(content, { schema: declarationSchema }) as Row[]
 
@@ -27,16 +28,46 @@ function bundledConfig(rows: Row[], baseUrl: string): Record<string, unknown> {
   return config
 }
 
-async function verifySkillResources(root: string): Promise<string> {
+async function resourceSnapshot(directory: string, prefix = ''): Promise<Record<string, string>> {
+  const files: Record<string, string> = {}
+  for (const entry of await readdir(join(directory, prefix), { withFileTypes: true })) {
+    const path = join(prefix, entry.name)
+    assert.equal(entry.isSymbolicLink(), false, path)
+    if (entry.isDirectory()) Object.assign(files, await resourceSnapshot(directory, path))
+    else files[path] = createHash('sha256').update(await readFile(join(directory, path))).digest('hex')
+  }
+  return files
+}
+
+async function verifySkillResources(root: string): Promise<Record<string, string>> {
+  assert.equal((await readdir(root)).includes('super-code-frontend'), false, 'legacy skill is retired')
   const directory = join(root, skillName)
   const content = await readFile(join(directory, 'SKILL.md'), 'utf8')
-  const frontmatter = yaml.load(content.split('---')[1]!) as { name: string; description: string }
+  const frontmatter = yaml.load(content.split('---')[1]!) as {
+    name: string; description: string; metadata: { version: string }
+  }
   assert.equal(frontmatter.name, skillName)
   assert.ok(frontmatter.description.length > 0)
-  const references = [...content.matchAll(/\]\((references\/[^)]+)\)/g)].map(match => match[1]!)
-  assert.equal(new Set(references).size, 3)
-  for (const reference of references) assert.ok((await readFile(join(directory, reference), 'utf8')).length > 0)
-  return content
+  assert.equal(frontmatter.metadata.version, '0.32.0')
+  const files = await resourceSnapshot(directory)
+  for (const path of ['LICENSE', 'UPSTREAM.md', 'assets/style-explorer.html', 'assets/logo.png',
+    'assets/fonts/instrument-serif/InstrumentSerif-Regular.ttf', 'assets/fonts/instrument-serif/OFL.txt',
+    'scripts/build_explorer.py', 'scripts/shoot.mjs', 'scripts/chrome.mjs']) assert.ok(files[path], path)
+  assert.equal(files['scripts/check_update.py'], undefined, 'bundled skills update with the plugin')
+  assert.equal(files['scripts/check_update.sh'], undefined)
+  // Resolve references transitively, including ../ links from references and script imports.
+  for (const path of Object.keys(files)) {
+    if (!/\.(md|mjs)$/.test(path)) continue
+    const text = await readFile(join(directory, path), 'utf8')
+    const links = path.endsWith('.md') ? [...text.matchAll(/\]\(([^)]+)\)/g)].map(match => match[1]!)
+      : [...text.matchAll(/from ["'](\.[^"']+)["']/g)].map(match => match[1]!)
+    for (const link of links) {
+      if (/^(?:[a-z]+:|#)/i.test(link)) continue
+      const target = resolve(directory, dirname(path), link.split('#')[0]!)
+      assert.ok((await readFile(target)).byteLength > 0, `${path}: ${link}`)
+    }
+  }
+  return files
 }
 
 test('directory install and renamed reinstall carry loadable skill resources with the preset', async t => {
@@ -54,9 +85,17 @@ test('directory install and renamed reinstall carry loadable skill resources wit
     const rows = parse(await readFile(join(directory, 'agent.cordis.yml'), 'utf8'))
     const config = bundledConfig(rows, pathToFileURL(directory + '/').href)
     assert.equal(config.bundledSkillDir, join(directory, 'skills/'))
-    assert.equal(await verifySkillResources(config.bundledSkillDir as string),
+    assert.deepEqual(await verifySkillResources(config.bundledSkillDir as string),
       await verifySkillResources(join(presetRoot, 'super-code', 'skills')))
-    if (id === 'frontend-copy') assert.equal((await installer.reinstall(id, 'frontend-renamed')).ok, true)
+    if (id === 'frontend-copy') {
+      const legacy = join(directory, 'skills/super-code-frontend')
+      await mkdir(legacy)
+      await writeFile(join(legacy, 'SKILL.md'), 'Legacy skill with user customizations')
+      assert.equal((await installer.reinstall(id, 'frontend-renamed')).ok, true)
+      const backup = (await readdir(user)).find(name => name.startsWith('.super-code-backup-'))!
+      assert.equal(await readFile(join(user, backup, id, 'skills/super-code-frontend/SKILL.md'), 'utf8'),
+        'Legacy skill with user customizations', 'reinstallation preserves a recovery copy')
+    }
   }
 })
 

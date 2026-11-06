@@ -31,23 +31,17 @@ Design reference only, not a dependency. The UI is built on Harness's public API
 
 The bundled frontend Skill follows this format: `SKILL.md`, YAML metadata, and a `references/` directory. The model sees only the name and summary until the Skill is needed, then loads the body and relevant references. It coexists with project and user Skills. Parsing and loading use Harness's native support.
 
-Implementation: [super-code-frontend](../../presets/super-code/skills/super-code-frontend/SKILL.md)
+Implementation: [oil-ui](../../presets/super-code/skills/oil-ui/SKILL.md)
 
-## Apple Human Interface Guidelines
+## oil-ui
 
-[Layout](https://developer.apple.com/design/human-interface-guidelines/layout) · [Accessibility](https://developer.apple.com/design/human-interface-guidelines/accessibility) · [Buttons](https://developer.apple.com/design/human-interface-guidelines/buttons) · [Feedback](https://developer.apple.com/design/human-interface-guidelines/feedback) · [Terms](https://developer.apple.com/support/terms/)
+[Source](https://github.com/oil-oil/oil-ui) · [MIT](../../presets/super-code/skills/oil-ui/LICENSE) · [Pinned version and adaptations](../../presets/super-code/skills/oil-ui/UPSTREAM.md)
 
-The frontend Skill adopts these principles: alignment expresses relationships, layouts adapt to containers and type size, control size and spacing reduce effort, interactions are predictable, feedback is close and proportionate. They're organized into three references: visual design, interaction states, and browser validation.
+Thanks to oil-oil for this open-source frontend design Skill. The plugin bundles oil-ui 0.32.0's workflow, references, comparison page, and helper scripts, loaded on demand through Harness's native Skill mechanism in place of the previous custom frontend Skill.
 
-Only principles are borrowed; each product keeps its own visual style. Native platform units aren't treated as CSS pixels, and materials, fonts, and icons aren't used as a template.
+The bundled copy is pinned to upstream commit `0d64a00f3a5c45bf7a30d35bded9b7c0fdff2128`. Its only adaptation replaces the standalone update entrypoint with plugin-managed updates; neither the upstream installer nor a paid plugin is included. The MIT license and original copyright notice are preserved in the package.
 
-## W3C WCAG 2.2
-
-[WCAG 2.2](https://www.w3.org/TR/WCAG22/) · [2.5.8 Target Size (Minimum)](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html)
-
-When checking Web controls, the frontend Skill uses 2.5.8's 24 × 24 CSS pixel criterion and its spacing exceptions, alongside real click, keyboard, and content checks. Passing the numbers does not make the whole interface accessible.
-
-Implementation: [interaction states](../../presets/super-code/skills/super-code-frontend/references/interaction-states.md), [browser validation](../../presets/super-code/skills/super-code-frontend/references/browser-validation.md)
+The comparison page also bundles [Instrument Serif](https://github.com/Instrument/instrument-serif), under [SIL OFL 1.1](../../presets/super-code/skills/oil-ui/assets/fonts/instrument-serif/OFL.txt), for comparison-page typography.
 
 ## SWE-bench
 

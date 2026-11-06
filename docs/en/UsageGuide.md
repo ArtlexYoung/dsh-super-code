@@ -329,15 +329,17 @@ On capacity refusal, retain the same `requestId` and input and wait through `dsh
 
 ## Frontend Skill
 
-The plugin ships `super-code-frontend`, used for pages, components, visual tweaks, responsive layout, interaction states, and browser checks. It focuses on:
+The plugin bundles [oil-ui](https://github.com/oil-oil/oil-ui) **0.32.0**, replacing `super-code-frontend` for designing, improving, and reviewing pages, apps, dashboards, and components. It covers:
 
-- whether elements line up on the same edges
-- whether what you see matches what you can click
-- whether controls stay put, are easy to reach, and need little input
+- User tasks, design direction, visual hierarchy, and key interactions
+- On-demand style comparison pages with local assets for offline viewing
+- Reviewing and refining UI using rendered screenshots and interaction results
 
-It keeps the project's own visual style, needs no particular framework, and adds no tools. Normally only its name and short description go to the model; the body and relevant references load when a task matches. You can also ask for it directly: "use super-code-frontend".
+It follows the project's framework and implementation conventions and loads through Harness's native Skill mechanism. Normally only its name and short description go to the model; the body and relevant references load when a task matches. You can also ask for it directly: "use oil-ui".
 
-- Only presets installed or reinstalled from 0.3.3 onward include it. For existing presets, back up your customizations, then reinstall.
+- Existing directory presets are not overwritten automatically. After updating to a plugin containing oil-ui, back up customizations and reinstall the preset from Settings. Declarative presets read the resources directly from the current plugin package.
 - A project or user skill with the same name overrides the bundled one, following host precedence.
-- The browser-check part is guidance only: no enforced loop detection, no automatic long-term memory writes.
+- This bundled copy updates with the plugin; it does not check for updates separately or run the upstream installer. See [provenance, adaptations, and licenses](../../presets/super-code/skills/oil-ui/UPSTREAM.md).
+- The design guidance needs no extra dependencies. The optional comparison generator requires Python 3.10+; screenshot and image-processing scripts need Node.js 22+ and Chrome, Chromium, or Edge. Some media operations also need ffmpeg/ffprobe. Host tools can be used when these are unavailable, with unverified behavior stated explicitly.
+- Optional media searches contact their providers. Oil image generation needs an account and explicit authorization to spend credits; plugin startup never invokes it. The upstream Pro recommendation script writes a one-time local marker only when used as directed by the Skill.
 - Whether it improves frontend quality needs a separate real-task evaluation; install tests and SWE scores can't show that.

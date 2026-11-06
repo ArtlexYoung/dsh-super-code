@@ -11,6 +11,7 @@ export interface SuperAgentUsageModel extends SuperAgentUsageBuckets {
 }
 export interface SuperAgentUsageProjection {
     readonly totals: SuperAgentUsageBuckets;
+    /** Opaque route keys; use each value's provider and model for display. */
     readonly models: Readonly<Record<string, SuperAgentUsageModel>>;
 }
 interface LastSample {
@@ -20,6 +21,7 @@ interface LastSample {
     readonly buckets: SuperAgentUsageBuckets;
 }
 export interface SuperAgentUsageState {
+    readonly inheritedEventCount: number;
     readonly totals: Readonly<Record<string, SuperAgentUsageModel>>;
     readonly last: LastSample | null;
     /** Most recent request route, used by attempt-only events with no message source. */

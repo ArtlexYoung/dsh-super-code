@@ -39,7 +39,7 @@ export function connectionSessionFacts(events: readonly SessionEvent[], agentSta
   for (const event of events) {
     const data = record(event.data), type: string = event.type
     if (type === 'user/message' && data.source?.rpcId === requestId) { admitted = true; requestSeq = event.seq; output = ''; outputTruncated = false; errorCode = '' }
-    if (admitted && ['user/message', 'assistant/message', 'tool/call', 'tool/result', 'tool/ptc-dispatch', 'step/start', 'turn/end', 'approval/asked', 'approval/decided', 'llm/retry'].includes(type)) {
+    if (admitted && ['user/message', 'assistant/message', 'tool/call', 'tool/result', 'tool/ptc-dispatch-start', 'tool/ptc-dispatch', 'step/start', 'turn/end', 'approval/asked', 'approval/decided', 'llm/retry'].includes(type)) {
       lastEventSeq = event.seq; lastEventType = type
     }
     if (type === 'turn/start') { reason = ''; errorCode = ''; approvals.clear() }

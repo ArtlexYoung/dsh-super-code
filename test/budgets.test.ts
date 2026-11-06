@@ -111,6 +111,42 @@ test('window policy preserves legacy pressure, retention and summary cap using h
   assert.equal(adapter.calls.length, before + 1)
 })
 
+for (const chars of [100, 4000]) {
+  test(`cancelling a pending model lookup stops pressure checks before pruning or reporting success (${chars} chars)`, async t => {
+    const ctx = new Context()
+    t.after(() => ctx.fiber.dispose())
+    await ctx.plugin(LlmRuntime)
+    await ctx.plugin(Projection)
+    new TokenMeter(ctx)
+    const entered = Promise.withResolvers<void>(), resume = Promise.withResolvers<void>()
+    t.after(() => resume.resolve())
+    class PendingAdapter extends Adapter {
+      override async resolveModel(provider: string, model: string) {
+        entered.resolve()
+        await resume.promise
+        return super.resolveModel(provider, model)
+      }
+    }
+    const adapter = new PendingAdapter()
+    ctx.llm.registerAdapter(['fixture'], adapter)
+    let prunes = 0
+    ctx.provide('toolResultPruner', { pruneSession() { prunes++ } })
+    const engine = new BudgetCompactionEngine(ctx.isolate('compaction'), { pressureBasis: 'window' })
+    const session = conversation(chars), before = session.snapshotEvents()
+    const controller = new AbortController()
+    const pending = engine.compactIfNeeded({ session } as Agent, 'pressure', controller.signal)
+    await entered.promise
+    controller.abort(new Error('cancelled during model lookup'))
+    resume.resolve()
+    const outcome = await pending.then(() => ({ kind: 'returned' as const }), error => ({ kind: 'error' as const, error }))
+    assert.equal(prunes, 0, 'an aborted check must not start a model-free pruning mutation')
+    assert.equal(outcome.kind, 'error', 'a cancelled pressure check must reject even below its threshold')
+    if (outcome.kind === 'error') assert.match(outcome.error.message, /cancelled during model lookup/)
+    assert.equal(adapter.calls.length, 0)
+    assert.deepEqual(session.snapshotEvents(), before)
+  })
+}
+
 test('PTC policy isolates concurrent scopes, preserves explicit deadlines and restores the provider', async t => {
   const ctx = new Context()
   t.after(() => ctx.fiber.dispose())
@@ -422,6 +458,33 @@ test('official budgets are opt-in for all four presets and leave custom and Supe
     assert.equal((await f.deadline(f.agent(preset, limits))).value.timeoutMs, 120)
   }
   assert.equal((await f.deadline(off)).value.timeoutMs, 120, 'the earlier disabled Agent remains disabled')
+})
+
+test('official preset budget bridges stop before pruning when metadata lookup is cancelled', async t => {
+  const f = await officialFixture(t)
+  const resolve = f.adapter.resolveModel.bind(f.adapter)
+  let prunes = 0
+  f.ctx.provide('toolResultPruner', { pruneSession() { prunes++ } })
+  for (const preset of ['standard', 'ptc', 'minimal', 'cordis']) {
+    const entered = Promise.withResolvers<void>(), resume = Promise.withResolvers<void>()
+    t.after(() => resume.resolve())
+    f.adapter.resolveModel = async (provider, model) => {
+      entered.resolve()
+      await resume.promise
+      return resolve(provider, model)
+    }
+    const agent = f.agent(preset, { applyToOfficialPresets: true, budgets: { pressureBasis: 'window' } })
+    const before = agent.session.snapshotEvents(), controller = new AbortController()
+    const pending = f.engine.compactIfNeeded(agent, 'pressure', controller.signal)
+    await entered.promise
+    controller.abort(new Error('cancelled official pressure check'))
+    resume.resolve()
+    await assert.rejects(pending, /cancelled official pressure check/)
+    assert.equal(prunes, 0)
+    assert.equal(f.adapter.calls.length, 0)
+    assert.deepEqual(agent.session.snapshotEvents(), before)
+    assert.deepEqual(f.engine.config, f.nativeConfig)
+  }
 })
 
 test('official shared engines isolate concurrent snapshots, manual compaction and unload cleanly', async t => {

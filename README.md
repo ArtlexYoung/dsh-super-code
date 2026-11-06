@@ -40,7 +40,7 @@ dsh plugin --profile web add dsh-super-code
 Web 版：运行以下命令（文件名以实际下载的为准）：
 
 ```bash
-dsh plugin --profile web add ./dsh-super-code-0.3.10.tgz
+dsh plugin --profile web add ./dsh-super-code-0.3.11.tgz
 ```
 
 </details>
@@ -94,9 +94,9 @@ dsh plugin --profile web add ./dsh-super-code-0.3.10.tgz
 
 ## 最近更新
 
+- **0.3.11**：修复了大量 bug。
 - **0.3.10**：新增 Windows 内置 Bash 和官方预设开关，修复旧宿主兼容与提示气泡样式。
 - **0.3.9**：美化设置和任务侧栏，完善 MCP 对话控制并修复 PTC 子工具审批，验证 rc.4 Web 兼容性。
-- **0.3.8**：新增 MCP 连接，外部客户端可委派、查看、继续和取消 DSH 对话；设置页新增首页概览。
 
 [完整版本记录](docs/Changelog.md)
 
@@ -148,7 +148,7 @@ M 为百万 Token，包含思考 Token；耗时包含部分运行内服务等待
 
 - 每组配置只运行一轮。同一道题在不同轮次中结果可能不同，目前尚未估计固定配置下的随机波动。
 - 默认预算与旧预算两组的插件版本不同（`0.3.4` → `0.3.5`），收益不能全部归因于预算。
-- `0.3.6` ~ `0.3.10` 未重新运行 100 题评测。
+- `0.3.6` ~ `0.3.11` 未重新运行 100 题评测。
 - 跨模型对比是两套完整系统之间的比较，无法单独分离插件的贡献。
 
 [评测结果与口径](docs/EvaluationResults.md) · [完整成绩表](eval/results/swebench-pro-final-100/ResultsTables.md)

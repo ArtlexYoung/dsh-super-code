@@ -2296,15 +2296,16 @@ function BudgetSettings({ api, t, active, section = 'context', onSaved = () => {
   const reset = async () => {
     setConfirmReset(false)
     if (pending.current) return
-    await editor.flush()
-    const current = editor.getSnapshot().snapshot
-    if (!alive.current || !current?.writable) return
-    const base = current.configuration
-    const configuration = protection
-      ? { ...base, deletionProtection: 'relaxed', deletionProtectionForOfficialPresets: false }
-      : { windowsBash: base.windowsBash, windowsBashForOfficialPresets: base.windowsBashForOfficialPresets, deletionProtection: base.deletionProtection, deletionProtectionForOfficialPresets: base.deletionProtectionForOfficialPresets }
+    // Claim the whole operation, including the wait for an earlier autosave.
     pending.current = true; setLoading(true); setFailure(''); setNotice('')
     try {
+      await editor.flush()
+      const current = editor.getSnapshot().snapshot
+      if (!alive.current || !current?.writable) return
+      const base = current.configuration
+      const configuration = protection
+        ? { ...base, deletionProtection: 'relaxed', deletionProtectionForOfficialPresets: false }
+        : { windowsBash: base.windowsBash, windowsBashForOfficialPresets: base.windowsBashForOfficialPresets, deletionProtection: base.deletionProtection, deletionProtectionForOfficialPresets: base.deletionProtectionForOfficialPresets }
       const response = await api.saveConfig(JSON.stringify(configuration), String(current.revision))
       if (!response.ok) throw new Error('Remote unavailable')
       if (!alive.current) return
@@ -2591,7 +2592,7 @@ function ConnectionSettings({ api, t, active, openSession, onSaved = () => {} })
   const editor = useMemo(() => createConnectionAutosave(api), [api])
   const editing = useSyncExternalStore(editor.subscribe, editor.getSnapshot, editor.getSnapshot)
   const { snapshot, draft, saving } = editing
-  const [catalog, setCatalog] = useState({ items: [], picker: 'unavailable' }), [custom, setCustom] = useState([]), [browser, setBrowser] = useState(false)
+  const [catalog, setCatalog] = useState({ items: [], picker: 'unavailable' }), [browser, setBrowser] = useState(false)
   const [busy, setBusy] = useState(false), [error, setError] = useState(''), [notice, setNotice] = useState(''), [token, setToken] = useState('')
   const alive = useRef(false), pending = useRef(false), visible = useRef(active)
   visible.current = active
@@ -2651,7 +2652,7 @@ function ConnectionSettings({ api, t, active, openSession, onSaved = () => {} })
   const edit = (key, value) => change({ [key]: value }, ['port', 'maxConnections'].includes(key) ? 350 : 0)
   const choose = path => {
     if (!draft.allowedDirectories.includes(path) && draft.allowedDirectories.length >= 32) { setError('directory-limit'); return }
-    setCustom(rows => [...new Set([...rows, path])]); change({ allowedDirectories: [...new Set([...draft.allowedDirectories, path])], knownDirectories: [...new Set([...draft.knownDirectories, path])].slice(-128) }); setNotice(''); setError(''); setBrowser(false)
+    change({ allowedDirectories: [...new Set([...draft.allowedDirectories, path])], knownDirectories: [...new Set([...draft.knownDirectories, path])].slice(-128) }); setNotice(''); setError(''); setBrowser(false)
   }
   const addDirectory = async () => {
     if (pending.current) return
@@ -2665,7 +2666,7 @@ function ConnectionSettings({ api, t, active, openSession, onSaved = () => {} })
     finally { pending.current = false; if (alive.current) setBusy(false) }
   }
   const rows = [...catalog.items]
-  for (const path of [...custom, ...draft.knownDirectories, ...draft.allowedDirectories]) if (!rows.some(row => row.path === path)) rows.push({ path, title: '', available: true, workspace: false })
+  for (const path of [...draft.knownDirectories, ...draft.allowedDirectories]) if (!rows.some(row => row.path === path)) rows.push({ path, title: '', available: true, workspace: false })
   const copy = async value => {
     try { await navigator.clipboard.writeText(value); if (alive.current) { setNotice('copied'); setError('') } }
     catch { if (alive.current) setError('clipboard') }
@@ -2706,7 +2707,7 @@ function ConnectionSettings({ api, t, active, openSession, onSaved = () => {} })
               React.createElement('span', null, row.title && React.createElement('strong', null, row.title), React.createElement('code', null, row.path),
                 React.createElement('small', { 'data-unavailable': !row.available }, t(!row.available ? 'connection.directoryUnavailable' : row.workspace ? 'connection.workspaceDirectory' : 'connection.customDirectory')))),
             !row.workspace && React.createElement(ActionButton, { type: 'button', disabled, 'aria-label': `${t('connection.removeDirectory')}: ${row.path}`,
-              onClick: () => { setCustom(values => values.filter(path => path !== row.path)); setCatalog(value => ({ ...value, items: value.items.filter(item => item.path !== row.path) })); change({ knownDirectories: draft.knownDirectories.filter(path => path !== row.path), allowedDirectories: draft.allowedDirectories.filter(path => path !== row.path) }) } }, t('preset.remove')))),
+              onClick: () => { setCatalog(value => ({ ...value, items: value.items.filter(item => item.path !== row.path) })); change({ knownDirectories: draft.knownDirectories.filter(path => path !== row.path), allowedDirectories: draft.allowedDirectories.filter(path => path !== row.path) }) } }, t('preset.remove')))),
           !rows.length && React.createElement('p', null, t('connection.noDirectories'))),
         React.createElement('div', { className: 'dsh-super-code-settings-actions' },
           React.createElement(ActionButton, { type: 'button', disabled: disabled || catalog.picker === 'unavailable', onClick: addDirectory }, t('connection.addDirectory'))),
@@ -2751,7 +2752,7 @@ function SegmentedControl({ label, value, choices, onChange, disabled = false, b
 }
 function SettingsHome({ budgetApi, connectionApi, t, active, revision, navigate, children }) {
   const [budget, setBudget] = useState(null), [connection, setConnection] = useState(null), [overview, setOverview] = useState({ connections: [], sessions: [] })
-  // `saving` keeps the chosen value on screen until the reread confirms it.
+  // Keep the choice visible until the save is acknowledged.
   const [saving, setSaving] = useState(null), [failure, setFailure] = useState('')
   const alive = useRef(false), request = useRef(0), loading = useRef(false), writing = useRef(false)
   const load = async (force = false) => {
@@ -2780,6 +2781,10 @@ function SettingsHome({ budgetApi, connectionApi, t, active, revision, navigate,
       const configuration = kind === 'protection' ? { ...current.configuration, deletionProtection: value } : { ...current.configuration, enabled: value }
       const response = await (kind === 'protection' ? budgetApi : connectionApi).saveConfig(JSON.stringify(configuration), String(current.revision))
       saved = Boolean(response.ok && response.value.ok)
+      if (saved && alive.current) {
+        if (kind === 'protection') setBudget(response.value.snapshot)
+        else setConnection(response.value.snapshot)
+      }
     } catch { /* Reported on the row below. */ }
     if (saved && alive.current) await load(true)
     writing.current = false

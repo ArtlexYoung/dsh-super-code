@@ -17,7 +17,7 @@ import { createUserMessage, createToolResultMessage, ToolCallId } from '@deepsee
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import harnessPlugin from '../src/index.js'
 import agentPlugin from '../src/dsh/super-code.js'
-import { LongMemoryStore, longMemoryContext, memoryWorkspace, memoryGlobalNamespace, GLOBAL_PREFERENCES_TOPIC } from '../src/long-memory.js'
+import { LongMemoryStore, longMemoryContext, memoryWorkspace, memoryGlobalNamespace, memoryEntryToken, GLOBAL_PREFERENCES_TOPIC } from '../src/long-memory.js'
 import type { LongMemoryTopic } from '../src/long-memory.js'
 
 async function fixture(existingRoot?: string) {
@@ -218,6 +218,55 @@ test('concurrent topic creation checks the latest revision and a failed write re
   assert.equal(results.filter(result => result.status === 'fulfilled').length, 1)
   assert.equal(results.filter(result => result.status === 'rejected').length, 1)
   assert.equal(store.read('a'.repeat(64), 'install').kind, 'found')
+})
+
+test('concurrent writers cannot overfill the last active topic slot or reserve it after a failed write', async () => {
+  const records = new Map<string, LongMemoryTopic>(), workspace = 'a'.repeat(64)
+  let fail = false
+  const store = new LongMemoryStore({ get: (key: string) => records.get(key), entries: () => records.entries(),
+    put: async (key: string, value: LongMemoryTopic) => {
+      await new Promise(resolve => setImmediate(resolve))
+      if (fail) throw new Error('disk unavailable')
+      records.set(key, value)
+    } } as KvTable<string, LongMemoryTopic>)
+  const entry = { id: 'rule', kind: 'constraint' as const, summary: 'Keep edits', detail: 'Keep user edits.',
+    source: { sessionId: 's', eventSeq: 0, kind: 'user' as const, quote: 'Keep edits' } }
+  for (let index = 0; index < 199; index++) await store.remember(workspace, `topic-${index}`, 0, [entry])
+  const retired = await store.remember(workspace, 'retired', 0, [entry])
+  await store.forget(workspace, 'retired', retired.revision, entry.id)
+  fail = true
+  await assert.rejects(store.remember(workspace, 'write-failure', 0, [entry]), /disk unavailable/)
+  assert.equal(store.read(workspace, 'write-failure').kind, 'missing')
+  fail = false
+  const results = await Promise.all([
+    store.edit(workspace, 'ui-new', entry.id, '', { kind: 'save', entry }),
+    store.edit(workspace, 'retired', entry.id, '', { kind: 'save', entry }),
+  ])
+  assert.deepEqual(results.map(result => result.kind), ['saved', 'full'])
+  await assert.rejects(store.remember(workspace, 'retired', 2, [entry]), /memory is full/)
+  assert.equal(store.topics(workspace).filter(topic => topic.count > 0).length, 200)
+  assert.equal((await store.edit(workspace, 'ui-new', entry.id, memoryEntryToken(entry), { kind: 'remove' })).kind, 'removed')
+  assert.equal((await store.remember(workspace, 'retired', 2, [entry])).revision, 3)
+})
+
+test('released topic capacity and monotonic revisions survive a JSON storage restart', async t => {
+  let f = await fixture()
+  t.after(async () => { await f.close(); await rm(f.root, { recursive: true, force: true }) })
+  const workspace = memoryWorkspace({ header: { cwd: f.workA } })
+  const entry = { id: 'rule', kind: 'constraint' as const, summary: 'Keep edits', detail: 'Keep user edits.',
+    source: { sessionId: 's', eventSeq: 0, kind: 'user' as const, quote: 'Keep edits' } }
+  for (let index = 0; index < 200; index++) await f.store.remember(workspace, `topic-${index}`, 0, [entry])
+  assert.equal((await f.store.edit(workspace, 'topic-0', entry.id, memoryEntryToken(entry), { kind: 'remove' })).kind, 'removed')
+  const root = f.root; await f.close(); f = await fixture(root)
+  assert.equal(f.store.topics(workspace).filter(topic => topic.count > 0).length, 199)
+  assert.equal((await f.store.remember(workspace, 'replacement', 0, [entry])).revision, 1)
+  await assert.rejects(f.store.remember(workspace, 'topic-0', 0, [entry]), /Stale topic/)
+  await assert.rejects(f.store.remember(workspace, 'topic-0', 2, [entry]), /memory is full/)
+  assert.equal((await f.store.edit(workspace, 'replacement', entry.id, memoryEntryToken(entry), { kind: 'remove' })).kind, 'removed')
+  const restored = await f.store.remember(workspace, 'topic-0', 2, [entry])
+  assert.equal(restored.revision, 3)
+  await f.close(); f = await fixture(root)
+  assert.deepEqual(f.store.read(workspace, 'topic-0'), { kind: 'found', value: restored })
 })
 
 test('global preferences cross projects, reject unsourced promotion and persist under host storage', async t => {

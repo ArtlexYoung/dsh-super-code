@@ -90,6 +90,48 @@ test('active tool events advance progress even without assistant text and failed
   assert.equal(long.output.length, 12000); assert.equal(long.observation.outputTruncated, true)
 })
 
+test('public history includes PTC dispatches with decoded arguments and complete paged outcomes', () => {
+  const output = 'x'.repeat(3994) + '🧪' + '中文结果'.repeat(2500)
+  const values = [{ command: 'run tests' }, 'literal {"command":"data"}', null, false, 0, ['file with spaces']]
+  const events = log(values.flatMap((arguments_, index) => [
+    ['tool/ptc-dispatch-start', { parentCallId: 'outer', subCallId: `sub-${index}`, name: `tool-${index}`, arguments: arguments_ }],
+    ['tool/ptc-dispatch', { parentCallId: 'outer', subCallId: `sub-${index}`, name: `tool-${index}`, arguments: arguments_,
+      isError: index === 0, content: [{ type: 'text', text: index === 0 ? output : 'done' }, { type: 'reasoning', text: 'PRIVATE-REASONING' }], privateMetadata: 'PRIVATE-METADATA' }],
+  ]) as [string, object][])
+  let cursor = { seq: 0, offset: 0 }, count = 0
+  const text = new Map<number, string>(), failed = new Set<number>()
+  do {
+    const page = connectionHistoryPage(events, cursor, 2)
+    assert.ok(page.entries.reduce((total, entry) => total + entry.text.length, 0) <= 16000)
+    assert.notDeepEqual(page.nextCursor, cursor)
+    for (const entry of page.entries) {
+      text.set(entry.seq, (text.get(entry.seq) ?? '') + entry.text)
+      if (entry.isError) failed.add(entry.seq)
+      assert.doesNotMatch(entry.text, /PRIVATE/)
+    }
+    cursor = page.nextCursor
+    if (!page.hasMore) break
+    assert.ok(++count < 30)
+  } while (true)
+  for (const [index, value] of values.entries()) assert.equal(text.get(index * 2), `tool-${index}\n${JSON.stringify(value)}`)
+  assert.equal(text.get(1), `tool-0\n${output}`)
+  assert.deepEqual([...failed], [1])
+  // A page need not include the paired start to identify a result.
+  assert.equal(connectionHistoryPage(events, { seq: 3, offset: 0 }, 1).entries[0]?.text, 'tool-1\ndone')
+})
+
+test('starting a PTC sub-call advances delegated progress before the tool returns', () => {
+  const events = log([
+    ['user/message', { source: { kind: 'user', rpcId: 'request' } }],
+    ['tool/call', { name: 'run_code', arguments: '{}' }],
+    ['tool/ptc-dispatch-start', { parentCallId: 'outer', subCallId: 'inner', name: 'bash', arguments: { command: 'run slow tests' } }],
+  ])
+  const facts = connectionSessionFacts(events, 'running', 'request')
+  assert.equal(facts.status, 'running')
+  assert.equal(facts.observation.lastEventSeq, 2)
+  assert.equal(facts.observation.lastEventType, 'tool/ptc-dispatch-start')
+})
+
 test('history traversal stays bounded across private event runs without dropping the next public result', () => {
   const events = log(Array.from({ length: 2005 }, () => ['assistant/attempt', { stream: 'PRIVATE' }] as [string, object]))
   events.push(...log([['assistant/message', { content: [{ type: 'text', text: 'Public result' }] }]]).map(event => ({ ...event, seq: events.length })))
@@ -317,8 +359,16 @@ test('HTTP recovery identifies blockers; public history and cancellation of a wa
   assert.equal(busy.isError, true); assert.equal((busy.content as any)[0].text, 'concurrency-limit')
   const recovery = JSON.parse((busy.content as any)[1].text)
   assert.equal(recovery.blockingTasks[0].taskId, task.taskId); assert.equal(recovery.recovery.action, 'inspect-capacity')
+  f.host.events = log([
+    ['tool/call', { name: 'run_code', arguments: '{}' }],
+    ['tool/ptc-dispatch-start', { parentCallId: 'outer', subCallId: 'inner', name: 'bash', arguments: { command: 'run tests' } }],
+    ['tool/ptc-dispatch', { parentCallId: 'outer', subCallId: 'inner', name: 'bash', arguments: { command: 'run tests' }, isError: true, content: [{ type: 'text', text: 'test failure' }] }],
+  ])
   const page = await f.call('dsh_read', { taskId: task.taskId })
-  assert.equal(JSON.parse((page.content as any)[0].text).entries[0].type, 'tool/call')
+  const entries = JSON.parse((page.content as any)[0].text).entries
+  assert.deepEqual(entries.map((row: any) => row.type), ['tool/call', 'tool/ptc-dispatch-start', 'tool/ptc-dispatch'])
+  assert.equal(entries[1].text, 'bash\n{"command":"run tests"}')
+  assert.equal(entries[2].text, 'bash\ntest failure'); assert.equal(entries[2].isError, true)
   const controller = new AbortController()
   const waiting = f.call('dsh_wait', { taskId: task.taskId, cursor: task.cursor, waitMs: 30000 }, controller.signal)
   setTimeout(() => controller.abort(), 100)

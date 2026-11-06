@@ -56,6 +56,7 @@ export async function compactByWindow(engine: BasicCompactionEngine, budgets: Bu
   const config = agent.session.requestHeader()?.config
   if (!config?.provider || !config.model) return null
   const info = await ctx.llm.resolveModelInfo(config.provider, config.model, signal)
+  signal.throwIfAborted()
   const window = info.context?.contextWindow
   if (!Number.isSafeInteger(window) || !window || window < 1) throw new Error('Compression requires the routed model context window')
   const threshold = Math.floor(window * (budgets.thresholdRatio ?? engine.config.thresholdRatio))

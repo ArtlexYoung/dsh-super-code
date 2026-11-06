@@ -16,6 +16,12 @@ export interface ConnectionSnapshot { configuration: ConnectionConfig; revision:
   state: 'disabled' | 'listening' | 'error'; error: string; url: string }
 export interface ConnectionOverview { connections: ConnectedClient[]; sessions: ReturnType<DelegatedTasks['overview']> }
 export type ConnectionSaveResult = { ok: true; snapshot: ConnectionSnapshot } | { ok: false; error: string }
+
+async function canonicalKnownDirectories(paths: readonly string[]): Promise<string[]> {
+  // Known entries are not grants: keep missing/inaccessible paths visible for removal.
+  return [...new Set(await Promise.all(paths.map(path => realpath(path).catch(() => path))))]
+}
+
 export class ConnectionService {
   private settings!: ConnectionSettings
   private tasks!: DelegatedTasks
@@ -33,6 +39,7 @@ export class ConnectionService {
     await this.store.initialize()
     try {
       this.settings = await this.store.settings()
+      this.settings.config.knownDirectories = await canonicalKnownDirectories(this.settings.config.knownDirectories)
       this.tasks = new DelegatedTasks(this.store, this.host, () => this.closing ? { ...this.settings.config, enabled: false } : this.settings.config)
       await this.tasks.initialize()
       this.directoryRequests = new DirectoryRequests(() => this.settings.config.allowedDirectories)
@@ -89,7 +96,7 @@ export class ConnectionService {
         config = connectionConfigSchema.parse(JSON.parse(content))
         config.maxConcurrent = config.maxConnections
         if (config.knownDirectories.some(path => !isAbsolute(path))) throw new Error()
-        config.knownDirectories = [...new Set(config.knownDirectories)]
+        config.knownDirectories = await canonicalKnownDirectories(config.knownDirectories)
         config.allowedDirectories = [...new Set(await Promise.all(config.allowedDirectories.map(async path => {
           if (!isAbsolute(path)) throw new Error()
           const canonical = await realpath(path)

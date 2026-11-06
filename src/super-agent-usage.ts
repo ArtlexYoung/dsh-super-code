@@ -26,6 +26,7 @@ export interface SuperAgentUsageModel extends SuperAgentUsageBuckets {
 
 export interface SuperAgentUsageProjection {
   readonly totals: SuperAgentUsageBuckets
+  /** Opaque route keys; use each value's provider and model for display. */
   readonly models: Readonly<Record<string, SuperAgentUsageModel>>
 }
 
@@ -37,6 +38,7 @@ interface LastSample {
 }
 
 export interface SuperAgentUsageState {
+  readonly inheritedEventCount: number
   readonly totals: Readonly<Record<string, SuperAgentUsageModel>>
   readonly last: LastSample | null
   /** Most recent request route, used by attempt-only events with no message source. */
@@ -65,6 +67,7 @@ const projectionSchema = z.object({
   models: z.record(z.string(), modelSchema),
 }).strict()
 const stateSchema = z.object({
+  inheritedEventCount: z.number().int().nonnegative(),
   totals: z.record(z.string(), modelSchema),
   last: z.object({
     turn: z.number().int().nonnegative(),
@@ -96,7 +99,7 @@ const sameBuckets = (left: SuperAgentUsageBuckets, right: SuperAgentUsageBuckets
   && left.cacheWriteTokens === right.cacheWriteTokens
 
 function modelKey(provider: string, model: string): string {
-  return `${provider}/${model}`
+  return JSON.stringify([provider, model])
 }
 
 function addModel(
@@ -209,10 +212,19 @@ export const superAgentUsageProjectionDefinition: ProjectionDefinition<'superAge
   wire: NonNullable<ProjectionDefinition<'superAgentUsage', SuperAgentUsageState>['wire']>
 } = {
   key: 'superAgentUsage',
-  stateVersion: 1,
+  stateVersion: 3,
   stateSchema,
-  init: (_header: SessionHeader, _inheritedEventCount: SessionLogOffset) => ({ totals: {}, last: null }),
+  init: (_header: SessionHeader, inheritedEventCount: SessionLogOffset) => ({ inheritedEventCount, totals: {}, last: null }),
   apply: (state, event) => {
+    const route = eventRoute(event, state.route)
+    if (event.type === 'request/context' || event.type === 'request/header') {
+      if (route === undefined) return state
+      if (state.route?.provider === route.provider && state.route.model === route.model) return state
+      return { ...state, route }
+    }
+    // Forks retain request routing as context, but inherited attempts were
+    // already billed to their owner. Counting them again inflates tree totals.
+    if (event.seq < state.inheritedEventCount) return state
     // Retry boundaries end the replacement slot. The event is supplied by the
     // optional retry package, so use a string guard to keep this plugin usable
     // with Harness profiles that do not compose that package's type merge.
@@ -223,12 +235,6 @@ export const superAgentUsageProjectionDefinition: ProjectionDefinition<'superAge
         && state.last.step === data?.step
         ? { ...state, last: null }
         : state
-    }
-    const route = eventRoute(event, state.route)
-    if (event.type === 'request/context' || event.type === 'request/header') {
-      if (route === undefined) return state
-      if (state.route?.provider === route.provider && state.route.model === route.model) return state
-      return { ...state, route }
     }
     if (event.type !== 'assistant/message' && !isAttemptEvent(event)) return state
     const usage = usageOf(event)

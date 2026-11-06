@@ -107,7 +107,8 @@ export class LongMemoryStore {
       const found = this.read(workspace, topic)
       const current = found.kind === 'found' ? found.value : undefined
       if ((current?.revision ?? 0) !== expectedRevision) throw new Error(`Stale topic ${topic}; read revision ${current?.revision ?? 0}`)
-      if (!current && this.topics(workspace).length >= 200) throw new Error('Workspace memory is full')
+      // Empty records retain revision checks but do not consume a live topic slot.
+      if (!current?.entries.length && this.topics(workspace).filter(topic => topic.count > 0).length >= 200) throw new Error('Workspace memory is full')
       const updated = new Map(current?.entries.map(entry => [entry.id, entry]) ?? [])
       for (const entry of additions) updated.set(entry.id, entry)
       const value = longMemoryTopicSchema.parse({ workspace, topic, revision: expectedRevision + 1, entries: [...updated.values()] })
@@ -129,7 +130,7 @@ export class LongMemoryStore {
       if (expected && !entry) return { kind: 'missing' }
       if (entry ? memoryEntryToken(entry) !== expected : expected !== '') return { kind: 'conflict' }
       if (change.kind === 'remove' && !entry) return { kind: 'missing' }
-      if (replacement && ((!current && this.topics(workspace).length >= 200) || (!entry && (current?.entries.length ?? 0) >= 20))) return { kind: 'full' }
+      if (replacement && ((!current?.entries.length && this.topics(workspace).filter(topic => topic.count > 0).length >= 200) || (!entry && (current?.entries.length ?? 0) >= 20))) return { kind: 'full' }
       const entries = new Map(current?.entries.map(item => [item.id, item]) ?? [])
       if (replacement) entries.set(entryId, replacement); else entries.delete(entryId)
       const value = longMemoryTopicSchema.parse({ workspace, topic, revision: (current?.revision ?? 0) + 1, entries: [...entries.values()] })

@@ -106,6 +106,31 @@ test('all three package switches persist independently and reject non-boolean va
   }
 })
 
+test('unchanged stored PTC budgets do not block unrelated settings after host capability changes', async t => {
+  const { settings, scope } = await fixture(t)
+  let ceiling: number | false = 1800000
+  const api = new BudgetSettings(settings, scope, () => ceiling)
+  const budgets = { ptcTimeoutMs: 600000, ptcMaxTimeoutMs: 600000 }
+  assert.equal((await api.save(JSON.stringify({ budgets, openspecSkills: true }), String(api.read().revision))).ok, true)
+  for (const next of [300000, false] as const) {
+    ceiling = next
+    const configuration = { ...api.read().configuration, mattpocockSkills: true, deletionProtection: 'strict' }
+    const result = await api.save(JSON.stringify(configuration), String(api.read().revision))
+    assert.equal(result.ok, true)
+    assert.equal(scope.get().mattpocockSkills, true)
+    assert.equal(scope.get().deletionProtection, 'strict')
+    assert.deepEqual(scope.get().budgets, budgets, 'unrelated switches must not erase the stored execution budget')
+    for (const key of ['ptcTimeoutMs', 'ptcMaxTimeoutMs']) {
+      const changed = { ...configuration, budgets: { ...budgets, [key]: key === 'ptcTimeoutMs' ? 500000 : 900000 } }
+      const rejected = await api.save(JSON.stringify(changed), String(api.read().revision))
+      assert.deepEqual(rejected, { ok: false, error: next === false ? 'ptc-unavailable' : 'ptc-ceiling' })
+    }
+    assert.deepEqual(await api.save(JSON.stringify(configuration), '0'), { ok: false, error: 'conflict' })
+  }
+  assert.equal((await api.save('{"openspecSkills":false}', String(api.read().revision))).ok, true, 'obsolete budgets can still be removed explicitly')
+  assert.equal(scope.get().budgets?.ptcTimeoutMs, undefined)
+})
+
 test('official-preset Bash choice is saved independently of budget and deletion scope', async t => {
   const { api, scope } = await fixture(t)
   for (const enabled of [true, false]) {

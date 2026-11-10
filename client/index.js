@@ -2277,6 +2277,10 @@ function createBudgetAutosave(api, section = 'context') {
 
 /** All budget tabs edit one document; finish local writes before another tab reads it. */
 function createBudgetEditors(api) {
+  return createSettingsEditors(api, Object.fromEntries(['context', 'shell', 'protection', 'skills']
+    .map(section => [section, source => createBudgetAutosave(source, section)])))
+}
+function createSettingsEditors(api, factories) {
   let writing = Promise.resolve(), saved, saveCount = 0
   const saveConfig = (content, expected) => {
     const result = api.saveConfig(content, expected).then(response => {
@@ -2292,8 +2296,8 @@ function createBudgetEditors(api) {
     writing = Promise.allSettled([writing, result]).then(() => {})
     return result
   }
-  const editors = Object.fromEntries(['context', 'shell', 'protection', 'skills']
-    .map(section => [section, createBudgetAutosave({ saveConfig }, section)]))
+  const editors = Object.fromEntries(Object.entries(factories)
+    .map(([section, create]) => [section, create({ saveConfig })]))
   const flush = async () => {
     await Promise.all(Object.values(editors).map(editor => editor.flush()))
     await writing
@@ -2551,7 +2555,14 @@ function createAutosave(api, { draft: initialDraft, toDraft, toConfiguration }) 
       acknowledged = ++version
       update({ snapshot, draft, error: '', notice: '' })
     },
-    revision: snapshot => update({ snapshot }),
+    revision: snapshot => {
+      const previous = state.snapshot ? toDraft(state.snapshot.configuration) : initialDraft
+      const next = toDraft(snapshot.configuration)
+      // A local save may change an untouched field in this page (for example
+      // the Home switch). Carry it forward while preserving actual edits.
+      update({ snapshot, draft: Object.fromEntries(Object.entries(next).map(([key, value]) =>
+        [key, JSON.stringify(state.draft[key]) === JSON.stringify(previous[key]) ? value : state.draft[key]])) })
+    },
     change: (patch, delay = 0) => {
       version++
       update({ draft: { ...state.draft, ...patch }, error: '', notice: '' })
@@ -2647,8 +2658,8 @@ function ConnectionActivity({ api, t, active, openSession }) {
     error && React.createElement('p', { role: 'alert' }, t('home.error')))
 }
 
-function ConnectionSettings({ api, t, active, openSession, onSaved = () => {} }) {
-  const editor = useMemo(() => createConnectionAutosave(api), [api])
+function ConnectionSettings({ api, settings, t, active, openSession, onSaved = () => {} }) {
+  const editor = settings.editors.connection
   const editing = useSyncExternalStore(editor.subscribe, editor.getSnapshot, editor.getSnapshot)
   const { snapshot, draft, saving } = editing
   const [catalog, setCatalog] = useState({ items: [], picker: 'unavailable' }), [browser, setBrowser] = useState(false)
@@ -2665,7 +2676,7 @@ function ConnectionSettings({ api, t, active, openSession, onSaved = () => {} })
     if (pending.current || (discard && editor.getSnapshot().saving)) return
     pending.current = true; setBusy(true); setError('')
     try {
-      const [config, directories, credential] = await Promise.all([api.readConfig(), api.directories(), api.revealToken()])
+      const [config, directories, credential] = await Promise.all([settings.readConfig(), api.directories(), api.revealToken()])
       if (!config.ok || !directories.ok || !credential.ok) throw new Error()
       if (!alive.current) return
       setCatalog(directories.value)
@@ -2809,7 +2820,7 @@ function SegmentedControl({ label, value, choices, onChange, disabled = false, b
     ...choices.map(([choice, text], index) => React.createElement('button', { key: choice, type: 'button', role: 'radio',
       'aria-checked': index === selected, tabIndex: index === focusable ? 0 : -1, disabled, onClick: () => pick(choice) }, text)))
 }
-function SettingsHome({ budgetApi, connectionApi, t, active, revision, navigate, children }) {
+function SettingsHome({ budgetApi, connectionApi, connectionSettings, t, active, revision, navigate, children }) {
   const [budget, setBudget] = useState(null), [connection, setConnection] = useState(null), [overview, setOverview] = useState({ connections: [], sessions: [] })
   // Keep the choice visible until the save is acknowledged.
   const [saving, setSaving] = useState(null), [failure, setFailure] = useState('')
@@ -2821,7 +2832,7 @@ function SettingsHome({ budgetApi, connectionApi, t, active, revision, navigate,
     loading.current = { blocking: blockControls }
     if (blockControls) setRefreshing(true)
     try {
-      const [b, c, o] = await Promise.all([budgetApi.readConfig(), connectionApi.readConfig(), connectionApi.overview()])
+      const [b, c, o] = await Promise.all([budgetApi.readConfig(), connectionSettings.readConfig(), connectionApi.overview()])
       if (!b.ok || !c.ok || !o.ok) throw new Error()
       if (alive.current && sequence === request.current) {
         setBudget(b.value); setConnection(c.value); setOverview(o.value); setFailure(value => value === 'load' ? '' : value)
@@ -2840,7 +2851,7 @@ function SettingsHome({ budgetApi, connectionApi, t, active, revision, navigate,
     let saved = false
     try {
       const configuration = kind === 'protection' ? { ...current.configuration, deletionProtection: value } : { ...current.configuration, enabled: value }
-      const response = await (kind === 'protection' ? budgetApi : connectionApi).saveConfig(JSON.stringify(configuration), String(current.revision))
+      const response = await (kind === 'protection' ? budgetApi : connectionSettings).saveConfig(JSON.stringify(configuration), String(current.revision))
       saved = Boolean(response.ok && response.value.ok)
       if (saved && alive.current) {
         if (kind === 'protection') setBudget(response.value.snapshot)
@@ -2928,8 +2939,7 @@ function ConnectionConsent({ api, t }) {
       React.createElement(ActionButton, { type: 'button', disabled: busy, className: 'dsh-super-code-primary-button', onClick: () => resolve('approved') }, t('connection.approveDirectory'))))
 }
 
-function PresetSettings({ api, budgetApi, connectionApi, openSession = () => {}, t }) {
-  const budgets = useMemo(() => createBudgetEditors(budgetApi), [budgetApi])
+function PresetSettings({ api, budgetApi: budgets, connectionApi, connectionSettings, openSession = () => {}, t }) {
   const [tab, setTab] = useState('home')
   const [status, setStatus] = useState(null), [customId, setCustomId] = useState(null)
   const reinstall = status?.reinstallable ?? status?.state === 'installed'
@@ -3012,7 +3022,7 @@ function PresetSettings({ api, budgetApi, connectionApi, openSession = () => {},
       tabIndex: tab === value ? 0 : -1, onClick: () => setTab(value) }, t(`settings.${value}Tab`)))),
     React.createElement('div', { className: 'dsh-super-code-settings-body' },
       React.createElement('div', { role: 'tabpanel', id: 'super-code-panel-home', 'aria-labelledby': 'super-code-tab-home', hidden: tab !== 'home' },
-        React.createElement(SettingsHome, { budgetApi: budgets, connectionApi, t, active: tab === 'home', revision: overviewRevision, navigate: setTab },
+        React.createElement(SettingsHome, { budgetApi: budgets, connectionApi, connectionSettings, t, active: tab === 'home', revision: overviewRevision, navigate: setTab },
       // Healthy state collapses to one status line; problems expand into a notice with its fix.
       React.createElement('header', { className: 'dsh-super-code-settings-header' },
         React.createElement('span', { className: 'dsh-super-code-settings-mark', 'aria-hidden': true }, React.createElement(Glyph, { type: 'code' })),
@@ -3070,7 +3080,7 @@ function PresetSettings({ api, budgetApi, connectionApi, openSession = () => {},
       React.createElement('div', { role: 'tabpanel', id: 'super-code-panel-protection', 'aria-labelledby': 'super-code-tab-protection', hidden: tab !== 'protection' },
         React.createElement(BudgetSettings, { api: budgets, t, section: 'protection', active: tab === 'protection', onSaved })),
       React.createElement('div', { role: 'tabpanel', id: 'super-code-panel-connection', 'aria-labelledby': 'super-code-tab-connection', hidden: tab !== 'connection' },
-        React.createElement(ConnectionSettings, { api: connectionApi, t, active: tab === 'connection', openSession, onSaved }))),
+        React.createElement(ConnectionSettings, { api: connectionApi, settings: connectionSettings, t, active: tab === 'connection', openSession, onSaved }))),
     confirmation && React.createElement('dialog', { ref: dialog, className: 'dsh-super-code-confirm',
       'aria-labelledby': 'super-code-confirm-title', 'aria-describedby': 'super-code-confirm-hint',
       onKeyDown: event => { if (event.key === 'Escape') event.stopPropagation() },
@@ -3129,13 +3139,17 @@ function apply(ctx) {
   // service here: Cordis rejects even optional reads without an injection.
   const preferenceService = 'configForms' in ctx ? 'configForms' : 'settingsScope'
   ctx.inject(['remote.superCodePresets', 'remote.superCodeBudgets', 'remote.superCodeConnection', preferenceService], ready => {
+    // Settings windows may close while a save is pending. Keep each document's
+    // editor with its Remote service so reopening waits for that same save.
+    const budgets = createBudgetEditors(ready.remote.superCodeBudgets)
+    const connections = createSettingsEditors(ready.remote.superCodeConnection, { connection: createConnectionAutosave })
     const preferenceScope = preferenceService === 'configForms'
       ? ready.configForms.get('locale') : ready.settingsScope.bind({ namespace: 'locale' })
     ready.effect(() => synchronizePresetDisplay(ready.remote.superCodePresets, locale,
       () => window.location.reload(), error => console.warn('Super Code preset display:', error), preferenceScope), 'super-code: preset display')
     ready.slots.inject('settings.section', () => ready.slots.register({
       name: 'settings.section', id: 'super-code', order: 120, label: () => t('preset.title'), locale: LOCALE_NS,
-      inject: () => ({ api: ready.remote.superCodePresets, budgetApi: ready.remote.superCodeBudgets, connectionApi: ready.remote.superCodeConnection, openSession: id => navigation.openSession(id) }),
+      inject: () => ({ api: ready.remote.superCodePresets, budgetApi: budgets, connectionApi: ready.remote.superCodeConnection, connectionSettings: connections, openSession: id => navigation.openSession(id) }),
     }, PresetSettings))
   })
   ctx.effect(() => {

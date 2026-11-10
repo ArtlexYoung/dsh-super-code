@@ -59,11 +59,17 @@ export class BudgetSettings {
       if (content.length > 4096) throw new Error('Configuration is too large')
       config = validateConfiguration(JSON.parse(content))
     } catch { return { ok: false, error: 'invalid' } }
-    const budgets = config.budgets
-    if (budgets?.ptcTimeoutMs !== undefined || budgets?.ptcMaxTimeoutMs !== undefined) {
+    const previous = this.scope.get().budgets
+    // Stored values may outlive a provider or its limits. Preserve them when
+    // editing other settings; only newly selected execution budgets need validation.
+    const changed = (['ptcTimeoutMs', 'ptcMaxTimeoutMs'] as const).flatMap(key => {
+      const value = config.budgets?.[key]
+      return value !== undefined && value !== previous?.[key] ? [value] : []
+    })
+    if (changed.length) {
       const ceiling = this.ptcCeiling()
       if (ceiling === false) return { ok: false, error: 'ptc-unavailable' }
-      if ((budgets.ptcTimeoutMs ?? 0) > ceiling || (budgets.ptcMaxTimeoutMs ?? 0) > ceiling) return { ok: false, error: 'ptc-ceiling' }
+      if (changed.some(value => value > ceiling)) return { ok: false, error: 'ptc-ceiling' }
     }
     return this.replace(config, expected)
   }

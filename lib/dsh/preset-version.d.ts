@@ -1,6 +1,7 @@
 export declare const pluginVersion: string;
 export interface PresetVersion {
     presetVersion?: string;
+    skillPacks?: boolean;
 }
 export declare function compositionVersion(content: string): PresetVersion;
 export declare function directoryVersion(path: string): Promise<PresetVersion>;

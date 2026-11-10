@@ -9,7 +9,7 @@ const compositionSchema = yaml.DEFAULT_SCHEMA.extend(new yaml.Type('tag:yaml.org
   kind: 'scalar', construct: () => ({}),
 }))
 
-export interface PresetVersion { presetVersion?: string }
+export interface PresetVersion { presetVersion?: string; skillPacks?: boolean }
 
 export function compositionVersion(content: string): PresetVersion {
   try {
@@ -21,7 +21,7 @@ export function compositionVersion(content: string): PresetVersion {
     const version = matches[0].config?.presetVersion
     if (typeof version !== 'string' || version.length > 100
       || !/^\d+\.\d+\.\d+(?:-[\da-zA-Z.-]+)?(?:\+[\da-zA-Z.-]+)?$/.test(version)) return {}
-    return { presetVersion: version }
+    return { presetVersion: version, ...(rows.some(row => row?.name === 'dsh-super-code/skills') ? { skillPacks: true } : {}) }
   } catch { return {} }
 }
 

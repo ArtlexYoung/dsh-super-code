@@ -24,6 +24,9 @@ export interface Budgets {
 export type DeletionProtectionMode = 'off' | 'relaxed' | 'strict'
 
 export interface Configuration {
+  readonly oilUiSkill?: boolean
+  readonly openspecSkills?: boolean
+  readonly mattpocockSkills?: boolean
   readonly windowsBash?: boolean
   readonly windowsBashForOfficialPresets?: boolean
   readonly applyToOfficialPresets?: boolean
@@ -47,6 +50,9 @@ export const budgetSchema: z<Budgets> = z.object({
 
 // SettingsProvider resolves plain data; volatile references belong only to Loader entries.
 export const settingsConfigurationSchema: z<Configuration> = z.object({
+  oilUiSkill: z.boolean().description('Enable the bundled oil-ui Skill (default: on).'),
+  openspecSkills: z.boolean().description('Enable the complete OpenSpec Skill package (default: off).'),
+  mattpocockSkills: z.boolean().description('Enable the complete Matt Pocock Skills package (default: off).'),
   windowsBash: z.boolean().description('Use bundled Bash for Super Code on Windows (default: on). New conversations use the saved choice.'),
   windowsBashForOfficialPresets: z.boolean().description('Also use bundled Bash for Standard, PTC and Create on Windows (default: off). Minimal keeps its persistent terminal.'),
   applyToOfficialPresets: z.boolean().description('Apply common runtime budgets to Standard, PTC, Minimal and Create presets (default: off).'),
@@ -58,6 +64,9 @@ export const settingsConfigurationSchema: z<Configuration> = z.object({
 })
 
 export const configurationSchema: z<Configuration> = z.object({
+  oilUiSkill: settingsConfigurationSchema.dict!.oilUiSkill!.extra('volatile', true),
+  openspecSkills: settingsConfigurationSchema.dict!.openspecSkills!.extra('volatile', true),
+  mattpocockSkills: settingsConfigurationSchema.dict!.mattpocockSkills!.extra('volatile', true),
   windowsBash: settingsConfigurationSchema.dict!.windowsBash!.extra('volatile', true),
   windowsBashForOfficialPresets: settingsConfigurationSchema.dict!.windowsBashForOfficialPresets!.extra('volatile', true),
   applyToOfficialPresets: settingsConfigurationSchema.dict!.applyToOfficialPresets!.extra('volatile', true),
@@ -69,6 +78,9 @@ export const configurationSchema: z<Configuration> = z.object({
 })
 
 const validConfiguration = json.object({
+  oilUiSkill: json.boolean().optional(),
+  openspecSkills: json.boolean().optional(),
+  mattpocockSkills: json.boolean().optional(),
   windowsBash: json.boolean().optional(),
   windowsBashForOfficialPresets: json.boolean().optional(),
   applyToOfficialPresets: json.boolean().optional(),

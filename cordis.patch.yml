@@ -61,11 +61,8 @@
           # Declarations may be persisted in a profile patch. Resolve the
           # installed package instead of treating that patch as a skill root.
           - id: skill-super-code-bundled
-            name: '@deepseek-ai/dsh-skill-filesystem'
+            name: dsh-super-code/skills
             config:
-              providerName: super-code-bundled
-              includeDefaultRoots: false
-              watch: false
               bundledSkillDir: !!js >-
                 (() => {
                   const require = process.getBuiltinModule('node:module').createRequire(new URL('package.json', baseUrl))

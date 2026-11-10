@@ -20,6 +20,9 @@ export interface Budgets {
 }
 export type DeletionProtectionMode = 'off' | 'relaxed' | 'strict';
 export interface Configuration {
+    readonly oilUiSkill?: boolean;
+    readonly openspecSkills?: boolean;
+    readonly mattpocockSkills?: boolean;
     readonly windowsBash?: boolean;
     readonly windowsBashForOfficialPresets?: boolean;
     readonly applyToOfficialPresets?: boolean;

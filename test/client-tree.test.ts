@@ -232,8 +232,8 @@ test('plugin settings open on home, separate protection and retain version and r
   let card = render()
   assert.equal(card.type, 'section')
   const tabs = find(card, element => element.props.role === 'tab')
-  assert.equal(tabs.length, 5)
-  assert.deepEqual(tabs.map(tab => tab.props.id), ['super-code-tab-home', 'super-code-tab-preset', 'super-code-tab-context', 'super-code-tab-protection', 'super-code-tab-connection'])
+  assert.equal(tabs.length, 6)
+  assert.deepEqual(tabs.map(tab => tab.props.id), ['super-code-tab-home', 'super-code-tab-preset', 'super-code-tab-skills', 'super-code-tab-context', 'super-code-tab-protection', 'super-code-tab-connection'])
   assert.equal(tabs[0]!.props['aria-selected'], true)
   const tablist = find(card, element => element.props.role === 'tablist')[0]!
   let focused = ''

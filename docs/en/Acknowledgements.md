@@ -68,3 +68,15 @@ Full list in [package.json](../../package.json); locked versions in [package-loc
 ## License
 
 This project uses [Apache-2.0](../../LICENSE). The projects, specifications, design resources, and datasets above keep their own copyrights and licenses as stated upstream (LICENSE, NOTICE, and dataset docs). A design reference does not imply a dependency, endorsement, or feature equivalence.
+
+## OpenSpec
+
+[Source](https://github.com/Fission-AI/OpenSpec) · [MIT](../../presets/super-code/skill-packs/openspec/LICENSE) · [Upstream](../../presets/super-code/skill-packs/openspec/UPSTREAM.md)
+
+Thanks to the OpenSpec contributors for the complete specification-driven workflow Skill distribution. The plugin preserves the original prompts and licenses and loads them on demand through DSH.
+
+## Matt Pocock Skills
+
+[Source](https://github.com/mattpocock/skills) · [MIT](../../presets/super-code/skill-packs/mattpocock/LICENSE) · [Upstream](../../presets/super-code/skill-packs/mattpocock/UPSTREAM.md)
+
+Thanks to Matt Pocock and contributors for the complete engineering and productivity Skill distribution. The plugin includes the official plugin inventory with its references, templates and invocation rules; it does not run setup on activation.

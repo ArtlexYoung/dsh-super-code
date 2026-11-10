@@ -15,6 +15,7 @@ interface SettingsWriter {
     replace(namespace: string, config: object, revision: number): Promise<void>;
 }
 export interface BudgetSettingsSnapshot {
+    readonly generation?: string;
     readonly shell?: ShellStatus;
     readonly configuration: Configuration;
     readonly revision: number;
@@ -35,6 +36,7 @@ export declare class BudgetSettings {
     private readonly ptcCeiling;
     private readonly key;
     private readonly defaults;
+    private readonly generation;
     constructor(settings: SettingsWriter, scope: Pick<SettingsScope<Configuration>, 'get'>, ptcCeiling: () => number | false, key?: string, defaults?: () => Configuration);
     read(): BudgetSettingsSnapshot;
     save(content: string, expected: string): Promise<BudgetSettingsResult>;

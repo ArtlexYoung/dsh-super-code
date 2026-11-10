@@ -60,6 +60,26 @@ test('budget UI settings persist, restore composition defaults and reject stale 
   assert.deepEqual(settings.stored['super-code-budgets'], {})
 })
 
+test('budget service instances reject an old generation even when the numeric revision matches', async t => {
+  const first = (await fixture(t)).api, second = (await fixture(t)).api
+  await first.save('{"maxTasks":32}', String(first.read().revision))
+  await second.save('{"openspecSkills":true,"maxTasks":16}', String(second.read().revision))
+  const before = second.read(), stale = first.read() as typeof before & { generation?: string }
+  assert.equal(stale.revision, before.revision)
+  const rejected = await second.save('{"maxTasks":48}', `${stale.revision}:${stale.generation}`)
+  assert.deepEqual(rejected, { ok: false, error: 'conflict' })
+  assert.deepEqual(await second.reset(`${stale.revision}:${stale.generation}`), { ok: false, error: 'conflict' })
+  assert.deepEqual(second.read().configuration, before.configuration)
+  const current = second.read() as typeof before & { generation?: string }
+  const saved = await second.save('{"openspecSkills":true,"maxTasks":48}', `${current.revision}:${current.generation}`)
+  assert.equal(saved.ok, true)
+  assert.equal(second.read().configuration.openspecSkills, true)
+  assert.equal(second.read().configuration.maxTasks, 48)
+  for (const expected of ['', '01', '-1', '1:', '1:one:two', '9007199254740992']) {
+    assert.deepEqual(await second.save('{"maxTasks":64}', expected), { ok: false, error: 'invalid' })
+  }
+})
+
 test('deletion settings persist independently of budgets and reset to relaxed with official opt-in off', async t => {
   const { api, settings } = await fixture(t)
   const initial = api.read()

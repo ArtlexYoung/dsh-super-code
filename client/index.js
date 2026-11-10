@@ -2178,8 +2178,9 @@ function budgetDraft(configuration) {
       return [field.key, value === undefined ? '' : String(value / field.factor)]
     })])
 }
-function budgetConfiguration(draft) {
+function budgetConfiguration(draft, previous = {}) {
   const config = {}, budgets = {}
+  const before = budgetDraft(previous)
   if (draft.deletionProtection !== undefined) {
     if (!['off', 'relaxed', 'strict'].includes(draft.deletionProtection)) return { ok: false, error: 'invalid' }
     config.deletionProtection = draft.deletionProtection
@@ -2202,8 +2203,11 @@ function budgetConfiguration(draft) {
     const value = Number(input)
     if (!Number.isFinite(value) || value < field.min || (field.max !== undefined && value > field.max)) return { ok: false, error: 'invalid' }
     const scaled = value * field.factor
-    const selected = field.step === 'any' ? scaled : Math.round(scaled)
-    if (field.step !== 'any' && (Math.abs(selected - scaled) > 1e-7 || !Number.isSafeInteger(selected))) return { ok: false, error: 'invalid' }
+    const stored = field.root ? previous[field.key] : previous.budgets?.[field.key]
+    // Percent/seconds formatting must not change an untouched stored number.
+    const unchanged = stored !== undefined && input === before[field.key]
+    const selected = unchanged ? stored : field.step === 'any' ? scaled : Math.round(scaled)
+    if (field.step !== 'any' && ((!unchanged && Math.abs(selected - scaled) > 1e-7) || !Number.isSafeInteger(selected))) return { ok: false, error: 'invalid' }
     ;(field.root ? config : budgets)[field.key] = selected
   }
   if ((budgets.retainRatio ?? 0.16) >= (budgets.thresholdRatio ?? 0.8)) return { ok: false, error: 'retain' }
@@ -2263,7 +2267,7 @@ function budgetSectionConfiguration(section, draft, snapshot) {
   if (section === 'shell') return typeof draft.windowsBash === 'boolean' && typeof draft.windowsBashForOfficialPresets === 'boolean'
     ? { ok: true, configuration: { ...snapshot.configuration, windowsBash: draft.windowsBash, windowsBashForOfficialPresets: draft.windowsBashForOfficialPresets } }
     : { ok: false, error: 'invalid' }
-  const parsed = budgetConfiguration(draft)
+  const parsed = budgetConfiguration(draft, snapshot.configuration)
   if (!parsed.ok) return parsed
   const current = snapshot.configuration
   return { ok: true, configuration: section === 'protection'
@@ -2280,15 +2284,19 @@ function createBudgetEditors(api) {
   return createSettingsEditors(api, Object.fromEntries(['context', 'shell', 'protection', 'skills']
     .map(section => [section, source => createBudgetAutosave(source, section)])))
 }
+function settingsRevision(snapshot) {
+  return snapshot.generation ? `${snapshot.revision}:${snapshot.generation}` : String(snapshot.revision)
+}
 function createSettingsEditors(api, factories) {
-  let writing = Promise.resolve(), saved, saveCount = 0
+  let writing = Promise.resolve(), saved, saveCount = 0, readCount = 0, latestRead
   const saveConfig = (content, expected) => {
     const result = api.saveConfig(content, expected).then(response => {
       if (response.ok && response.value.ok) {
         saved = response.value.snapshot; saveCount++
         // Carry local, disjoint edits forward without rebasing an external conflict.
         for (const editor of Object.values(editors)) {
-          if (editor.getSnapshot().snapshot?.revision === Number(expected)) editor.revision(saved)
+          const previous = editor.getSnapshot().snapshot
+          if (previous && settingsRevision(previous) === expected) editor.revision(saved)
         }
       }
       return response
@@ -2303,13 +2311,19 @@ function createSettingsEditors(api, factories) {
     await writing
   }
   return { editors, saveConfig, readConfig: async () => {
+    const sequence = ++readCount
     await flush()
     const before = saveCount, response = await api.readConfig()
     await flush()
+    if (!response.ok) return response
+    // A newer read may already belong to a restarted service. Never let an
+    // older request bring the previous instance back into a form.
+    if (!latestRead || sequence > latestRead.sequence) latestRead = { sequence, snapshot: response.value }
+    const snapshot = latestRead.snapshot
     // A read already in flight must not undo a newer local save. A fresh read
     // still accepts a lower revision after the host restarts its settings service.
-    return response.ok && saveCount !== before && saved.revision > response.value.revision
-      ? { ...response, value: saved } : response
+    return { ...response, value: saveCount !== before && saved.generation === snapshot.generation && saved.revision > snapshot.revision
+      ? saved : snapshot }
   } }
 }
 function budgetFieldValid(field, input) {
@@ -2366,7 +2380,7 @@ function BudgetSettings({ api, t, active, section = 'context', presetStatus, onS
       const configuration = protection
         ? { ...base, deletionProtection: 'relaxed', deletionProtectionForOfficialPresets: false }
         : { oilUiSkill: base.oilUiSkill, openspecSkills: base.openspecSkills, mattpocockSkills: base.mattpocockSkills, windowsBash: base.windowsBash, windowsBashForOfficialPresets: base.windowsBashForOfficialPresets, deletionProtection: base.deletionProtection, deletionProtectionForOfficialPresets: base.deletionProtectionForOfficialPresets }
-      const response = await api.saveConfig(JSON.stringify(configuration), String(current.revision))
+      const response = await api.saveConfig(JSON.stringify(configuration), settingsRevision(current))
       if (!response.ok) throw new Error('Remote unavailable')
       if (!alive.current) return
       if (response.value.ok) { editor.receive(response.value.snapshot); onSaved(); setNotice('resetDone') }
@@ -2376,8 +2390,9 @@ function BudgetSettings({ api, t, active, section = 'context', presetStatus, onS
   }
   const disabled = loading || !snapshot?.writable
   const edit = (key, value, delay = 0) => { setNotice(''); setFailure(''); editor.change({ [key]: value }, delay) }
-  const parsed = budgetConfiguration(draft)
-  const fieldError = field => !budgetFieldValid(field, draft[field.key]) ? t('budget.error.range')
+  const parsed = budgetConfiguration(draft, snapshot?.configuration)
+  const storedDraft = budgetDraft(snapshot?.configuration ?? {})
+  const fieldError = field => draft[field.key] !== storedDraft[field.key] && !budgetFieldValid(field, draft[field.key]) ? t('budget.error.range')
     : field.key === 'retainRatio' && parsed.error === 'retain' ? t('budget.error.retain')
     : field.key === 'ptcTimeoutMs' && parsed.error === 'ptc-order' ? t('budget.error.ptc-order') : ''
   const defaultOf = field => {
@@ -2538,7 +2553,7 @@ function createAutosave(api, { draft: initialDraft, toDraft, toConfiguration }) 
         while (acknowledged < version) {
           const sent = version, parsed = toConfiguration(state.draft, state.snapshot)
           if (!parsed.ok) { blocked = version; update({ error: parsed.error || 'invalid' }); break }
-          const result = await api.saveConfig(JSON.stringify(parsed.configuration), String(state.snapshot.revision))
+          const result = await api.saveConfig(JSON.stringify(parsed.configuration), settingsRevision(state.snapshot))
           if (!result.ok) throw new Error('Remote unavailable')
           if (!result.value.ok) { blocked = version; update({ error: result.value.error }); break }
           acknowledged = sent
@@ -2859,7 +2874,7 @@ function SettingsHome({ budgetApi, connectionApi, connectionSettings, t, active,
     let saved = false
     try {
       const configuration = kind === 'protection' ? { ...current.configuration, deletionProtection: value } : { ...current.configuration, enabled: value }
-      const response = await (kind === 'protection' ? budgetApi : connectionSettings).saveConfig(JSON.stringify(configuration), String(current.revision))
+      const response = await (kind === 'protection' ? budgetApi : connectionSettings).saveConfig(JSON.stringify(configuration), settingsRevision(current))
       saved = Boolean(response.ok && response.value.ok)
       if (saved && alive.current) {
         if (kind === 'protection') setBudget(response.value.snapshot)

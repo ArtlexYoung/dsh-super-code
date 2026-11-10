@@ -63,6 +63,11 @@ test('declarative installation persists a marked preset, follows language and su
   assert.equal(result.status.state, 'installed')
   assert.equal(result.status.presetVersion, pluginVersion)
   assert.equal(result.status.skillPacks, true)
+  const skillLoader = f.current()[0].config.plugins.find((row: any) => row.name === 'dsh-super-code/skills')
+  skillLoader.disabled = true
+  assert.equal((await installer.status()).skillPacks, undefined, 'declaration status follows the disabled loader')
+  skillLoader.disabled = false
+  assert.equal((await installer.status()).skillPacks, true)
   assert.equal(result.status.name, 'Super Code 我的模式')
   await f.host.reload()
   assert.equal((await f.create().status()).id, 'my-code')
@@ -282,6 +287,11 @@ test('early declarative hosts without a document reader require a unique enabled
   const registry = { list: f.registry.list }
   const installer = new DeclaredPresetInstaller(registry, f.settings, f.host, f.bundlePath)
   assert.equal((await installer.status()).presetVersion, pluginVersion)
+  const skillLoader = f.current()[0].config.plugins.find((row: any) => row.name === 'dsh-super-code/skills')
+  skillLoader.disabled = true
+  assert.equal((await installer.status()).skillPacks, undefined)
+  skillLoader.disabled = false
+  assert.equal((await installer.status()).skillPacks, true)
   assert.equal((await installer.status()).reinstallable, true)
   assert.equal((await installer.reinstall('super-code', 'new-code')).ok, true)
   f.base.push({ ...f.base[0], id: 'foreign', config: { ...f.base[0].config, id: 'new-code', plugins: [{ name: 'other' }] } })

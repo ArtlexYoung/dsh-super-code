@@ -102,6 +102,11 @@ test('directory install and renamed reinstall carry loadable skill resources wit
     assert.equal(config.bundledSkillDir, join(directory, 'skills/'))
     assert.deepEqual(await verifySkillResources(config.bundledSkillDir as string),
       await verifySkillResources(join(presetRoot, 'super-code', 'skills')))
+    const loader = rows.find(row => row.id === 'skill-super-code-bundled')!
+    await writeFile(join(directory, 'agent.cordis.yml'), yaml.dump(rows.map(row => row === loader ? { ...row, disabled: true } : row), { schema: declarationSchema }))
+    assert.equal((await installer.status()).skillPacks, undefined, 'directory status follows the disabled loader')
+    await writeFile(join(directory, 'agent.cordis.yml'), yaml.dump(rows, { schema: declarationSchema }))
+    assert.equal((await installer.status()).skillPacks, true)
     if (id === 'frontend-copy') {
       const legacy = join(directory, 'skills/super-code-frontend')
       await mkdir(legacy)

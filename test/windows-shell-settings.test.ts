@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { runInNewContext } from 'node:vm'
+import { validateConfiguration } from '../src/dsh/budgets.js'
 
 function client() {
   let plugin: any
@@ -12,6 +13,145 @@ function client() {
   return plugin
 }
 const editor = (api: object, section: string) => client().createBudgetAutosave(api, section)
+
+for (const localWrites of [1, 2]) test(`a restarted settings service cannot rebase or save an old draft after ${localWrites} new Skill saves`, async () => {
+  let stored = { revision: 1, generation: 'first-service', writable: true,
+    configuration: { maxTasks: 32 } as Record<string, unknown> }
+  const settings = client().createBudgetEditors({
+    readConfig: async () => ({ ok: true, value: structuredClone(stored) }),
+    saveConfig: async (content: string, expected: string) => {
+      const [revision, generation] = expected.split(':')
+      if (Number(revision) !== stored.revision || (generation !== undefined && generation !== stored.generation)) {
+        return { ok: true, value: { ok: false, error: 'conflict' } }
+      }
+      stored = { ...stored, revision: stored.revision + 1, configuration: JSON.parse(content) }
+      return { ok: true, value: { ok: true, snapshot: structuredClone(stored) } }
+    },
+  })
+  const { context, skills } = settings.editors
+  context.receive((await settings.readConfig()).value)
+  context.change({ maxTasks: '0' }); await context.flush()
+  stored = { revision: 0, generation: 'second-service', writable: true, configuration: { maxTasks: 16 } }
+  skills.receive((await settings.readConfig()).value)
+  skills.change({ openspecSkills: true }); await skills.flush()
+  if (localWrites === 2) { skills.change({ mattpocockSkills: true }); await skills.flush() }
+  context.change({ maxTasks: '48' }); await context.flush()
+  assert.equal(context.getSnapshot().error, 'conflict', 'a reused numeric revision is not the old service baseline')
+  assert.equal(context.getSnapshot().draft.maxTasks, '48')
+  assert.equal(stored.configuration.maxTasks, 16)
+  assert.equal(stored.configuration.openspecSkills, true)
+  if (localWrites === 2) assert.equal(stored.configuration.mattpocockSkills, true)
+  context.receive((await settings.readConfig()).value)
+  context.change({ maxTasks: '48' }); await context.flush()
+  assert.equal(context.getSnapshot().error, '')
+  assert.equal(stored.configuration.maxTasks, 48)
+  assert.equal(stored.configuration.openspecSkills, true)
+})
+
+test('a late save from the old service cannot replace a read from a restarted service', async () => {
+  let stored = { revision: 4, generation: 'first-service', writable: true, configuration: {} }
+  let hold = false, release!: () => void
+  const settings = client().createBudgetEditors({
+    readConfig: async () => {
+      const captured = structuredClone(stored)
+      if (hold) { hold = false; await new Promise<void>(resolve => { release = resolve }) }
+      return { ok: true, value: captured }
+    },
+    saveConfig: async (content: string) => ({ ok: true, value: { ok: true,
+      snapshot: { revision: 5, generation: 'first-service', writable: true, configuration: JSON.parse(content) } } }),
+  })
+  const old = (await settings.readConfig()).value
+  stored = { revision: 0, generation: 'second-service', writable: true, configuration: { maxTasks: 16 } }
+  hold = true
+  const read = settings.readConfig()
+  while (!release) await Promise.resolve()
+  await settings.saveConfig('{"maxTasks":48}', `${old.revision}:${old.generation}`)
+  release()
+  const response = await read
+  assert.equal(response.value.generation, 'second-service')
+  assert.equal(response.value.revision, 0)
+  assert.equal(response.value.configuration.maxTasks, 16)
+})
+
+test('a late read from the old service cannot undo a newer read and its local Skill saves', async () => {
+  let stored = { revision: 1, generation: 'first-service', writable: true, configuration: {} }
+  let hold = false, release!: () => void
+  const settings = client().createBudgetEditors({
+    readConfig: async () => {
+      const captured = structuredClone(stored)
+      if (hold) { hold = false; await new Promise<void>(resolve => { release = resolve }) }
+      return { ok: true, value: captured }
+    },
+    saveConfig: async (content: string) => {
+      stored = { ...stored, revision: stored.revision + 1, configuration: JSON.parse(content) }
+      return { ok: true, value: { ok: true, snapshot: structuredClone(stored) } }
+    },
+  })
+  await settings.readConfig()
+  hold = true
+  const older = settings.readConfig()
+  while (!release) await Promise.resolve()
+  stored = { revision: 0, generation: 'second-service', writable: true, configuration: { maxTasks: 16 } }
+  const { skills } = settings.editors
+  skills.receive((await settings.readConfig()).value)
+  skills.change({ openspecSkills: true }); await skills.flush()
+  skills.change({ mattpocockSkills: true }); await skills.flush()
+  release()
+  const response = await older
+  assert.equal(response.value.generation, 'second-service')
+  assert.equal(response.value.revision, 2)
+  assert.equal(response.value.configuration.openspecSkills, true)
+  assert.equal(response.value.configuration.mattpocockSkills, true)
+})
+
+for (const section of ['context', 'protection']) test(`${section} preserves unchanged budget precision when saving unrelated fields`, async () => {
+  const budgets = { thresholdRatio: 0.8683089004410431, retainRatio: 0.868308900441043,
+    ptcTimeoutMs: 450001, ptcMaxTimeoutMs: 600001 }
+  validateConfiguration({ budgets })
+  let stored = { revision: 1, writable: true, configuration: { budgets, maxTasks: 32, deletionProtection: 'relaxed' } }
+  let writes = 0
+  const save = editor({ saveConfig: async (content: string, expected: string) => {
+    writes++
+    assert.equal(expected, String(stored.revision))
+    stored = { ...stored, revision: stored.revision + 1, configuration: JSON.parse(content) }
+    return { ok: true, value: { ok: true, snapshot: structuredClone(stored) } }
+  } }, section)
+  save.receive(structuredClone(stored))
+  save.change(section === 'context' ? { maxTasks: '48' } : { deletionProtection: 'strict' }); await save.flush()
+  assert.equal(save.getSnapshot().error, '', 'formatting unchanged percentages must not make a valid retention budget invalid')
+  assert.equal(writes, 1)
+  assert.deepEqual(stored.configuration.budgets, budgets)
+  if (section === 'context') {
+    assert.equal(stored.configuration.maxTasks, 48)
+    save.change({ thresholdRatio: '80' }); await save.flush()
+    assert.equal(save.getSnapshot().error, 'retain', 'an actual invalid budget change is still rejected')
+    assert.equal(writes, 1)
+    save.change({ retainRatio: '16' }); await save.flush()
+    assert.equal(save.getSnapshot().error, '')
+    assert.equal(stored.configuration.budgets.thresholdRatio, 0.8)
+    assert.equal(stored.configuration.budgets.retainRatio, 0.16)
+    save.change({ ptcTimeoutMs: '' }); await save.flush()
+    assert.equal(stored.configuration.budgets.ptcTimeoutMs, undefined, 'clearing an override still restores inheritance')
+  } else assert.equal(stored.configuration.deletionProtection, 'strict')
+})
+
+test('unchanged safe-integer execution budgets survive seconds conversion without blocking another edit', async () => {
+  const budgets = { ptcTimeoutMs: Number.MAX_SAFE_INTEGER, ptcMaxTimeoutMs: Number.MAX_SAFE_INTEGER }
+  validateConfiguration({ budgets })
+  let stored = { revision: 1, writable: true, configuration: { budgets, maxTasks: 32 } }
+  const save = editor({ saveConfig: async (content: string) => {
+    const configuration = validateConfiguration(JSON.parse(content))
+    stored = { ...stored, revision: stored.revision + 1, configuration } as typeof stored
+    return { ok: true, value: { ok: true, snapshot: structuredClone(stored) } }
+  } }, 'context')
+  save.receive(structuredClone(stored))
+  save.change({ maxTasks: '48' }); await save.flush()
+  assert.equal(save.getSnapshot().error, '')
+  assert.deepEqual(stored.configuration.budgets, budgets)
+  assert.equal(stored.configuration.maxTasks, 48)
+  save.change({ ptcTimeoutMs: '1.0001' }); await save.flush()
+  assert.equal(save.getSnapshot().error, 'invalid', 'a new fractional millisecond value is still invalid')
+})
 
 test('an older overlapping read cannot change the permissions of an editor that received a newer snapshot', async () => {
   let stored = { revision: 1, writable: true, configuration: {} }

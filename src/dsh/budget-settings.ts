@@ -6,6 +6,7 @@ import { settingsConfigurationSchema, configurationValues, validateConfiguration
 import type { Configuration } from './budgets.js'
 import { BasicCompactionEngine } from '@deepseek-ai/dsh-compaction-basic'
 import type { ShellStatus } from './windows-shell.js'
+import { randomUUID } from 'node:crypto'
 
 const namespace = 'super-code-budgets'
 
@@ -16,6 +17,7 @@ interface SettingsWriter {
 }
 
 export interface BudgetSettingsSnapshot {
+  readonly generation?: string
   readonly shell?: ShellStatus
   readonly configuration: Configuration
   readonly revision: number
@@ -41,6 +43,7 @@ function withLegacyBudgets(config: Configuration, ptcCeiling: number | false): C
 }
 
 export class BudgetSettings {
+  private readonly generation = randomUUID()
   constructor(private readonly settings: SettingsWriter, private readonly scope: Pick<SettingsScope<Configuration>, 'get'>,
     private readonly ptcCeiling: () => number | false, private readonly key: string = namespace,
     private readonly defaults: () => Configuration = () => ({})) {}
@@ -48,7 +51,7 @@ export class BudgetSettings {
   read(): BudgetSettingsSnapshot {
     const descriptor = this.settings.describe({ redactSecrets: true }).find(row => row.ns === this.key)
     if (!descriptor) throw new Error('Super Code budget settings are unavailable')
-    return { configuration: structuredClone(this.scope.get()), revision: descriptor.revision,
+    return { configuration: structuredClone(this.scope.get()), revision: descriptor.revision, generation: this.generation,
       writable: this.settings.writable, ptcMaxTimeoutMs: this.ptcCeiling(), defaults: structuredClone(this.defaults()) }
   }
 
@@ -78,9 +81,13 @@ export class BudgetSettings {
 
   private async replace(config: Configuration, expected: string): Promise<BudgetSettingsResult> {
     if (!this.settings.writable) return { ok: false, error: 'read-only' }
-    if (!/^(0|[1-9]\d*)$/.test(expected) || !Number.isSafeInteger(Number(expected))) return { ok: false, error: 'invalid' }
+    const [revision, generation, extra] = expected.split(':')
+    if (extra !== undefined || generation === '' || !/^(0|[1-9]\d*)$/.test(revision!) || !Number.isSafeInteger(Number(revision))) return { ok: false, error: 'invalid' }
+    // Numeric revisions can repeat after a service restart. Older clients may
+    // still send only the number; current clients also identify the instance.
+    if (generation !== undefined && generation !== this.generation) return { ok: false, error: 'conflict' }
     try {
-      await this.settings.replace(this.key, config, Number(expected))
+      await this.settings.replace(this.key, config, Number(revision))
       return { ok: true, snapshot: this.read() }
     } catch (error) {
       return { ok: false, error: (error as { code?: string }).code === 'SETTINGS_CONFLICT' ? 'conflict' : 'save-failed' }

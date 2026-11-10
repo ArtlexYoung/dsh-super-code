@@ -86,6 +86,93 @@ function fixture(api: any, options: { home?: boolean; budgetApi?: any; budgetSec
 }
 const button = (tree: any) => nodes(tree).find(row => row.type === 'button' && row.children.includes('save.retry'))
 
+for (const failure of ['response', 'transport']) test(`a ${failure} credential failure after rotation removes the invalid token and recovers on reveal`, async () => {
+  let stored = initial(), rotated = false, fail = true, saves = 0
+  const render = fixture({
+    readConfig: async () => ({ ok: true, value: structuredClone(stored) }),
+    directories: async () => ({ ok: true, value: { items: [], picker: 'unavailable' } }),
+    rotateToken: async (expected: string) => {
+      assert.equal(expected, String(stored.revision))
+      rotated = true
+      stored = { ...stored, revision: stored.revision + 1 }
+      return { ok: true, value: { ok: true, snapshot: structuredClone(stored) } }
+    },
+    revealToken: async () => {
+      if (rotated && fail) {
+        if (failure === 'transport') throw new Error('credential service unavailable')
+        return { ok: false }
+      }
+      return { ok: true, value: { token: rotated ? 'new-fixture-token' : 'old-fixture-token' } }
+    },
+  })
+  render.props.onSaved = () => { saves++ }
+  const token = () => nodes(render()).find(row => row.props['aria-label'] === 'connection.token')
+  const action = (key: string) => nodes(render()).find(row => row.children.includes(key) && row.props.onClick)!
+  render(); await tick()
+  assert.equal(token().props.value, 'old-fixture-token')
+  await action('connection.rotate').props.onClick(); await tick()
+  assert.equal(token(), undefined, 'a successfully rotated token is no longer valid and must not remain visible')
+  assert.equal(action('connection.copyToken'), undefined)
+  assert.equal(nodes(render()).some(row => row.children.includes('connection.error.unavailable')), true)
+  assert.equal(nodes(render()).some(row => row.children.includes('connection.rotated')), false)
+  assert.equal(saves, 1, 'the successful rotation changes state even if fetching its credential fails')
+  fail = false
+  await action('connection.showToken').props.onClick(); await tick()
+  assert.equal(token().props.value, 'new-fixture-token')
+  assert.equal(nodes(render()).some(row => row.children.includes('connection.error.unavailable')), false)
+})
+
+test('pending rotation clears the old credential, rejects duplicate actions and keeps a late credential hidden', async () => {
+  let stored = initial(), rotated = false, rotations = 0, release!: () => void
+  const render = fixture({
+    readConfig: async () => ({ ok: true, value: structuredClone(stored) }),
+    directories: async () => ({ ok: true, value: { items: [], picker: 'unavailable' } }),
+    rotateToken: async () => {
+      rotations++
+      await new Promise<void>(resolve => { release = resolve })
+      rotated = true
+      stored = { ...stored, revision: stored.revision + 1 }
+      return { ok: true, value: { ok: true, snapshot: structuredClone(stored) } }
+    },
+    revealToken: async () => ({ ok: true, value: { token: rotated ? 'new-fixture-token' : 'old-fixture-token' } }),
+  })
+  render(); await tick()
+  const rotate = nodes(render()).find(row => row.children.includes('connection.rotate') && row.props.onClick)!
+  const pending = rotate.props.onClick()
+  await rotate.props.onClick()
+  const hiddenWhilePending = !nodes(render()).some(row => row.props['aria-label'] === 'connection.token')
+  render(false); release(); await pending; await tick()
+  assert.equal(hiddenWhilePending, true)
+  assert.equal(rotations, 1)
+  assert.equal(nodes(render(false)).some(row => row.props['aria-label'] === 'connection.token'), false)
+  render(true); await tick()
+  assert.equal(nodes(render()).find(row => row.props['aria-label'] === 'connection.token').props.value, 'new-fixture-token')
+})
+
+for (const failure of ['response', 'transport']) test(`a ${failure} rotation failure allows revealing the unchanged credential again`, async () => {
+  const stored = initial()
+  let saves = 0
+  const render = fixture({
+    readConfig: async () => ({ ok: true, value: structuredClone(stored) }),
+    directories: async () => ({ ok: true, value: { items: [], picker: 'unavailable' } }),
+    rotateToken: async () => {
+      if (failure === 'transport') throw new Error('rotation unavailable')
+      return { ok: true, value: { ok: false, error: 'save-failed' } }
+    },
+    revealToken: async () => ({ ok: true, value: { token: 'unchanged-fixture-token' } }),
+  })
+  render.props.onSaved = () => { saves++ }
+  const action = (key: string) => nodes(render()).find(row => row.children.includes(key) && row.props.onClick)!
+  render(); await tick()
+  await action('connection.rotate').props.onClick(); await tick()
+  assert.equal(saves, 0)
+  assert.equal(render.props.settings.editors.connection.getSnapshot().snapshot.revision, stored.revision)
+  assert.equal(nodes(render()).some(row => row.children.includes(`connection.error.${failure === 'transport' ? 'unavailable' : 'save-failed'}`)), true)
+  assert.equal(nodes(render()).some(row => row.children.includes('connection.rotated')), false)
+  await action('connection.showToken').props.onClick(); await tick()
+  assert.equal(nodes(render()).find(row => row.props['aria-label'] === 'connection.token').props.value, 'unchanged-fixture-token')
+})
+
 test('connection settings show the actual unavailable service state when credentials cannot be revealed', async t => {
   const ctx = new Context()
   t.after(() => ctx.fiber.dispose())

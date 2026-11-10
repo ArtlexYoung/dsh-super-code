@@ -21,7 +21,7 @@ const initial = () => ({ revision: 2, writable: true, state: 'error', error: 'cl
     allowCallerApproval: false, port: 23457, maxConnections: 3, maxConcurrent: 3,
     allowedDirectories: ['/project'], knownDirectories: [], directoriesConfigured: true } })
 
-function fixture(api: any, options: { home?: boolean; budgetApi?: any; budgetSection?: string } = {}) {
+function fixture(api: any, options: { home?: boolean; budgetApi?: any; budgetSection?: string; timers?: Function[] } = {}) {
   let plugin: any, Settings: any, current: any
   const instances = new Map<Function, any>()
   const react = {
@@ -46,8 +46,9 @@ function fixture(api: any, options: { home?: boolean; budgetApi?: any; budgetSec
     },
     useSyncExternalStore: (_subscribe: Function, read: Function) => read(),
   }
+  Object.assign(react, { useLayoutEffect: react.useEffect })
   runInNewContext(readFileSync(new URL('../client/index.js', import.meta.url), 'utf8'), {
-    URL, setTimeout, clearTimeout, setInterval: () => 1, clearInterval() {},
+    URL, setTimeout, clearTimeout, setInterval: (callback: Function) => { options.timers?.push(callback); return 1 }, clearInterval() {},
     window: { addEventListener() {}, removeEventListener() {},
       __ModuleLoader__: { load: ({ factory }: any) => { plugin = factory((id: string) => id === 'react' ? react : {}) } } },
   })
@@ -70,9 +71,104 @@ function fixture(api: any, options: { home?: boolean; budgetApi?: any; budgetSec
   const element = nodes(parent).find(row => typeof row.type === 'function'
     && (options.home ? row.props.connectionApi === api : options.budgetSection
       ? row.props.api?.editors && (row.props.section ?? 'context') === options.budgetSection : row.props.api === api))!
-  return () => render(element.type, { ...element.props, active: true })
+  return Object.assign((active = true) => render(element.type, { ...element.props, active }), { props: element.props })
 }
 const button = (tree: any) => nodes(tree).find(row => row.type === 'button' && row.children.includes('save.retry'))
+
+test('returning home waits for a pending Skill save before allowing another budget write', async () => {
+  let budget = { revision: 1, writable: true, configuration: { deletionProtection: 'relaxed' } as Record<string, unknown> }
+  let release!: () => void, hold = true
+  const writes: string[] = []
+  const render = fixture({
+    readConfig: async () => ({ ok: true, value: initial() }),
+    overview: async () => ({ ok: true, value: { connections: [], sessions: [] } }),
+  }, { home: true, budgetApi: {
+    readConfig: async () => ({ ok: true, value: structuredClone(budget) }),
+    saveConfig: async (content: string, expected: string) => {
+      writes.push(expected)
+      if (hold) { hold = false; await new Promise<void>(resolve => { release = resolve }) }
+      if (expected !== String(budget.revision)) return { ok: true, value: { ok: false, error: 'conflict' } }
+      budget = { ...budget, revision: budget.revision + 1, configuration: JSON.parse(content) }
+      return { ok: true, value: { ok: true, snapshot: structuredClone(budget) } }
+    },
+  } })
+  const control = () => nodes(render()).find(row => row.props.label === 'delete.mode')!
+  render(); await tick(); render(false)
+  const { skills } = render.props.budgetApi.editors
+  skills.receive((await render.props.budgetApi.readConfig()).value)
+  skills.change({ openspecSkills: true })
+  render(true)
+  assert.equal(control().props.disabled || control().props.busy, true)
+  control().props.onChange('strict'); await tick()
+  assert.equal(writes.length, 1, 'even a stale event cannot start another write while the read is waiting')
+  release(); await skills.flush(); await tick()
+  assert.equal(control().props.disabled || Boolean(control().props.busy), false)
+  control().props.onChange('strict'); await tick()
+  assert.deepEqual(writes, ['1', '2'])
+  assert.equal(budget.configuration.openspecSkills, true)
+  assert.equal(budget.configuration.deletionProtection, 'strict')
+})
+
+test('returning home starts a fresh connection read and ignores the previous visit response', async () => {
+  let stored = { ...initial(), configuration: { ...initial().configuration, enabled: false } }
+  let hold = false, release!: () => void
+  const writes: string[] = []
+  const render = fixture({
+    readConfig: async () => {
+      const captured = structuredClone(stored)
+      if (hold) { hold = false; await new Promise<void>(resolve => { release = resolve }) }
+      return { ok: true, value: captured }
+    },
+    overview: async () => ({ ok: true, value: { connections: [], sessions: [] } }),
+    saveConfig: async (content: string, expected: string) => {
+      writes.push(expected)
+      assert.equal(expected, String(stored.revision))
+      stored = { ...stored, revision: stored.revision + 1, configuration: JSON.parse(content) }
+      return { ok: true, value: { ok: true, snapshot: structuredClone(stored) } }
+    },
+  }, { home: true, budgetApi: { readConfig: async () => ({ ok: true, value: { configuration: {}, revision: 1, writable: true } }) } })
+  const control = () => nodes(render()).find(row => row.props['aria-label'] === 'home.mcp' && typeof row.props.onChange === 'function')!
+  render(); await tick(); render(false)
+  hold = true; render(true); await tick(); render(false)
+  stored = { ...stored, revision: 3, configuration: { ...stored.configuration, enabled: true } }
+  render(true); await tick()
+  assert.equal(control().props.checked, true)
+  release(); await tick()
+  assert.equal(control().props.checked, true, 'the previous visit response must not undo the current one')
+  control().props.onChange(false); await tick()
+  assert.deepEqual(writes, ['3'])
+  assert.equal(stored.configuration.enabled, false)
+})
+
+test('home background polling keeps controls usable and cannot undo a user save', async () => {
+  let stored = { revision: 1, writable: true, configuration: { deletionProtection: 'relaxed' } }
+  let hold = false, release!: () => void
+  const timers: Function[] = []
+  const render = fixture({
+    readConfig: async () => ({ ok: true, value: initial() }),
+    overview: async () => ({ ok: true, value: { connections: [], sessions: [] } }),
+  }, { home: true, timers, budgetApi: {
+    readConfig: async () => {
+      const captured = structuredClone(stored)
+      if (hold) { hold = false; await new Promise<void>(resolve => { release = resolve }) }
+      return { ok: true, value: captured }
+    },
+    saveConfig: async (content: string, expected: string) => {
+      assert.equal(expected, String(stored.revision))
+      stored = { ...stored, revision: stored.revision + 1, configuration: JSON.parse(content) }
+      return { ok: true, value: { ok: true, snapshot: structuredClone(stored) } }
+    },
+  } })
+  const control = () => nodes(render()).find(row => row.props.label === 'delete.mode')!
+  render(); await tick()
+  hold = true; const poll = timers[0](); await tick()
+  assert.equal(control().props.disabled, false)
+  control().props.onChange('strict'); await tick()
+  assert.equal(stored.configuration.deletionProtection, 'strict')
+  release(); await poll; await tick()
+  assert.equal(control().props.value, 'strict')
+  assert.equal(control().props.disabled, false)
+})
 
 test('connection runtime failure offers an explicit retry using the saved configuration and revision', async () => {
   const stored = initial(), calls: any[] = []

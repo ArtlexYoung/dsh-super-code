@@ -2716,18 +2716,20 @@ function ConnectionSettings({ api, settings, t, active, openSession, onSaved = (
   const action = async kind => {
     if (pending.current) return
     pending.current = true; setBusy(true); setError(''); setNotice('')
+    if (kind === 'rotate') setToken('')
     try {
       const response = kind === 'rotate' ? await api.rotateToken(String(snapshot.revision)) : await api.revealToken()
       if (!response.ok) throw new Error()
       if (!alive.current) return
       if (kind === 'token') { if (visible.current) setToken(response.value.token) }
       else if (response.value.ok) {
-        if (kind === 'rotate') {
-          editor.revision(response.value.snapshot)
-          const credential = await api.revealToken()
-          if (credential.ok && alive.current && visible.current) setToken(credential.value.token)
-        } else receive(response.value.snapshot)
-        onSaved(); setNotice(kind === 'rotate' ? 'rotated' : 'saved')
+        editor.revision(response.value.snapshot)
+        onSaved()
+        const credential = await api.revealToken()
+        if (!credential.ok) throw new Error()
+        if (!alive.current) return
+        if (visible.current) setToken(credential.value.token)
+        setNotice('rotated')
       } else setError(response.value.error)
     } catch { if (alive.current) setError('unavailable') }
     finally { pending.current = false; if (alive.current) setBusy(false) }

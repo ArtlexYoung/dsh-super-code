@@ -2277,18 +2277,35 @@ function createBudgetAutosave(api, section = 'context') {
 
 /** All budget tabs edit one document; finish local writes before another tab reads it. */
 function createBudgetEditors(api) {
-  let writing = Promise.resolve()
-  const saveConfig = (...args) => {
-    const result = api.saveConfig(...args)
+  let writing = Promise.resolve(), saved, saveCount = 0
+  const saveConfig = (content, expected) => {
+    const result = api.saveConfig(content, expected).then(response => {
+      if (response.ok && response.value.ok) {
+        saved = response.value.snapshot; saveCount++
+        // Carry local, disjoint edits forward without rebasing an external conflict.
+        for (const editor of Object.values(editors)) {
+          if (editor.getSnapshot().snapshot?.revision === Number(expected)) editor.revision(saved)
+        }
+      }
+      return response
+    })
     writing = Promise.allSettled([writing, result]).then(() => {})
     return result
   }
   const editors = Object.fromEntries(['context', 'shell', 'protection', 'skills']
     .map(section => [section, createBudgetAutosave({ saveConfig }, section)]))
-  return { editors, saveConfig, readConfig: async () => {
+  const flush = async () => {
     await Promise.all(Object.values(editors).map(editor => editor.flush()))
     await writing
-    return api.readConfig()
+  }
+  return { editors, saveConfig, readConfig: async () => {
+    await flush()
+    const before = saveCount, response = await api.readConfig()
+    await flush()
+    // A read already in flight must not undo a newer local save. A fresh read
+    // still accepts a lower revision after the host restarts its settings service.
+    return response.ok && saveCount !== before && saved.revision > response.value.revision
+      ? { ...response, value: saved } : response
   } }
 }
 function budgetFieldValid(field, input) {
@@ -2796,11 +2813,13 @@ function SettingsHome({ budgetApi, connectionApi, t, active, revision, navigate,
   const [budget, setBudget] = useState(null), [connection, setConnection] = useState(null), [overview, setOverview] = useState({ connections: [], sessions: [] })
   // Keep the choice visible until the save is acknowledged.
   const [saving, setSaving] = useState(null), [failure, setFailure] = useState('')
+  const [refreshing, setRefreshing] = useState(false)
   const alive = useRef(false), request = useRef(0), loading = useRef(false), writing = useRef(false)
-  const load = async (force = false) => {
+  const load = async (force = false, blockControls = false) => {
     if (!force && (loading.current || writing.current)) return
     const sequence = ++request.current
-    loading.current = true
+    loading.current = { blocking: blockControls }
+    if (blockControls) setRefreshing(true)
     try {
       const [b, c, o] = await Promise.all([budgetApi.readConfig(), connectionApi.readConfig(), connectionApi.overview()])
       if (!b.ok || !c.ok || !o.ok) throw new Error()
@@ -2808,13 +2827,13 @@ function SettingsHome({ budgetApi, connectionApi, t, active, revision, navigate,
         setBudget(b.value); setConnection(c.value); setOverview(o.value); setFailure(value => value === 'load' ? '' : value)
       }
     } catch { if (alive.current && sequence === request.current) setFailure('load') }
-    finally { if (sequence === request.current) loading.current = false }
+    finally { if (sequence === request.current) { loading.current = false; if (alive.current) setRefreshing(false) } }
   }
   useEffect(() => { alive.current = true; return () => { alive.current = false } }, [budgetApi, connectionApi])
-  useEffect(() => { if (!active) return; load(); const timer = setInterval(load, 2000); return () => clearInterval(timer) }, [active, revision, budgetApi, connectionApi])
+  useLayoutEffect(() => { if (!active) return; load(true, true); const timer = setInterval(load, 2000); return () => clearInterval(timer) }, [active, revision, budgetApi, connectionApi])
   const change = async (kind, value) => {
     const current = kind === 'protection' ? budget : connection
-    if (writing.current || !current?.writable) return
+    if (loading.current?.blocking || writing.current || !current?.writable) return
     // A save supersedes any poll in flight, so a stale read cannot undo the choice.
     writing.current = true; request.current++; loading.current = false
     setSaving({ kind, value }); setFailure('')
@@ -2853,7 +2872,7 @@ function SettingsHome({ budgetApi, connectionApi, t, active, revision, navigate,
       row({ key: 'protection', icon: 'shield', title: t('delete.title'), target: 'protection', on: Boolean(mode) && mode !== 'off',
         body: budget ? React.createElement('p', { id: 'super-code-home-protection-hint', className: 'dsh-super-code-home-row-hint' }, t(`delete.hint.${mode}`)) : placeholder('text'),
         control: budget ? React.createElement(SegmentedControl, { label: t('delete.mode'), value: mode, describedBy: 'super-code-home-protection-hint',
-          choices: ['off', 'relaxed', 'strict'].map(value => [value, t(`delete.${value}`)]), disabled: !budget.writable, busy: saving?.kind === 'protection',
+          choices: ['off', 'relaxed', 'strict'].map(value => [value, t(`delete.${value}`)]), disabled: refreshing || !budget.writable, busy: saving?.kind === 'protection',
           onChange: value => change('protection', value) }) : placeholder('control') }),
       row({ key: 'connection', icon: 'plug', title: t('home.mcp'), target: 'connection', on: enabled,
         body: connection ? React.createElement('p', { className: 'dsh-super-code-home-row-status', 'data-tone': state === 'listening' ? 'success' : state === 'error' ? 'error' : 'idle' },
@@ -2862,7 +2881,7 @@ function SettingsHome({ budgetApi, connectionApi, t, active, revision, navigate,
           listening && React.createElement('span', null, t('home.connectionCount', { count: overview.connections.length, max: connection.configuration.maxConnections })),
           listening && React.createElement('span', null, t('home.activeSessions', { count: connectionSessions(overview).connected.length }))) : placeholder('text'),
         control: needsSetup ? React.createElement(ActionButton, { type: 'button', onClick: () => navigate('connection') }, t('home.setupConnection'))
-          : connection ? React.createElement(ConnectionSwitch, { checked: enabled, disabled: !connection.writable, 'aria-label': t('home.mcp'),
+          : connection ? React.createElement(ConnectionSwitch, { checked: enabled, disabled: refreshing || !connection.writable, 'aria-label': t('home.mcp'),
             onChange: value => value && !connection.configuration.allowedDirectories.length ? navigate('connection') : change('connection', value) })
           : placeholder('control') })))
 }

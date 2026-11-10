@@ -13,6 +13,114 @@ function client() {
 }
 const editor = (api: object, section: string) => client().createBudgetAutosave(api, section)
 
+test('a retained invalid or failed budget draft can save after another local tab writes without losing either change', async () => {
+  for (const failure of ['invalid', 'save-failed']) {
+    let stored = { revision: 1, writable: true, configuration: { budgets: { summaryMaxTokens: 8192 } } as Record<string, any> }
+    let unavailable = failure === 'save-failed'
+    const settings = client().createBudgetEditors({
+      readConfig: async () => ({ ok: true, value: structuredClone(stored) }),
+      saveConfig: async (content: string, expected: string) => {
+        if (unavailable) return { ok: false }
+        if (expected !== String(stored.revision)) return { ok: true, value: { ok: false, error: 'conflict' } }
+        stored = { ...stored, revision: stored.revision + 1, configuration: JSON.parse(content) }
+        return { ok: true, value: { ok: true, snapshot: structuredClone(stored) } }
+      },
+    })
+    const { context, skills } = settings.editors
+    context.receive((await settings.readConfig()).value)
+    context.change({ summaryMaxTokens: failure === 'invalid' ? 'bad input' : '4096' }); await context.flush()
+    assert.equal(context.getSnapshot().error, failure)
+    unavailable = false
+    skills.receive((await settings.readConfig()).value)
+    skills.change({ openspecSkills: true }); await skills.flush()
+    assert.equal(context.getSnapshot().draft.summaryMaxTokens, failure === 'invalid' ? 'bad input' : '4096')
+    if (failure === 'invalid') context.change({ summaryMaxTokens: '4096' })
+    else await context.retry()
+    await context.flush()
+    assert.equal(context.getSnapshot().error, '')
+    assert.equal(stored.configuration.budgets.summaryMaxTokens, 4096)
+    assert.equal(stored.configuration.openspecSkills, true)
+  }
+})
+
+test('an older read waits for every queued local Skill save and cannot regress its revision', async () => {
+  let stored = { revision: 1, writable: true, configuration: {} as Record<string, unknown> }
+  let release!: () => void, finishSave!: () => void, hold = false, writes = 0
+  const settings = client().createBudgetEditors({
+    readConfig: async () => {
+      const captured = structuredClone(stored)
+      if (hold) { hold = false; await new Promise<void>(resolve => { release = resolve }) }
+      return { ok: true, value: captured }
+    },
+    saveConfig: async (content: string, expected: string) => {
+      if (++writes === 2) await new Promise<void>(resolve => { finishSave = resolve })
+      if (expected !== String(stored.revision)) return { ok: true, value: { ok: false, error: 'conflict' } }
+      stored = { ...stored, revision: stored.revision + 1, configuration: JSON.parse(content) }
+      return { ok: true, value: { ok: true, snapshot: structuredClone(stored) } }
+    },
+  })
+  const { skills } = settings.editors
+  skills.receive((await settings.readConfig()).value)
+  hold = true
+  const oldRead = settings.readConfig()
+  while (!release) await Promise.resolve()
+  skills.change({ openspecSkills: true }); skills.change({ mattpocockSkills: true })
+  while (!finishSave) await Promise.resolve()
+  let settled = false
+  void oldRead.then(() => { settled = true })
+  release()
+  await new Promise(resolve => setImmediate(resolve))
+  assert.equal(settled, false, 'a delayed read must also wait for writes started while it was in flight')
+  finishSave(); await skills.flush()
+  const response = await oldRead
+  assert.equal(response.value.revision, 3)
+  assert.equal(response.value.configuration.openspecSkills, true)
+  assert.equal(response.value.configuration.mattpocockSkills, true)
+})
+
+test('fresh reads accept a restarted settings service and its lower revision', async () => {
+  let stored = { revision: 4, writable: true, configuration: {} as Record<string, unknown> }
+  const settings = client().createBudgetEditors({
+    readConfig: async () => ({ ok: true, value: structuredClone(stored) }),
+    saveConfig: async (content: string) => {
+      stored = { ...stored, revision: stored.revision + 1, configuration: JSON.parse(content) }
+      return { ok: true, value: { ok: true, snapshot: structuredClone(stored) } }
+    },
+  })
+  const { skills } = settings.editors
+  skills.receive((await settings.readConfig()).value)
+  skills.change({ openspecSkills: true }); await skills.flush()
+  stored = { revision: 0, writable: false, configuration: { mattpocockSkills: true } }
+  const response = await settings.readConfig()
+  assert.equal(response.value.revision, 0)
+  assert.equal(response.value.writable, false)
+  assert.equal(response.value.configuration.mattpocockSkills, true)
+  assert.equal(response.value.configuration.openspecSkills, undefined)
+})
+
+test('local saves do not silently rebase a draft across an external budget revision', async () => {
+  let stored = { revision: 1, writable: true, configuration: { budgets: { summaryMaxTokens: 8192 } } as Record<string, any> }
+  const settings = client().createBudgetEditors({
+    readConfig: async () => ({ ok: true, value: structuredClone(stored) }),
+    saveConfig: async (content: string, expected: string) => {
+      if (expected !== String(stored.revision)) return { ok: true, value: { ok: false, error: 'conflict' } }
+      stored = { ...stored, revision: stored.revision + 1, configuration: JSON.parse(content) }
+      return { ok: true, value: { ok: true, snapshot: structuredClone(stored) } }
+    },
+  })
+  const { context, skills } = settings.editors
+  context.receive((await settings.readConfig()).value)
+  context.change({ summaryMaxTokens: 'bad input' }); await context.flush()
+  stored = { ...stored, revision: 2, configuration: { budgets: { summaryMaxTokens: 2048 } } }
+  skills.receive((await settings.readConfig()).value)
+  skills.change({ openspecSkills: true }); await skills.flush()
+  context.change({ summaryMaxTokens: '4096' }); await context.flush()
+  assert.equal(context.getSnapshot().error, 'conflict')
+  assert.equal(context.getSnapshot().draft.summaryMaxTokens, '4096')
+  assert.equal(stored.configuration.budgets.summaryMaxTokens, 2048)
+  assert.equal(stored.configuration.openspecSkills, true)
+})
+
 test('switching budget tabs waits for all local Skill saves, including edits queued during a save', async () => {
   let stored = { revision: 1, writable: true, configuration: { windowsBash: true } as Record<string, unknown> }
   let finish!: () => void, writes = 0

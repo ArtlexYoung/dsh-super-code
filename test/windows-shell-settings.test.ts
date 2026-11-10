@@ -12,6 +12,52 @@ function editor(api: object, section: string) {
   return plugin.createBudgetAutosave(api, section)
 }
 
+test('whole Skill package choices autosave and survive all other settings tabs', async () => {
+  let stored = { revision: 1, writable: true, configuration: {
+    oilUiSkill: true, openspecSkills: false, mattpocockSkills: false,
+    windowsBash: true, deletionProtection: 'strict', budgets: { summaryMaxTokens: 8192 },
+  } }
+  const api = { saveConfig: async (content: string, revision: string) => {
+    assert.equal(revision, String(stored.revision))
+    stored = { ...stored, revision: stored.revision + 1, configuration: JSON.parse(content) }
+    return { ok: true, value: { ok: true, snapshot: stored } }
+  } }
+  const skills = editor(api, 'skills'); skills.receive(stored)
+  assert.equal(skills.getSnapshot().draft.oilUiSkill, true)
+  assert.equal(skills.getSnapshot().draft.openspecSkills, false)
+  assert.equal(skills.getSnapshot().draft.mattpocockSkills, false)
+  skills.change({ oilUiSkill: false, openspecSkills: true, mattpocockSkills: true }); await skills.flush()
+  assert.equal(stored.configuration.budgets.summaryMaxTokens, 8192)
+  assert.equal(stored.configuration.deletionProtection, 'strict')
+  for (const [section, patch] of [['shell', { windowsBash: false }], ['protection', { deletionProtection: 'relaxed' }], ['context', { summaryMaxTokens: '4096' }]] as const) {
+    const save = editor(api, section); save.receive(stored); save.change(patch); await save.flush()
+    assert.equal(stored.configuration.oilUiSkill, false)
+    assert.equal(stored.configuration.openspecSkills, true)
+    assert.equal(stored.configuration.mattpocockSkills, true)
+  }
+  const reopened = editor(api, 'skills'); reopened.receive(stored)
+  assert.equal(reopened.getSnapshot().draft.mattpocockSkills, true)
+  reopened.change({ openspecSkills: false }); await reopened.flush()
+  assert.equal(stored.configuration.budgets.summaryMaxTokens, 4096)
+  assert.equal(stored.configuration.windowsBash, false)
+})
+
+test('invalid, failed and stale Skill package writes retain the last accepted configuration', async () => {
+  for (const failure of ['conflict', 'save-failed']) {
+    let writes = 0
+    const save = editor({ saveConfig: async () => { writes++; return { ok: true, value: { ok: false, error: failure } } } }, 'skills')
+    save.receive({ configuration: {}, revision: 1, writable: true })
+    save.change({ mattpocockSkills: 'true' }); await save.flush()
+    assert.equal(writes, 0)
+    save.change({ mattpocockSkills: true }); await save.flush()
+    assert.equal(writes, 1)
+    assert.equal(save.getSnapshot().draft.mattpocockSkills, true)
+    assert.equal(save.getSnapshot().snapshot.configuration.mattpocockSkills, undefined)
+    assert.equal(save.getSnapshot().error, failure)
+    await save.flush(); assert.equal(writes, 1)
+  }
+})
+
 test('new command environment settings default to bundled Bash on and official scope off', () => {
   const shell = editor({}, 'shell')
   shell.receive({ configuration: {}, revision: 1, writable: true })

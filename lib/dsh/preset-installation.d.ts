@@ -26,6 +26,7 @@ export interface PresetInstallationStatus {
     userConflict: boolean;
     delivery: 'directory' | 'declaration';
     pluginVersion: string;
+    skillPacks?: boolean;
     presetVersion?: string;
     reinstallable?: boolean;
 }

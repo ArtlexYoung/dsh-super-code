@@ -327,6 +327,24 @@ On capacity refusal, retain the same `requestId` and input and wait through `dsh
 - Limits: 200 task records, 128 follow-ups per task, the latest 200 events, the last 12,000 output characters. Directory-request history keeps up to 100 entries, in memory only.
 - When task records are full, new tasks are rejected explicitly; old records are never dropped silently.
 
+## Preset Skill packages
+
+Open **Settings → Super Code → Preset Skills**. There are three independent whole-package switches, with no per-Skill checklist:
+
+| Package | Purpose | Default |
+|---|---|---|
+| oil-ui | Design, improve and review frontend interfaces. | On |
+| OpenSpec | Organize requirements, design, tasks, implementation and verification around specifications. | Off |
+| Matt Pocock Skills | Question requirements, plan, develop, test, debug and review code through complete engineering workflows. | Off |
+
+Matt bundles the complete official plugin distribution (1.3.2, 27 Skills), not a selected subset. OpenSpec bundles its complete static skills.sh distribution (12 Skills). Provenance, inventories and licenses are included in each package's `UPSTREAM.md` and `distribution.json` under `presets/super-code/skill-packs/`.
+
+Changes save automatically and refresh the Super Code Skill catalog and subsequent loads. Disabling a package does not retract instructions already loaded into a conversation; start a fresh conversation when you need an empty context. Project/user Skills are unaffected, including same-name overrides. The original invocation rules remain: some Matt Skills require an explicit user invocation instead of automatic model selection.
+
+Existing installed preset compositions are not overwritten automatically. If the page asks you to upgrade, reinstall the preset in **Preset configuration**, then start or resume the conversation to load the new composition. Reinstallation keeps the normal recovery backup.
+
+OpenSpec workflows require a compatible OpenSpec CLI in the project environment. Enabling this package does not install the CLI, run `openspec init`, or generate additional project Skills. Matt's tracker workflows may require an authenticated `gh`/`glab`; its setup workflow runs only when explicitly requested. Package switches do not grant permission for commands, commits, remote writes, or paid services. Skill resources update with this plugin.
+
 ## Frontend Skill
 
 The plugin bundles [oil-ui](https://github.com/oil-oil/oil-ui) **0.32.0**, replacing `super-code-frontend` for designing, improving, and reviewing pages, apps, dashboards, and components. It covers:

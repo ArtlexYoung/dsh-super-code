@@ -125,7 +125,7 @@ export class DeclaredPresetInstaller {
     return candidates.length === 1 ? candidates[0]! : false
   }
 
-  private async document(id: string): Promise<{ presetVersion?: string; token?: string }> {
+  private async document(id: string): Promise<{ presetVersion?: string; skillPacks?: boolean; token?: string }> {
     try {
       if (!this.registry.readDocument) {
         // 0.1.7 alpha hosts have no document reader. Only a unique enabled
@@ -154,6 +154,7 @@ export class DeclaredPresetInstaller {
     const owned = !!entry && !!document.token && document.token === tokenOf(entry.options.config)
     return { id, name: preset?.name, authorable: true, userConflict: !!preset && !owned,
       delivery: 'declaration', pluginVersion, ...(document.presetVersion ? { presetVersion: document.presetVersion } : {}),
+      ...(document.skillPacks ? { skillPacks: true } : {}),
       reinstallable: !!preset && owned,
       state: preset ? !owned ? 'conflict' : preset.broken ? 'broken' : 'installed' : 'missing' }
   }

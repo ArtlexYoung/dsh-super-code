@@ -47,11 +47,8 @@
 # Keep packaged guidance host-local and separate from project/user roots.
 # A copied directory preset resolves resources relative to its own composition.
 - id: skill-super-code-bundled
-  name: '@deepseek-ai/dsh-skill-filesystem'
+  name: dsh-super-code/skills
   config:
-    providerName: super-code-bundled
-    includeDefaultRoots: false
-    watch: false
     bundledSkillDir: !!js "process.getBuiltinModule('node:url').fileURLToPath(new URL('skills/', baseUrl))"
 - id: tool-skill
   name: '@deepseek-ai/dsh-tool-skill'

@@ -62,6 +62,7 @@ test('declarative installation persists a marked preset, follows language and su
   assert.equal(result.ok, true)
   assert.equal(result.status.state, 'installed')
   assert.equal(result.status.presetVersion, pluginVersion)
+  assert.equal(result.status.skillPacks, true)
   assert.equal(result.status.name, 'Super Code 我的模式')
   await f.host.reload()
   assert.equal((await f.create().status()).id, 'my-code')

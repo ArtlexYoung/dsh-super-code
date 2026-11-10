@@ -301,6 +301,14 @@ const zh = {
   'feedback.agentsPartial': '任务条目超过显示上限，可在动作执行中查看其他 Agent。',
   'status.blocked': '受阻',
 
+  'settings.skillsTab': '预设 Skill',
+  'skills.title': '预设 Skill', 'skills.scope': '整包开启或关闭，仅用于 Super Code 预设；按需加载，修改后自动保存。',
+  'skills.oilUiSkill': 'oil-ui', 'skills.oilUiSkillHint': '设计、改进与评审前端界面，提供风格参考和页面验证工具。',
+  'skills.openspecSkills': 'OpenSpec', 'skills.openspecSkillsHint': '用规范组织需求、方案、任务、实现与验收，覆盖完整变更流程。',
+  'skills.mattpocockSkills': 'Matt Pocock Skills', 'skills.mattpocockSkillsHint': '覆盖需求追问、方案规划、开发、测试、排错与代码评审的完整工程工作流。',
+  'skills.openspecRequirement': 'OpenSpec 工作流需要项目环境中的 OpenSpec CLI；此开关不会自动安装 CLI 或初始化项目。',
+  'skills.upgrade': '当前预设尚未接入 Skill 包开关，请在“预设配置”中重新安装预设后使用。',
+  'skills.missing': '安装 Super Code 预设后即可使用这些 Skill 包。',
   'settings.homeTab': '首页', 'settings.presetTab': '预设配置', 'settings.protectionTab': '删除保护',
   'shell.title': '命令环境', 'shell.enabled': '使用内置 Bash（Windows）',
   'shell.hint': '无需安装 Git。新启动的会话生效，子 Agent 继承。Windows 限权模式下需由 DSH 逐条审批，不自动修改会话权限。',
@@ -495,6 +503,14 @@ const en = {
   'feedback.agentsPartial': 'The task list reached its limit; view other Agents in the execution tree.',
   'status.blocked': 'Blocked',
 
+  'settings.skillsTab': 'Preset Skills',
+  'skills.title': 'Preset Skills', 'skills.scope': 'Enable or disable whole packages for the Super Code preset. Skills load on demand; changes save automatically.',
+  'skills.oilUiSkill': 'oil-ui', 'skills.oilUiSkillHint': 'Design, improve and review frontend interfaces with style references and page verification tools.',
+  'skills.openspecSkills': 'OpenSpec', 'skills.openspecSkillsHint': 'Organize requirements, design, tasks, implementation and verification around a complete specification workflow.',
+  'skills.mattpocockSkills': 'Matt Pocock Skills', 'skills.mattpocockSkillsHint': 'A complete engineering workflow for questioning requirements, planning, development, testing, debugging and code review.',
+  'skills.openspecRequirement': 'OpenSpec workflows require the OpenSpec CLI in the project environment. This switch does not install the CLI or initialize projects.',
+  'skills.upgrade': 'This preset does not support Skill package switches yet. Reinstall it in Preset configuration to apply these choices.',
+  'skills.missing': 'Install the Super Code preset to use these Skill packages.',
   'settings.homeTab': 'Home', 'settings.presetTab': 'Preset configuration', 'settings.protectionTab': 'Deletion protection',
   'shell.title': 'Command environment', 'shell.enabled': 'Use bundled Bash (Windows)',
   'shell.hint': 'No Git installation required. Takes effect when a conversation starts; child Agents inherit it. Confined Windows modes require DSH approval for each command without changing session permissions.',
@@ -2156,7 +2172,7 @@ const budgetFields = [
 ]
 function budgetDraft(configuration) {
   const deletion = configuration.deletionProtection
-  return Object.fromEntries([['windowsBash', configuration.windowsBash ?? true], ['windowsBashForOfficialPresets', configuration.windowsBashForOfficialPresets ?? false], ['deletionProtection', deletion === true ? 'strict' : deletion === false ? 'off' : deletion ?? 'relaxed'], ['deletionProtectionForOfficialPresets', configuration.deletionProtectionForOfficialPresets ?? false], ['applyToOfficialPresets', configuration.applyToOfficialPresets ?? false], ['pressureBasis', configuration.budgets?.pressureBasis ?? ''],
+  return Object.fromEntries([['oilUiSkill', configuration.oilUiSkill ?? true], ['openspecSkills', configuration.openspecSkills ?? false], ['mattpocockSkills', configuration.mattpocockSkills ?? false], ['windowsBash', configuration.windowsBash ?? true], ['windowsBashForOfficialPresets', configuration.windowsBashForOfficialPresets ?? false], ['deletionProtection', deletion === true ? 'strict' : deletion === false ? 'off' : deletion ?? 'relaxed'], ['deletionProtectionForOfficialPresets', configuration.deletionProtectionForOfficialPresets ?? false], ['applyToOfficialPresets', configuration.applyToOfficialPresets ?? false], ['pressureBasis', configuration.budgets?.pressureBasis ?? ''],
     ...budgetFields.map(field => {
       const value = field.root ? configuration[field.key] : configuration.budgets?.[field.key]
       return [field.key, value === undefined ? '' : String(value / field.factor)]
@@ -2241,6 +2257,9 @@ function ChoiceCards({ name, label, value, choices, onChange, disabled = false }
 
 /** Each budget tab writes only its own fields and carries the other tab's stored values through. */
 function budgetSectionConfiguration(section, draft, snapshot) {
+  if (section === 'skills') return ['oilUiSkill', 'openspecSkills', 'mattpocockSkills'].every(key => typeof draft[key] === 'boolean')
+    ? { ok: true, configuration: { ...snapshot.configuration, oilUiSkill: draft.oilUiSkill, openspecSkills: draft.openspecSkills, mattpocockSkills: draft.mattpocockSkills } }
+    : { ok: false, error: 'invalid' }
   if (section === 'shell') return typeof draft.windowsBash === 'boolean' && typeof draft.windowsBashForOfficialPresets === 'boolean'
     ? { ok: true, configuration: { ...snapshot.configuration, windowsBash: draft.windowsBash, windowsBashForOfficialPresets: draft.windowsBashForOfficialPresets } }
     : { ok: false, error: 'invalid' }
@@ -2249,7 +2268,7 @@ function budgetSectionConfiguration(section, draft, snapshot) {
   const current = snapshot.configuration
   return { ok: true, configuration: section === 'protection'
     ? { ...current, deletionProtection: draft.deletionProtection, deletionProtectionForOfficialPresets: draft.deletionProtectionForOfficialPresets }
-    : { ...parsed.configuration, windowsBash: current.windowsBash, windowsBashForOfficialPresets: current.windowsBashForOfficialPresets, deletionProtection: current.deletionProtection, deletionProtectionForOfficialPresets: current.deletionProtectionForOfficialPresets } }
+    : { ...parsed.configuration, oilUiSkill: current.oilUiSkill, openspecSkills: current.openspecSkills, mattpocockSkills: current.mattpocockSkills, windowsBash: current.windowsBash, windowsBashForOfficialPresets: current.windowsBashForOfficialPresets, deletionProtection: current.deletionProtection, deletionProtectionForOfficialPresets: current.deletionProtectionForOfficialPresets } }
 }
 function createBudgetAutosave(api, section = 'context') {
   return createAutosave(api, { draft: budgetDraft({}), toDraft: budgetDraft,
@@ -2270,9 +2289,9 @@ function autosaveState(editing) {
     : editing.error ? 'error' : editing.notice === 'saved' ? 'saved' : 'idle'
 }
 
-function BudgetSettings({ api, t, active, section = 'context', onSaved = () => {} }) {
+function BudgetSettings({ api, t, active, section = 'context', presetStatus, onSaved = () => {} }) {
   const protection = section === 'protection'
-  const shell = section === 'shell'
+  const shell = section === 'shell', skills = section === 'skills'
   const editor = useMemo(() => createBudgetAutosave(api, section), [api, section])
   const editing = useSyncExternalStore(editor.subscribe, editor.getSnapshot, editor.getSnapshot)
   const { snapshot, draft } = editing
@@ -2305,7 +2324,7 @@ function BudgetSettings({ api, t, active, section = 'context', onSaved = () => {
       const base = current.configuration
       const configuration = protection
         ? { ...base, deletionProtection: 'relaxed', deletionProtectionForOfficialPresets: false }
-        : { windowsBash: base.windowsBash, windowsBashForOfficialPresets: base.windowsBashForOfficialPresets, deletionProtection: base.deletionProtection, deletionProtectionForOfficialPresets: base.deletionProtectionForOfficialPresets }
+        : { oilUiSkill: base.oilUiSkill, openspecSkills: base.openspecSkills, mattpocockSkills: base.mattpocockSkills, windowsBash: base.windowsBash, windowsBashForOfficialPresets: base.windowsBashForOfficialPresets, deletionProtection: base.deletionProtection, deletionProtectionForOfficialPresets: base.deletionProtectionForOfficialPresets }
       const response = await api.saveConfig(JSON.stringify(configuration), String(current.revision))
       if (!response.ok) throw new Error('Remote unavailable')
       if (!alive.current) return
@@ -2341,7 +2360,13 @@ function BudgetSettings({ api, t, active, section = 'context', onSaved = () => {
   const shellStatus = snapshot?.shell
   const windowsHost = shellStatus?.platform === 'win32'
   const shellTooltip = shellStatus && !windowsHost ? t('shell.windowsOnly') : undefined
-  const content = shell ? React.createElement(SettingsSection, { id: 'super-code-shell', title: t('shell.title') },
+  const content = skills ? React.createElement(React.Fragment, null,
+    React.createElement(SettingsSection, { id: 'super-code-skill-packs', title: t('skills.title'), description: t('skills.scope') },
+      ...['oilUiSkill', 'openspecSkills', 'mattpocockSkills'].map(key => React.createElement(SettingRow, { key, id: `super-code-skill-${key}`, label: t(`skills.${key}`), hint: t(`skills.${key}Hint`) }, described =>
+        React.createElement(ConnectionSwitch, { id: `super-code-skill-${key}`, checked: draft[key], disabled, 'aria-describedby': described, onChange: value => edit(key, value) })))),
+    presetStatus && !presetStatus.skillPacks && React.createElement(Callout, { tone: 'warning' }, React.createElement('p', null, t(presetStatus.state === 'missing' ? 'skills.missing' : 'skills.upgrade'))),
+    React.createElement('p', { className: 'dsh-super-code-settings-guidance' }, t('skills.openspecRequirement')))
+    : shell ? React.createElement(SettingsSection, { id: 'super-code-shell', title: t('shell.title') },
     React.createElement(SettingRow, { id: 'super-code-windows-bash', label: t('shell.enabled'),
       hint: !windowsHost ? t('shell.otherPlatform') : t('shell.hint') }, described =>
       React.createElement(ConnectionSwitch, { id: 'super-code-windows-bash', checked: draft.windowsBash,
@@ -2384,7 +2409,7 @@ function BudgetSettings({ api, t, active, section = 'context', onSaved = () => {
           snapshot?.ptcMaxTimeoutMs && text(t, 'budget.ptcCeiling', { seconds: snapshot.ptcMaxTimeoutMs / 1000 })] }, ...rows('execution')),
       React.createElement(SettingsSection, { id: 'super-code-budget-exclusive', title: t('budget.superCode'), description: t('budget.superCodeHint') }, ...rows('superCode')))
   return React.createElement('section', { className: 'dsh-super-code-budgets' },
-    React.createElement('form', { className: 'dsh-super-code-stack', 'aria-label': t(shell ? 'shell.title' : protection ? 'delete.title' : 'budget.title'), 'aria-busy': loading || editing.saving,
+    React.createElement('form', { className: 'dsh-super-code-stack', 'aria-label': t(skills ? 'skills.title' : shell ? 'shell.title' : protection ? 'delete.title' : 'budget.title'), 'aria-busy': loading || editing.saving,
       onSubmit: event => { event.preventDefault(); void editor.flush() } },
       problem && React.createElement(Callout, { tone: 'error',
         action: failure === 'connection' || problem === 'conflict' ? button(t('budget.reload'), () => load(true))
@@ -2395,7 +2420,7 @@ function BudgetSettings({ api, t, active, section = 'context', onSaved = () => {
       content,
       React.createElement('div', { className: 'dsh-super-code-settings-footer' },
         React.createElement(SaveIndicator, { state: autosaveState(editing), t }),
-        !shell && React.createElement('div', { className: 'dsh-super-code-settings-footer-actions' },
+        !shell && !skills && React.createElement('div', { className: 'dsh-super-code-settings-footer-actions' },
           confirmReset ? React.createElement(React.Fragment, null,
             React.createElement('span', null, t('budget.resetQuestion')),
             button(t('preset.cancel'), () => setConfirmReset(false)),
@@ -2937,7 +2962,7 @@ function PresetSettings({ api, budgetApi, connectionApi, openSession = () => {},
   const versionProblem = Boolean(status) && status.state !== 'missing' && versionState !== 'match'
   const [overviewRevision, setOverviewRevision] = useState(0)
   const onSaved = () => setOverviewRevision(value => value + 1)
-  const tabs = ['home', 'preset', 'context', 'protection', 'connection']
+  const tabs = ['home', 'preset', 'skills', 'context', 'protection', 'connection']
   return React.createElement('section', { className: 'dsh-super-code-settings' },
     React.createElement('div', { className: 'dsh-super-code-settings-tabs', role: 'tablist', 'aria-label': t('settings.tabs'), onKeyDown: event => {
       if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
@@ -3001,6 +3026,8 @@ function PresetSettings({ api, budgetApi, connectionApi, openSession = () => {},
         status?.delivery === 'directory' && !status.authorable && React.createElement('p', { role: 'note' }, t('preset.readonly'))),
       error && React.createElement('p', { role: 'alert' }, t(error)),
       React.createElement(BudgetSettings, { api: budgetApi, t, section: 'shell', active: tab === 'preset', onSaved })),
+      React.createElement('div', { role: 'tabpanel', id: 'super-code-panel-skills', 'aria-labelledby': 'super-code-tab-skills', hidden: tab !== 'skills' },
+        React.createElement(BudgetSettings, { api: budgetApi, t, section: 'skills', presetStatus: status, active: tab === 'skills', onSaved })),
       React.createElement('div', { role: 'tabpanel', id: 'super-code-panel-context', 'aria-labelledby': 'super-code-tab-context', hidden: tab !== 'context' },
         React.createElement(BudgetSettings, { api: budgetApi, t, active: tab === 'context', onSaved })),
       React.createElement('div', { role: 'tabpanel', id: 'super-code-panel-protection', 'aria-labelledby': 'super-code-tab-protection', hidden: tab !== 'protection' },
@@ -3153,7 +3180,7 @@ function apply(ctx) {
 .dsh-super-code-settings-guidance{margin-top:20px;padding-top:12px;border-top:1px solid var(--sc-line);color:var(--sc-muted);font-size:12px}
 .dsh-super-code-settings-guidance p{margin:0 0 4px}
 .dsh-super-code-settings-tabs{display:flex;gap:24px;padding:0 24px;border-bottom:1px solid var(--sc-line)}
-.dsh-super-code-settings-tabs>[role=tab]{border:0;border-bottom:2px solid transparent;background:none;color:var(--sc-muted);padding:12px 0;font-size:13px;cursor:pointer}
+.dsh-super-code-settings-tabs>[role=tab]{flex:none;border:0;border-bottom:2px solid transparent;background:none;color:var(--sc-muted);padding:12px 0;font-size:13px;cursor:pointer}
 .dsh-super-code-settings-tabs>[role=tab][aria-selected=true]{border-bottom-color:var(--sc-text);color:var(--sc-text);font-weight:600}
 .dsh-super-code-settings-tabs>[role=tab]:focus-visible{outline:2px solid var(--sc-active);outline-offset:3px;border-radius:2px}
 .dsh-super-code-settings [role=tabpanel][hidden]{display:none}

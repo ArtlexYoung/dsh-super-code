@@ -2,7 +2,6 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { cp, mkdir, mkdtemp, readFile, readdir, realpath, rm, writeFile } from 'node:fs/promises'
 import { createHash } from 'node:crypto'
-import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import yaml from 'js-yaml'
@@ -13,6 +12,11 @@ import { discoverPresets } from '@deepseek-ai/dsh-agent-presets'
 
 const presetRoot = fileURLToPath(new URL('../presets/', import.meta.url))
 const skillName = 'oil-ui'
+const validationRoot = fileURLToPath(new URL('../../source/validation/dsh-super-code/preset-skills-20261110/tmp/', import.meta.url))
+async function temporary(prefix: string) {
+  await mkdir(validationRoot, { recursive: true })
+  return mkdtemp(join(validationRoot, prefix))
+}
 type Row = { id: string; name: string; config?: Record<string, unknown> }
 const parse = (content: string) => yaml.load(content, { schema: declarationSchema }) as Row[]
 
@@ -21,10 +25,9 @@ function bundledConfig(rows: Row[], baseUrl: string): Record<string, unknown> {
   assert.equal(original.name, '@deepseek-ai/dsh-skill-filesystem')
   assert.equal(original.config, undefined, 'existing project/user discovery is preserved')
   const bundled = rows.find(row => row.id === 'skill-super-code-bundled')!
+  assert.equal(bundled.name, 'dsh-super-code/skills')
   const config = interpolate({ baseUrl }, bundled.config) as Record<string, unknown>
-  assert.equal(config.providerName, 'super-code-bundled')
-  assert.equal(config.includeDefaultRoots, false)
-  assert.equal(config.watch, false)
+  assert.deepEqual(Object.keys(config), ['bundledSkillDir'])
   return config
 }
 
@@ -67,11 +70,23 @@ async function verifySkillResources(root: string): Promise<Record<string, string
       assert.ok((await readFile(target)).byteLength > 0, `${path}: ${link}`)
     }
   }
+  for (const pack of ['mattpocock', 'openspec']) {
+    const base = resolve(root, '../skill-packs', pack)
+    const distribution = JSON.parse(await readFile(join(base, 'distribution.json'), 'utf8'))
+    assert.equal(distribution.skills.length, pack === 'mattpocock' ? 27 : 12)
+    assert.ok((await readFile(join(base, 'LICENSE'), 'utf8')).includes('MIT License'))
+    const resources = await resourceSnapshot(base)
+    for (const entry of Object.values(distribution.files) as Array<{path: string; sha256: string}>) {
+      assert.equal(resources[entry.path], entry.sha256, `${pack}/${entry.path}`)
+    }
+    for (const name of distribution.skills) assert.ok(resources[`skills/${name}/SKILL.md`], name)
+    for (const [name, hash] of Object.entries(resources)) files[`../skill-packs/${pack}/${name}`] = hash
+  }
   return files
 }
 
 test('directory install and renamed reinstall carry loadable skill resources with the preset', async t => {
-  const root = await mkdtemp(join(tmpdir(), 'super-code-skills-'))
+  const root = await temporary('super-code-skills-')
   t.after(() => rm(root, { recursive: true, force: true }))
   const user = join(root, 'user'), roots = [{ path: user, trust: 'user' as const }]
   const roster = { roots, list: () => discoverPresets(roots, pathToFileURL(join(root, 'package.json')).href) }
@@ -100,7 +115,7 @@ test('directory install and renamed reinstall carry loadable skill resources wit
 })
 
 test('declarative skills resolve from the installed package after persistence in a relocated profile', async t => {
-  const root = await mkdtemp(join(tmpdir(), 'super-code-skill-declaration-'))
+  const root = await temporary('super-code-skill-declaration-')
   t.after(() => rm(root, { recursive: true, force: true }))
   const profile = join(root, 'unrelated-profile'), packageRoot = join(profile, 'node_modules/dsh-super-code')
   await mkdir(packageRoot, { recursive: true })

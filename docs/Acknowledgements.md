@@ -68,3 +68,15 @@
 ## 许可证
 
 本项目采用 [Apache-2.0](../LICENSE) 许可证。上述项目、规范、设计资料和数据各自保留版权与许可证，以上游的 LICENSE、NOTICE 和说明为准。设计参考不代表依赖关系、上游背书或功能等价。
+
+## OpenSpec
+
+[Source](https://github.com/Fission-AI/OpenSpec) · [MIT](../presets/super-code/skill-packs/openspec/LICENSE) · [Upstream](../presets/super-code/skill-packs/openspec/UPSTREAM.md)
+
+感谢 OpenSpec 贡献者提供完整的规范驱动工作流 Skill。插件保留上游正文和许可证，通过 DSH 原生机制按需加载，不自动安装其 CLI。
+
+## Matt Pocock Skills
+
+[Source](https://github.com/mattpocock/skills) · [MIT](../presets/super-code/skill-packs/mattpocock/LICENSE) · [Upstream](../presets/super-code/skill-packs/mattpocock/UPSTREAM.md)
+
+感谢 Matt Pocock 及贡献者提供完整的工程与生产力 Skill 包。插件内置正式插件清单及其配套参考、模板和调用规则，不在启用时运行 setup。

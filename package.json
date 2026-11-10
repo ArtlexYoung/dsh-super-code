@@ -44,6 +44,10 @@
     "./shell": {
       "types": "./lib/dsh/windows-shell.d.ts",
       "default": "./lib/dsh/windows-shell.js"
+    },
+    "./skills": {
+      "types": "./lib/dsh/bundled-skills.d.ts",
+      "default": "./lib/dsh/bundled-skills.js"
     }
   },
   "files": [
@@ -91,7 +95,9 @@
     "@deepseek-ai/dsh-token-meter": "^0.1.5-alpha.1 || ^0.1.6-alpha.1 || ^0.1.7-alpha.1 || ^0.2.0-rc.1 || ^0.2.1-alpha.1 || ^0.2.2-alpha.2",
     "@deepseek-ai/dsh-tools": "^0.1.5-alpha.1 || ^0.1.6-alpha.1 || ^0.1.7-alpha.1 || ^0.2.0-rc.1 || ^0.2.1-alpha.1 || ^0.2.2-alpha.2",
     "@deepseek-ai/dsh-typert-protocol": "^0.1.5-alpha.1 || ^0.1.6-alpha.1 || ^0.1.7-alpha.1 || ^0.2.0-rc.1 || ^0.2.1-alpha.1 || ^0.2.2-alpha.2",
-    "@deepseek-ai/schemastery": "^3.18.2 || ^3.18.5-alpha.1 || ^3.18.6-alpha.1"
+    "@deepseek-ai/schemastery": "^3.18.2 || ^3.18.5-alpha.1 || ^3.18.6-alpha.1",
+    "@deepseek-ai/dsh-skill": "^0.1.5-alpha.1 || ^0.1.6-alpha.1 || ^0.1.7-alpha.1 || ^0.2.0-rc.1 || ^0.2.1-alpha.1 || ^0.2.2-alpha.2",
+    "@deepseek-ai/dsh-skill-filesystem": "^0.1.5-alpha.1 || ^0.1.6-alpha.1 || ^0.1.7-alpha.1 || ^0.2.0-rc.1 || ^0.2.1-alpha.1 || ^0.2.2-alpha.2"
   },
   "peerDependenciesMeta": {
     "@deepseek-ai/cordis": {
@@ -105,6 +111,8 @@
     "@deepseek-ai/dsh-agent-presets": "0.1.5-rc.2",
     "@deepseek-ai/dsh-compaction": "0.1.5-rc.2",
     "@deepseek-ai/dsh-compaction-basic": "0.1.5-rc.2",
+    "@deepseek-ai/dsh-skill": "0.1.5-rc.2",
+    "@deepseek-ai/dsh-skill-filesystem": "0.1.5-rc.2",
     "@deepseek-ai/dsh-storage": "0.1.5-rc.2",
     "@deepseek-ai/dsh-storage-domain": "0.1.5-rc.2",
     "@deepseek-ai/dsh-storage-json": "0.1.5-rc.2",

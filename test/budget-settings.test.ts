@@ -90,6 +90,22 @@ test('the Windows shell choice persists and rejects invalid input', async t => {
   }
 })
 
+test('all three package switches persist independently and reject non-boolean values', async t => {
+  const { api, scope } = await fixture(t)
+  for (const key of ['oilUiSkill', 'openspecSkills', 'mattpocockSkills'] as const) {
+    for (const value of [true, false]) {
+      const configuration = { ...api.read().configuration, [key]: value }
+      assert.equal((await api.save(JSON.stringify(configuration), String(api.read().revision))).ok, true)
+      assert.equal(scope.get()[key], value)
+      assert.equal(configurationValues({ [key]: value })[key], value)
+    }
+    for (const value of [null, 'true', 1, []]) {
+      assert.deepEqual(await api.save(JSON.stringify({ [key]: value }), String(api.read().revision)), { ok: false, error: 'invalid' })
+      assert.equal(scope.get()[key], false)
+    }
+  }
+})
+
 test('official-preset Bash choice is saved independently of budget and deletion scope', async t => {
   const { api, scope } = await fixture(t)
   for (const enabled of [true, false]) {

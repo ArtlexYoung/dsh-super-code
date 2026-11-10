@@ -86,6 +86,100 @@ function fixture(api: any, options: { home?: boolean; budgetApi?: any; budgetSec
 }
 const button = (tree: any) => nodes(tree).find(row => row.type === 'button' && row.children.includes('save.retry'))
 
+for (const section of ['context', 'connection']) for (const failure of ['invalid', 'save-failed']) {
+  test(`${section} refreshes read-only permissions without discarding a retained ${failure} draft or rebasing it`, async () => {
+    let stored: any = section === 'context'
+      ? { revision: 1, writable: true, defaults: {}, configuration: { maxTasks: 32 } }
+      : initial()
+    let fail = failure === 'save-failed', writes = 0
+    const api = {
+      readConfig: async () => ({ ok: true, value: structuredClone(stored) }),
+      directories: async () => ({ ok: true, value: { items: [], picker: 'unavailable' } }),
+      revealToken: async () => ({ ok: true, value: { token: '' } }),
+      saveConfig: async (content: string, expected: string) => {
+        writes++
+        if (fail) { fail = false; return { ok: true, value: { ok: false, error: 'save-failed' } } }
+        assert.equal(stored.writable, true, 'known read-only settings must not submit another write')
+        if (expected !== String(stored.revision)) return { ok: true, value: { ok: false, error: 'conflict' } }
+        stored = { ...stored, revision: stored.revision + 1, configuration: JSON.parse(content) }
+        return { ok: true, value: { ok: true, snapshot: structuredClone(stored) } }
+      },
+    }
+    const render = fixture(api, { budgetApi: api, budgetSection: section === 'context' ? section : undefined })
+    const input = () => section === 'context'
+      ? nodes(render()).find(row => row.props.id === 'super-code-budget-maxTasks').children[0]()
+      : nodes(render()).find(row => row.props.id === 'super-code-connection-port')
+    const actions = () => nodes(render()).flatMap(row => row.props.action ? [row, row.props.action] : [row])
+    const edit = (value: string) => { input().props.onChange({ target: { value } }); input().props.onBlur() }
+    const editor = section === 'context' ? render.props.api.editors.context : render.props.settings.editors.connection
+    render(); await tick()
+    const originalRevision = stored.revision
+    const draft = failure === 'invalid' ? '0' : section === 'context' ? '49' : '24567'
+    edit(draft); await tick()
+    assert.equal(editor.getSnapshot().error, failure)
+    const previousWrites = writes
+    render(false)
+    stored = { ...stored, writable: false, revision: stored.revision + 1,
+      configuration: { ...stored.configuration, [section === 'context' ? 'maxTasks' : 'port']: section === 'context' ? 64 : 24680 } }
+    render(true); await tick()
+    assert.equal(input().props.disabled, true, 'a retained draft must not hide a change to read-only permissions')
+    for (const retry of actions().filter(row => row.children.includes('save.retry') && row.props.onClick)) {
+      assert.equal(retry.props.disabled, true, 'retry controls also respect the current read-only permission')
+    }
+    assert.equal(input().props.value, draft)
+    assert.equal(editor.getSnapshot().snapshot.revision, originalRevision, 'permission refresh must not rebase external configuration')
+    assert.equal(writes, previousWrites)
+    render(false); stored = { ...stored, writable: true }; render(true); await tick()
+    assert.equal(input().props.disabled, false)
+    assert.equal(input().props.value, draft)
+    edit(section === 'context' ? '50' : '24568'); await tick()
+    assert.equal(editor.getSnapshot().error, 'conflict', 'external changes still require an explicit reload')
+    const reload = actions().find(row => row.children.includes(section === 'context' ? 'budget.reload' : 'connection.reload') && row.props.onClick)
+    await reload.props.onClick(); await tick()
+    assert.equal(input().props.value, section === 'context' ? '64' : '24680')
+    assert.equal(editor.getSnapshot().error, '')
+    edit(section === 'context' ? '50' : '24568'); await tick()
+    assert.equal(editor.getSnapshot().error, '')
+  })
+}
+
+for (const failure of ['invalid', 'save-failed']) test(`a retained ${failure} budget draft waits for another tab's pending save on return`, async () => {
+  let stored = { revision: 1, writable: true, defaults: {}, configuration: { maxTasks: 32 } as Record<string, unknown> }
+  let fail = failure === 'save-failed', hold = false, release!: () => void
+  const writes: string[] = []
+  const api = {
+    readConfig: async () => ({ ok: true, value: structuredClone(stored) }),
+    saveConfig: async (content: string, expected: string) => {
+      writes.push(expected)
+      if (fail) { fail = false; return { ok: true, value: { ok: false, error: 'save-failed' } } }
+      if (hold) { hold = false; await new Promise<void>(resolve => { release = resolve }) }
+      if (expected !== String(stored.revision)) return { ok: true, value: { ok: false, error: 'conflict' } }
+      stored = { ...stored, revision: stored.revision + 1, configuration: JSON.parse(content) }
+      return { ok: true, value: { ok: true, snapshot: structuredClone(stored) } }
+    },
+  }
+  const render = fixture(api, { budgetApi: api, budgetSection: 'context' })
+  const input = () => nodes(render()).find(row => row.props.id === 'super-code-budget-maxTasks').children[0]()
+  const edit = (value: string) => { input().props.onChange({ target: { value } }); input().props.onBlur() }
+  render(); await tick()
+  edit(failure === 'invalid' ? '0' : '49'); await tick()
+  assert.equal(render.props.api.editors.context.getSnapshot().error, failure)
+  render(false)
+  const { skills } = render.props.api.editors
+  skills.receive((await render.props.api.readConfig()).value)
+  hold = true; skills.change({ openspecSkills: true })
+  render(true)
+  const waiting = input().props.disabled
+  if (!waiting) { edit('50'); await tick() }
+  release(); await skills.flush(); await tick()
+  if (waiting) { edit('50'); await tick() }
+  assert.equal(stored.configuration.openspecSkills, true, 'correcting a retained draft must not cause the pending Skill choice to fail')
+  assert.equal(waiting, true, 'returning to a retained draft must wait for the other local writer')
+  assert.equal(stored.configuration.maxTasks, 50)
+  assert.equal(render.props.api.editors.context.getSnapshot().error, '')
+  assert.equal(skills.getSnapshot().error, '')
+})
+
 for (const section of ['skills', 'connection']) test(`${section} saves remain coordinated after closing and reopening settings`, async () => {
   let stored = section === 'skills' ? { revision: 1, writable: true, configuration: {} } : initial()
   let release!: () => void, writes = 0

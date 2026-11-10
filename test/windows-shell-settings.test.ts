@@ -13,6 +13,25 @@ function client() {
 }
 const editor = (api: object, section: string) => client().createBudgetAutosave(api, section)
 
+test('an older overlapping read cannot change the permissions of an editor that received a newer snapshot', async () => {
+  let stored = { revision: 1, writable: true, configuration: {} }
+  let hold = false, release!: () => void
+  const settings = client().createBudgetEditors({ readConfig: async () => {
+    const captured = structuredClone(stored)
+    if (hold) { hold = false; await new Promise<void>(resolve => { release = resolve }) }
+    return { ok: true, value: captured }
+  } })
+  const { skills } = settings.editors
+  skills.receive((await settings.readConfig()).value)
+  hold = true
+  const older = settings.readConfig()
+  while (!release) await Promise.resolve()
+  stored = { ...stored, writable: false }
+  skills.receive((await settings.readConfig()).value)
+  release(); await older
+  assert.equal(skills.getSnapshot().snapshot.writable, false, 'discarded reads must have no side effects on another page')
+})
+
 test('home changes carry untouched protection fields into a retained draft without losing edited fields', async () => {
   let stored = { revision: 1, writable: true, configuration: { deletionProtection: 'relaxed', deletionProtectionForOfficialPresets: false } }
   const settings = client().createBudgetEditors({

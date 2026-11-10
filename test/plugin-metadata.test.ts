@@ -28,3 +28,16 @@ test('both shipped preset mechanisms record the package version', () => {
   const declaration = patch.flatMap(row => row.insert).find(row => row.id === 'preset-super-code')
   assert.deepEqual(compositionVersion(yaml.dump(declaration.config.plugins)), { presetVersion: pluginVersion, skillPacks: true })
 })
+
+test('disabled Skill package loaders do not advertise working package switches', () => {
+  const metadata = { name: 'dsh-super-code/super-code', config: { presetVersion: pluginVersion } }
+  for (const disabled of [true, false, undefined]) {
+    const rows = [metadata, { name: 'dsh-super-code/skills', disabled }]
+    assert.deepEqual(compositionVersion(yaml.dump(rows)), {
+      presetVersion: pluginVersion, ...(disabled ? {} : { skillPacks: true }),
+    })
+  }
+  assert.deepEqual(compositionVersion(yaml.dump([metadata, { name: '@deepseek-ai/dsh-skill-filesystem' }])), {
+    presetVersion: pluginVersion,
+  }, 'the legacy loader still requires reinstalling the preset')
+})

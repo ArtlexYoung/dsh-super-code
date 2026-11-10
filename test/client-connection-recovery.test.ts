@@ -69,7 +69,7 @@ function fixture(api: any, options: { home?: boolean; budgetApi?: any; budgetSec
   const parent = render(Settings, { connectionApi: api, budgetApi: options.budgetApi, t: (key: string) => key }, false)
   const element = nodes(parent).find(row => typeof row.type === 'function'
     && (options.home ? row.props.connectionApi === api : options.budgetSection
-      ? row.props.api === options.budgetApi && (row.props.section ?? 'context') === options.budgetSection : row.props.api === api))!
+      ? row.props.api?.editors && (row.props.section ?? 'context') === options.budgetSection : row.props.api === api))!
   return () => render(element.type, { ...element.props, active: true })
 }
 const button = (tree: any) => nodes(tree).find(row => row.type === 'button' && row.children.includes('save.retry'))

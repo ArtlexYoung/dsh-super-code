@@ -2274,6 +2274,23 @@ function createBudgetAutosave(api, section = 'context') {
   return createAutosave(api, { draft: budgetDraft({}), toDraft: budgetDraft,
     toConfiguration: (draft, snapshot) => budgetSectionConfiguration(section, draft, snapshot) })
 }
+
+/** All budget tabs edit one document; finish local writes before another tab reads it. */
+function createBudgetEditors(api) {
+  let writing = Promise.resolve()
+  const saveConfig = (...args) => {
+    const result = api.saveConfig(...args)
+    writing = Promise.allSettled([writing, result]).then(() => {})
+    return result
+  }
+  const editors = Object.fromEntries(['context', 'shell', 'protection', 'skills']
+    .map(section => [section, createBudgetAutosave({ saveConfig }, section)]))
+  return { editors, saveConfig, readConfig: async () => {
+    await Promise.all(Object.values(editors).map(editor => editor.flush()))
+    await writing
+    return api.readConfig()
+  } }
+}
 function budgetFieldValid(field, input) {
   const value = String(input ?? '').trim()
   if (!value) return true
@@ -2292,7 +2309,7 @@ function autosaveState(editing) {
 function BudgetSettings({ api, t, active, section = 'context', presetStatus, onSaved = () => {} }) {
   const protection = section === 'protection'
   const shell = section === 'shell', skills = section === 'skills'
-  const editor = useMemo(() => createBudgetAutosave(api, section), [api, section])
+  const editor = api.editors[section]
   const editing = useSyncExternalStore(editor.subscribe, editor.getSnapshot, editor.getSnapshot)
   const { snapshot, draft } = editing
   const [loading, setLoading] = useState(false), [failure, setFailure] = useState(''), [notice, setNotice] = useState('')
@@ -2893,6 +2910,7 @@ function ConnectionConsent({ api, t }) {
 }
 
 function PresetSettings({ api, budgetApi, connectionApi, openSession = () => {}, t }) {
+  const budgets = useMemo(() => createBudgetEditors(budgetApi), [budgetApi])
   const [tab, setTab] = useState('home')
   const [status, setStatus] = useState(null), [customId, setCustomId] = useState(null)
   const reinstall = status?.reinstallable ?? status?.state === 'installed'
@@ -2975,7 +2993,7 @@ function PresetSettings({ api, budgetApi, connectionApi, openSession = () => {},
       tabIndex: tab === value ? 0 : -1, onClick: () => setTab(value) }, t(`settings.${value}Tab`)))),
     React.createElement('div', { className: 'dsh-super-code-settings-body' },
       React.createElement('div', { role: 'tabpanel', id: 'super-code-panel-home', 'aria-labelledby': 'super-code-tab-home', hidden: tab !== 'home' },
-        React.createElement(SettingsHome, { budgetApi, connectionApi, t, active: tab === 'home', revision: overviewRevision, navigate: setTab },
+        React.createElement(SettingsHome, { budgetApi: budgets, connectionApi, t, active: tab === 'home', revision: overviewRevision, navigate: setTab },
       // Healthy state collapses to one status line; problems expand into a notice with its fix.
       React.createElement('header', { className: 'dsh-super-code-settings-header' },
         React.createElement('span', { className: 'dsh-super-code-settings-mark', 'aria-hidden': true }, React.createElement(Glyph, { type: 'code' })),
@@ -3025,13 +3043,13 @@ function PresetSettings({ api, budgetApi, connectionApi, openSession = () => {},
         status?.delivery === 'declaration' && !status.authorable && React.createElement('p', { role: 'note' }, t('preset.declaredReadonly')),
         status?.delivery === 'directory' && !status.authorable && React.createElement('p', { role: 'note' }, t('preset.readonly'))),
       error && React.createElement('p', { role: 'alert' }, t(error)),
-      React.createElement(BudgetSettings, { api: budgetApi, t, section: 'shell', active: tab === 'preset', onSaved })),
+      React.createElement(BudgetSettings, { api: budgets, t, section: 'shell', active: tab === 'preset', onSaved })),
       React.createElement('div', { role: 'tabpanel', id: 'super-code-panel-skills', 'aria-labelledby': 'super-code-tab-skills', hidden: tab !== 'skills' },
-        React.createElement(BudgetSettings, { api: budgetApi, t, section: 'skills', presetStatus: status, active: tab === 'skills', onSaved })),
+        React.createElement(BudgetSettings, { api: budgets, t, section: 'skills', presetStatus: status, active: tab === 'skills', onSaved })),
       React.createElement('div', { role: 'tabpanel', id: 'super-code-panel-context', 'aria-labelledby': 'super-code-tab-context', hidden: tab !== 'context' },
-        React.createElement(BudgetSettings, { api: budgetApi, t, active: tab === 'context', onSaved })),
+        React.createElement(BudgetSettings, { api: budgets, t, active: tab === 'context', onSaved })),
       React.createElement('div', { role: 'tabpanel', id: 'super-code-panel-protection', 'aria-labelledby': 'super-code-tab-protection', hidden: tab !== 'protection' },
-        React.createElement(BudgetSettings, { api: budgetApi, t, section: 'protection', active: tab === 'protection', onSaved })),
+        React.createElement(BudgetSettings, { api: budgets, t, section: 'protection', active: tab === 'protection', onSaved })),
       React.createElement('div', { role: 'tabpanel', id: 'super-code-panel-connection', 'aria-labelledby': 'super-code-tab-connection', hidden: tab !== 'connection' },
         React.createElement(ConnectionSettings, { api: connectionApi, t, active: tab === 'connection', openSession, onSaved }))),
     confirmation && React.createElement('dialog', { ref: dialog, className: 'dsh-super-code-confirm',
@@ -3826,5 +3844,5 @@ function apply(ctx) {
   ctx.effect(() => disposeMemoryType, 'super-code: memory library tab')
 }
 
-return { inject, apply, taskFeedbackRows, feedbackStatus, feedbackListItems, feedbackListLayout, feedbackListIndex, feedbackListWindow, feedbackListAnchor, connectionSessions, createConnectionAutosave, createBudgetAutosave, connectionDraft, connectionConfiguration, budgetDraft, budgetConfiguration, synchronizePresetDisplay, agentSessionState, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector, agentHistoryRange, agentHistoryRows, agentHistoryWindow, memoryLibraryAddress, memoryLibraryTarget, memoryLibraryNavigation, memoryLibraryWindow, createMemoryEditor, MemoryLibrary }
+return { inject, apply, taskFeedbackRows, feedbackStatus, feedbackListItems, feedbackListLayout, feedbackListIndex, feedbackListWindow, feedbackListAnchor, connectionSessions, createConnectionAutosave, createBudgetAutosave, createBudgetEditors, connectionDraft, connectionConfiguration, budgetDraft, budgetConfiguration, synchronizePresetDisplay, agentSessionState, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector, agentHistoryRange, agentHistoryRows, agentHistoryWindow, memoryLibraryAddress, memoryLibraryTarget, memoryLibraryNavigation, memoryLibraryWindow, createMemoryEditor, MemoryLibrary }
 } })

@@ -21,7 +21,7 @@ export function compositionVersion(content: string): PresetVersion {
     const version = matches[0].config?.presetVersion
     if (typeof version !== 'string' || version.length > 100
       || !/^\d+\.\d+\.\d+(?:-[\da-zA-Z.-]+)?(?:\+[\da-zA-Z.-]+)?$/.test(version)) return {}
-    return { presetVersion: version, ...(rows.some(row => row?.name === 'dsh-super-code/skills') ? { skillPacks: true } : {}) }
+    return { presetVersion: version, ...(rows.some(row => row?.name === 'dsh-super-code/skills' && !row.disabled) ? { skillPacks: true } : {}) }
   } catch { return {} }
 }
 

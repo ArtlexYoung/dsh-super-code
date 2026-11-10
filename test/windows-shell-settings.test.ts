@@ -3,14 +3,73 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { runInNewContext } from 'node:vm'
 
-function editor(api: object, section: string) {
+function client() {
   let plugin: any
   runInNewContext(readFileSync(new URL('../client/index.js', import.meta.url), 'utf8'), {
     setTimeout, clearTimeout,
     __ModuleLoader__: { load: ({ factory }: any) => { plugin = factory((id: string) => id === 'react' ? { forwardRef: () => 'button' } : {}) } },
   })
-  return plugin.createBudgetAutosave(api, section)
+  return plugin
 }
+const editor = (api: object, section: string) => client().createBudgetAutosave(api, section)
+
+test('switching budget tabs waits for all local Skill saves, including edits queued during a save', async () => {
+  let stored = { revision: 1, writable: true, configuration: { windowsBash: true } as Record<string, unknown> }
+  let finish!: () => void, writes = 0
+  const api = { readConfig: async () => ({ ok: true, value: structuredClone(stored) }),
+    saveConfig: async (content: string, revision: string) => {
+      if (++writes === 1) await new Promise<void>(resolve => { finish = resolve })
+      if (revision !== String(stored.revision)) return { ok: true, value: { ok: false, error: 'conflict' } }
+      stored = { ...stored, revision: stored.revision + 1, configuration: JSON.parse(content) }
+      return { ok: true, value: { ok: true, snapshot: structuredClone(stored) } }
+    } }
+  const settings = client().createBudgetEditors(api), { skills, shell } = settings.editors
+  skills.receive((await settings.readConfig()).value)
+  skills.change({ openspecSkills: true })
+  skills.change({ mattpocockSkills: true })
+  let loaded = false
+  const visit = settings.readConfig().then((response: any) => { loaded = true; shell.receive(response.value) })
+  await Promise.resolve()
+  assert.equal(loaded, false, 'the next tab cannot read a revision that is still being saved')
+  finish(); await visit
+  assert.equal(shell.getSnapshot().snapshot.revision, 3)
+  shell.change({ windowsBash: false }); await shell.flush()
+  assert.equal(shell.getSnapshot().error, '')
+  assert.equal(stored.configuration.windowsBash, false)
+  assert.equal(stored.configuration.openspecSkills, true)
+  assert.equal(stored.configuration.mattpocockSkills, true)
+})
+
+test('budget tab reads wait for direct reset/home saves and recover from a rejected write', async () => {
+  let release!: () => void, reject = false, reads = 0
+  const settings = client().createBudgetEditors({
+    readConfig: async () => { reads++; return { ok: true, value: { revision: 2, writable: true, configuration: {} } } },
+    saveConfig: async () => { await new Promise<void>(resolve => { release = resolve }); if (reject) throw new Error('offline'); return { ok: true } },
+  })
+  for (const fail of [false, true]) {
+    reject = fail
+    const writing = settings.saveConfig('{}', '1').catch(() => {})
+    const before = reads, reading = settings.readConfig()
+    await Promise.resolve(); assert.equal(reads, before)
+    release(); await writing; await reading
+    assert.equal(reads, before + 1)
+  }
+})
+
+test('a real external budget conflict retains the draft without blind retries or overwriting it on another tab', async () => {
+  let writes = 0
+  const settings = client().createBudgetEditors({
+    readConfig: async () => ({ ok: true, value: { revision: 2, writable: true, configuration: { openspecSkills: false } } }),
+    saveConfig: async () => { writes++; return { ok: true, value: { ok: false, error: 'conflict' } } },
+  })
+  const { skills } = settings.editors
+  skills.receive({ revision: 1, writable: true, configuration: {} })
+  skills.change({ openspecSkills: true }); await skills.flush()
+  assert.equal((await settings.readConfig()).value.revision, 2)
+  assert.equal(skills.getSnapshot().error, 'conflict')
+  assert.equal(skills.getSnapshot().draft.openspecSkills, true)
+  assert.equal(writes, 1)
+})
 
 test('whole Skill package choices autosave and survive all other settings tabs', async () => {
   let stored = { revision: 1, writable: true, configuration: {

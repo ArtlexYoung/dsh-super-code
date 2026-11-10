@@ -86,6 +86,103 @@ function fixture(api: any, options: { home?: boolean; budgetApi?: any; budgetSec
 }
 const button = (tree: any) => nodes(tree).find(row => row.type === 'button' && row.children.includes('save.retry'))
 
+test('connection settings show the actual unavailable service state when credentials cannot be revealed', async t => {
+  const ctx = new Context()
+  t.after(() => ctx.fiber.dispose())
+  let available = false
+  const remote = new SuperCodeConnection(ctx, () => available ? {
+    read: () => initial(), reveal: () => ({ token: 'fixture-token' }),
+  } as ConnectionService : false)
+  const api = {
+    readConfig: async () => ({ ok: true, value: remote.readConfig() }),
+    directories: async () => ({ ok: true, value: await remote.directories() }),
+    revealToken: async () => { try { return { ok: true, value: remote.revealToken() } } catch { return { ok: false } } },
+  }
+  const render = fixture(api)
+  render(); await tick()
+  assert.equal(nodes(render()).some(row => row.props.role === 'status' && row.children.includes('connection.state.error')), true,
+    'a failed credential read must not hide a successfully read unavailable-service snapshot behind loading')
+  assert.equal(nodes(render()).find(row => row.props.id === 'super-code-connection-port').props.disabled, true)
+  assert.equal(nodes(render()).some(row => row.children.includes('connection.error.unavailable')), true)
+  available = true
+  const reload = nodes(render()).find(row => row.children.includes('connection.reload') && row.props.onClick)!
+  await reload.props.onClick(); await tick()
+  assert.equal(nodes(render()).find(row => row.props.id === 'super-code-connection-port').props.disabled, false)
+  assert.equal(nodes(render()).some(row => row.props['aria-label'] === 'connection.token' && row.props.value === 'fixture-token'), true)
+})
+
+for (const failure of ['response', 'transport']) test(`a ${failure} credential failure clears an old token without hiding current settings permissions`, async () => {
+  let stored = initial(), unavailable = false
+  const render = fixture({
+    readConfig: async () => ({ ok: true, value: structuredClone(stored) }),
+    directories: async () => ({ ok: true, value: { items: [], picker: 'unavailable' } }),
+    revealToken: async () => {
+      if (unavailable) {
+        if (failure === 'transport') throw new Error('credential service unavailable')
+        return { ok: false }
+      }
+      return { ok: true, value: { token: 'current-fixture-token' } }
+    },
+  })
+  render(); await tick()
+  const token = () => nodes(render()).find(row => row.props['aria-label'] === 'connection.token')
+  assert.equal(token().props.value, 'current-fixture-token')
+  render(false)
+  stored = { ...stored, writable: false, revision: stored.revision + 1 }
+  unavailable = true
+  render(true); await tick()
+  assert.equal(token(), undefined)
+  assert.equal(nodes(render()).find(row => row.props.id === 'super-code-connection-port').props.disabled, true)
+  assert.equal(nodes(render()).some(row => row.children.includes('connection.error.unavailable')), true)
+  stored = { ...stored, writable: true }
+  unavailable = false
+  const reload = nodes(render()).find(row => row.children.includes('connection.reload') && row.props.onClick)!
+  await reload.props.onClick(); await tick()
+  assert.equal(nodes(render()).find(row => row.props.id === 'super-code-connection-port').props.disabled, false)
+  assert.equal(token().props.value, 'current-fixture-token')
+})
+
+for (const first of ['protection', 'connection']) test(`home disables both quick controls while its ${first} save is pending`, async () => {
+  let budget = { revision: 1, writable: true, configuration: { deletionProtection: 'relaxed' } }
+  let connection = { ...initial(), configuration: { ...initial().configuration, enabled: false } }
+  let release!: () => void
+  const held = () => new Promise<void>(resolve => { release = resolve })
+  const budgetApi = {
+    readConfig: async () => ({ ok: true, value: structuredClone(budget) }),
+    saveConfig: async (content: string) => {
+      if (first === 'protection') await held()
+      budget = { ...budget, revision: budget.revision + 1, configuration: JSON.parse(content) }
+      return { ok: true, value: { ok: true, snapshot: structuredClone(budget) } }
+    },
+  }
+  const render = fixture({
+    readConfig: async () => ({ ok: true, value: structuredClone(connection) }),
+    overview: async () => ({ ok: true, value: { connections: [], sessions: [] } }),
+    saveConfig: async (content: string) => {
+      if (first === 'connection') await held()
+      connection = { ...connection, revision: connection.revision + 1, configuration: JSON.parse(content) }
+      return { ok: true, value: { ok: true, snapshot: structuredClone(connection) } }
+    },
+  }, { home: true, budgetApi })
+  const controls = () => ({
+    protection: nodes(render()).find(row => row.props.label === 'delete.mode')!,
+    connection: nodes(render()).find(row => row.props['aria-label'] === 'home.mcp' && typeof row.props.onChange === 'function')!,
+  })
+  render(); await tick()
+  const saving = controls()[first as 'protection' | 'connection'].props.onChange(first === 'protection' ? 'strict' : true)
+  await tick()
+  const other = controls()[first === 'protection' ? 'connection' : 'protection']
+  const disabled = other.props.disabled || Boolean(other.props.busy)
+  release(); await saving; await tick()
+  assert.equal(disabled, true, 'an action rejected by the shared pending-write guard must not look available')
+  assert.equal(controls().protection.props.disabled, false)
+  assert.equal(controls().connection.props.disabled, false)
+  controls()[first === 'protection' ? 'connection' : 'protection'].props.onChange(first === 'protection' ? true : 'strict')
+  await tick()
+  assert.equal(budget.configuration.deletionProtection, 'strict')
+  assert.equal(connection.configuration.enabled, true)
+})
+
 for (const section of ['context', 'connection']) for (const failure of ['invalid', 'save-failed']) {
   test(`${section} refreshes read-only permissions without discarding a retained ${failure} draft or rebasing it`, async () => {
     let stored: any = section === 'context'

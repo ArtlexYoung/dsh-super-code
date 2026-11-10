@@ -2337,19 +2337,22 @@ function BudgetSettings({ api, t, active, section = 'context', presetStatus, onS
   const [confirmReset, setConfirmReset] = useState(false)
   const alive = useRef(false), pending = useRef(false)
   const load = async (discard = false) => {
-    if (pending.current || (!discard && editor.hasChanges())) return
+    if (pending.current) return
     pending.current = true; setLoading(true); setFailure('')
     try {
       const response = await api.readConfig()
       if (!response.ok) throw new Error('Remote unavailable')
-      if (alive.current) editor.receive(response.value)
+      if (alive.current) {
+        if (discard || !editor.hasChanges()) editor.receive(response.value)
+        else editor.permissions(response.value.writable)
+      }
     } catch { if (alive.current) setFailure('connection') }
     finally { pending.current = false; if (alive.current) setLoading(false) }
   }
   useEffect(() => { alive.current = true; return () => { alive.current = false; void editor.flush() } }, [editor])
   useEffect(() => { if (editing.saveCount) onSaved() }, [editing.saveCount])
   // Other tabs write the same document, so reread on every visit; leaving flushes pending input.
-  useEffect(() => { if (active) load(); else { setConfirmReset(false); void editor.flush() } }, [editor, active])
+  useLayoutEffect(() => { if (active) load(); else { setConfirmReset(false); void editor.flush() } }, [editor, active])
   const reset = async () => {
     setConfirmReset(false)
     if (pending.current) return
@@ -2451,7 +2454,7 @@ function BudgetSettings({ api, t, active, section = 'context', presetStatus, onS
       onSubmit: event => { event.preventDefault(); void editor.flush() } },
       problem && React.createElement(Callout, { tone: 'error',
         action: failure === 'connection' || problem === 'conflict' ? button(t('budget.reload'), () => load(true))
-          : saveError ? button(t('save.retry'), () => { void editor.retry() }) : null },
+          : saveError ? button(t('save.retry'), () => { void editor.retry() }, { disabled }) : null },
         React.createElement('p', null, t(`budget.error.${problem}`))),
       snapshot && !snapshot.writable && React.createElement(Callout, { tone: 'warning' }, React.createElement('p', null, t('budget.error.read-only'))),
       notice && React.createElement(Callout, { tone: 'success' }, React.createElement('p', null, t(`budget.${notice}`))),
@@ -2554,6 +2557,10 @@ function createAutosave(api, { draft: initialDraft, toDraft, toConfiguration }) 
     receive: (snapshot, draft = toDraft(snapshot.configuration)) => {
       acknowledged = ++version
       update({ snapshot, draft, error: '', notice: '' })
+    },
+    permissions: writable => {
+      // Keep the draft and its CAS baseline while reflecting current host permissions.
+      if (state.snapshot && state.snapshot.writable !== writable) update({ snapshot: { ...state.snapshot, writable } })
     },
     revision: snapshot => {
       const previous = state.snapshot ? toDraft(state.snapshot.configuration) : initialDraft
@@ -2680,7 +2687,8 @@ function ConnectionSettings({ api, settings, t, active, openSession, onSaved = (
       if (!config.ok || !directories.ok || !credential.ok) throw new Error()
       if (!alive.current) return
       setCatalog(directories.value)
-      if (discard || !dirty) receive(config.value, directories.value)
+      if (discard || !editor.hasChanges()) receive(config.value, directories.value)
+      else editor.permissions(config.value.writable)
       if (visible.current) setToken(credential.value.token)
     } catch { if (alive.current) setError('unavailable') }
     finally { pending.current = false; if (alive.current) setBusy(false) }

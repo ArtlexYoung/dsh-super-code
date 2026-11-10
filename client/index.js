@@ -2698,13 +2698,18 @@ function ConnectionSettings({ api, settings, t, active, openSession, onSaved = (
     if (pending.current || (discard && editor.getSnapshot().saving)) return
     pending.current = true; setBusy(true); setError('')
     try {
-      const [config, directories, credential] = await Promise.all([settings.readConfig(), api.directories(), api.revealToken()])
-      if (!config.ok || !directories.ok || !credential.ok) throw new Error()
+      const [config, directories, credential] = await Promise.all([
+        settings.readConfig(), api.directories(), api.revealToken().catch(() => ({ ok: false })),
+      ])
+      if (!config.ok || !directories.ok) throw new Error()
       if (!alive.current) return
       setCatalog(directories.value)
       if (discard || !editor.hasChanges()) receive(config.value, directories.value)
       else editor.permissions(config.value.writable)
-      if (visible.current) setToken(credential.value.token)
+      if (visible.current) {
+        setToken(credential.ok ? credential.value.token : '')
+        if (!credential.ok && config.value.url) setError('unavailable')
+      }
     } catch { if (alive.current) setError('unavailable') }
     finally { pending.current = false; if (alive.current) setBusy(false) }
   }
@@ -2906,7 +2911,7 @@ function SettingsHome({ budgetApi, connectionApi, connectionSettings, t, active,
       row({ key: 'protection', icon: 'shield', title: t('delete.title'), target: 'protection', on: Boolean(mode) && mode !== 'off',
         body: budget ? React.createElement('p', { id: 'super-code-home-protection-hint', className: 'dsh-super-code-home-row-hint' }, t(`delete.hint.${mode}`)) : placeholder('text'),
         control: budget ? React.createElement(SegmentedControl, { label: t('delete.mode'), value: mode, describedBy: 'super-code-home-protection-hint',
-          choices: ['off', 'relaxed', 'strict'].map(value => [value, t(`delete.${value}`)]), disabled: refreshing || !budget.writable, busy: saving?.kind === 'protection',
+          choices: ['off', 'relaxed', 'strict'].map(value => [value, t(`delete.${value}`)]), disabled: refreshing || Boolean(saving) || !budget.writable, busy: saving?.kind === 'protection',
           onChange: value => change('protection', value) }) : placeholder('control') }),
       row({ key: 'connection', icon: 'plug', title: t('home.mcp'), target: 'connection', on: enabled,
         body: connection ? React.createElement('p', { className: 'dsh-super-code-home-row-status', 'data-tone': state === 'listening' ? 'success' : state === 'error' ? 'error' : 'idle' },
@@ -2915,7 +2920,7 @@ function SettingsHome({ budgetApi, connectionApi, connectionSettings, t, active,
           listening && React.createElement('span', null, t('home.connectionCount', { count: overview.connections.length, max: connection.configuration.maxConnections })),
           listening && React.createElement('span', null, t('home.activeSessions', { count: connectionSessions(overview).connected.length }))) : placeholder('text'),
         control: needsSetup ? React.createElement(ActionButton, { type: 'button', onClick: () => navigate('connection') }, t('home.setupConnection'))
-          : connection ? React.createElement(ConnectionSwitch, { checked: enabled, disabled: refreshing || !connection.writable, 'aria-label': t('home.mcp'),
+          : connection ? React.createElement(ConnectionSwitch, { checked: enabled, disabled: refreshing || Boolean(saving) || !connection.writable, 'aria-label': t('home.mcp'),
             onChange: value => value && !connection.configuration.allowedDirectories.length ? navigate('connection') : change('connection', value) })
           : placeholder('control') })))
 }

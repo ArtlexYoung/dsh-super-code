@@ -13,6 +13,24 @@ function client() {
 }
 const editor = (api: object, section: string) => client().createBudgetAutosave(api, section)
 
+test('home changes carry untouched protection fields into a retained draft without losing edited fields', async () => {
+  let stored = { revision: 1, writable: true, configuration: { deletionProtection: 'relaxed', deletionProtectionForOfficialPresets: false } }
+  const settings = client().createBudgetEditors({
+    readConfig: async () => ({ ok: true, value: structuredClone(stored) }),
+    saveConfig: async (content: string, expected: string) => {
+      assert.equal(expected, String(stored.revision))
+      stored = { ...stored, revision: stored.revision + 1, configuration: JSON.parse(content) }
+      return { ok: true, value: { ok: true, snapshot: structuredClone(stored) } }
+    },
+  })
+  const { protection } = settings.editors
+  protection.receive((await settings.readConfig()).value)
+  await settings.saveConfig(JSON.stringify({ ...stored.configuration, deletionProtection: 'strict' }), '1')
+  protection.change({ deletionProtectionForOfficialPresets: true }); await protection.flush()
+  assert.equal(stored.configuration.deletionProtection, 'strict', 'editing the official scope must not undo the home mode change')
+  assert.equal(stored.configuration.deletionProtectionForOfficialPresets, true)
+})
+
 test('a retained invalid or failed budget draft can save after another local tab writes without losing either change', async () => {
   for (const failure of ['invalid', 'save-failed']) {
     let stored = { revision: 1, writable: true, configuration: { budgets: { summaryMaxTokens: 8192 } } as Record<string, any> }

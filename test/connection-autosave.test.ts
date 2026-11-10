@@ -57,6 +57,26 @@ test('caller approval defaults off and autosaves both choices without changing o
   assert.equal(stored.configuration.allowNewConversations, true)
 })
 
+test('local snapshot updates refresh untouched fields while retaining the connection draft', async () => {
+  let stored = initial(), writes = 0
+  const save = editor({ saveConfig: async (content: string, expected: string) => {
+    writes++
+    assert.equal(expected, String(stored.revision))
+    stored = { ...stored, revision: stored.revision + 1, configuration: JSON.parse(content) }
+    return { ok: true, value: { ok: true, snapshot: structuredClone(stored) } }
+  } })
+  save.receive(stored)
+  save.change({ port: '' }); await save.flush()
+  stored = { ...stored, revision: 2, configuration: { ...stored.configuration, enabled: true } }
+  save.revision(stored)
+  assert.equal(save.getSnapshot().draft.port, '')
+  assert.equal(save.getSnapshot().error, 'invalid')
+  save.change({ port: '24567' }); await save.flush()
+  assert.equal(writes, 1)
+  assert.equal(stored.configuration.enabled, true, 'correcting the draft must not undo the locally saved MCP switch')
+  assert.equal(stored.configuration.port, 24567)
+})
+
 test('automatic connection writes serialize and retain edits made during an earlier save', async () => {
   let finish!: (value: object) => void
   const calls: any[] = []

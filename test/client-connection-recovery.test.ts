@@ -22,7 +22,7 @@ const initial = () => ({ revision: 2, writable: true, state: 'error', error: 'cl
     allowedDirectories: ['/project'], knownDirectories: [], directoriesConfigured: true } })
 
 function fixture(api: any, options: { home?: boolean; budgetApi?: any; budgetSection?: string; timers?: Function[] } = {}) {
-  let plugin: any, Settings: any, current: any
+  let plugin: any, Settings: any, settingsProps: any, current: any
   const instances = new Map<Function, any>()
   const react = {
     Fragment: 'fragment', forwardRef: () => 'button',
@@ -53,10 +53,12 @@ function fixture(api: any, options: { home?: boolean; budgetApi?: any; budgetSec
       __ModuleLoader__: { load: ({ factory }: any) => { plugin = factory((id: string) => id === 'react' ? react : {}) } } },
   })
   const ctx: any = {
-    effect() {}, locale: { bind: () => (key: string) => key }, remote: { $mount: async () => {} },
+    effect() {}, locale: { bind: () => (key: string) => key }, remote: { $mount: async () => {}, superCodeConnection: api, superCodeBudgets: options.budgetApi },
     settingsScope: { bind: () => ({}) },
     inject: (dependencies: string[], callback: Function) => { if (dependencies[0] === 'remote.superCodePresets') callback(ctx) },
-    slots: { inject: (_: string, callback: Function) => callback(), register: (config: any, component: any) => { if (config.name === 'settings.section') Settings = component } },
+    slots: { inject: (_: string, callback: Function) => callback(), register: (config: any, component: any) => {
+      if (config.name === 'settings.section') { Settings = component; settingsProps = config.inject }
+    } },
     sidebarRightTabs: { register: () => () => {} }, sessions: {}, sidebarRight: {},
   }
   plugin.apply(ctx)
@@ -67,13 +69,56 @@ function fixture(api: any, options: { home?: boolean; budgetApi?: any; budgetSec
     if (effects) for (const effect of current.effects) effect()
     return tree
   }
-  const parent = render(Settings, { connectionApi: api, budgetApi: options.budgetApi, t: (key: string) => key }, false)
-  const element = nodes(parent).find(row => typeof row.type === 'function'
-    && (options.home ? row.props.connectionApi === api : options.budgetSection
-      ? row.props.api?.editors && (row.props.section ?? 'context') === options.budgetSection : row.props.api === api))!
-  return Object.assign((active = true) => render(element.type, { ...element.props, active }), { props: element.props })
+  const mount = () => {
+    const parent = render(Settings, { ...settingsProps(), t: (key: string) => key }, false)
+    return nodes(parent).find(row => typeof row.type === 'function'
+      && (options.home ? row.props.connectionApi === api : options.budgetSection
+        ? row.props.api?.editors && (row.props.section ?? 'context') === options.budgetSection : row.props.api === api))!
+  }
+  let element = mount()
+  const show = (active = true) => render(element.type, { ...element.props, active })
+  return Object.assign(Object.defineProperty(show, 'props', { get: () => element.props }) as typeof show & { props: any }, {
+    reopen() {
+      for (const state of instances.values()) for (const hook of state.hooks) hook?.cleanup?.()
+      instances.clear(); element = mount()
+    },
+  })
 }
 const button = (tree: any) => nodes(tree).find(row => row.type === 'button' && row.children.includes('save.retry'))
+
+for (const section of ['skills', 'connection']) test(`${section} saves remain coordinated after closing and reopening settings`, async () => {
+  let stored = section === 'skills' ? { revision: 1, writable: true, configuration: {} } : initial()
+  let release!: () => void, writes = 0
+  const api = {
+    readConfig: async () => ({ ok: true, value: structuredClone(stored) }),
+    directories: async () => ({ ok: true, value: { items: [], picker: 'unavailable' } }),
+    revealToken: async () => ({ ok: true, value: { token: '' } }),
+    saveConfig: async (content: string, expected: string) => {
+      if (++writes === 1) await new Promise<void>(resolve => { release = resolve })
+      if (expected !== String(stored.revision)) return { ok: true, value: { ok: false, error: 'conflict' } }
+      stored = { ...stored, revision: stored.revision + 1, configuration: JSON.parse(content) }
+      return { ok: true, value: { ok: true, snapshot: structuredClone(stored) } }
+    },
+  }
+  const render = fixture(api, { budgetApi: api, budgetSection: section === 'skills' ? section : undefined })
+  render(); await tick()
+  const edit = (key: string, value: boolean) => {
+    if (section === 'skills') nodes(render()).find(row => row.props.id === `super-code-skill-${key}`).children[0]().props.onChange(value)
+    else nodes(render()).find(row => row.children.includes(`connection.${key}`) && row.props.onChange).props.onChange(value)
+  }
+  edit(section === 'skills' ? 'openspecSkills' : 'allowNewConversations', section === 'skills')
+  render.reopen(); render(); await tick()
+  if (section === 'skills') edit('mattpocockSkills', true)
+  assert.equal(writes, 1, 'reopening must not create a second writer for the same settings document')
+  release(); await tick()
+  if (section === 'connection') edit('allowCallerApproval', true)
+  await tick()
+  assert.equal(writes, 2)
+  const configuration = stored.configuration as Record<string, unknown>
+  assert.equal(configuration[section === 'skills' ? 'openspecSkills' : 'allowNewConversations'], section === 'skills')
+  assert.equal(configuration[section === 'skills' ? 'mattpocockSkills' : 'allowCallerApproval'], true)
+  assert.equal(nodes(render()).some(row => row.children.includes(`${section === 'skills' ? 'budget' : 'connection'}.error.conflict`)), false)
+})
 
 test('returning home waits for a pending Skill save before allowing another budget write', async () => {
   let budget = { revision: 1, writable: true, configuration: { deletionProtection: 'relaxed' } as Record<string, unknown> }

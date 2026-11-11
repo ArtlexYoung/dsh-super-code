@@ -61,7 +61,11 @@ export class TaskMemoryStore {
       const event = session.append('user/message', createUserMessage({ content: [{ type: 'text', text: JSON.stringify(change) }],
         source: { kind: TASK_MEMORY_SOURCE } }), { surfaceOp: 'append' })
       this.pending.add(session)
-      await this.checkpoint(session)
+      try { await this.checkpoint(session) }
+      catch (cause) {
+        const id = change.kind === 'focus' ? change.id : change.task.id
+        throw new Error(`Task ${id} event ${event.seq} was appended but persistence is unconfirmed. Use super_code_task list or read to confirm persistence; do not repeat the write.`, { cause })
+      }
       return { eventSeq: event.seq, ...(change.kind === 'focus' ? { id: change.id } : { id: change.task.id, revision: change.task.revision }) }
     })
   }

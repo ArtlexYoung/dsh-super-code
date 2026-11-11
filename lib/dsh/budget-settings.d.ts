@@ -15,6 +15,7 @@ interface SettingsWriter {
     replace(namespace: string, config: object, revision: number): Promise<void>;
 }
 export interface BudgetSettingsSnapshot {
+    readonly namespace?: string;
     readonly generation?: string;
     readonly shell?: ShellStatus;
     readonly configuration: Configuration;

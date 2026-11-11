@@ -88,7 +88,7 @@ dsh plugin --profile web add ./dsh-super-code-0.3.11.tgz
 | 删除保护 | 默认引导 Agent 使用可恢复的 `trash`，可切换为严格确认 |
 | Windows 命令环境 | 内置 Bash 与常用命令，可选应用到官方预设 |
 | MCP 连接 | 允许外部 MCP 客户端将任务委派给 DSH 执行，默认关闭 |
-| 预设 Skill | oil-ui、OpenSpec、Matt Pocock Skills 三个整包开关，按需加载 |
+| 预设 Skill | oil-ui、OpenSpec、Matt Pocock Skills、PStack 四个整包开关，按需加载、实时生效 |
 
 详见[使用说明](docs/UsageGuide.md)。
 
@@ -165,6 +165,7 @@ M 为百万 Token，包含思考 Token；耗时包含部分运行内服务等待
 | [oil-ui](https://github.com/oil-oil/oil-ui)（MIT） | 内置前端设计 Skill，提供设计流程、风格对比与画面评审 |
 | [OpenSpec](https://github.com/Fission-AI/OpenSpec)（MIT） | 完整的规范驱动工作流 Skill 包 |
 | [Matt Pocock Skills](https://github.com/mattpocock/skills)（MIT） | 完整的工程工作流 Skill 包 |
+| [PStack](https://github.com/cursor/plugins/tree/main/pstack)（MIT） | 架构、开发、验证与评审的协作 Skill 包 |
 | [SWE-bench](https://github.com/SWE-bench/SWE-bench)、[SWE-bench Pro](https://github.com/scaleapi/SWE-bench_Pro-os)（代码 MIT） | 调优题与评测题 |
 | [js-yaml](https://github.com/nodeca/js-yaml)、[Zod](https://github.com/colinhacks/zod)（MIT） | YAML 解析、数据校验 |
 

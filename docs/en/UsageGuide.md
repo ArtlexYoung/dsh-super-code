@@ -22,6 +22,12 @@ The plugin has no model settings of its own. If you already have a working model
 
 Child Agents use the parent's model by default. Harness manages permissions and tools.
 
+### Image input
+
+For a model that supports vision, enable **Image** under **Input types** in Harness **Settings → Models**, then select that model in the conversation. Add an image through the composer's **+** menu, paste a screenshot, or drag an image in. Preview or remove it before sending. Super Code uses the host's attachment, resizing and sending pipeline.
+
+The model reads project images through native `read_image`, supporting PNG, JPEG, WebP and GIF. Screenshots and decoded video frames require actual image inspection; a path or text summary is not a visual check. If the host says the model does not declare image input, check the selected model's capability setting first. That error does not establish that the underlying model lacks vision. Keep image input disabled for text-only models.
+
 ## Can't find the preset
 
 First make sure the plugin is enabled, then check your host version against [Compatibility](Compatibility.md). Then:
@@ -329,17 +335,28 @@ On capacity refusal, retain the same `requestId` and input and wait through `dsh
 
 ## Preset Skill packages
 
-Open **Settings → Super Code → Preset Skills**. There are three independent whole-package switches, with no per-Skill checklist:
+Open **Settings → Super Code → Preset Skills**. There are four independent whole-package switches, with no per-Skill checklist:
 
 | Package | Purpose | Default |
 |---|---|---|
 | oil-ui | Design, improve and review frontend interfaces. | On |
 | OpenSpec | Organize requirements, design, tasks, implementation and verification around specifications. | Off |
 | Matt Pocock Skills | Question requirements, plan, develop, test, debug and review code through complete engineering workflows. | Off |
+| PStack | Collaborative architecture, development, verification and review workflows. | Off |
 
-Matt bundles the complete official plugin distribution (1.3.2, 27 Skills), not a selected subset. OpenSpec bundles its complete static skills.sh distribution (12 Skills). Provenance, inventories and licenses are included in each package's `UPSTREAM.md` and `distribution.json` under `presets/super-code/skill-packs/`.
+Matt bundles the complete official plugin distribution (1.3.2, 27 Skills), not a selected subset. OpenSpec bundles its complete static skills.sh distribution (12 Skills). PStack is a Cursor plugin containing 58 standard `SKILL.md` entrypoints (0.15.36). All its Skills, references and helpers are bundled; Cursor plugins, agents and automations are not registered. Provenance, inventories and licenses are included in each package's `UPSTREAM.md` and `distribution.json` under `presets/super-code/skill-packs/`.
 
-Changes save automatically and refresh the Super Code Skill catalog and subsequent loads. Disabling a package does not retract instructions already loaded into a conversation; start a fresh conversation when you need an empty context. Project/user Skills are unaffected, including same-name overrides. The original invocation rules remain: some Matt Skills require an explicit user invocation instead of automatic model selection.
+Changes save automatically. Once accepted, they update the Skill catalog, subsequent loads and native slash menus in existing conversations without refreshing the page, creating a conversation or switching presets. Disabling a package does not retract instructions already loaded into a conversation; start a fresh conversation when you need an empty context. Project/user Skills are unaffected, including same-name overrides. The original invocation rules remain: some Matt Skills require an explicit user invocation instead of automatic model selection.
+
+In a main conversation using the Super Code preset, type `/` to select a Skill from DSH’s native menu, or enter `/oil-ui`, `/grill-me`, `/openspec-propose` or `/poteto-mode` followed by your task. Disabled packages no longer supply commands or bodies. The plugin uses public DSH lifecycle APIs to reload only the native Skill UI cache. It does not restart the host, change input drafts or model calls, or install a second slash source. In-flight model requests and instructions already in context remain.
+
+Native same-name precedence is preserved: project/user Skills take priority. With Matt and PStack both enabled, `/tdd` and `/teach` use the earlier-registered Matt version; disable Matt to use PStack’s versions.
+
+PStack uses a converted edition for **DSH `0.2.1-alpha.1` and later**, retaining all 58 entrypoints and 23 playbooks. The adapter handles delegation, model selection, history access, Skill paths and long-run checkpoints. `/setup-pstack` writes only optional project `.dsh/pstack.md` preferences; `/make-bot-ui` uses the plugin's MCP connection. Models inherit the host selection by default and the root schedules dependent phases. Without history tools, workflows use explicit handoffs or project artifacts rather than private host records. Original upstream files remain for upgrade comparison; no global prompt is changed.
+
+Configuration retains all 17 upstream role categories. Reasoning budget, panel size and concurrency are distinct; when per-call model or effort selection is unavailable, the workflow explicitly inherits the host. Reflect retains three reviews followed by independent synthesis. A host without timed resumption can preserve a checkpoint but cannot promise scheduled work after the turn ends.
+
+Browser, Git/GitHub and model-checking workflows still require real tools. Helpers may need Bun, authenticated gh, mise/Java/TLC or Pele, subject to the environment and user authorization. Enabling the package runs no helpers or installs. Missing capabilities are reported; sequential self-review is not presented as independent or cross-model verification.
 
 Existing installed preset compositions are not overwritten automatically. If the page asks you to upgrade, reinstall the preset in **Preset configuration**, then start or resume the conversation to load the new composition. Reinstallation keeps the normal recovery backup.
 

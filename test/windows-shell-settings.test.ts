@@ -358,7 +358,7 @@ test('a real external budget conflict retains the draft without blind retries or
 
 test('whole Skill package choices autosave and survive all other settings tabs', async () => {
   let stored = { revision: 1, writable: true, configuration: {
-    oilUiSkill: true, openspecSkills: false, mattpocockSkills: false,
+    oilUiSkill: true, openspecSkills: false, mattpocockSkills: false, pstackSkills: false,
     windowsBash: true, deletionProtection: 'strict', budgets: { summaryMaxTokens: 8192 },
   } }
   const api = { saveConfig: async (content: string, revision: string) => {
@@ -370,7 +370,8 @@ test('whole Skill package choices autosave and survive all other settings tabs',
   assert.equal(skills.getSnapshot().draft.oilUiSkill, true)
   assert.equal(skills.getSnapshot().draft.openspecSkills, false)
   assert.equal(skills.getSnapshot().draft.mattpocockSkills, false)
-  skills.change({ oilUiSkill: false, openspecSkills: true, mattpocockSkills: true }); await skills.flush()
+  assert.equal(skills.getSnapshot().draft.pstackSkills, false)
+  skills.change({ oilUiSkill: false, openspecSkills: true, mattpocockSkills: true, pstackSkills: true }); await skills.flush()
   assert.equal(stored.configuration.budgets.summaryMaxTokens, 8192)
   assert.equal(stored.configuration.deletionProtection, 'strict')
   for (const [section, patch] of [['shell', { windowsBash: false }], ['protection', { deletionProtection: 'relaxed' }], ['context', { summaryMaxTokens: '4096' }]] as const) {
@@ -378,9 +379,11 @@ test('whole Skill package choices autosave and survive all other settings tabs',
     assert.equal(stored.configuration.oilUiSkill, false)
     assert.equal(stored.configuration.openspecSkills, true)
     assert.equal(stored.configuration.mattpocockSkills, true)
+    assert.equal(stored.configuration.pstackSkills, true)
   }
   const reopened = editor(api, 'skills'); reopened.receive(stored)
   assert.equal(reopened.getSnapshot().draft.mattpocockSkills, true)
+  assert.equal(reopened.getSnapshot().draft.pstackSkills, true)
   reopened.change({ openspecSkills: false }); await reopened.flush()
   assert.equal(stored.configuration.budgets.summaryMaxTokens, 4096)
   assert.equal(stored.configuration.windowsBash, false)

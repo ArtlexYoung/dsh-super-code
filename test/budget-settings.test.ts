@@ -110,9 +110,9 @@ test('the Windows shell choice persists and rejects invalid input', async t => {
   }
 })
 
-test('all three package switches persist independently and reject non-boolean values', async t => {
+test('all package switches persist independently and reject non-boolean values', async t => {
   const { api, scope } = await fixture(t)
-  for (const key of ['oilUiSkill', 'openspecSkills', 'mattpocockSkills'] as const) {
+  for (const key of ['oilUiSkill', 'openspecSkills', 'mattpocockSkills', 'pstackSkills'] as const) {
     for (const value of [true, false]) {
       const configuration = { ...api.read().configuration, [key]: value }
       assert.equal((await api.save(JSON.stringify(configuration), String(api.read().revision))).ok, true)

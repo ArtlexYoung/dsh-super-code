@@ -38,7 +38,7 @@ test('preset settings registration does not wait on the Remote mount lifecycle',
     locale: { register: () => () => {}, bind: () => (key: string) => key },
     remote: { $mount: (contribution: any) => { mounts.push(contribution); return new Promise(() => {}) } },
     inject: (dependencies: string[]) => {
-      assert.ok(['remote.superCodePresets', 'remote.superCodeMemory', 'remote.superCodeConnection', 'uiWorkspace'].includes(dependencies[0]!))
+      assert.ok(['remote.superCodePresets', 'remote.superCodeMemory', 'remote.superCodeConnection', 'remote.superCodeBudgets', 'uiWorkspace'].includes(dependencies[0]!))
       if (dependencies[0] === 'remote.superCodePresets') injected = true
     },
     slots: { inject: () => {} }, sidebarRightTabs: { register: () => () => {} }, sessions: {}, sidebarRight: {},

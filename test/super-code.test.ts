@@ -341,3 +341,18 @@ test('invalid task input returns bounded field diagnostics and never applies a c
   assert.match(JSON.stringify(missing), /requires expectedRevision/)
   assert.equal(h.ctx.sessionProjections.stateOf(h.session, 'superCodeTasks')!.tasks.a!.next, '')
 })
+
+test('task enum diagnostics expose schema choices so a caller can correct depth without guessing', async t => {
+  const h = await host()
+  t.after(async () => { await h.scope.dispose(); await h.ctx.fiber.dispose() })
+  h.ctx.on('session/flush', () => {})
+  const invalid = await h.call({ action: 'create', record: { ...record(), depth: 'PRIVATE_DEPTH' } })
+  assert.equal(invalid.isError, true)
+  const text = JSON.stringify(invalid)
+  assert.match(text, /depth.*expected one of: simple, complex/)
+  assert.doesNotMatch(text, /PRIVATE_DEPTH/)
+  assert.equal(h.session.seq, 1)
+  const corrected = await h.call({ action: 'create', record: { ...record(), depth: 'simple' } })
+  assert.equal(corrected.isError, false, JSON.stringify(corrected))
+  assert.equal(h.ctx.sessionProjections.stateOf(h.session, 'superCodeTasks')!.tasks.a!.depth, 'simple')
+})

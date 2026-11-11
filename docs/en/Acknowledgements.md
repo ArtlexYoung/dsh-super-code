@@ -80,3 +80,9 @@ Thanks to the OpenSpec contributors for the complete specification-driven workfl
 [Source](https://github.com/mattpocock/skills) · [MIT](../../presets/super-code/skill-packs/mattpocock/LICENSE) · [Upstream](../../presets/super-code/skill-packs/mattpocock/UPSTREAM.md)
 
 Thanks to Matt Pocock and contributors for the complete engineering and productivity Skill distribution. The plugin includes the official plugin inventory with its references, templates and invocation rules; it does not run setup on activation.
+
+## PStack
+
+[Source](https://github.com/cursor/plugins/tree/main/pstack) · [MIT](../../presets/super-code/skill-packs/pstack/LICENSE) · [Upstream](../../presets/super-code/skill-packs/pstack/UPSTREAM.md)
+
+Thanks to Lauren Tan and the Cursor plugin contributors for PStack. The plugin preserves its 58 standard Skills, invocation rules, references and scripts, loaded on demand through native DSH Skills and slash commands. It does not register Cursor automations or run setup on activation. Some workflows still require Cursor capabilities or external tools; see the upstream notes.

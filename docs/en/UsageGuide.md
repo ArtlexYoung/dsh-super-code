@@ -341,3 +341,13 @@ It keeps the project's own visual style, needs no particular framework, and adds
 - A project or user skill with the same name overrides the bundled one, following host precedence.
 - The browser-check part is guidance only: no enforced loop detection, no automatic long-term memory writes.
 - Whether it improves frontend quality needs a separate real-task evaluation; install tests and SWE scores can't show that.
+
+## I candidate: direct calls and action-local help
+
+`0.4.0-exp.interface.1` independently starts from 0.3.10, without S's task-field changes. Both state tools support `{"action":"help","forAction":"read"}`. One help response includes fields, an example, outputs and recovery rules without accessing state or retrying persistence. Replace example sources/identities/versions with observed values.
+
+`super_code_task {"action":"read"}` reads the focused task; no focus is an explicit error, never a guess. Updates still require an observed expectedRevision. Shape validation precedes task barriers; errors include repair examples. No automatic alias/type/source/revision correction is performed.
+
+`super_code_memory {"action":"read","topic":"build"}` reads a project topic without creating a task or changing focus/context injection. Omitted topic retains the focused-topic default. Explicit reads do not borrow another task's code version. details retains scope/topic; add id to read the selected entry. topic is accepted only for project read. Writes retain their existing focus, provenance and concurrency rules. All memory is historical.
+
+Input rejection appends no new business change; checkpoint failure may follow an appended event. Confirm using list/read instead of replaying writes. Event contracts and tool names are unchanged. Local verification does not establish model quality or token savings.

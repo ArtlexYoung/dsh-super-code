@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import type { TaskMemory } from './task-memory.js';
 export interface MemberAssignment {
     owner: string;
@@ -52,6 +53,8 @@ export interface MemberReview {
     accounting: MemberAccounting;
     result: MemberResult;
 }
+export declare const assignmentSchema: z.ZodType<MemberAssignment>;
+export declare const resultSchema: z.ZodType<MemberResult>;
 /** Compact, version-bound inputs for the existing host subagent provider. */
 export declare function createMemberBrief(task: TaskMemory, sessionId: string, input: MemberAssignment): MemberBrief;
 /** Version matching is necessary for review, not proof that the work is correct. */

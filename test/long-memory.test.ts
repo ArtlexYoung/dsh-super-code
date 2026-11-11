@@ -295,3 +295,78 @@ test('manual memory persists as current content and stays readable by Agents wit
   assert.equal(restored.value.entries[0]?.source.kind, 'manual')
   await reopened.close()
 })
+
+async function directReader(f: Awaited<ReturnType<typeof fixture>>, id: string, cwd: string) {
+  const agent = {} as Agent, scope = createScope(f.ctx, agent)
+  await scope.ctx.plugin(agentPlugin).inertia
+  const session = f.ctx.sessions.create(SessionId(id), { meta: { cwd } })
+  Object.assign(agent, { id, session, ctx: scope.ctx })
+  const user = session.append('user/message', createUserMessage({ content: [{ type: 'text', text: 'Keep the focused task.' }], source: { kind: 'user' } }), { surfaceOp: 'append' })
+  const call = (args: object, name = 'super_code_memory', signal = new AbortController().signal) => f.ctx.tools.execute({ name, arguments: args, agent, signal, callId: ToolCallId(`${id}-${Math.random()}`) })
+  return { agent, scope, session, user, call }
+}
+
+test('explicit topic reads are independent, isolated and keep continuation bound to the requested topic', async t => {
+  const f = await fixture()
+  t.after(async () => { await f.close(); await rm(f.root, { recursive: true, force: true }) })
+  const a = await directReader(f, 'direct-a', f.workA), b = await directReader(f, 'direct-b', f.workB)
+  const workspace = memoryWorkspace(a.session)
+  await f.store.remember(workspace, 'build', 0, [{ id: 'build-fact', kind: 'fact', summary: 'Historical build fact', detail: 'Observed on another revision.', sourceVersion: 'code-b', source: { kind: 'tool', sessionId: 'past', callSeq: 0, eventSeq: 1 } }])
+  const before = a.session.seq
+  const first = await a.call({ action: 'read', topic: 'build' })
+  assert.equal(first.isError, false, JSON.stringify(first))
+  const overview = JSON.parse(first.value as string)
+  assert.equal(overview.entries[0].id, 'build-fact')
+  assert.match(overview.basis, /historical/)
+  assert.equal(a.session.seq, before)
+  assert.deepEqual(f.ctx.sessionProjections.stateOf(a.session, 'superCodeTasks')!.focus, { kind: 'none' })
+  const detail = await a.call({ ...overview.details, id: 'build-fact' })
+  assert.equal(detail.isError, false, JSON.stringify(detail))
+  assert.equal(JSON.parse(detail.value as string).entry.sourceVersion, 'code-b')
+  assert.equal(JSON.parse((await b.call({ action: 'read', topic: 'build' })).value as string).entries.length, 0)
+  assert.equal(JSON.parse((await a.call({ action: 'read', topic: 'missing' })).value as string).revision, 0)
+  assert.equal((await a.call({ action: 'read', topic: 'build', id: 'missing' })).isError, true)
+  let flushes = 0
+  f.ctx.on('session/flush', () => { flushes++; throw new Error('pending task') })
+  const created = await a.call({ action: 'create', record: {
+    id: 'focused', title: 'Focused', team: 'develop', depth: 'complex', workspace: f.workA, sourceVersion: 'code-a',
+    goal: 'Keep the focused task', source: { seq: a.user.seq, quote: 'Keep the focused task' }, requirements: [], acceptance: ['Kept'], topic: 'focused-topic',
+  } }, 'super_code_task')
+  assert.equal(created.isError, true)
+  const again = await a.call({ action: 'read', topic: 'build' })
+  assert.equal(again.isError, false)
+  assert.equal(JSON.parse(again.value as string).entries[0].id, 'build-fact')
+  assert.equal(flushes, 1, 'independent topic read must not checkpoint unrelated task state')
+  assert.deepEqual(f.ctx.sessionProjections.stateOf(a.session, 'superCodeTasks')!.focus, { kind: 'task', id: 'focused' })
+  for (const args of [
+    { action: 'read', topic: '' }, { action: 'read', topic: '../build' }, { action: 'read', scope: 'global', topic: 'build' },
+    { action: 'read', topic: 'build', record: {} }, { action: 'topics', topic: 'build' },
+    { action: 'remember', topic: 'build', record: {} }, { action: 'forget', topic: 'build', id: 'build-fact', record: {} },
+    { action: 'remember', record: { expectedRevision: 0, entries: [] } },
+  ]) assert.equal((await a.call(args)).isError, true, JSON.stringify(args))
+  const abort = new AbortController(); abort.abort()
+  assert.equal((await a.call({ action: 'read', topic: 'build' }, 'super_code_memory', abort.signal)).isError, true)
+  assert.equal(flushes, 1)
+  assert.equal((f.store.read(workspace, 'build') as { value: LongMemoryTopic }).value.revision, 1)
+  await a.scope.dispose(); await b.scope.dispose()
+})
+
+test('context continuation links preserve global scope and project topic without a focused task', async t => {
+  const f = await fixture()
+  t.after(async () => { await f.close(); await rm(f.root, { recursive: true, force: true }) })
+  const reader = await directReader(f, 'context-reader', f.workA)
+  t.after(() => reader.scope.dispose())
+  const entry = { id: 'constraint', kind: 'constraint' as const, summary: 'Historical preference', detail: 'Stored fixture.', source: { sessionId: reader.session.id, kind: 'manual' as const } }
+  const global = await f.store.remember(memoryGlobalNamespace(), GLOBAL_PREFERENCES_TOPIC, 0, [entry])
+  const project = await f.store.remember(memoryWorkspace(reader.session), 'build', 0, [entry])
+  for (const [topic, scope] of [[global, 'global'], [project, 'project']] as const) {
+    const view = JSON.parse(longMemoryContext(topic))
+    assert.equal(view.details.scope, scope)
+    assert.equal(view.details.topic, scope === 'project' ? 'build' : undefined)
+    const result = await reader.call({ ...view.details, id: 'constraint' })
+    assert.equal(result.isError, false, JSON.stringify(result))
+    assert.equal(JSON.parse(result.value as string).scope, scope)
+    assert.equal(JSON.parse(result.value as string).topic, topic.topic)
+  }
+  assert.deepEqual(f.ctx.sessionProjections.stateOf(reader.session, 'superCodeTasks')!.focus, { kind: 'none' })
+})

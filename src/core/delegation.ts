@@ -21,8 +21,8 @@ export type MemberAccounting = { kind: 'unavailable'; budget: 'unknown' }
 export interface MemberReview { reviewable: boolean; reasons: string[]; accounting: MemberAccounting; result: MemberResult }
 const text = z.string().trim().min(1).max(4000)
 const count = z.number().int().nonnegative().safe()
-const assignmentSchema: z.ZodType<MemberAssignment> = z.object({ owner: text, attemptId: text, objective: text, ownedPaths: z.array(text).max(64), acceptance: z.array(text).min(1).max(32), maxTokens: z.number().int().positive() }).strict()
-const resultSchema: z.ZodType<MemberResult> = z.object({ binding: text, owner: text, attemptId: text, outcome: z.enum(['completed', 'failed', 'cancelled', 'stop_unknown']), summary: text, artifacts: z.array(text).max(64), checks: z.array(text).max(64), unknowns: z.array(text).max(32), cost: z.object({ inputTokens: count, outputTokens: count, cachedTokens: count, toolCalls: count, complete: z.boolean() }).strict().optional() }).strict()
+export const assignmentSchema: z.ZodType<MemberAssignment> = z.object({ owner: text, attemptId: text, objective: text, ownedPaths: z.array(text).max(64), acceptance: z.array(text).min(1).max(32), maxTokens: z.number().int().positive() }).strict()
+export const resultSchema: z.ZodType<MemberResult> = z.object({ binding: text, owner: text, attemptId: text, outcome: z.enum(['completed', 'failed', 'cancelled', 'stop_unknown']), summary: text, artifacts: z.array(text).max(64), checks: z.array(text).max(64), unknowns: z.array(text).max(32), cost: z.object({ inputTokens: count, outputTokens: count, cachedTokens: count, toolCalls: count, complete: z.boolean() }).strict().optional() }).strict()
 
 /** Compact, version-bound inputs for the existing host subagent provider. */
 export function createMemberBrief(task: TaskMemory, sessionId: string, input: MemberAssignment): MemberBrief {

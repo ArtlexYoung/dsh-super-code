@@ -54,6 +54,7 @@
     "lib",
     "presets",
     "runtime/windows",
+    "runtime/skills",
     "cordis.patch.yml",
     "README.md",
     "README.en.md",
@@ -123,9 +124,11 @@
     "typescript": "^5.7.0"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "skills:build": "node runtime/skills/pstack/convert.mjs",
+    "skills:check": "node runtime/skills/pstack/convert.mjs --check",
+    "build": "npm run skills:build && tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "tsx --test test/**/*.test.ts",
+    "test": "npm run skills:check && tsx --test test/**/*.test.ts",
     "pack:check": "npm pack --dry-run",
     "eval:super-code": "node lib/evaluate.js"
   },
@@ -164,7 +167,8 @@
         "@deepseek-ai/dsh-client-ui-session",
         "@deepseek-ai/dsh-client-locale",
         "@deepseek-ai/dsh-client-ui-sidebar-right",
-        "@deepseek-ai/dsh-api-session-controller"
+        "@deepseek-ai/dsh-api-session-controller",
+        "@deepseek-ai/dsh-client-ui-skill"
       ]
     }
   }

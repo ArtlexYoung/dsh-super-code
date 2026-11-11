@@ -14,6 +14,7 @@ const icons = require('@deepseek-ai/dsh-client-ui-primitives')
 const IconChevronDownOutline14 = icons.IconChevronDownOutlineRegular ?? icons.IconChevronDownOutline14
 const IconRefreshOutline16 = icons.IconRefreshOutlineRegular ?? icons.IconRefreshOutline16
 const { SessionEventStream } = require('@deepseek-ai/dsh-api-session-controller')
+const skillUi = require('@deepseek-ai/dsh-client-ui-skill')
 
 /* Shared controls use public React APIs without host-private dependencies. */
 let selectControlSequence = 0
@@ -302,10 +303,13 @@ const zh = {
   'status.blocked': '受阻',
 
   'settings.skillsTab': '预设 Skill',
-  'skills.title': '预设 Skill', 'skills.scope': '整包开启或关闭，仅用于 Super Code 预设；按需加载，修改后自动保存。',
+  'skills.title': '预设 Skill', 'skills.scope': '整包开启或关闭，仅用于 Super Code 预设；按需加载，自动保存并在当前对话实时生效。',
   'skills.oilUiSkill': 'oil-ui', 'skills.oilUiSkillHint': '设计、改进与评审前端界面，提供风格参考和页面验证工具。',
   'skills.openspecSkills': 'OpenSpec', 'skills.openspecSkillsHint': '用规范组织需求、方案、任务、实现与验收，覆盖完整变更流程。',
   'skills.mattpocockSkills': 'Matt Pocock Skills', 'skills.mattpocockSkillsHint': '覆盖需求追问、方案规划、开发、测试、排错与代码评审的完整工程工作流。',
+  'skills.pstackSkills': 'PStack', 'skills.pstackSkillsHint': '围绕架构、开发、验证与评审组织协作，提供可手动调用的工程工作流。',
+  'skills.commands': '在 Super Code 对话中输入 / 选择 Skill，也可直接输入 /skill-name。开关保存后实时更新命令列表与后续加载，不撤回已进入上下文的内容。',
+  'skills.pstackRequirement': 'PStack 已针对 DSH 0.2.1-alpha.1 及之后版本适配；部分流程仍需 Git、Bun 或模型检查器等外部工具。',
   'skills.openspecRequirement': 'OpenSpec 工作流需要项目环境中的 OpenSpec CLI；此开关不会自动安装 CLI 或初始化项目。',
   'skills.upgrade': '当前预设尚未接入 Skill 包开关，请在“预设配置”中重新安装预设后使用。',
   'skills.missing': '安装 Super Code 预设后即可使用这些 Skill 包。',
@@ -504,10 +508,13 @@ const en = {
   'status.blocked': 'Blocked',
 
   'settings.skillsTab': 'Preset Skills',
-  'skills.title': 'Preset Skills', 'skills.scope': 'Enable or disable whole packages for the Super Code preset. Skills load on demand; changes save automatically.',
+  'skills.title': 'Preset Skills', 'skills.scope': 'Enable or disable whole packages for the Super Code preset. Skills load on demand; changes save automatically and apply to current conversations.',
   'skills.oilUiSkill': 'oil-ui', 'skills.oilUiSkillHint': 'Design, improve and review frontend interfaces with style references and page verification tools.',
   'skills.openspecSkills': 'OpenSpec', 'skills.openspecSkillsHint': 'Organize requirements, design, tasks, implementation and verification around a complete specification workflow.',
   'skills.mattpocockSkills': 'Matt Pocock Skills', 'skills.mattpocockSkillsHint': 'A complete engineering workflow for questioning requirements, planning, development, testing, debugging and code review.',
+  'skills.pstackSkills': 'PStack', 'skills.pstackSkillsHint': 'Organize architecture, development, verification and review with user-invoked engineering workflows.',
+  'skills.commands': 'Type / in a Super Code conversation to select a Skill, or enter /skill-name directly. Saved switches update commands and subsequent loads immediately; instructions already in context remain.',
+  'skills.pstackRequirement': 'PStack is adapted for DSH 0.2.1-alpha.1 and later; some workflows still need external tools such as Git, Bun or a model checker.',
   'skills.openspecRequirement': 'OpenSpec workflows require the OpenSpec CLI in the project environment. This switch does not install the CLI or initialize projects.',
   'skills.upgrade': 'This preset does not support Skill package switches yet. Reinstall it in Preset configuration to apply these choices.',
   'skills.missing': 'Install the Super Code preset to use these Skill packages.',
@@ -2159,6 +2166,7 @@ const connectionRemoteContribution = {
   })),
 }
 
+const skillPackageKeys = ['oilUiSkill', 'openspecSkills', 'mattpocockSkills', 'pstackSkills']
 const budgetFields = [
   { key: 'thresholdRatio', group: 'context', factor: 0.01, min: 1, max: 100, step: 'any' },
   { key: 'retainRatio', group: 'context', factor: 0.01, min: 0, max: 100, step: 'any' },
@@ -2172,7 +2180,7 @@ const budgetFields = [
 ]
 function budgetDraft(configuration) {
   const deletion = configuration.deletionProtection
-  return Object.fromEntries([['oilUiSkill', configuration.oilUiSkill ?? true], ['openspecSkills', configuration.openspecSkills ?? false], ['mattpocockSkills', configuration.mattpocockSkills ?? false], ['windowsBash', configuration.windowsBash ?? true], ['windowsBashForOfficialPresets', configuration.windowsBashForOfficialPresets ?? false], ['deletionProtection', deletion === true ? 'strict' : deletion === false ? 'off' : deletion ?? 'relaxed'], ['deletionProtectionForOfficialPresets', configuration.deletionProtectionForOfficialPresets ?? false], ['applyToOfficialPresets', configuration.applyToOfficialPresets ?? false], ['pressureBasis', configuration.budgets?.pressureBasis ?? ''],
+  return Object.fromEntries([['oilUiSkill', configuration.oilUiSkill ?? true], ['openspecSkills', configuration.openspecSkills ?? false], ['mattpocockSkills', configuration.mattpocockSkills ?? false], ['pstackSkills', configuration.pstackSkills ?? false], ['windowsBash', configuration.windowsBash ?? true], ['windowsBashForOfficialPresets', configuration.windowsBashForOfficialPresets ?? false], ['deletionProtection', deletion === true ? 'strict' : deletion === false ? 'off' : deletion ?? 'relaxed'], ['deletionProtectionForOfficialPresets', configuration.deletionProtectionForOfficialPresets ?? false], ['applyToOfficialPresets', configuration.applyToOfficialPresets ?? false], ['pressureBasis', configuration.budgets?.pressureBasis ?? ''],
     ...budgetFields.map(field => {
       const value = field.root ? configuration[field.key] : configuration.budgets?.[field.key]
       return [field.key, value === undefined ? '' : String(value / field.factor)]
@@ -2261,8 +2269,8 @@ function ChoiceCards({ name, label, value, choices, onChange, disabled = false }
 
 /** Each budget tab writes only its own fields and carries the other tab's stored values through. */
 function budgetSectionConfiguration(section, draft, snapshot) {
-  if (section === 'skills') return ['oilUiSkill', 'openspecSkills', 'mattpocockSkills'].every(key => typeof draft[key] === 'boolean')
-    ? { ok: true, configuration: { ...snapshot.configuration, oilUiSkill: draft.oilUiSkill, openspecSkills: draft.openspecSkills, mattpocockSkills: draft.mattpocockSkills } }
+  if (section === 'skills') return skillPackageKeys.every(key => typeof draft[key] === 'boolean')
+    ? { ok: true, configuration: { ...snapshot.configuration, oilUiSkill: draft.oilUiSkill, openspecSkills: draft.openspecSkills, mattpocockSkills: draft.mattpocockSkills, pstackSkills: draft.pstackSkills } }
     : { ok: false, error: 'invalid' }
   if (section === 'shell') return typeof draft.windowsBash === 'boolean' && typeof draft.windowsBashForOfficialPresets === 'boolean'
     ? { ok: true, configuration: { ...snapshot.configuration, windowsBash: draft.windowsBash, windowsBashForOfficialPresets: draft.windowsBashForOfficialPresets } }
@@ -2272,7 +2280,7 @@ function budgetSectionConfiguration(section, draft, snapshot) {
   const current = snapshot.configuration
   return { ok: true, configuration: section === 'protection'
     ? { ...current, deletionProtection: draft.deletionProtection, deletionProtectionForOfficialPresets: draft.deletionProtectionForOfficialPresets }
-    : { ...parsed.configuration, oilUiSkill: current.oilUiSkill, openspecSkills: current.openspecSkills, mattpocockSkills: current.mattpocockSkills, windowsBash: current.windowsBash, windowsBashForOfficialPresets: current.windowsBashForOfficialPresets, deletionProtection: current.deletionProtection, deletionProtectionForOfficialPresets: current.deletionProtectionForOfficialPresets } }
+    : { ...parsed.configuration, oilUiSkill: current.oilUiSkill, openspecSkills: current.openspecSkills, mattpocockSkills: current.mattpocockSkills, pstackSkills: current.pstackSkills, windowsBash: current.windowsBash, windowsBashForOfficialPresets: current.windowsBashForOfficialPresets, deletionProtection: current.deletionProtection, deletionProtectionForOfficialPresets: current.deletionProtectionForOfficialPresets } }
 }
 function createBudgetAutosave(api, section = 'context') {
   return createAutosave(api, { draft: budgetDraft({}), toDraft: budgetDraft,
@@ -2284,6 +2292,54 @@ function createBudgetEditors(api) {
   return createSettingsEditors(api, Object.fromEntries(['context', 'shell', 'protection', 'skills']
     .map(section => [section, source => createBudgetAutosave(source, section)])))
 }
+
+/** Recreate only the native Skill UI cache; Agent and input lifetimes stay owned by DSH. */
+async function refreshNativeSkillMenus(ctx, plugin, signal) {
+  for (const fiber of [...ctx.registry.get(plugin)?.fibers ?? []]) {
+    if (signal.aborted) return
+    await fiber.restart()
+  }
+  if (signal.aborted) return
+  for (const id of Object.keys(ctx.sessions.list.getSnapshot().byId)) {
+    const scope = ctx.sessions.scope(id)
+    if (scope) ctx.inputTriggers.sessionOf(scope).refreshOpenMenu()
+  }
+}
+
+/** Observe accepted host settings, including writes from other connected clients. */
+function synchronizeSkillMenus(ctx, api, plugin, onError) {
+  const lifetime = new AbortController()
+  let namespace, applied = '', dirty = false, running = false
+  const refresh = ns => {
+    if (lifetime.signal.aborted || (ns && namespace && ns !== namespace)) return
+    dirty = true
+    if (running) return
+    running = true
+    void (async () => {
+      while (dirty && !lifetime.signal.aborted) {
+        dirty = false
+        const response = await api.readConfig()
+        if (lifetime.signal.aborted) return
+        if (!response.ok) throw new Error('Skill settings could not be read')
+        namespace = response.value.namespace
+        if (dirty) continue
+        const draft = budgetDraft(response.value.configuration)
+        const next = JSON.stringify(skillPackageKeys.map(key => draft[key]))
+        if (next !== applied) {
+          await refreshNativeSkillMenus(ctx, plugin, lifetime.signal)
+          if (lifetime.signal.aborted) return
+          applied = next
+        }
+      }
+    })().catch(error => { if (!lifetime.signal.aborted) onError(error) })
+      .finally(() => { running = false; if (dirty && !lifetime.signal.aborted) refresh() })
+  }
+  const off = ctx.remote.$on('settings/document-updated', refresh)
+  const offReset = ctx.on('connection/reset', () => { namespace = undefined; refresh() })
+  refresh()
+  return () => { lifetime.abort(); off(); offReset() }
+}
+
 function settingsRevision(snapshot) {
   return snapshot.generation ? `${snapshot.revision}:${snapshot.generation}` : String(snapshot.revision)
 }
@@ -2379,7 +2435,7 @@ function BudgetSettings({ api, t, active, section = 'context', presetStatus, onS
       const base = current.configuration
       const configuration = protection
         ? { ...base, deletionProtection: 'relaxed', deletionProtectionForOfficialPresets: false }
-        : { oilUiSkill: base.oilUiSkill, openspecSkills: base.openspecSkills, mattpocockSkills: base.mattpocockSkills, windowsBash: base.windowsBash, windowsBashForOfficialPresets: base.windowsBashForOfficialPresets, deletionProtection: base.deletionProtection, deletionProtectionForOfficialPresets: base.deletionProtectionForOfficialPresets }
+        : { oilUiSkill: base.oilUiSkill, openspecSkills: base.openspecSkills, mattpocockSkills: base.mattpocockSkills, pstackSkills: base.pstackSkills, windowsBash: base.windowsBash, windowsBashForOfficialPresets: base.windowsBashForOfficialPresets, deletionProtection: base.deletionProtection, deletionProtectionForOfficialPresets: base.deletionProtectionForOfficialPresets }
       const response = await api.saveConfig(JSON.stringify(configuration), settingsRevision(current))
       if (!response.ok) throw new Error('Remote unavailable')
       if (!alive.current) return
@@ -2418,10 +2474,12 @@ function BudgetSettings({ api, t, active, section = 'context', presetStatus, onS
   const shellTooltip = shellStatus && !windowsHost ? t('shell.windowsOnly') : undefined
   const content = skills ? React.createElement(React.Fragment, null,
     React.createElement(SettingsSection, { id: 'super-code-skill-packs', title: t('skills.title'), description: t('skills.scope') },
-      ...['oilUiSkill', 'openspecSkills', 'mattpocockSkills'].map(key => React.createElement(SettingRow, { key, id: `super-code-skill-${key}`, label: t(`skills.${key}`), hint: t(`skills.${key}Hint`) }, described =>
+      ...skillPackageKeys.map(key => React.createElement(SettingRow, { key, id: `super-code-skill-${key}`, label: t(`skills.${key}`), hint: t(`skills.${key}Hint`) }, described =>
         React.createElement(ConnectionSwitch, { id: `super-code-skill-${key}`, checked: draft[key], disabled, 'aria-describedby': described, onChange: value => edit(key, value) })))),
     presetStatus && !presetStatus.skillPacks && React.createElement(Callout, { tone: 'warning' }, React.createElement('p', null, t(presetStatus.state === 'missing' ? 'skills.missing' : 'skills.upgrade'))),
-    React.createElement('p', { className: 'dsh-super-code-settings-guidance' }, t('skills.openspecRequirement')))
+    React.createElement('div', { className: 'dsh-super-code-settings-guidance' },
+      ...['commands', 'openspecRequirement', 'pstackRequirement'].map(key =>
+        React.createElement('p', { key }, t(`skills.${key}`)))))
     : shell ? React.createElement(SettingsSection, { id: 'super-code-shell', title: t('shell.title') },
     React.createElement(SettingRow, { id: 'super-code-windows-bash', label: t('shell.enabled'),
       hint: !windowsHost ? t('shell.otherPlatform') : t('shell.hint') }, described =>
@@ -3158,6 +3216,10 @@ function apply(ctx) {
       else ready.sessions.open(id)
     }
     ready.effect(() => () => { navigation.openSession = () => {} })
+  })
+  ctx.inject(['remote.superCodeBudgets', 'inputTriggers'], ready => {
+    ready.effect(() => synchronizeSkillMenus(ready, ready.remote.superCodeBudgets, skillUi,
+      error => console.warn('Super Code Skill menu refresh:', error)), 'super-code: live skill menus')
   })
   ctx.inject(['remote.superCodeConnection'], ready => {
     ready.slots.inject('shell.overlay', () => ready.slots.register({
@@ -3907,5 +3969,5 @@ function apply(ctx) {
   ctx.effect(() => disposeMemoryType, 'super-code: memory library tab')
 }
 
-return { inject, apply, taskFeedbackRows, feedbackStatus, feedbackListItems, feedbackListLayout, feedbackListIndex, feedbackListWindow, feedbackListAnchor, connectionSessions, createConnectionAutosave, createBudgetAutosave, createBudgetEditors, connectionDraft, connectionConfiguration, budgetDraft, budgetConfiguration, synchronizePresetDisplay, agentSessionState, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector, agentHistoryRange, agentHistoryRows, agentHistoryWindow, memoryLibraryAddress, memoryLibraryTarget, memoryLibraryNavigation, memoryLibraryWindow, createMemoryEditor, MemoryLibrary }
+return { inject, apply, synchronizeSkillMenus, refreshNativeSkillMenus, taskFeedbackRows, feedbackStatus, feedbackListItems, feedbackListLayout, feedbackListIndex, feedbackListWindow, feedbackListAnchor, connectionSessions, createConnectionAutosave, createBudgetAutosave, createBudgetEditors, connectionDraft, connectionConfiguration, budgetDraft, budgetConfiguration, synchronizePresetDisplay, agentSessionState, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector, agentHistoryRange, agentHistoryRows, agentHistoryWindow, memoryLibraryAddress, memoryLibraryTarget, memoryLibraryNavigation, memoryLibraryWindow, createMemoryEditor, MemoryLibrary }
 } })

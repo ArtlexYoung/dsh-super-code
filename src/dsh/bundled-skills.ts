@@ -15,6 +15,7 @@ export function apply(ctx: Context, config: Config): void {
     { key: 'oilUiSkill', id: 'oil-ui', fallback: true, root: config.bundledSkillDir },
     { key: 'openspecSkills', id: 'openspec', fallback: false, root: join(config.bundledSkillDir, '../skill-packs/openspec/skills') },
     { key: 'mattpocockSkills', id: 'mattpocock', fallback: false, root: join(config.bundledSkillDir, '../skill-packs/mattpocock/skills') },
+    { key: 'pstackSkills', id: 'pstack', fallback: false, root: join(config.bundledSkillDir, '../skill-packs/pstack/dsh/skills') },
   ] as const
   for (const pack of packs) {
     const enabled = (): boolean => configurationOf(ctx)[pack.key] ?? pack.fallback
@@ -35,12 +36,16 @@ export function apply(ctx: Context, config: Config): void {
       ctx.effect(() => () => provider.dispose())
       return {
         name: provider.name,
-        list: options => enabled() ? provider.list(options) : Promise.resolve([]),
+        list: async options => {
+          if (!enabled() || control.signal.aborted) return []
+          const catalog = await provider.list(options)
+          return enabled() && !control.signal.aborted ? catalog : []
+        },
         // Recheck at load time too: a caller may hold a catalog from before a switch.
         get: async (candidate, options) => {
-          if (!enabled()) return undefined
+          if (!enabled() || control.signal.aborted) return undefined
           const skill = await provider.get(candidate, options)
-          return enabled() ? skill : undefined
+          return enabled() && !control.signal.aborted ? skill : undefined
         },
       }
     })

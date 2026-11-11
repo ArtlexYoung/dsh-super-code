@@ -80,3 +80,9 @@
 [Source](https://github.com/mattpocock/skills) · [MIT](../presets/super-code/skill-packs/mattpocock/LICENSE) · [Upstream](../presets/super-code/skill-packs/mattpocock/UPSTREAM.md)
 
 感谢 Matt Pocock 及贡献者提供完整的工程与生产力 Skill 包。插件内置正式插件清单及其配套参考、模板和调用规则，不在启用时运行 setup。
+
+## PStack
+
+[Source](https://github.com/cursor/plugins/tree/main/pstack) · [MIT](../presets/super-code/skill-packs/pstack/LICENSE) · [Upstream](../presets/super-code/skill-packs/pstack/UPSTREAM.md)
+
+感谢 Lauren Tan 与 Cursor 插件贡献者提供 PStack。插件保留其58个标准 Skill 的正文、调用规则、配套参考与脚本，通过 DSH 原生 Skill 和斜杠命令按需加载；不注册 Cursor 自动化，也不在开启时运行安装或全局配置。部分流程仍依赖 Cursor 或外部工具，详见上游说明。

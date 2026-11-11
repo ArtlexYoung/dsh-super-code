@@ -17,6 +17,7 @@ interface SettingsWriter {
 }
 
 export interface BudgetSettingsSnapshot {
+  readonly namespace?: string
   readonly generation?: string
   readonly shell?: ShellStatus
   readonly configuration: Configuration
@@ -51,7 +52,7 @@ export class BudgetSettings {
   read(): BudgetSettingsSnapshot {
     const descriptor = this.settings.describe({ redactSecrets: true }).find(row => row.ns === this.key)
     if (!descriptor) throw new Error('Super Code budget settings are unavailable')
-    return { configuration: structuredClone(this.scope.get()), revision: descriptor.revision, generation: this.generation,
+    return { namespace: this.key, configuration: structuredClone(this.scope.get()), revision: descriptor.revision, generation: this.generation,
       writable: this.settings.writable, ptcMaxTimeoutMs: this.ptcCeiling(), defaults: structuredClone(this.defaults()) }
   }
 

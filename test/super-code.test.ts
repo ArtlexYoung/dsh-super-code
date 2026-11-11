@@ -356,3 +356,81 @@ test('task enum diagnostics expose schema choices so a caller can correct depth 
   assert.equal(corrected.isError, false, JSON.stringify(corrected))
   assert.equal(h.ctx.sessionProjections.stateOf(h.session, 'superCodeTasks')!.tasks.a!.depth, 'simple')
 })
+
+test('action help stays available without storage and never retries an unconfirmed checkpoint', async t => {
+  const h = await host()
+  t.after(async () => { await h.scope.dispose(); await h.ctx.fiber.dispose() })
+  let flushes = 0
+  h.ctx.on('session/flush', () => { flushes++; throw new Error('disk unavailable') })
+  const failed = await h.call({ action: 'create', record: record() })
+  assert.equal(failed.isError, true)
+  assert.match(JSON.stringify(failed), /was appended but persistence is unconfirmed/)
+  const before = h.session.seq
+  for (const [tool, actions] of [
+    ['super_code_task', ['list', 'read', 'source', 'history', 'create', 'update', 'focus', 'archive', 'archives', 'restore', 'delegate', 'validate_member', 'evidence']],
+    ['super_code_memory', ['topics', 'read', 'remember', 'forget']],
+  ] as const) {
+    for (const forAction of actions) {
+      const response = await h.call({ action: 'help', forAction }, tool)
+      assert.equal(response.isError, false, JSON.stringify(response))
+      const help = JSON.parse(response.value as string)
+      assert.equal(help.example.action, forAction)
+      assert.ok(help.returns.length > 0)
+      assert.ok(help.recovery.includes('never replay'))
+    }
+    for (const args of [{ action: 'help' }, { action: 'help', forAction: 'invented' }, { action: 'help', forAction: 'read', record: {} }]) {
+      assert.equal((await h.call(args, tool)).isError, true)
+    }
+  }
+  assert.equal(flushes, 1)
+  assert.equal(h.session.seq, before)
+})
+
+test('focused reads and action help supply a usable update without replacing an observed revision', async t => {
+  const h = await host()
+  t.after(async () => { await h.scope.dispose(); await h.ctx.fiber.dispose() })
+  h.ctx.on('session/flush', () => {})
+  const missing = await h.call({ action: 'read' })
+  assert.equal(missing.isError, true)
+  assert.match(JSON.stringify(missing), /No focused task/)
+  await h.call({ action: 'create', record: record() })
+  await h.call({ action: 'create', record: record('b') })
+  const { current } = JSON.parse((await h.call({ action: 'read' })).value as string)
+  assert.equal(current.id, 'a')
+  const help = JSON.parse((await h.call({ action: 'help', forAction: 'update' })).value as string)
+  const update = { ...help.example, taskId: current.id, expectedRevision: current.revision }
+  const written = await h.call(update)
+  assert.equal(written.isError, false, JSON.stringify(written))
+  const after = h.session.seq
+  const stale = await h.call({ ...update, record: { next: 'stale change' } })
+  assert.equal(stale.isError, true)
+  assert.match(JSON.stringify(stale), /inspect the current state/)
+  assert.equal(h.session.seq, after)
+  const full = await h.call(current.details)
+  assert.equal(full.isError, false)
+  assert.equal(JSON.parse(full.value as string).next, help.example.record.next)
+  assert.equal((await h.call({ ...current.details, tool: 'another_tool' })).isError, true)
+})
+
+test('shape errors are rejected before pending-checkpoint recovery and include a bounded repair example', async t => {
+  const h = await host()
+  t.after(async () => { await h.scope.dispose(); await h.ctx.fiber.dispose() })
+  let flushes = 0
+  h.ctx.on('session/flush', () => { flushes++; throw new Error('unconfirmed') })
+  await h.call({ action: 'create', record: record() })
+  const before = h.session.seq
+  for (const args of [
+    { action: 'create', record: { ...record('b'), acceptance: 20 } },
+    { action: 'update', taskId: 'a', expectedRevision: 1, record: { next: [] } },
+    { action: 'restore', eventSeq: 1, record: { source, sourceVersion: 20 } },
+    { action: 'delegate', taskId: 'a', record: {} },
+    { action: 'validate_member', taskId: 'a', record: { assignment: {}, result: {} } },
+    { action: 'evidence', record: { callSeq: 0, resultSeq: 1, offset: '20' } },
+  ]) {
+    const error = await h.call(args)
+    assert.equal(error.isError, true)
+    assert.match(JSON.stringify(error), /Example.*Help:/)
+  }
+  assert.equal(flushes, 1)
+  assert.equal(h.session.seq, before)
+})

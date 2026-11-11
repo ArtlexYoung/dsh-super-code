@@ -29,7 +29,7 @@ test('batch preset uses the host PTC presentation and keeps the scheduler host-o
 })
 
 test('batch policy keeps only proven reads parallel and fails closed for new actions', () => {
-  for (const action of ['list', 'read', 'delegate', 'validate_member', 'source', 'history', 'archives', 'evidence']) {
+  for (const action of ['help', 'list', 'read', 'delegate', 'validate_member', 'source', 'history', 'archives', 'evidence']) {
     assert.equal(classifyTaskAction(action), 'read', action)
     assert.equal(batchSafety(classifyTaskAction(action)), 'parallel', action)
   }
@@ -37,7 +37,7 @@ test('batch policy keeps only proven reads parallel and fails closed for new act
     assert.equal(classifyTaskAction(action), 'write', action)
     assert.equal(batchSafety(classifyTaskAction(action)), 'exclusive', action)
   }
-  for (const action of ['topics', 'read']) {
+  for (const action of ['help', 'topics', 'read']) {
     assert.equal(classifyMemoryAction(action), 'read', `memory:${action}`)
     assert.equal(batchSafety(classifyMemoryAction(action)), 'parallel', `memory:${action}`)
   }
@@ -67,9 +67,9 @@ test('installed tools expose the same fail-closed policy to the host scheduler',
   t.after(async () => { await scope.dispose(); await ctx.fiber.dispose() })
   Object.assign(agent, { id: 'batch-policy-test', session: ctx.sessions.create(SessionId('batch-policy-test')), ctx: scope.ctx })
   const mode = (name: string, action: string) => ctx.tools.executionMode({ name, arguments: { action }, agent })
-  for (const action of ['list', 'read', 'archives', 'evidence']) assert.deepEqual(mode('super_code_task', action), { kind: 'parallel' })
+  for (const action of ['help', 'list', 'read', 'archives', 'evidence']) assert.deepEqual(mode('super_code_task', action), { kind: 'parallel' })
   for (const action of ['create', 'update', 'restore', 'invented']) assert.deepEqual(mode('super_code_task', action), { kind: 'exclusive' })
-  for (const action of ['topics', 'read']) assert.deepEqual(mode('super_code_memory', action), { kind: 'parallel' })
+  for (const action of ['help', 'topics', 'read']) assert.deepEqual(mode('super_code_memory', action), { kind: 'parallel' })
   for (const action of ['remember', 'forget', 'invented']) assert.deepEqual(mode('super_code_memory', action), { kind: 'exclusive' })
   assert.deepEqual(mode('missing-tool', 'read'), { kind: 'exclusive' })
 })

@@ -7,10 +7,10 @@ export type BatchActionKind = 'read' | 'write' | 'test' | 'unknown'
 export type BatchSafety = 'parallel' | 'exclusive'
 
 const TASK_READ_ACTIONS = new Set([
-  'list', 'read', 'delegate', 'validate_member', 'source', 'history', 'archives', 'evidence',
+  'help', 'list', 'read', 'delegate', 'validate_member', 'source', 'history', 'archives', 'evidence',
 ])
 const TASK_WRITE_ACTIONS = new Set(['create', 'update', 'focus', 'archive', 'restore'])
-const MEMORY_READ_ACTIONS = new Set(['topics', 'read'])
+const MEMORY_READ_ACTIONS = new Set(['help', 'topics', 'read'])
 const MEMORY_WRITE_ACTIONS = new Set(['remember', 'forget'])
 
 /** Classify task-ledger actions. Validation is a read of the current snapshot. */

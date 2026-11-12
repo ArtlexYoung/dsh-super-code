@@ -1,9 +1,11 @@
 /** Local Streamable HTTP boundary. Authentication precedes body parsing and MCP dispatch. */
 import { createServer } from 'node:http'
 import type { IncomingMessage, Server, ServerResponse } from 'node:http'
+import { addAbortListener } from 'node:events'
 import { timingSafeEqual, randomUUID } from 'node:crypto'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
+import { CancelledNotificationSchema } from '@modelcontextprotocol/sdk/types.js'
 import { z } from 'zod'
 import type { DelegatedTasks } from './tasks.js'
 import { pluginVersion } from '../dsh/preset-version.js'
@@ -172,6 +174,11 @@ export class ConnectionHttp {
       input => { if (!this.requestDirectory) throw new ConnectionError('unavailable'); return this.requestDirectory(input, this.clients.get(id)?.name ?? 'MCP client') },
       () => this.clients.get(id)?.name ?? 'mcp',
       () => ({ connections: this.clients.size, maxConnections, ids: [...this.clients.keys()] }))
+    // Let the tool unwind through its HTTP signal and complete the response.
+    // SDK handler cancellation suppresses that reply and strands request slots.
+    mcp.server.setNotificationHandler(CancelledNotificationSchema, ({ params }) => {
+      if (params.requestId !== undefined) calls.get(params.requestId)?.abort()
+    })
     const capabilities = (body as { params?: { capabilities?: unknown } }).params?.capabilities
     // Form elicitation needs a POST response stream for nested server requests; retain JSON for older clients.
     const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: () => id, enableJsonResponse: !supportsApprovalForm(capabilities),
@@ -231,7 +238,15 @@ export class ConnectionHttp {
         if (client.calls.has(id)) { reply(res, 409, 'Duplicate in-flight request ID'); return }
         client.calls.set(id, abort)
       }
-      await client.transport.handleRequest(req, res, body)
+      if (requestId === false) { await client.transport.handleRequest(req, res, body); return }
+      // SDK close() can leave a JSON response promise pending. The connection
+      // lifetime also owns this HTTP response and its quota, not the task.
+      const { lifetime, transport } = client
+      await new Promise<void>((resolve, reject) => {
+        const release = addAbortListener(lifetime.signal, () => { res.destroy(); resolve() })
+        void transport.handleRequest(req, res, body)
+          .finally(() => release[Symbol.dispose]()).then(resolve, reject)
+      })
     } finally {
       try {
         if (client) {

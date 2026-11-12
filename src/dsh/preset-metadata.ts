@@ -2,6 +2,8 @@
 import { lstat, readFile, open, mkdtemp, rename, rm } from 'node:fs/promises'
 import { constants } from 'node:fs'
 import { dirname, join } from 'node:path'
+import { isDeepStrictEqual } from 'node:util'
+import yaml from 'js-yaml'
 import { readPresetMetadata } from './preset-files.js'
 
 export interface DisplayBaseline {
@@ -48,14 +50,20 @@ export async function migrateMetadata(
     if (!managed) continue
     // A single top-level scalar only: preserve comments/unknown fields; leave
     // aliases, multiline values and duplicate keys untouched for user review.
-    const pattern = new RegExp(`^${field}:[ \\t]*([^\\r\\n]*)$`, 'gm')
+    const pattern = new RegExp(`^(\uFEFF?(?:${field}|"${field}"|'${field}')[ \\t]*:[ \\t]*)([^\\r\\n]*)$`, 'gm')
     const matches = [...updated.matchAll(pattern)]
     const match = matches[0]
-    if (matches.length !== 1 || !match || /^[>|&*]/.test(match[1]!.trim())) continue
+    if (matches.length !== 1 || !match || /^[>|&*]/.test(match[2]!.trim())) continue
+    const comment = match[2]!.match(/\s+#.*$/)?.[0] ?? ''
+    const candidate = updated.replace(pattern, () => `${match[1]}${JSON.stringify(copy[field])}${comment}`)
+    // A matching line can belong to a multiline value. Accept it only when
+    // parsing the entire candidate confirms that no other value changes.
+    try {
+      const document = yaml.load(updated) as Record<string, unknown>
+      if (!isDeepStrictEqual(yaml.load(candidate), { ...document, [field]: copy[field] })) continue
+    } catch { continue }
     baseline[field] = copy[field]
-    if (value === copy[field]) continue
-    const comment = match[1]!.match(/\s+#.*$/)?.[0] ?? ''
-    updated = updated.replace(pattern, () => `${field}: ${JSON.stringify(copy[field])}${comment}`)
+    if (value !== copy[field]) updated = candidate
   }
   if (updated === original) return { changed: false, baseline }
   // Stage beside the original so interruption cannot leave a partial YAML file.

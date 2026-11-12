@@ -51,13 +51,18 @@ const overviewSchema = z.object({ topic: z.string().max(96), revision: z.number(
   entries: z.array(entry).max(20), details: z.object({ tool: z.literal('super_code_memory') }),
 })
 const inputSchema = z.object({ action: callSchema.shape.action, scope: callSchema.shape.scope.default('project'),
-  id: callSchema.shape.id, record: z.object({ entries: z.array(entry).max(8).optional() }).optional(),
+  // The memory writer trims summaries before validating and saving them.
+  id: callSchema.shape.id, record: z.object({ entries: z.array(entry.extend({ summary: z.string().trim().max(120) })).max(8).optional() }).optional(),
+})
+const outputSchema = z.object({ scope: callSchema.shape.scope, topic: z.string().max(96), revision: z.number().int().nonnegative(),
+  entry: entry.optional(), entries: z.array(entry).max(20).optional(),
+})
+const dispatchSchema = z.object({ name: z.literal('super_code_memory'), arguments: inputSchema,
+  isError: z.literal(false), content: z.array(z.object({ type: z.string(), text: z.string().optional() })),
 })
 function resultRows(call: Pick<MemoryUsageState['pending'][number], 'action' | 'scope' | 'id' | 'entries'>,
   output: unknown, event: SessionEvent): MemoryUsageRow[] {
-  const value = z.object({ scope: callSchema.shape.scope, topic: z.string().max(96), revision: z.number().int().nonnegative(),
-    entry: entry.optional(), entries: z.array(entry).max(20).optional(),
-  }).safeParse(output)
+  const value = outputSchema.safeParse(output)
   if (!value.success || value.data.scope !== call.scope) return []
   const items = call.action === 'remember' ? call.entries : call.action === 'forget'
     ? [{ id: call.id ?? '', summary: call.id ?? '' }] : value.data.entry ? [value.data.entry] : value.data.entries ?? []
@@ -66,7 +71,8 @@ function resultRows(call: Pick<MemoryUsageState['pending'][number], 'action' | '
 }
 function contextRows(event: Extract<SessionEvent, { type: 'user/message' }>): MemoryUsageRow[] {
   const source = event.data.source as { kind: string; plugin?: string }
-  if (source.kind !== 'runtime-context' && !(source.kind === 'plugin' && source.plugin === '@deepseek-ai/dsh-system-prompt')) return []
+  if (source.kind !== 'runtime-context' && source.kind !== 'plugin:@deepseek-ai/dsh-system-prompt'
+    && !(source.kind === 'plugin' && source.plugin === '@deepseek-ai/dsh-system-prompt')) return []
   // Older supported hosts log the same snapshot text without named sections.
   const sourceInfo = source as { sections?: { name: string; text: string }[] }
   const texts = sourceInfo.sections
@@ -89,9 +95,7 @@ export function foldMemoryUsage(state: MemoryUsageState, event: SessionEvent): M
   // PTC completion events carry their own arguments and result. Count the
   // nested operation, not its outer run_code result or a dispatch-start event.
   if (event.type === 'tool/ptc-dispatch') {
-    const dispatch = z.object({ name: z.literal('super_code_memory'), arguments: inputSchema,
-      isError: z.literal(false), content: z.array(z.object({ type: z.string(), text: z.string().optional() })),
-    }).safeParse(event.data)
+    const dispatch = dispatchSchema.safeParse(event.data)
     if (!dispatch.success) return state
     const { arguments: input, content } = dispatch.data
     const output = parse(content.filter(block => block.type === 'text').map(block => block.text ?? '').join(''))
@@ -123,7 +127,7 @@ function view(state: MemoryUsageState): MemoryUsageView {
 export const memoryUsageProjection: ProjectionDefinition<'superCodeMemoryUsage', MemoryUsageState> & {
   wire: NonNullable<ProjectionDefinition<'superCodeMemoryUsage', MemoryUsageState>['wire']>
 } = {
-  key: 'superCodeMemoryUsage', stateVersion: 2, stateSchema,
+  key: 'superCodeMemoryUsage', stateVersion: 4, stateSchema,
   init: (_header, inherited) => ({ rows: [], pending: [], omitted: 0, inherited }), apply: foldMemoryUsage,
   wire: { viewSchema: z.object({ rows: z.array(rowSchema), omitted: z.number() }),
     view },

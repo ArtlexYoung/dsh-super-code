@@ -4,6 +4,33 @@
 
 Versions are `major.performance.maintenance`. The second number changes when coding results or efficiency improve; the third covers fixes, UI, and compatibility. See [Compatibility](Compatibility.md) for what each release was tested on.
 
+## 0.4.0 · 2026-11-12
+
+**Task and memory tools**
+
+- Simplified calls to `super_code_task` and `super_code_memory`, with action-specific field guidance, examples, and recovery instructions to reduce trial and error.
+- Read a named project-memory topic without creating or switching the focused task. Writes retain source checks and revision-based conflict protection; historical information does not replace checking current code.
+
+**Preset Skills and workflows**
+
+- Added standalone grill-me alongside OpenSpec, oil-ui, Matt Pocock Skills, and PStack, grouped into Skills and workflows. All five default off, and saved choices are preserved.
+- Enabled packages sync their complete resources to the DSH Skill directory and take effect in existing conversations. Each entry shows its version and a short usage hint, with a shortcut to open the directory. Existing user files and edits are protected; conflicts are reported and can be retried.
+- Uses the native `/` menu and real Skill names. Search by package names such as `/pstack` or `/mattpocock`, then select a specific command. Disabled packages no longer supply commands or bodies; content already loaded into context is not withdrawn.
+- OpenSpec's command environment ships with the plugin. Toggling a package does not initialize a project, install project dependencies, or modify project files; initialization runs only when requested.
+- PStack retains upstream workflows and resources, with adaptations for DSH tools, child Agents, approvals, and image handling. Workflow adaptation targets Harness `0.2.1-alpha.1` and later.
+- Bundled and adapted sources are published under `builtin/skills`, with upstream versions, provenance, and licenses.
+
+**UI, compatibility, and fixes**
+
+- Improved Settings autosave, draft retention across tabs, reconnection, concurrent edits, and recovery after failed saves.
+- Improved task, execution, tool-status, and changed-file displays while retaining circular Agent nodes and the existing memory page.
+- Fixed cancellation, reconnection, and repeated enable/disable issues in preset installation and uninstall recovery, MCP connections and approvals, deletion protection, and the Windows command environment.
+- Updated compatibility records for newer Harness versions. See [Compatibility](Compatibility.md) for version and platform coverage, distinguishing SDK checks from full-host acceptance; interface tests do not establish that every workflow and platform has passed.
+
+- Added version, license, and total npm download badges, with Star and npm trend charts refreshed daily.
+
+See the [README](../../README.en.md) and [evaluation notes](EvaluationResults.md) for results and statistical limits. Skill installation, UI, and compatibility tests are not evidence of coding performance.
+
 ## 0.3.11 · 2026-11-06
 
 **Uninstall recovery and preset management**

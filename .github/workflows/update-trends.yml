@@ -1,0 +1,41 @@
+name: Update README trends
+
+on:
+  schedule:
+    - cron: '23 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: readme-trends
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify updater
+        run: node --test test/readme/update-trends.test.mjs
+      - name: Refresh charts
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node source/readme/update-trends.mjs
+      - name: Commit updated charts
+        run: |
+          git add -- docs/images/star-history.svg docs/images/star-history-dark.svg docs/images/npm-downloads.svg docs/images/npm-downloads-dark.svg
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'docs(readme): 更新项目趋势图'
+          git push origin HEAD

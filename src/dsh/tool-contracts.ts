@@ -47,6 +47,8 @@ const rememberSchema = z.object({ expectedRevision: count, globalConfirmed: z.bo
 }).strict()).min(1).max(8) }).strict()
 const forgetSchema = z.object({ expectedRevision: count.positive(), source: sourceSchema }).strict()
 const topicsSchema = z.object({ offset: count.default(0) }).strict()
+const cursorsSchema = z.object({ expectedRevision: count.optional(), eventSeq: count.optional() })
+const topicInputSchema = z.object({ topic: z.string().regex(/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,95}$/) })
 const memoryContracts: Contracts = {
   topics: { required: [], optional: ['scope', 'record'], record: topicsSchema, example: { action: 'topics' }, notes: 'Project scope defaults to the session workspace; global lists its preference topic. Optional record:{offset:20} continues pages.', returns: 'topics[{topic,revision,count}], total, nextOffset when incomplete' },
   read: { required: [], optional: ['scope', 'topic', 'id'], example: { action: 'read', topic: 'build' }, notes: 'Project topic can be explicit without creating/focusing a task. Omit topic to use the focused task topic. Global does not accept topic. Omit id for overview; add an entry id for full detail. Historical information does not certify current code.', returns: 'scope, topic, revision, entries, ids, details; or entry, sourceAvailability, basis' },
@@ -82,11 +84,11 @@ export function assertActionInput(tool: 'super_code_task' | 'super_code_memory',
     }
   }
   if (help) { contractFor(tool === 'super_code_task' ? taskContracts : memoryContracts, args.forAction as string); return }
-  z.object({ expectedRevision: count.optional(), eventSeq: count.optional() }).parse(args)
+  cursorsSchema.parse(args)
   if (args.action === 'evidence' && args.record !== undefined && args.eventSeq !== undefined) throw new Error(`evidence accepts either record or eventSeq.${hint}`)
   if (tool === 'super_code_memory' && args.topic !== undefined) {
     if (args.scope === 'global') throw new Error('Global memory does not accept topic; use {"action":"read","scope":"global"}.')
-    z.object({ topic: z.string().regex(/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,95}$/) }).parse(args)
+    topicInputSchema.parse(args)
   }
 }
 

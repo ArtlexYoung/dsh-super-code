@@ -172,3 +172,36 @@ test('controlled Promise interleavings reproduce stale writes and verify generat
   assert.equal(fixed.status, 'checked')
   if (fixed.status === 'checked') assert.equal(fixed.checkedCases, 6)
 })
+
+test('bounded interleavings agree with an exhaustive recursive reference for small lanes', () => {
+  const reference = (left: number, right: number, prefix: ScheduleStep[] = []): ScheduleStep[][] => {
+    const a = prefix.filter(step => step.lane === 0).length, b = prefix.length - a
+    if (a === left && b === right) return [prefix]
+    return [...(a < left ? reference(left, right, [...prefix, { lane: 0, index: a }]) : []),
+      ...(b < right ? reference(left, right, [...prefix, { lane: 1, index: b }]) : [])]
+  }
+  for (let left = 0; left <= 5; left++) for (let right = 0; right <= 5; right++) {
+    const expected = reference(left, right)
+    for (const cap of new Set([1, 2, Math.max(1, expected.length - 1), expected.length, expected.length + 1])) {
+      const actual = interleavings(left, right, cap)
+      assert.deepEqual([...actual], expected.slice(0, cap), `${left}/${right}, cap=${cap}`)
+      assert.equal(actual.count, Math.min(cap, expected.length))
+      assert.equal(actual.coverage, cap < expected.length ? 'limited' : 'complete')
+    }
+  }
+})
+
+test('reduction minimality holds for all deterministic predicates on three distinct elements', async () => {
+  // A truth table covers non-monotone predicates as well as ordinary subset failures.
+  for (let table = 0; table < 256; table++) {
+    const matches = (items: number[]) => Boolean(table & (1 << items.reduce((mask, item) => mask | (1 << item), 0)))
+    let checks = 0
+    const reduced = await reduceFailure([0, 1, 2], 'duplicate', items => { checks++; return matches(items) ? fail : pass }, budget())
+    assert.equal(reduced.stats.checks, checks)
+    if (!matches([0, 1, 2])) { assert.equal(reduced.status, 'not-reproduced'); continue }
+    assert.equal(reduced.status, 'reduced', `truth table ${table}`)
+    assert.equal(reduced.minimality, 'one-removal')
+    assert.equal(matches(reduced.input), true)
+    for (let index = 0; index < reduced.input.length; index++) assert.equal(matches(reduced.input.filter((_, i) => i !== index)), false)
+  }
+})

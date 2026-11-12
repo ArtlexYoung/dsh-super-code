@@ -11,8 +11,8 @@ const presetModule = '@deepseek-ai/dsh-agent-preset'
 const bundledToken = 'bundle:dsh-super-code'
 const validId = /^[a-z0-9][a-z0-9-]{0,63}$/
 
-// Round-trip Loader expressions as data; evaluation belongs to the host.
-export const declarationSchema: yaml.Schema = yaml.DEFAULT_SCHEMA.extend(new yaml.Type('tag:yaml.org,2002:js', {
+// Match Loader's JSON dialect and keep expressions as data; only the host evaluates them.
+export const declarationSchema: yaml.Schema = yaml.JSON_SCHEMA.extend(new yaml.Type('tag:yaml.org,2002:js', {
   kind: 'scalar', construct: (value: string) => ({ __jsExpr: value }),
   predicate: (value: unknown) => !!value && typeof value === 'object'
     && Object.keys(value).length === 1 && typeof (value as { __jsExpr?: unknown }).__jsExpr === 'string',
@@ -105,6 +105,25 @@ function tokenOf(config?: DeclarationConfig): string {
 }
 function dump(value: unknown): string { return yaml.dump(value, { schema: declarationSchema, noRefs: true, lineWidth: -1 }) }
 
+/** Append inside the YAML document without trimming user-owned scalar content. */
+export function appendProfilePatches(text: string, patches: readonly object[]): string {
+  const offset = text.startsWith('\uFEFF') ? 1 : 0 // js-yaml strips the UTF-8 BOM.
+  let depth = 0, start = 0, end = text.length
+  const rows = text.trim() ? yaml.load(text, { schema: declarationSchema, listener: (event, state) => {
+    if (event === 'open') { if (depth++ === 0) start = state.position + offset }
+    else if (--depth === 0) end = state.position + offset
+  } }) : []
+  if (!Array.isArray(rows)) throw new Error('Invalid profile patch')
+  // Extend ordinary block lists inside their document, before any end marker.
+  // Normalize other root styles while retaining surrounding comments/directives.
+  const indent = text.slice(Math.max(offset, text.lastIndexOf('\n', start - 1) + 1), start)
+  const prefix = text.slice(0, start).trimEnd()
+  const block = text.slice(0, end)
+  return (rows.length && text[start] === '-' && !indent.trim()
+    ? block + (/[\r\n]$/.test(block) ? '' : '\n') + dump(patches).replace(/^(?=.)/gm, indent)
+    : (prefix ? prefix + '\n' : '') + dump([...rows, ...patches])) + text.slice(end)
+}
+
 /** Only marked bundle rows or UUID-matched manual installations may be replaced. */
 export class DeclaredPresetInstaller {
   private tail: Promise<unknown> = Promise.resolve()
@@ -115,8 +134,7 @@ export class DeclaredPresetInstaller {
     private readonly bundlePath: string,
   ) {}
 
-  private entry(): DeclarationEntry | false {
-    const saved = this.settings.get().declaration
+  private entry(saved = this.settings.get().declaration): DeclarationEntry | false {
     const entries = this.host.entries().filter(row => row.options.name === presetModule)
     const candidates = saved ? entries.filter(row => row.id === saved.entryId
       && row.options.config?.id === saved.id && tokenOf(row.options.config) === saved.token)
@@ -146,8 +164,11 @@ export class DeclaredPresetInstaller {
   }
 
   async status(): Promise<PresetInstallationStatus> {
-    const saved = this.settings.get().declaration
-    const entry = this.entry()
+    return this.inspect(this.settings.get().declaration)
+  }
+
+  private async inspect(saved: DeclarationSettings['declaration']): Promise<PresetInstallationStatus> {
+    const entry = this.entry(saved)
     const id = entry ? entry.options.config!.id : saved?.id ?? 'super-code'
     const preset = (await this.registry.list()).find(row => row.id === id)
     const document = preset ? await this.document(id) : {}
@@ -198,11 +219,10 @@ export class DeclaredPresetInstaller {
       : { insert: [{ id: entryId, name: presetModule, config }] }
     try {
       await this.save(patch, entry, async () => {
+        if ((await this.inspect({ entryId, id, token })).state !== 'installed') throw new Error('Preset activation failed')
         await this.settings.update({ declaration: { entryId, id, token }, declarationDisplay: {
           ...(name === undefined ? { name: config.name } : {}), description: config.description,
         } })
-      }, async () => {
-        if ((await this.status()).state !== 'installed') throw new Error('Preset activation failed')
       })
       const status = await this.status()
       return { ok: status.state === 'installed', ...(status.state === 'installed' ? {} : { error: 'install-failed' as const }), status }
@@ -236,41 +256,29 @@ export class DeclaredPresetInstaller {
   }
 
   /** Back up first, refuse a stale file, and restore only our own failed write. */
-  private async save(patch: object, entry: DeclarationEntry | false, persist: () => Promise<void>, validate?: () => Promise<void>): Promise<void> {
+  private async save(patch: object, entry: DeclarationEntry | false, persist: () => Promise<void>): Promise<void> {
     const path = this.host.patchPath
     const expectedEntry = entry ? dump(entry.options) : ''
     const original = await this.readPatch(), text = original || ''
-    const rows = text.trim() ? yaml.load(text, { schema: declarationSchema }) : []
-    if (!Array.isArray(rows)) throw new Error('Invalid profile patch')
-    // Block YAML can be extended without changing the user's comments or fields.
-    const prefix = rows.length && /^[ \t]*-/m.test(text) ? text.trimEnd() + '\n'
-      : rows.length ? dump(rows) : text.replace(/^[ \t]*\[\][ \t]*(?:#.*)?$/m, '').trimEnd() + '\n'
-    const content = prefix + dump([patch])
+    const content = appendProfilePatches(text, [patch])
     const backup = await mkdtemp(join(dirname(path), '.super-code-backup-'))
     await writeFile(join(backup, 'cordis.patch.yml'), text, { flag: 'wx', mode: 0o600 })
     if (entry) await writeFile(join(backup, 'preset.yml'), dump(entry.options.config), { flag: 'wx', mode: 0o600 })
-    const stored = this.settings.get()
-    let committed = false, persisted = false
+    let committed = false
     try {
       const actual = this.entry()
       if (await this.readPatch() !== original || entry && (!actual || actual.id !== entry.id || dump(actual.options) !== expectedEntry)) throw new Error('Preset changed during installation')
       await this.atomicWrite(content)
       committed = true
-      await persist()
-      persisted = true
       await this.host.reload()
-      if (validate) await validate()
+      // Publish ownership only after the Loader has accepted this declaration.
+      await persist()
     } catch (error) {
       if (committed && await this.readPatch() === content) {
         if (original === false) await unlink(path)
         else await this.atomicWrite(original)
-        // Reconcile the restored host patch even when ownership persistence is
-        // unavailable; otherwise the failed preset can remain active in memory.
-        const failures: unknown[] = []
-        try { if (persisted) await this.settings.update({ declaration: stored.declaration, declarationDisplay: stored.declarationDisplay }) }
-        catch (failure) { failures.push(failure) }
-        try { await this.host.reload() } catch (failure) { failures.push(failure) }
-        if (failures.length) throw new AggregateError([error, ...failures], 'Preset rollback could not complete')
+        try { await this.host.reload() }
+        catch (failure) { throw new AggregateError([error, failure], 'Preset rollback could not complete') }
       }
       throw error
     }

@@ -2,26 +2,30 @@
 
 [中文](README.md) · English
 
+[![npm total downloads](https://img.shields.io/npm/dt/dsh-super-code?label=npm%20downloads)](https://npmtrends.com/dsh-super-code) [![Latest npm release](https://img.shields.io/npm/v/dsh-super-code)](https://www.npmjs.com/package/dsh-super-code) [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+
 A smarter, leaner, faster, and easier-to-use coding plugin for DeepSeek Harness.
 
-On SWE-bench Pro hard-100, compared with the official Standard preset (same host DSH `0.2.1-rc.2`, same model, both on high reasoning effort and legacy budgets):
+**Evaluation results may vary slightly with model variability; refer to the latest tests.**
 
-| | Standard + high | Super Code |
-|---|---:|---:|
-| Passed | 46/100 | **49/100** |
-| Net time per task | 20.9 min | **16.4 min** (-21.3%) |
-| Tokens per task | 7.81 M | **5.11 M** (-34.6%) |
-| Model calls per task | 92 | **69** (-25.5%) |
+On SWE-bench Pro hard-100, compared with the official Standard preset (same host DSH `0.2.1-rc.2`, same model, all on high reasoning effort):
 
-Tested on version `0.3.5`. [Full results and limitations](docs/en/EvaluationResults.md)
+| | Official Standard + high | Super Code 0.3.11 | Super Code 0.4.0 |
+|---|---:|---:|---:|
+| Passed | 47/100 | 50/100 (+3 tasks) | **52/100 (+5 tasks)** |
+| Time per task | 16.26 min | 16.69 min (+2.7%) | 17.66 min (+8.6%) |
+| Tokens per task | 7.718 M | 6.673 M (-13.5%) | 6.895 M (-10.7%) |
+| Model calls per task | 89.54 | 76.44 (-14.6%) | 79.42 (-11.3%) |
+
+Tested on 2026-11-11; `0.4.0` is the frozen candidate used in this evaluation. All metrics use 100 tasks as the denominator and include original failed attempts and supplemental answers. Percentages are relative to Official Standard. Time includes tools and in-session waits, excluding grading; model calls count raw requests, including failed and auxiliary calls. Usage records are incomplete for **17, 10, and 13 tasks**, respectively; token values and percentage changes compare captured records only. [Historical results and methodology](docs/en/EvaluationResults.md)
 
 ## Install
 
-Supports Harness from `0.1.5-alpha.1`; see [compatibility](docs/en/Compatibility.md) for tested Web, official Desktop, and NEXT versions.
+Supports Harness `0.1.5-alpha.1` through `0.2.2-rc.2`, including `0.2.2-alpha.3`. Version 0.4.0 has been checked against all 27 Web releases in this range, official macOS Desktop `0.2.2-rc.2`, and NEXT `2.0.22-next` (bundled Harness `0.2.2-rc.1`); see [compatibility](docs/en/Compatibility.md) for tested versions and platform coverage.
 
 **Desktop**: open **Plugins → Add plugin** in the left sidebar, enter `dsh-super-code`, then click **Install** and **Enable now** (on older versions, reload or restart when prompted). Desktop includes its own runtime; Node.js is not required.
 
-**Web / CLI**: requires Node.js 22 or later.
+**Web / CLI**: the plugin requires Node.js 22 or later; Harness `0.2.2-rc.2` requires Node.js 24.9 or later.
 
 ```bash
 npm install -g @deepseek-ai/dsh            # skip if dsh is already installed
@@ -40,7 +44,7 @@ Desktop: enter the full path of the package in "Package name or address", then c
 Web: run the following command (use the actual file name):
 
 ```bash
-dsh plugin --profile web add ./dsh-super-code-0.3.11.tgz
+dsh plugin --profile web add ./dsh-super-code-0.4.0.tgz
 ```
 
 </details>
@@ -88,15 +92,22 @@ Screenshots use the current UI with sample data to illustrate the plugin.
 | Deletion protection | Directs Agents to use recoverable `trash` by default; can switch to strict confirmation |
 | Windows commands | Bundled Bash and common utilities, optionally applied to official presets |
 | MCP connection | Allows external MCP clients to delegate tasks to DSH. Off by default |
-| Preset Skills | Four whole-package switches for oil-ui, OpenSpec, Matt Pocock Skills and PStack, loaded on demand with live switches |
+| Preset Skills | Separate Skills and workflow groups for grill-me, OpenSpec, oil-ui, Matt Pocock Skills and PStack; enabled packages sync live to the DSH Skill directory, with a shortcut to open it |
 
 See the [usage guide](docs/en/UsageGuide.md).
 
+Bundled and adapted Skill sources are published under [builtin/skills](builtin/skills), including provenance, licenses, and companion resources. See the [layout and maintenance guide](builtin/README.md).
+
 ## Recent releases
+
+- **0.4.0**
+
+  1. Simplified task and memory tool calls with action-specific help and examples, plus direct reads of a named project-memory topic.
+  2. Added five opt-in Skills and workflow packages: grill-me, OpenSpec, oil-ui, Matt Pocock Skills, and PStack. Enabled packages sync to the DSH Skill directory, take effect in existing conversations, and can be found by package name in the native command menu.
+  3. Improved Settings and the task sidebar, expanded compatibility with newer Harness versions, and fixed numerous issues in preset recovery, MCP, deletion protection, and other features.
 
 - **0.3.11**: Fixed numerous bugs.
 - **0.3.10**: Added bundled Bash on Windows and an official-preset switch, with legacy-host compatibility and tooltip fixes.
-- **0.3.9**: Polished Settings and the task sidebar, improved MCP conversation control, fixed PTC child-tool approvals, and verified rc.4 Web compatibility.
 
 [Full changelog](docs/en/Changelog.md)
 
@@ -106,7 +117,7 @@ Versions follow `major.performance.maintenance`: a change in the second number i
 
 ### Plugin comparison
 
-Full SWE-bench Pro hard-100 results, sorted by tasks passed. All runs use Harness `0.2.1-rc.2`, `deepseek-v4.1-flash-1017`, high reasoning effort, and legacy budgets. Each group reuses its environment continuously across tasks.
+Full SWE-bench Pro hard-100 results, sorted by tasks passed. All runs use Harness `0.2.1-rc.2`, `Evaluation model B`, high reasoning effort, and legacy budgets. Each group reuses its environment continuously across tasks.
 
 | Configuration | Passed/valid | Mean total tokens (M) | Mean time (min) | Mean model calls | Mean tool calls | Cache rate |
 |---|---:|---:|---:|---:|---:|---:|
@@ -127,8 +138,8 @@ M means one million tokens, including reasoning tokens. Time includes some in-ru
 
 ### Historical process
 
-1. **Old-host baseline** (DSH `0.1.5-rc.2`, `deepseek-v4.1-flash`, high): the Super Code `0.3.0` candidate passed 56 tasks, the official Standard preset 51, and Minimal 46. Relative to Minimal, time fell by 47.6% and tokens by 44.9%.
-2. **Regression after the host upgrade**: after upgrading to DSH `0.2.1-rc.2` and `deepseek-v4.1-flash-1017`, under default budgets Standard dropped to 46 and Super Code `0.3.4` to 41, below Standard. Investigation found the new host had tightened context budgets: the compression threshold fell from 800,000 to 550,464 tokens, and retained verbatim context from 160,000 to 98,560 tokens.
+1. **Old-host baseline** (DSH `0.1.5-rc.2`, `Evaluation model B`, high): the Super Code `0.3.0` candidate passed 56 tasks, the official Standard preset 51, and Minimal 46. Relative to Minimal, time fell by 47.6% and tokens by 44.9%.
+2. **Regression after the host upgrade**: after upgrading to DSH `0.2.1-rc.2` and `Evaluation model B`, under default budgets Standard dropped to 46 and Super Code `0.3.4` to 41, below Standard. Investigation found the new host had tightened context budgets: the compression threshold fell from 800,000 to 550,464 tokens, and retained verbatim context from 160,000 to 98,560 tokens.
 3. **Retest with legacy budgets**: both sides used legacy budgets. Standard stayed at 46 with 14.2% more tokens; Super Code `0.3.5` rose to 49 with only 0.4% more tokens and 19.4% less net time. Based on this, the plugin uses legacy budgets by default from `0.3.6`.
 4. **Cross-model check** (`glm-5.3-flash`, max): Super Code `0.3.4` passed 45 tasks and native ZCode 29. Super Code used less net time per task (32.9 vs 52.3 min) and more tokens (5.50 M vs 3.61 M).
 
@@ -148,10 +159,28 @@ These are earlier evaluation runs and are not pooled with the plugin comparison 
 
 - Each configuration was run once. The same task can pass in one run and fail in another; run-to-run variance for a fixed configuration has not been estimated.
 - The default-budget and legacy-budget runs used different plugin versions (`0.3.4` → `0.3.5`), so the gain cannot be attributed entirely to budgets.
-- `0.3.6` – `0.3.11` have not been re-evaluated on the 100 tasks.
+- `0.3.6` – `0.3.10` have not been re-evaluated on the 100 tasks.
 - The cross-model comparison is between two complete systems and cannot isolate the plugin's contribution.
 
 [Results and methodology](docs/en/EvaluationResults.md) · [All result tables](eval/results/swebench-pro-final-100/ResultsTables.md)
+
+## Star history
+
+<a href="https://star-history.com/#ArtlexYoung/dsh-super-code&amp;Date">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/star-history-dark.svg">
+    <img alt="dsh-super-code Star history" src="docs/images/star-history.svg" width="800">
+  </picture>
+</a>
+
+## npm download trends
+
+<a href="https://npmtrends.com/dsh-super-code">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/npm-downloads-dark.svg">
+    <img alt="dsh-super-code npm downloads over the last 13 weeks" src="docs/images/npm-downloads.svg" width="800">
+  </picture>
+</a>
 
 ## Acknowledgements
 

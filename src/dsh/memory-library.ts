@@ -13,12 +13,18 @@ export type MemoryLibraryDetail = { kind: 'missing' } | { kind: 'found'; entry: 
   token: string; detail: string; source: { kind: 'user' | 'tool' | 'manual'; sessionId: string; eventSeq?: number }; sourceVersion?: string
 } }
 
+const scopeSchema = z.enum(['project', 'global'])
+const sessionIdSchema = z.string().min(1).max(256)
+const contentSchema = z.string().max(16000)
+const saveInputSchema = z.object({ expected: z.string(), kind: z.enum(['constraint', 'fact', 'experience']),
+  summary: z.string(), detail: z.string() }).strict()
+
 export class MemoryLibraryReader {
   constructor(private readonly ctx: Context, private readonly store: LongMemoryStore) {}
 
   private async workspace(sessionId: string, scope: string): Promise<string> {
-    z.enum(['project', 'global']).parse(scope)
-    const id = SessionId(z.string().min(1).max(256).parse(sessionId))
+    scopeSchema.parse(scope)
+    const id = SessionId(sessionIdSchema.parse(sessionId))
     const session = this.ctx.sessions.get(id)
     // Archived conversations need only trusted metadata, not replay or an Agent.
     const persistence = this.ctx.get('sessionPersistence') as { stat(id: string): Promise<{ header: { cwd?: string } } | undefined> } | undefined
@@ -52,8 +58,7 @@ export class MemoryLibraryReader {
   async save(sessionId: string, scope: string, topic: string, id: string, content: string): Promise<MemoryLibraryChange> {
     const workspace = await this.workspace(sessionId, scope)
     if (scope === 'global' && topic !== GLOBAL_PREFERENCES_TOPIC) throw new Error('Invalid global topic')
-    const input = z.object({ expected: z.string(), kind: z.enum(['constraint', 'fact', 'experience']),
-      summary: z.string(), detail: z.string() }).strict().parse(JSON.parse(z.string().max(16000).parse(content)))
+    const input = saveInputSchema.parse(JSON.parse(contentSchema.parse(content)))
     if (scope === 'global' && input.kind !== 'constraint') throw new Error('Global memory accepts only user preferences')
     return this.store.edit(workspace, topic, id, input.expected, { kind: 'save', entry: {
       id, kind: input.kind, summary: input.summary, detail: input.detail, source: { kind: 'manual', sessionId },

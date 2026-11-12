@@ -65,7 +65,6 @@ function bridge(ctx: Context, engine: BasicCompactionEngine, select: (agent: Age
   const lifetime = { active: true }
   const cached = new WeakMap<Agent, Policy>()
   const policy = (agent: Agent): Policy | false => {
-    if (!lifetime.active) return false
     const budgets = select(agent)
     if (!budgets) return false
     let value = cached.get(agent)
@@ -80,6 +79,8 @@ function bridge(ctx: Context, engine: BasicCompactionEngine, select: (agent: Age
   } })
   const pressure = engine.compactIfNeeded, region = engine.compactRegion, now = engine.compactNow
   const run: RunPolicy = (agent, action) => {
+    // A later wrapper may retain us across reload; leave its active policy intact.
+    if (!lifetime.active) return action(false)
     const selected = policy(agent)
     return selected ? current.run(selected, () => action(selected.budgets)) : current.run(false, () => action(false))
   }

@@ -1,15 +1,68 @@
+import { isDirectoryMetadata } from './directory-metadata.js'
 /** Install a profile-owned continuation shim without modifying the host or old conversation logs. */
 import { lstat, mkdir, mkdtemp, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import type { Context, Plugin } from '@deepseek-ai/cordis'
 import yaml from 'js-yaml'
-import { declarationSchema } from './preset-declaration.js'
+import { appendProfilePatches, declarationSchema } from './preset-declaration.js'
 import { RecoveryState, compositionContent, fingerprint } from './preset-recovery-runtime.js'
 import type { RecoveryConfig } from './preset-recovery-runtime.js'
 
 const entryId = 'super-code-session-recovery'
+const ownedEntryId = new RegExp(`^${entryId}(?:-[a-f0-9]{24})?$`)
 interface PreparedRecovery { modulePath: string; config: RecoveryConfig & { owner: 'dsh-super-code' } }
+interface RecoveryEntry { id: string; name: string; config: PreparedRecovery['config']; disabled?: boolean }
+interface ProfileRow { id?: string; name?: string; disabled?: boolean; config?: unknown; group?: boolean; insert?: ProfileRow[] }
+
+/** Track only root recovery definitions and the overrides that the Loader applies to them. */
+function recoveryEntries(rows: ProfileRow[], directory: string, statePath: string): Map<string, RecoveryEntry> {
+  const entries = new Map<string, RecoveryEntry>()
+  const conflict = () => { throw new Error('Recovery entry conflict') }
+  const reserved = (id: unknown): id is string => typeof id === 'string' && ownedEntryId.test(id)
+  const owned = (value: unknown): value is PreparedRecovery['config'] => {
+    const config = value as Partial<PreparedRecovery['config']> | undefined
+    return config?.owner === 'dsh-super-code' && config.statePath === statePath && typeof config.packagePath === 'string'
+  }
+  const seen = new Set<unknown>()
+  const rejectNested = (value: unknown): void => {
+    if (!Array.isArray(value) || seen.has(value)) return
+    seen.add(value)
+    for (const row of value as ProfileRow[]) {
+      if (reserved(row?.id)) conflict()
+      if (row?.group) rejectNested(row.config)
+    }
+  }
+  for (const row of rows) {
+    if (Array.isArray(row?.insert)) {
+      if (row.id) {
+        if (reserved(row.id)) conflict()
+        rejectNested(row.insert)
+        continue
+      }
+      for (const item of row.insert) {
+        if (item?.group) rejectNested(item.config)
+        if (!reserved(item?.id)) continue
+        const generation = typeof item.name === 'string' && /\/recovery-([a-f0-9]{24})\.mjs$/.exec(item.name)?.[1]
+        if (!generation || item.name !== pathToFileURL(join(directory, `recovery-${generation}.mjs`)).href
+          || item.id !== entryId && item.id !== `${entryId}-${generation}`
+          || item.group || entries.has(item.id) || !owned(item.config)) throw new Error('Recovery entry conflict')
+        entries.set(item.id, { id: item.id, name: item.name, config: item.config, disabled: item.disabled })
+      }
+    } else if (reserved(row?.id)) {
+      const entry = entries.get(row.id)
+      if (!entry) throw new Error('Recovery entry conflict')
+      if (row.name && row.name !== entry.name) continue // Name is a guard, not a rename.
+      if (Object.hasOwn(row, 'config')) {
+        if (!owned(row.config)) throw new Error('Recovery entry conflict')
+        entry.config = row.config
+      }
+      if (row.group) conflict()
+      if (Object.hasOwn(row, 'disabled')) entry.disabled = row.disabled
+    } else if (row?.group) rejectNested(row.config)
+  }
+  return entries
+}
 
 async function regularContent(path: string): Promise<string> {
   try {
@@ -33,25 +86,27 @@ export async function prepareRecovery(patchPath: string, packagePath: string, so
   if (!stat.isDirectory() || stat.isSymbolicLink()) throw new Error('Unsafe recovery directory')
   const statePath = join(directory, 'state.json')
   if (!await regularContent(statePath)) {
-    if (!created && (await readdir(directory)).length) throw new Error('Unowned recovery directory')
+    if (!created && (await readdir(directory, { withFileTypes: true })).some(entry => !isDirectoryMetadata(entry))) throw new Error('Unowned recovery directory')
     await createOwnedFile(statePath, JSON.stringify({ plugin: 'dsh-super-code', format: 1, sessions: {} }))
   }
   await RecoveryState.open(statePath)
-  const modulePath = join(directory, `recovery-${fingerprint(source).slice(0, 24)}.mjs`)
+  const generation = fingerprint(source).slice(0, 24)
+  const modulePath = join(directory, `recovery-${generation}.mjs`)
   await createOwnedFile(modulePath, source)
   const config: PreparedRecovery['config'] = { owner: 'dsh-super-code', statePath, packagePath }
-  const entry = { id: entryId, name: pathToFileURL(modulePath).href, config }
+  const entry = { id: `${entryId}-${generation}`, name: pathToFileURL(modulePath).href, config }
   const original = await regularContent(patchPath)
   const rows = original.trim() ? yaml.load(original, { schema: declarationSchema }) : []
   if (!Array.isArray(rows)) throw new Error('Invalid profile patch')
-  const existing = rows.flatMap(row => row?.insert ?? [row]).filter(row => row?.id === entryId)
-  if (existing.some(row => row.config?.owner !== 'dsh-super-code' || row.config?.statePath !== statePath)) throw new Error('Recovery entry conflict')
-  if (existing.length && JSON.stringify(existing.at(-1)) === JSON.stringify(entry)) return { modulePath, config }
-  const patch = existing.length ? entry : { insert: [entry] }
-  const prefix = rows.length && /^[ \t]*-/m.test(original) ? original.trimEnd() + '\n'
-    : rows.length ? yaml.dump(rows, { schema: declarationSchema, noRefs: true, lineWidth: -1 })
-      : original.replace(/^[ \t]*\[\][ \t]*(?:#.*)?$/m, '').trimEnd() + '\n'
-  const content = prefix + yaml.dump([patch], { schema: declarationSchema, noRefs: true, lineWidth: -1 })
+  const latest = recoveryEntries(rows, directory, statePath)
+  const current = latest.get(entry.id)
+  const retired = [...latest.values()].filter(row => row.id !== entry.id && row.disabled !== true)
+  if (!retired.length && current && current.disabled !== true && current.config.packagePath === packagePath) return { modulePath, config }
+  // Loader patch names are guards, not renames. Each immutable runtime gets
+  // its own entry; retire only verified owned predecessors, including legacy IDs.
+  const patches = [...retired.map(row => ({ id: row.id, name: row.name, disabled: true })),
+    current ? { ...entry, disabled: false } : { insert: [entry] }]
+  const content = appendProfilePatches(original, patches)
   await createOwnedFile(join(directory, `patch-before-${fingerprint(original).slice(0, 24)}.yml`), original)
   const staging = await mkdtemp(join(directory, '.patch-'))
   try {

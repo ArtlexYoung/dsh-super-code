@@ -11,7 +11,7 @@ const fileSchema = z.object({ path: z.string(), operation: z.enum(['write', 'edi
   seq: z.number(), tool: z.string(), callId: z.string() }).strict()
 const activitySchema = z.object({ callId: z.string(), tool: z.string(), description: z.string(), seq: z.number(),
   status: z.enum(['running', 'succeeded', 'failed', 'interrupted']), parent: z.string() }).strict()
-const pendingSchema = z.object({ callId: z.string(), tool: z.string(), turn: z.number(), step: z.number(),
+const pendingSchema = z.object({ callId: z.string(), tool: z.string(), turn: z.number(), step: z.number(), seq: z.number(),
   files: z.array(fileSchema.omit({ seq: true, tool: true, callId: true })),
 }).strict()
 const todoSchema = z.object({ content: z.string(), status: z.enum(['pending', 'in_progress', 'completed']) })
@@ -41,7 +41,7 @@ export interface TaskFeedbackView {
 export interface TaskFeedbackState extends TaskFeedbackView {
   inherited: number; cursor: number; cwd: string; approvals: string[]
   requestSeq: number; lastTodos: TaskFeedbackView['todos']; lastOmittedTodos: number
-  pending: { callId: string; tool: string; turn: number; step: number; files: { path: string; operation: FileFact['operation'] }[] }[]
+  pending: { callId: string; tool: string; turn: number; step: number; seq: number; files: { path: string; operation: FileFact['operation'] }[] }[]
 }
 
 declare module '@deepseek-ai/dsh-session-projection/types' {
@@ -59,7 +59,15 @@ function parse(value: unknown): Record<string, any> {
   if (value.length > 2_000_000) return {}
   try { return object(JSON.parse(value)) } catch { return {} }
 }
-function text(value: unknown, max = 1600): string { return typeof value === 'string' ? value.trim().slice(0, max) : '' }
+function text(value: unknown, max = 1600): string {
+  if (typeof value !== 'string') return ''
+  const trimmed = value.trim()
+  if (trimmed.length <= max) return trimmed
+  const high = trimmed.charCodeAt(max - 1), low = trimmed.charCodeAt(max)
+  // Keep the existing code-unit budget without splitting an emoji or extension Han character.
+  if (high >= 0xD800 && high <= 0xDBFF && low >= 0xDC00 && low <= 0xDFFF) max--
+  return trimmed.slice(0, max)
+}
 function filePath(path: unknown, cwd: string): string {
   if (typeof path !== 'string' || !path.trim() || path.length > 4096 || path.includes('\0')) return ''
   const paths = /^[a-z]:[\\/]|^\\\\/i.test(cwd || path) ? win32 : posix
@@ -75,10 +83,21 @@ function fileCandidates(name: string, args: Record<string, any>, cwd: string): T
     return [{ path, operation: args.command === 'create' ? 'create' : 'edit' }]
   }
   // No parsing of apply_patch inside arbitrary shell commands or program text.
-  // The standalone patch tool's explicit file markers retain operation evidence.
-  if (name === 'apply_patch' && typeof args.patch === 'string') {
-    return [...args.patch.matchAll(/^\*\*\* (?:Add|Update|Delete) File: (.+)$/gm)].slice(0, LIMIT.files)
-      .flatMap(match => { const path = filePath(match[1], cwd); return path ? [{ path, operation: 'patch' as const }] : [] })
+  // Native patch diffs omit creates and unbounded deletions; no-op updates have no diff.
+  if (name === 'apply_patch') {
+    const native = typeof args.input === 'string', patch = native ? args.input : args.patch
+    if (typeof patch !== 'string' || patch.length > 2_000_000) return []
+    const markers = native
+      ? /^\*\*\* (?:Add File: |Delete File: |Move to: |Update File: (?=[^\r\n]+\r?\n\*\*\* Move to: ))([^\r\n]+)/gm
+      : /^\*\*\* (?:Add|Update|Delete) File: ([^\r\n]+)/gm
+    const files: TaskFeedbackState['pending'][number]['files'] = []
+    let scanned = 0
+    for (const match of patch.matchAll(markers)) {
+      if (scanned++ === LIMIT.files) break
+      const path = filePath(native ? match[1]!.trimEnd() : match[1], cwd)
+      if (path) files.push({ path, operation: 'patch' })
+    }
+    return files
   }
   return []
 }
@@ -88,37 +107,53 @@ function description(name: string, args: Record<string, any>): string {
 }
 function begin(state: TaskFeedbackState, data: Record<string, any>, seq: number, nested: boolean): TaskFeedbackState {
   const callId = text(nested ? data.subCallId : data.callId, 512), name = text(data.name, 120)
-  if (!callId || !name || state.activities.some(row => row.callId === callId) || state.pending.some(row => row.callId === callId)) return state
+  const turn = data.turn ?? -1, step = data.step ?? -1
+  if (!callId || !name || state.pending.some(row => row.callId === callId && row.turn === turn && row.step === step)) return state
   const args = parse(data.arguments)
   const activity: Activity = { callId, tool: name, description: description(name, args), seq, status: 'running',
     parent: nested ? text(data.parentCallId, 512) : '' }
   const activities = [...state.activities, activity]
   return { ...state, activities: activities.slice(-LIMIT.activities),
     omittedActivities: state.omittedActivities + Math.max(0, activities.length - LIMIT.activities),
-    pending: [...state.pending, { callId, tool: name, turn: data.turn ?? -1, step: data.step ?? -1,
+    pending: [...state.pending, { callId, tool: name, turn, step, seq,
       files: fileCandidates(name, args, state.cwd) }].slice(-LIMIT.pending) }
 }
 /** New tools can expose applied diffs through the existing presentation metadata. */
-function metadataFiles(meta: unknown, cwd: string): TaskFeedbackState['pending'][number]['files'] {
+function metadataFiles(meta: unknown, cwd: string, nativeHunks: boolean): TaskFeedbackState['pending'][number]['files'] {
   const diffs = object(meta).diffs
   if (!Array.isArray(diffs)) return []
   return diffs.slice(0, LIMIT.files).flatMap(value => {
     const diff = object(value), path = filePath(diff.path, cwd)
     const valid = (diff.oldText === null || typeof diff.oldText === 'string') && typeof diff.newText === 'string'
-    return path && valid && diff.oldText !== diff.newText ? [{ path, operation: 'patch' as const }] : []
+    // Native hunks may differ only in the final newline, which is absent from hunk text.
+    return path && valid && (nativeHunks || diff.oldText !== diff.newText) ? [{ path, operation: 'patch' as const }] : []
   })
 }
+function completedFiles(call: TaskFeedbackState['pending'][number], meta: unknown, cwd: string): TaskFeedbackState['pending'][number]['files'] {
+  const data = object(meta), applied = metadataFiles(data, cwd, ['write', 'edit', 'apply_patch'].includes(call.tool))
+  if (call.tool === 'apply_patch' && typeof data.stopped === 'boolean') return data.stopped ? applied : [...call.files, ...applied]
+  if (applied.length) return applied
+  if (call.tool === 'write' && data.operation === 'create') {
+    const path = filePath(data.path, cwd)
+    if (path) return [{ path, operation: 'write' }]
+  }
+  // Legacy writes omit the operation, so an empty diff can still mean a new file.
+  if (Array.isArray(data.diffs) && !data.diffs.length && (call.tool === 'edit' || call.tool === 'write' && data.operation === 'update')) return []
+  return call.files
+}
 function finish(state: TaskFeedbackState, callId: string, isError: boolean, seq: number, turn = -1, step = -1, meta: unknown = {}): TaskFeedbackState {
-  const pending = state.pending.find(row => row.callId === callId)
-  if (pending && turn >= 0 && (pending.turn !== turn || pending.step !== step)) return state
   const call = state.pending.find(row => row.callId === callId && (turn < 0 || row.turn === turn && row.step === step))
-  const activity = state.activities.find(row => row.callId === callId)
-  if (!call && (!activity || activity.status !== 'running')) return state
-  const activities = state.activities.map(row => row.callId === callId ? { ...row, status: isError ? 'failed' as const : 'succeeded' as const } : row)
+  // A display row may outlive the pending-file window. Retain its completion
+  // status, but never override a pending instance from a different step.
+  const activity = call ? undefined : state.pending.some(row => row.callId === callId) ? undefined
+    : [...state.activities].reverse().find(row => row.callId === callId && row.status === 'running')
+  if (!call && !activity) return state
+  // Model IDs can repeat in later steps, and PTC IDs repeat with their parent.
+  // The start event identifies this instance without changing public call IDs.
+  const activities = state.activities.map(row => row.seq === (call?.seq ?? activity!.seq) ? { ...row, status: isError ? 'failed' as const : 'succeeded' as const } : row)
   const files = [...state.files]
-  const applied = metadataFiles(meta, state.cwd)
   // Completion evidence outlives the bounded display window of recent activity.
-  if (!isError && call) for (const file of applied.length ? applied : call.files) {
+  if (!isError && call) for (const file of completedFiles(call, meta, state.cwd)) {
     const index = files.findIndex(row => row.path === file.path)
     if (index >= 0) files.splice(index, 1)
     files.push({ ...file, seq, tool: call.tool, callId })
@@ -168,7 +203,7 @@ export function foldTaskFeedback(state: TaskFeedbackState, event: SessionEvent):
   }
   if (type === 'turn/start') next = { ...next, phase: 'running', todos: [], omittedTodos: 0, approvals: [],
     pending: [], activities: state.activities.map(row => row.status === 'running' ? { ...row, status: 'interrupted' } : row) }
-  if (type === 'turn/end') next = { ...next, phase: data.reason?.kind === 'error' ? 'error' : ['aborted', 'interrupted'].includes(data.reason?.kind) ? 'interrupted' : 'idle',
+  if (type === 'turn/end') next = { ...next, phase: ['error', 'max-tokens'].includes(data.reason?.kind) ? 'error' : ['aborted', 'interrupted'].includes(data.reason?.kind) ? 'interrupted' : 'idle',
     pending: [], approvals: [], activities: state.activities.map(row => row.status === 'running' ? { ...row, status: 'interrupted' } : row) }
   if (type === 'approval/asked' && typeof data.id === 'string') next = { ...next, phase: 'waiting', approvals: [...new Set([...state.approvals, data.id])].slice(-LIMIT.pending) }
   if (type === 'approval/decided' && state.approvals.includes(data.id)) {
@@ -190,8 +225,8 @@ export function foldTaskFeedback(state: TaskFeedbackState, event: SessionEvent):
 export const taskFeedbackProjection: ProjectionDefinition<'superCodeFeedback', TaskFeedbackState> & {
   wire: NonNullable<ProjectionDefinition<'superCodeFeedback', TaskFeedbackState>['wire']>
 } = {
-  // Rebuild old file evidence and explicit crash-interruption states from the journal.
-  key: 'superCodeFeedback', stateVersion: 4, stateSchema,
+  // Rebuild old checkpoints with truncated Unicode or session-wide tool identities.
+  key: 'superCodeFeedback', stateVersion: 8, stateSchema,
   init: (header, inherited) => ({ request: '', latestRequest: '', goal: { kind: 'none' }, phase: 'idle', todos: [], activities: [], files: [],
     omittedActivities: 0, omittedFiles: 0, omittedTodos: 0, pending: [], approvals: [], history: [], omittedRequests: 0,
     requestSeq: -1, lastTodos: [], lastOmittedTodos: 0, inherited, cursor: -1, cwd: header.cwd ?? '' }),

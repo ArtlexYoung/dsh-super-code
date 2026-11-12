@@ -11,9 +11,18 @@ export async function invokeConnectionTool(request: ConnectionRequest, signal?: 
   const client = new Client({ name: 'super-code-mcp-cli', version: pluginVersion })
   const transport = new StreamableHTTPClientTransport(url, {
     requestInit: { headers: { authorization: `Bearer ${request.token}` } },
-    fetch: (input, init) => fetch(input, init?.method === 'DELETE'
-      ? { ...init, signal: init.signal ? AbortSignal.any([init.signal, AbortSignal.timeout(5000)]) : AbortSignal.timeout(5000) }
-      : init),
+    fetch: async (input, init) => {
+      if (init?.method !== 'DELETE') return fetch(input, init)
+      // Node 22.0 can collect a timeout source composed with AbortSignal.any().
+      // Own the deadline until fetch settles, while preserving SDK cancellation.
+      const controller = new AbortController(), signal = init.signal
+      const abort = (): void => controller.abort(signal?.reason)
+      if (signal?.aborted) abort()
+      else signal?.addEventListener('abort', abort, { once: true })
+      const timer = setTimeout(() => controller.abort(new DOMException('MCP session cleanup timed out', 'TimeoutError')), 5000)
+      try { return await fetch(input, { ...init, signal: controller.signal }) }
+      finally { clearTimeout(timer); signal?.removeEventListener('abort', abort) }
+    },
   })
   try {
     signal?.throwIfAborted()

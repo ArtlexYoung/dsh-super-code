@@ -1,0 +1,6 @@
+# Keep the fixed upstream snapshot in Git; npm uses the complete DSH distribution.
+/agents/
+/assets/
+/docs/
+/skills/
+/README.md

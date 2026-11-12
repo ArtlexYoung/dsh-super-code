@@ -6,8 +6,9 @@ import type { Agent } from '@deepseek-ai/dsh-agent'
 import { configurationOf } from './budgets.js'
 import { prepareWindowsRuntime, windowsRuntimeEnvironment } from '../core/windows-runtime.js'
 import type { WindowsRuntime } from '../core/windows-runtime.js'
+import { openspecProvider } from './openspec-shell.js'
 
-interface ShellSpec {
+export interface ShellSpec {
   command: string
   env?: NodeJS.ProcessEnv
   sandboxPolicy?: { mode: string; [key: string]: unknown }
@@ -19,7 +20,7 @@ interface HostShell {
   resolve(request: ShellSpec): ShellSpec
   argv(spec: ShellSpec): string[]
 }
-interface ShellConstructor {
+export interface ShellConstructor {
   new(ctx: Context, config: Record<string, unknown>): HostShell
   readonly inject?: readonly string[]
 }
@@ -112,7 +113,7 @@ export async function mountBundledBash(ctx: Context): Promise<false | (() => Pro
   const Base = provider.default as ShellConstructor
   if (typeof Base !== 'function' || !(host instanceof Base)) return false
   let runtime: WindowsRuntime | false = false
-  const Bundled = bundledBashProvider(Base, () => {
+  const Bundled = bundledBashProvider(openspecProvider(Base, () => configurationOf(ctx).openspecSkills === true), () => {
     if (!runtime) throw new Error('Bundled Bash is not ready for this conversation')
     return runtime
   })
@@ -128,6 +129,15 @@ export async function mountBundledBash(ctx: Context): Promise<false | (() => Pro
 
 /** Keep tools inherited so both root and child capability restrictions still apply. */
 export async function apply(ctx: Context): Promise<void> {
+  // Shell state remains preset-local; no shared host or process environment is changed.
+  const host = ctx.get('shell') as unknown as HostShell
+  const Base = host.constructor as ShellConstructor
+  if (typeof Base.prototype.resolve === 'function') {
+    const owner = ctx.isolate('shell').isolate('settings')
+    const OpenSpec = openspecProvider(Base, () => configurationOf(ctx).openspecSkills === true)
+    await owner.plugin({ inject: [...Base.inject ?? []], apply(scope: Context) { new OpenSpec(scope, host.config) } })
+    ctx = owner
+  }
   if (process.platform !== 'win32') {
     await ctx.plugin(await hostTool(ctx, '@deepseek-ai/dsh-tool-bash'))
     return

@@ -30,8 +30,10 @@ function retainBridge(service: Runtime): () => void {
       if (!limits) throw new Error('This PTC provider does not support configured elapsed budgets')
       const cap = Math.min(budget.ptcMaxTimeoutMs ?? limits.maxMs, limits.maxMs)
       const timeout = request.timeoutMs ?? budget.ptcTimeoutMs ?? limits.defaultMs
-      // Explicit no-deadline calls remain no-deadline unless the plugin configured a ceiling.
-      const selected = request.timeoutMs === null && budget.ptcMaxTimeoutMs === undefined ? null : Math.min(timeout, cap)
+      // Defaults apply only to omitted deadlines; an explicit null is bounded only by a configured ceiling.
+      const selected = request.timeoutMs === null
+        ? budget.ptcMaxTimeoutMs === undefined ? null : cap
+        : Math.min(timeout, cap)
       return original.call(this, { ...request, timeoutMs: selected })
     }
     bridge = { users: 0, original, wrapped, descriptor: Object.getOwnPropertyDescriptor(runtime, 'resolve') }

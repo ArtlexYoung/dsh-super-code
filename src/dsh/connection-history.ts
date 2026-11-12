@@ -11,7 +11,15 @@ function publicEvent(event: SessionEvent): { text: string; isError?: boolean } {
   const data = event.data as Record<string, any>, type: string = event.type
   switch (type) {
     case 'assistant/message': return { text: publicMessageText(data.message?.content ?? data.content) }
-    case 'user/message': return { text: publicMessageText(data.content ?? data.message?.content) }
+    case 'user/message': {
+      // Runtime snapshots use the user role too; identify their producer rather
+      // than filtering text that an actual user may legitimately have written.
+      const source = data.source ?? data.message?.source
+      if (source?.kind === 'runtime-context' || source?.kind === 'system-prompt'
+        || source?.kind === 'plugin:@deepseek-ai/dsh-system-prompt'
+        || source?.kind === 'plugin' && source.plugin === '@deepseek-ai/dsh-system-prompt') return { text: '' }
+      return { text: publicMessageText(data.content ?? data.message?.content) }
+    }
     case 'tool/call': return { text: `${data.name ?? 'tool'}\n${typeof data.arguments === 'string' ? data.arguments : ''}` }
     // PTC records already contain decoded arguments and public outcome blocks.
     case 'tool/ptc-dispatch-start': return { text: `${data.name}\n${JSON.stringify(data.arguments)}` }
@@ -26,11 +34,18 @@ function publicEvent(event: SessionEvent): { text: string; isError?: boolean } {
     default: return { text: '' }
   }
 }
-export function connectionHistoryPage(events: readonly SessionEvent[], cursor: HistoryCursor, limit: number): HistoryPage {
+/** Host journals are ordered by seq; start skips inherited events without copying them. */
+export function connectionHistoryPage(events: readonly SessionEvent[], cursor: HistoryCursor, limit: number, start = 0): HistoryPage {
   if (!Number.isSafeInteger(cursor.seq) || cursor.seq < 0 || !Number.isSafeInteger(cursor.offset) || cursor.offset < 0 || !Number.isInteger(limit) || limit < 1 || limit > 20) throw new ConnectionError('invalid-history-cursor')
   const entries: HistoryPage['entries'] = []
-  let index = events.findIndex(event => event.seq >= cursor.seq), nextCursor = { ...cursor }, chars = 0, scanned = 0
-  if (index < 0) {
+  let low = start, high = events.length
+  while (low < high) {
+    const middle = low + Math.floor((high - low) / 2)
+    if (events[middle]!.seq < cursor.seq) low = middle + 1
+    else high = middle
+  }
+  let index = low, nextCursor = { ...cursor }, chars = 0, scanned = 0
+  if (index === events.length) {
     if (cursor.offset) throw new ConnectionError('invalid-history-cursor')
     return { entries, nextCursor, hasMore: false, scope: 'own-public-events' }
   }

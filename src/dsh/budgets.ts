@@ -24,6 +24,7 @@ export interface Budgets {
 export type DeletionProtectionMode = 'off' | 'relaxed' | 'strict'
 
 export interface Configuration {
+  readonly grillMeSkill?: boolean
   readonly oilUiSkill?: boolean
   readonly openspecSkills?: boolean
   readonly mattpocockSkills?: boolean
@@ -51,7 +52,8 @@ export const budgetSchema: z<Budgets> = z.object({
 
 // SettingsProvider resolves plain data; volatile references belong only to Loader entries.
 export const settingsConfigurationSchema: z<Configuration> = z.object({
-  oilUiSkill: z.boolean().description('Enable the bundled oil-ui Skill (default: on).'),
+  grillMeSkill: z.boolean().description('Enable grill-me and its grilling dependency independently (default: off).'),
+  oilUiSkill: z.boolean().description('Enable the bundled oil-ui Skill (default: off).'),
   openspecSkills: z.boolean().description('Enable the complete OpenSpec Skill package (default: off).'),
   mattpocockSkills: z.boolean().description('Enable the complete Matt Pocock Skills package (default: off).'),
   pstackSkills: z.boolean().description('Enable the complete PStack Skill package (default: off).'),
@@ -66,6 +68,7 @@ export const settingsConfigurationSchema: z<Configuration> = z.object({
 })
 
 export const configurationSchema: z<Configuration> = z.object({
+  grillMeSkill: settingsConfigurationSchema.dict!.grillMeSkill!.extra('volatile', true),
   oilUiSkill: settingsConfigurationSchema.dict!.oilUiSkill!.extra('volatile', true),
   openspecSkills: settingsConfigurationSchema.dict!.openspecSkills!.extra('volatile', true),
   mattpocockSkills: settingsConfigurationSchema.dict!.mattpocockSkills!.extra('volatile', true),
@@ -81,6 +84,7 @@ export const configurationSchema: z<Configuration> = z.object({
 })
 
 const validConfiguration = json.object({
+  grillMeSkill: json.boolean().optional(),
   oilUiSkill: json.boolean().optional(),
   openspecSkills: json.boolean().optional(),
   mattpocockSkills: json.boolean().optional(),

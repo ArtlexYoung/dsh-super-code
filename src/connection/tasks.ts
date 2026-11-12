@@ -3,9 +3,9 @@ import { realpath, stat } from 'node:fs/promises'
 import { isAbsolute, relative, sep } from 'node:path'
 import { setTimeout as pause } from 'node:timers/promises'
 import { activeTask, ConnectionError } from './types.js'
-import type { CallerApproval, CallerApprovalDecision, ConnectionConfig, DelegatedTask, DelegationHost, HistoryCursor, HistoryPage, ModelSelection, TaskStatus, TaskView } from './types.js'
+import type { CallerApproval, CallerApprovalDecision, ConnectionConfig, DelegatedTask, DelegationHost, HistoryCursor, HistoryPage, HostObservation, ModelSelection, TaskStatus, TaskView } from './types.js'
 import { CallerApprovals } from './approvals.js'
-import type { ApprovalAnswer } from './approvals.js'
+import type { ApprovalAnswer, ApprovalRoot } from './approvals.js'
 import type { ConnectionStore } from './store.js'
 import { gitSnapshot, gitWorktreeRoot, workspaceChanges } from './git.js'
 
@@ -42,6 +42,9 @@ export class DelegatedTasks {
     await this.store.saveTasks(this.records.map(row => row === task ? candidate : row))
     Object.assign(task, candidate)
   }
+  private async reconnect(task: DelegatedTask, connectionId?: string): Promise<void> {
+    if (connectionId && task.connectionId !== connectionId) await this.replace(task, { ...task, connectionId })
+  }
   private owned(id: string): DelegatedTask {
     const task = this.records.find(row => row.id === id)
     if (!task) throw new ConnectionError('task-not-found')
@@ -51,13 +54,15 @@ export class DelegatedTasks {
     if (this.closed || !this.configuration().enabled) throw new ConnectionError('connection-disabled')
     if (signal?.aborted) throw new ConnectionError('request-aborted')
   }
-  async requestApproval(input: Omit<CallerApproval, 'id' | 'createdAt' | 'expiresAt' | 'taskId' | 'cwd'>, roots: readonly string[], signal?: AbortSignal): Promise<ApprovalAnswer> {
+  async requestApproval(input: Omit<CallerApproval, 'id' | 'createdAt' | 'expiresAt' | 'taskId' | 'cwd'>, roots: readonly ApprovalRoot[], signal?: AbortSignal): Promise<ApprovalAnswer> {
     const config = this.configuration()
     if (this.closed || !config.enabled || !config.allowCallerApproval) return 'host'
-    const task = this.records.find(row => roots.includes(row.sessionId) && activeTask(row.status) && !row.cancellationRequested)
+    const owns = (row: DelegatedTask): boolean => roots.some(root => root.sessionId === row.sessionId
+      && [row.currentRequest, ...row.pendingRequests ?? []].some(id => root.requestIds.includes(id)))
+    const task = this.records.find(row => owns(row) && activeTask(row.status) && !row.cancellationRequested)
     if (!task) return 'host'
     try { await this.directory(task.cwd) } catch { return 'host' }
-    if (!this.configuration().enabled || !this.configuration().allowCallerApproval || this.closed || task.cancellationRequested || !activeTask(task.status)) return 'host'
+    if (!this.configuration().enabled || !this.configuration().allowCallerApproval || this.closed || task.cancellationRequested || !activeTask(task.status) || !owns(task)) return 'host'
     return this.approvals.request({ ...input, taskId: task.id, cwd: task.cwd }, signal)
   }
   async approve(taskId: string, approvalId: string, decision: CallerApprovalDecision, signal?: AbortSignal): Promise<{ outcome: string; repeated: boolean }> {
@@ -127,7 +132,7 @@ export class DelegatedTasks {
       const prior = this.records.find(row => row.requestId === input.requestId)
       if (prior) {
         if (prior.fingerprint !== fingerprint) throw new ConnectionError('request-conflict')
-        if (input.connectionId && prior.connectionId !== input.connectionId) { prior.connectionId = input.connectionId; await this.persist() }
+        await this.reconnect(prior, input.connectionId)
         return prior
       }
       if (!this.configuration().allowNewConversations) throw new ConnectionError('new-conversation-disabled')
@@ -178,13 +183,13 @@ export class DelegatedTasks {
         const request = { cwd, prompt: input.prompt, client: task.client }
         const initial = input.modelSelection ? digest({ ...request, modelSelection: input.modelSelection }) : digest(request)
         if (initial !== task.fingerprint) throw new ConnectionError('request-conflict')
-        if (input.connectionId && task.connectionId !== input.connectionId) { task.connectionId = input.connectionId; await this.persist() }
+        await this.reconnect(task, input.connectionId)
         return
       }
       const prior = Object.hasOwn(task.operations, input.requestId) ? task.operations[input.requestId] : false
       if (prior) {
         if (prior !== fingerprint) throw new ConnectionError('request-conflict')
-        if (input.connectionId && task.connectionId !== input.connectionId) { task.connectionId = input.connectionId; await this.persist() }
+        await this.reconnect(task, input.connectionId)
         return
       }
       if (Object.keys(task.operations).length >= 128) throw new ConnectionError('task-operation-limit')
@@ -192,7 +197,7 @@ export class DelegatedTasks {
       if (task.status === 'cancelling' || task.status === 'waiting_confirmation') throw new ConnectionError('resolve-in-dsh-first')
       await this.capacity(task.cwd, task.id)
       ;(await this.authorization(task.cwd, signal)).check(task.cwd)
-      const previous = { currentRequest: task.currentRequest, cancellationRequested: task.cancellationRequested, status: task.status, previousRequest: task.previousRequest }
+      const previous = { currentRequest: task.currentRequest, cancellationRequested: task.cancellationRequested, status: task.status, pendingRequests: task.pendingRequests }
       // Persist the operation before admission. A retry observes this intent; it never resends it.
       const intent = structuredClone(task)
       Object.defineProperty(intent.operations, input.requestId, { value: fingerprint, enumerable: true, configurable: true, writable: true })
@@ -207,7 +212,7 @@ export class DelegatedTasks {
         phase = 'authorization'
         ;(await this.authorization(task.cwd, signal)).check(task.cwd)
         const dispatch = structuredClone(task)
-        dispatch.previousRequest = task.previousRequest ?? task.currentRequest
+        dispatch.pendingRequests = [...task.pendingRequests ?? [], task.currentRequest]
         dispatch.currentRequest = randomUUID(); dispatch.cancellationRequested = false
         this.event(dispatch, 'starting', 'Continuation dispatch checkpoint saved. Admission is not yet confirmed.')
         phase = 'persistence'
@@ -222,7 +227,7 @@ export class DelegatedTasks {
         if (phase === 'prompt') this.event(task, 'interrupted', 'Continuation admission could not be confirmed; no automatic retry.')
         else {
           Object.assign(task, previous)
-          if (!previous.previousRequest) delete task.previousRequest
+          if (!previous.pendingRequests) delete task.pendingRequests
           this.event(task, previous.status, phase === 'model'
             ? 'Requested model or reasoning effort could not be selected. No prompt was sent.'
             : `Continuation stopped (${error instanceof ConnectionError ? error.code : 'directory-unavailable'}). No prompt was sent.`)
@@ -250,36 +255,49 @@ export class DelegatedTasks {
     })
     return this.view(id, 0)
   }
+  private async observe(task: DelegatedTask, requestId: string): Promise<HostObservation> {
+    try { return await this.host.observe(task.sessionId, requestId, task.cancellationRequested) }
+    catch { return { status: 'unavailable', output: '', detail: 'Task observation is unavailable; no request was replayed.' } }
+  }
   private async refresh(task: DelegatedTask): Promise<void> {
     if (!activeTask(task.status) && task.status !== 'interrupted') return
     if (task.cancellationRequested) await this.host.cancel(task.sessionId).catch(() => {})
-    let observation = await this.host.observe(task.sessionId, task.currentRequest, task.cancellationRequested)
-    let checkpointChanged = false
-    if (task.previousRequest && observation.observation) {
+    let observation = await this.observe(task, task.currentRequest)
+    let pendingRequests = task.pendingRequests ?? []
+    if (pendingRequests.length && observation.observation) {
       if (observation.observation.lastEventSeq >= 0) {
-        delete task.previousRequest; checkpointChanged = true
+        pendingRequests = []
       } else if (!task.cancellationRequested) {
-        const previous = await this.host.observe(task.sessionId, task.previousRequest)
-        observation = ['finished', 'failed', 'interrupted'].includes(previous.status)
-          ? { ...previous, status: 'interrupted', detail: 'Continuation admission has not been confirmed; the previous turn settled. No automatic retry.' }
-          : previous
+        // Find the latest admitted turn, retaining newer queued requests until
+        // they appear in the journal. A conversation may queue several turns.
+        // Native hosts report the newest admitted request from the same snapshot.
+        // Avoid rescanning the entire journal for every still-queued request.
+        const latest = observation.latestRequestId ? pendingRequests.indexOf(observation.latestRequestId) : -1
+        for (let index = latest >= 0 ? latest : pendingRequests.length - 1; index >= 0; index--) {
+          const previous = await this.observe(task, pendingRequests[index]!)
+          if (index && previous.observation?.lastEventSeq === -1) continue
+          pendingRequests = pendingRequests.slice(index)
+          observation = ['finished', 'failed', 'interrupted'].includes(previous.status)
+            ? { ...previous, status: 'interrupted', detail: 'Continuation admission has not been confirmed; the previous turn settled. No automatic retry.' }
+            : previous
+          break
+        }
       }
     }
     const status: TaskStatus = task.cancellationRequested
       ? ['finished', 'interrupted', 'failed'].includes(observation.status) ? 'cancelled' : observation.status === 'unavailable' ? 'unavailable' : 'cancelling'
       : observation.status
     const output = observation.status === 'unavailable' && !observation.output ? task.output : observation.output.slice(-12000)
-    const changed = checkpointChanged || task.output !== output || JSON.stringify(task.observation) !== JSON.stringify(observation.observation ?? task.observation)
-    task.output = output
-    if (observation.observation) task.observation = observation.observation
+    const changed = JSON.stringify(pendingRequests) !== JSON.stringify(task.pendingRequests ?? []) || task.output !== output || JSON.stringify(task.observation) !== JSON.stringify(observation.observation ?? task.observation)
     if (task.status !== status || changed) {
-      this.event(task, status, observation.detail); await this.persist()
+      const candidate = { ...task, pendingRequests, output, observation: observation.observation ?? task.observation, events: [...task.events] }
+      this.event(candidate, status, observation.detail)
+      await this.replace(task, candidate)
     }
   }
   private async refreshPending(except = ''): Promise<void> {
     for (const task of this.records) if (task.id !== except && (activeTask(task.status) || task.status === 'interrupted')) {
-      try { await this.refresh(task) }
-      catch { if (task.status !== 'unavailable') { this.event(task, 'unavailable', 'Task observation is unavailable; no request was replayed.'); await this.persist() } }
+      await this.refresh(task)
     }
   }
   async tick(): Promise<void> {

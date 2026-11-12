@@ -20,7 +20,7 @@ export interface DelegatedTask {
   status: TaskStatus; cancellationRequested: boolean; createdAt: number; updatedAt: number; currentRequest: string; output: string;
   sequence: number; events: TaskEvent[]; operations: Record<string, string>; baseline: GitSnapshot;
   connectionId?: string;
-  previousRequest?: string;
+  pendingRequests?: string[];
   modelSelection?: ModelSelection;
   observation?: ObservationDetails;
 }
@@ -36,7 +36,7 @@ export interface TaskView {
 export interface CallerApproval { id: string; taskId: string; sessionId: string; cwd: string; toolName: string; callId?: string; reason: string; arguments: string; createdAt: number; expiresAt: number }
 export type CallerApprovalDecision = 'approve' | 'reject';
 export interface ObservationDetails { lastEventSeq: number; lastEventType: string; outputTruncated: boolean; errorCode?: string }
-export interface HostObservation { status: 'running' | 'waiting_confirmation' | 'finished' | 'failed' | 'interrupted' | 'unavailable'; output: string; detail: string; observation?: ObservationDetails }
+export interface HostObservation { status: 'running' | 'waiting_confirmation' | 'finished' | 'failed' | 'interrupted' | 'unavailable'; output: string; detail: string; observation?: ObservationDetails; latestRequestId?: string }
 export interface HistoryCursor { seq: number; offset: number }
 export interface HistoryEntry { seq: number; type: string; offset: number; totalChars: number; text: string; isError?: boolean }
 export interface HistoryPage { entries: HistoryEntry[]; nextCursor: HistoryCursor; hasMore: boolean; scope: 'own-public-events'; sessionId?: string; descendants?: { sessionId: string; kind: string }[]; descendantsTruncated?: boolean }

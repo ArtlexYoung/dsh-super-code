@@ -1,10 +1,12 @@
 # Evaluation Results
 
+Model names are anonymized; lettered labels distinguish evaluation models.
+
 [中文](../EvaluationResults.md) · English
 
 ## Pro100: continuous-environment comparison
 
-All runs use Harness `0.2.1-rc.2`, `deepseek-v4.1-flash-1017`, high reasoning effort, and legacy budgets. Each group reuses its environment continuously across tasks. These are full 100-task results, sorted by tasks passed.
+All runs use Harness `0.2.1-rc.2`, `Evaluation model B`, high reasoning effort, and legacy budgets. Each group reuses its environment continuously across tasks. These are full 100-task results, sorted by tasks passed.
 
 | Configuration | Passed/valid | Mean total tokens (M) | Mean time (min) | Mean model calls | Mean tool calls | Cache rate |
 |---|---:|---:|---:|---:|---:|---:|
@@ -38,8 +40,8 @@ Comparisons on the same host keep model, reasoning effort, and budgets fixed whi
 
 ### Historical process
 
-1. **Old-host baseline**: official presets and plugin versions were evaluated on DSH `0.1.5-rc.2` with `deepseek-v4.1-flash`. The Super Code `0.3.0` candidate passed 56 tasks, above the best official result (Standard + high, 51).
-2. **Regression after the host upgrade**: on DSH `0.2.1-rc.2` with `deepseek-v4.1-flash-1017`, under default budgets Standard fell to 46 and Super Code `0.3.4` to 41, below Standard.
+1. **Old-host baseline**: official presets and plugin versions were evaluated on DSH `0.1.5-rc.2` with `Evaluation model B`. The Super Code `0.3.0` candidate passed 56 tasks, above the best official result (Standard + high, 51).
+2. **Regression after the host upgrade**: on DSH `0.2.1-rc.2` with `Evaluation model B`, under default budgets Standard fell to 46 and Super Code `0.3.4` to 41, below Standard.
 3. **Root-cause analysis**: a host probe showed that the new host tightened context budgets (see [Contents of the legacy budgets](#contents-of-the-legacy-budgets)), identifying budgets as one cause of the regression.
 4. **Retest with legacy budgets**: both sides switched to legacy budgets. Standard stayed at 46; Super Code `0.3.5` rose to 49. Based on this, the plugin uses legacy budgets by default from `0.3.6`.
 5. **Cross-model check**: compared with native ZCode on `glm-5.3-flash` to test whether the approach depends on a specific model.
@@ -56,7 +58,7 @@ Comparisons on the same host keep model, reasoning effort, and budgets fixed whi
 
 ## New DSH and budgets
 
-DSH `0.2.1-rc.2` · model `deepseek-v4.1-flash-1017` (API ID `deepseek/deepseek-flash`) · high.
+DSH `0.2.1-rc.2` · model `Evaluation model B` (API ID `deepseek/Evaluation model A`) · high.
 
 | Metric (per-task mean) | Standard · default | Super Code 0.3.4 · default | Standard · legacy | Super Code 0.3.5 · legacy |
 |---|---:|---:|---:|---:|
@@ -99,7 +101,7 @@ The same task has passed in one run and failed in another. Because configuration
 
 ## Official presets
 
-DSH `0.1.5-rc.2` · `deepseek-v4.1-flash`.
+DSH `0.1.5-rc.2` · `Evaluation model B`.
 
 | Metric (per-task mean) | Minimal + high | Minimal + max | Standard + high | Standard + max | PTC + high | Create + high |
 |---|---:|---:|---:|---:|---:|---:|
@@ -126,7 +128,7 @@ DSH `0.1.5-rc.2` · `deepseek-v4.1-flash`.
 
 ## Historical versions
 
-DSH `0.1.5-rc.2` · `deepseek-v4.1-flash` · high. Times use the historical raw convention (see [Methodology](#methodology)); don't compare them with the net times above.
+DSH `0.1.5-rc.2` · `Evaluation model B` · high. Times use the historical raw convention (see [Methodology](#methodology)); don't compare them with the net times above.
 
 | Metric (per-task mean) | Minimal + high | 0.0.9 | 0.1.2 | 0.2.0 layered memory | 0.3.0 Batch.3 |
 |---|---:|---:|---:|---:|---:|

@@ -2,7 +2,7 @@
 - id: super-code
   name: dsh-super-code/super-code
   config:
-    presetVersion: 0.3.11
+    presetVersion: 0.4.0
 # Reuse the host backend in an agent-local realm, as shipped Harness presets do.
 # The token meter remains host-owned; each agent owns its compaction lifecycle.
 - id: compaction
@@ -49,7 +49,8 @@
 - id: skill-super-code-bundled
   name: dsh-super-code/skills
   config:
-    bundledSkillDir: !!js "process.getBuiltinModule('node:url').fileURLToPath(new URL('skills/', baseUrl))"
+    layout: builtin
+    bundledSkillDir: !!js "new URL('../../builtin/skills/', baseUrl).href"
 - id: tool-skill
   name: '@deepseek-ai/dsh-tool-skill'
 

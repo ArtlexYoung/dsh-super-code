@@ -324,7 +324,7 @@ export function apply(ctx: Context, config: Config = {}): void {
           exec.signal.throwIfAborted()
           if (!await ctx.sessions.flush(session)) throw new Error('No host persistence checkpoint is configured; memory sources are not durable')
           exec.signal.throwIfAborted()
-          const saved = await longMemory.remember(workspace, topic, input.expectedRevision, entries)
+          const saved = await longMemory.remember(workspace, topic, input.expectedRevision, entries, exec.signal)
           return JSON.stringify({ scope, topic: saved.topic, revision: saved.revision, count: saved.entries.length })
         }
         if (args.action === 'forget') {
@@ -334,7 +334,7 @@ export function apply(ctx: Context, config: Config = {}): void {
           exec.signal.throwIfAborted()
           if (!await ctx.sessions.flush(session)) throw new Error('No host persistence checkpoint is configured; memory sources are not durable')
           exec.signal.throwIfAborted()
-          const saved = await longMemory.forget(workspace, topic, input.expectedRevision, args.id)
+          const saved = await longMemory.forget(workspace, topic, input.expectedRevision, args.id, exec.signal)
           return JSON.stringify({ scope, topic: saved.topic, revision: saved.revision, count: saved.entries.length })
         }
         throw new Error('Unsupported memory action')

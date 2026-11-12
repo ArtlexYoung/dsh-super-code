@@ -4,10 +4,7 @@
     - id: preset-super-code
       name: '@deepseek-ai/dsh-agent-preset'
       disabled: !!js >-
-        (() => { try {
-          process.getBuiltinModule('node:module').createRequire(process.argv[1]).resolve('@deepseek-ai/dsh-agent-preset')
-          return false
-        } catch { return true } })()
+        !get('pluginPackages')?.packageOf('@deepseek-ai/dsh-agent-preset', baseUrl)
       config:
         id: super-code
         name: Super Code
@@ -17,7 +14,7 @@
           - id: super-code
             name: dsh-super-code/super-code
             config:
-              presetVersion: 0.3.11
+              presetVersion: 0.4.0
               presetInstallation: bundle:dsh-super-code
           - id: compaction
             name: cordis:group
@@ -63,11 +60,9 @@
           - id: skill-super-code-bundled
             name: dsh-super-code/skills
             config:
+              layout: builtin
               bundledSkillDir: !!js >-
-                (() => {
-                  const require = process.getBuiltinModule('node:module').createRequire(new URL('package.json', baseUrl))
-                  return require('node:path').join(require('node:path').dirname(require.resolve('dsh-super-code/package.json')), 'presets/super-code/skills')
-                })()
+                get('pluginPackages').packageOf('dsh-super-code', baseUrl).dir + '/builtin/skills'
           - id: tool-skill
             name: '@deepseek-ai/dsh-tool-skill'
           - id: tool-presentation

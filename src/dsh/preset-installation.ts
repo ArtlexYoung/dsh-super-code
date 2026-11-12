@@ -182,10 +182,13 @@ export class PresetInstaller {
         await rename(installation.path, join(backup, previousId))
         const moved = await lstat(join(backup, previousId))
         if (!moved.isDirectory() || moved.dev !== installation.dev || moved.ino !== installation.ino) {
-          if (!await exists(installation.path)) await rename(join(backup, previousId), installation.path)
-          return reject('ownership-unverified')
+          throw new Error('Installation directory changed during backup')
         }
       } catch {
+        if (backup && !await exists(installation.path) && await exists(join(backup, previousId))) {
+          await rename(join(backup, previousId), installation.path)
+          await rm(backup, { recursive: true, force: true })
+        }
         return reject('ownership-unverified')
       }
       try {

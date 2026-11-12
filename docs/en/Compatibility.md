@@ -2,11 +2,13 @@
 
 [中文](../Compatibility.md) · English
 
-Web is verified from Harness `0.1.5-alpha.1` through `0.2.1-rc.4`, with incremental rc.4 coverage detailed below. Official Desktop is verified through `0.2.1-rc.4` (x64 archive under Rosetta), and NEXT at `2.0.19-next` (bundled `0.2.1-rc.2`).
+Supports Harness `0.1.5-alpha.1` through `0.2.2-rc.2`, including `0.2.2-alpha.3`. Version 0.4.0 has been checked against all 27 complete Web hosts in this range, official macOS arm64 Desktop `0.2.2-rc.2`, and NEXT `2.0.22-next` (bundled `0.2.2-rc.1`). This round's scope and limits are recorded below.
 
-The bundled Windows Bash in 0.3.10 also passes full-process Windows acceptance on official Desktop `0.2.1-rc.5` and NEXT `2.0.21-next` (bundled `0.2.1-rc.4`), within the scope below.
+Full-process Windows coverage currently reaches official Desktop `0.2.1-rc.5` and NEXT `2.0.21-next` (bundled `0.2.1-rc.4`). New macOS/Web results do not extend that Windows scope.
 
-The 0.3.11 fixes add staged version-contract and official-frontend checks through `0.2.2-alpha.3`. Full-host coverage is recorded separately in the 0.3.11 section below.
+The records below distinguish each code baseline and test layer. Component checks, static-frontend fixtures, and earlier development-package results do not establish a complete rerun of every version and platform.
+
+The new PStack workflow adaptation starts at `0.2.1-alpha.1`; earlier hosts are outside its scope. Older-version records below describe historical coverage of other plugin features.
 
 ## Verified hosts
 
@@ -55,11 +57,30 @@ Under npm rules, a range like `>=0.1.5-alpha.1 <0.3.0` excludes prereleases such
 
 `zod`, `js-yaml`, and `@modelcontextprotocol/sdk` are runtime dependencies and are not bundled. The Windows shell also packages separately licensed programs that run as subprocesses; see [runtime notes](../../runtime/windows/README.md) for sources, licenses, and corresponding source.
 
+## November 12, 2026 · 0.4.0 compatibility rerun
+
+The existing peer dependency ranges and minimum `0.1.5-alpha.1` remain unchanged. Every version uses the same 0.4.0 candidate; no plugin runtime changes were needed for these checks.
+
+| Layer | Scope | Result |
+|---|---|---|
+| Complete Web hosts | All 27 exact published versions, `0.1.5-alpha.1` through `0.2.2-rc.2` | 12 groups per version; 324 pass |
+| Actual SDK and disk storage | The same 27 versions | Six groups per version; 162 pass |
+| Native Skill loading | The same 27 versions | 24 checks and 98 body loads per version pass; duplicate names follow provider precedence |
+| Native menu contract | The same 27 versions | Pass; `0.1.5` lacks package-query expansion, but individual Skill names remain selectable |
+| Browser interactions | Official React, controls and themes from all 27 versions, with fixture Remote services | 15 groups per version; 405 pass without page errors |
+| Official macOS arm64 Desktop | `0.2.2-rc.2` | 13 complete-host groups and four actual UI checks pass |
+| DSH NEXT · macOS arm64 | `2.0.22-next`, bundled `0.2.2-rc.1` | 13 complete-host groups and four actual UI checks pass |
+
+- **Complete-host checks**: install the candidate, verify preset versions, independent budget/protection saves, five default-off Skill packages enabling and disabling in existing conversations, default MCP settings, manual memory CRUD and concurrency conflicts, native/PTC task and memory calls, complete process restarts, original-conversation continuation and memory recovery.
+- **UI checks**: six settings tabs, Skill versions and switches, failed saves, budget validation, connection settings, Chinese/English, light/dark themes, narrow layouts, 10,000-row task virtualization, execution-tree animation and legacy memory maintenance. Both actual desktops additionally verify settings loading, matching versions, five default-off packages, switch autosave and disabled Windows command-environment controls on macOS.
+- **Provenance and baseline**: the official archive matches the feed SHA-512 and passes deep signature verification; all 333 DSH components are rc.2. NEXT has a valid signature and all 330 DSH components are rc.1. All 1154 unit tests, type checking and build/pack pass. Acceptance scripts were corrected for concurrent completion order, upstream theme packaging and actual page structure; original failed records remain preserved.
+- **Limits**: complete hosts use a local deterministic model adapter with zero external-model calls. This does not establish model effectiveness, acceptance of all 58 PStack workflows or every feature branch. This round does not repeat Windows, Linux, every historical native desktop, native directory pickers or physical-uninstall recovery; those retain their historical evidence identities. Full PStack workflow adaptation still starts at `0.2.1-alpha.1`.
+
 ## November 11, 2026 · PStack DSH adaptation
 
-- Batch six removes adapter-added command bans, mandatory API checks and repeated snapshot audits. Four role templates now match upstream exactly, and delegation translation preserves the upstream read-only requirement. Read-only roles may use commands without side effects, but may not write files or change external state. Command capture also fixes sparse-argv validation and post-submission argument mutation. All 925 tests in the full development working tree, 658 tests in the isolated commit snapshot, and 143 resource checks across 13 versions pass; real minimum/latest Web capture scenarios each pass nine independent checks. Live workflow children still redirect output into temporary files, so read-only scope adherence remains unresolved.
+- Batch six removes adapter-added command bans, mandatory API checks and repeated snapshot audits. Four role templates now match upstream exactly, and delegation translation preserves the upstream read-only requirement. Read-only roles may use commands without side effects, but may not write files or change external state. Command capture also fixes sparse-argv validation and post-submission argument mutation. All 925 regression tests and 143 resource checks across 13 versions pass; real minimum/latest Web capture scenarios each pass nine independent checks. Live workflow children still redirect output into temporary files, so read-only scope adherence remains unresolved.
 - The scope contains all 13 npm releases from `0.2.1-alpha.1` through the current latest `0.2.2-rc.1`, including `0.2.2-alpha.3`. Native catalogs, all 58 bodies, slash injection, invocation permissions and same-name precedence pass, with batch five adding command-capture resources for 143 checks; task enum diagnostics pass another 39 checks. Native subagent contracts pass 65 checks; live switches in existing browser conversations pass 169. Browser checks use real frontend modules with fixtures at service boundaries, not 13 complete desktop processes.
-- On November 11, 2026, all 58 entrypoints ran through native slash injection and real model calls in isolated macOS arm64 Web `0.2.2-rc.1`, using `tokenhub/deepseek/deepseek-flash`. Each entrypoint had an independent scenario. Twelve scenarios were rerun, and two received clarifications; repeats are not added to the 58-entry denominator.
+- On November 11, 2026, all 58 entrypoints ran through native slash injection and real model calls in isolated macOS arm64 Web `0.2.2-rc.1`, using `tokenhub/deepseek/Evaluation model A`. Each entrypoint had an independent scenario. Twelve scenarios were rerun, and two received clarifications; repeats are not added to the 58-entry denominator.
 - First-round acceptance: 36 pass, 17 pass with qualifications, four fail and one partial. Read-only children in `how`, `teach` and `create-formal-verification-skill` still wrote global temporary files. `principle-outcome-oriented-execution` retained `add` twice and passed after the target was clarified as `sum({left,right})`; ambiguity between the original wording and the acceptance contract needs separate review. `ketchup-video` encoded and decoded a real video, but the test route omitted the image-input declaration and the workflow did not complete its visual review. Execution completion is not acceptance.
 - Image diagnosis corrected: the model does support images. With `input: ["text", "image"]` declared in the isolated route, direct image attachments and native `read_image` on both `0.2.1-alpha.1` and `0.2.2-rc.1` let the live model read a random code and count shapes present only in the pixels. Provider requests contained image content. A text-only configuration rejected images before sending. The Chinese rc.1 Web UI also passed native selection, preview, removal, paste, drop and history display; this round did not exercise native desktop image interactions across platforms.
 - All 22 entries without full acceptance were rerun. The video workflow completed 14 actual image reads, including decoded frames from every slide; eight CLI samples and four decoded images were independently checked. The complete `statechart` workflow also passed real TLC and code replay. Independent baseline checks passed 56/57; the remaining check compares an ambiguously worded API task against a fixed contract and needs separate interpretation. Five additional checks passed. Read-only children still wrote global temporary files, and cleanup used `rm` and process-name matching to stop encoders. Image transport and baseline checks do not erase these defects, so all 58 workflows cannot be reported as fully accepted.
@@ -77,6 +98,25 @@ Under npm rules, a range like `>=0.1.5-alpha.1 <0.3.0` excludes prereleases such
 - The completeness review restores setup’s eight stages and 17 role categories, independent reflect synthesis, incremental history, simulator/cache branches, and cause-based retries/late-result handling. Reasoning budget, candidate count and concurrency remain distinct. Missing public model discovery means inheritance, not scanning private configuration. Long runs assume neither a scheduler nor a private agent store.
 
 - Follow-up live-model checks: latest-host setup preserves the full role map and public capability-discovery boundary; reflect runs three independent reviews plus a fourth synthesizer, routes structural proposals to Backlog and makes no Skill edits before approval. Minimum `0.2.1-alpha.1` rechecks the new setup’s 17 roles, separate budget/panel/concurrency values and existing notes. Initial discovery/classification failures and acceptance-script format assumptions remain recorded; a completion marker alone is not acceptance evidence.
+
+## November 9, 2026 · Latest-host rerun
+
+This run uses `main@8d28e47`, including the oil-ui `0.32.0` replacement. The fixed test package has SHA-256 `3b19a6c04b960202d87e13bb17e59085f7378503aaf8316a9c0d78220f6c50d5`. It is not the original v0.3.11 Release archive; no version bump or republication was performed.
+
+At checking time, official [npm](https://www.npmjs.com/package/@deepseek-ai/dsh) `latest`/`next` and the [most recent GitHub Release](https://github.com/deepseek-ai/deepseek-harness/releases/tag/dsh-v0.2.2-rc.1) are all `0.2.2-rc.1`, released November 4, 2026. The alpha tag is `0.2.2-alpha.3`; no later release was found. rc.1 changes Loader, tool execution, and session projections but retains the legacy projection registration used by the plugin. No plugin runtime change is required within the tested scope below.
+
+| Complete host | Actual version | Result |
+|---|---|---|
+| Official Web | `0.2.2-rc.1` | Pass |
+| Official Web · alpha channel | `0.2.2-alpha.3` | Pass |
+| Official Desktop · macOS arm64 | `0.2.2-rc.1` | Pass |
+| DSH NEXT · macOS universal archive | `2.0.22-next`, bundled `0.2.2-rc.1` | Pass |
+
+- **Complete flow**: the same package runs through actual Loader, Agent, tools, PTC, and session storage. Checks cover standard/PTC/minimal/Super Code/renamed-copy presets, installation and reinstall backups, budgets and deletion settings, parent/child histories, compaction, legacy memory CRUD/conflicts/scoping, cold restarts, plugin disable/re-enable, and physical removal followed by preserved history and official-standard continuation. Super Code shows one recovery notice; minimal excludes revoked plugin rules. The real deferred Skill tool loads oil-ui, verifying its body, provider, relative resources, and installed version.
+- **MCP boundaries**: each passing full host additionally checks port conflicts, token rotation, and directory consent, plus 39 checks across admission, persistence failures, approval lifecycle, directory changes, and storage locks. Coverage includes cancellation, disconnect, revocation, idempotency, and no replay after restart.
+- **Frontend and baseline**: official React, controls, and themes from `0.1.5-alpha.1`, `0.2.2-rc.1`, and `0.2.2-alpha.3` each pass 14 interaction groups with fixture services. These cover five settings tabs, autosave/failures, custom dropdowns, Chinese/English, themes, 440px settings layouts, 10,000-row virtualization, circle animation, exactly one open section, and legacy memory CRUD, without page errors. These are not three complete hosts. All 560 unit tests, type checking, and build pass.
+- **Provenance and versions**: the official arm64 ZIP matches its nightly feed SHA-512 and the original application passes deep signature verification; all 321 DSH components are rc.1. The NEXT download channel points to `2.0.22-next`, all 330 DSH components are rc.1, and the original application passes deep signature verification. Its API supplies no public digest; local SHA-256 only pins the tested sample. Both Web graphs contain 320 DSH components, all at their target version.
+- **Limits**: full hosts use a local deterministic model adapter, without external-model calls or effectiveness evaluation. This run does not repeat every historical complete host, latest native Windows/Linux processes, or native directory picking. The rc.1 host requires Node `>=24.9` when upgrading Web; the plugin retains its Node range for older hosts.
 
 ## 0.3.11 · 2026-11-06
 

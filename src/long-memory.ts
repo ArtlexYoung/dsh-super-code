@@ -41,6 +41,8 @@ export const longMemoryTopicSchema: z.ZodType<LongMemoryTopic> = z.object({
   workspace: z.string().length(64), topic: id, revision: z.number().int().positive(),
   entries: z.array(longMemoryEntrySchema).max(20),
 }).strict()
+const additionsSchema = z.array(longMemoryEntrySchema).min(1).max(8)
+const entryTokenSchema = z.string().regex(/^(?:[a-f0-9]{64})?$/)
 
 /** One atomic record per topic; workspaces and profiles remain separate. */
 export const longMemoryDomainSpec: { readonly name: string; readonly version: number; readonly layout: 'per-record';
@@ -93,15 +95,19 @@ export class LongMemoryStore {
     return record?.workspace === workspace && record.topic === topic ? { kind: 'found', value: record } : { kind: 'missing' }
   }
 
-  private mutate<T>(run: () => Promise<T>): Promise<T> {
-    const operation = this.tail.catch(() => {}).then(run)
+  private mutate<T>(run: () => Promise<T>, signal?: AbortSignal): Promise<T> {
+    const operation = this.tail.catch(() => {}).then(() => {
+      // A tool can be cancelled while waiting behind another topic's write.
+      signal?.throwIfAborted()
+      return run()
+    })
     this.tail = operation
     return operation
   }
 
-  remember(workspace: string, topic: string, expectedRevision: number, entries: LongMemoryEntry[]): Promise<LongMemoryTopic> {
+  remember(workspace: string, topic: string, expectedRevision: number, entries: LongMemoryEntry[], signal?: AbortSignal): Promise<LongMemoryTopic> {
     id.parse(topic)
-    const additions = z.array(longMemoryEntrySchema).min(1).max(8).parse(entries)
+    const additions = additionsSchema.parse(entries)
     if (new Set(additions.map(entry => entry.id)).size !== additions.length) throw new Error('Duplicate memory ids in one update')
     return this.mutate(async () => {
       const found = this.read(workspace, topic)
@@ -114,13 +120,13 @@ export class LongMemoryStore {
       const value = longMemoryTopicSchema.parse({ workspace, topic, revision: expectedRevision + 1, entries: [...updated.values()] })
       await this.table.put(recordKey(workspace, topic), value)
       return value
-    })
+    }, signal)
   }
 
   /** UI changes share the Agent writer queue and compare only the affected entry. */
   edit(workspace: string, topic: string, entryId: string, expected: string, change: { kind: 'save'; entry: LongMemoryEntry } | { kind: 'remove' }): Promise<MemoryLibraryChange> {
     id.parse(topic); id.parse(entryId)
-    z.string().regex(/^(?:[a-f0-9]{64})?$/).parse(expected)
+    entryTokenSchema.parse(expected)
     const replacement = change.kind === 'save' ? longMemoryEntrySchema.parse(change.entry) : undefined
     if (replacement && replacement.id !== entryId) throw new Error('Memory identity cannot change during editing')
     return this.mutate(async () => {
@@ -139,7 +145,7 @@ export class LongMemoryStore {
     })
   }
 
-  forget(workspace: string, topic: string, expectedRevision: number, entryId: string): Promise<LongMemoryTopic> {
+  forget(workspace: string, topic: string, expectedRevision: number, entryId: string, signal?: AbortSignal): Promise<LongMemoryTopic> {
     id.parse(entryId)
     return this.mutate(async () => {
       const found = this.read(workspace, topic)
@@ -150,7 +156,7 @@ export class LongMemoryStore {
         entries: current.entries.filter(entry => entry.id !== entryId) })
       await this.table.put(recordKey(workspace, topic), value)
       return value
-    })
+    }, signal)
   }
 }
 

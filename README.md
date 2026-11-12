@@ -2,26 +2,30 @@
 
 中文 · [English](README.en.md)
 
+[![npm 总下载量](https://img.shields.io/npm/dt/dsh-super-code?label=npm%20downloads)](https://npmtrends.com/dsh-super-code) [![npm 当前发布版本](https://img.shields.io/npm/v/dsh-super-code)](https://www.npmjs.com/package/dsh-super-code) [![许可证：Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+
 一个更聪明、更节省、更快速、更好用的 DeepSeek Harness 编码插件。
 
-在 SWE-bench Pro hard-100 上，与官方标准预设对比（同一宿主 DSH `0.2.1-rc.2`、同一模型、均为 high 思考等级与旧预算）：
+**因大模型波动，不同评测结果会有略有变化，以最新测试为准。**
 
-| | 标准 + high | Super Code |
-|---|---:|---:|
-| 通过 | 46/100 | **49/100** |
-| 每题净耗时 | 20.9 分钟 | **16.4 分钟**（-21.3%） |
-| 每题 token | 781 万 | **511 万**（-34.6%） |
-| 每题模型调用 | 92 次 | **69 次**（-25.5%） |
+在 SWE-bench Pro hard-100 上，与官方标准预设对比（同一宿主 DSH `0.2.1-rc.2`、同一模型、均为 high 思考等级）：
 
-基于版本 `0.3.5` 测试。[完整结果与限制](docs/EvaluationResults.md)
+| | 官方标准 + high | Super Code 0.3.11 | Super Code 0.4.0 |
+|---|---:|---:|---:|
+| 通过 | 47/100 | 50/100（+3题） | **52/100（+5题）** |
+| 每题耗时 | 16.26 分钟 | 16.69 分钟（+2.7%） | 17.66 分钟（+8.6%） |
+| 每题 Token | 771.8 万 | 667.3 万（-13.5%） | 689.5 万（-10.7%） |
+| 每题模型调用 | 89.54 次 | 76.44 次（-14.6%） | 79.42 次（-11.3%） |
+
+2026-11-11 测试，`0.4.0` 为本次冻结候选。全部按100题汇总，含原失败尝试及补答，百分比相对官方标准。耗时含工具与会话等待，不含评分；模型调用按原始请求计，含失败及辅助调用。用量记录不完整题数依次为 **17、10、13题**，Token 数值及变化比例仅比较已采集记录。[历史评测结果与口径](docs/EvaluationResults.md)
 
 ## 安装
 
-支持 Harness `0.1.5-alpha.1` 起的版本；Web、官方桌面版和 NEXT 的实测范围见[兼容性记录](docs/Compatibility.md)。
+支持 Harness `0.1.5-alpha.1` ～ `0.2.2-rc.2`，包括 `0.2.2-alpha.3`。0.4.0 已逐版验证 27 个 Web 版本，并验证官方 macOS 桌面版 `0.2.2-rc.2`、NEXT `2.0.22-next`（内置 Harness `0.2.2-rc.1`）；各版本与平台的实测范围见[兼容性记录](docs/Compatibility.md)。
 
 **桌面版**：在左侧打开「插件 → 添加插件」，输入 `dsh-super-code`，依次点击「安装」和「立即启用」（旧版本请按提示重载或重启）。桌面版内置运行环境，无需安装 Node.js。
 
-**Web / 命令行版**：需要 Node.js 22 及以上版本。
+**Web / 命令行版**：插件要求 Node.js 22 及以上；Harness `0.2.2-rc.2` 要求 Node.js 24.9 及以上。
 
 ```bash
 npm install -g @deepseek-ai/dsh            # 已安装 dsh 命令可跳过
@@ -40,7 +44,7 @@ dsh plugin --profile web add dsh-super-code
 Web 版：运行以下命令（文件名以实际下载的为准）：
 
 ```bash
-dsh plugin --profile web add ./dsh-super-code-0.3.11.tgz
+dsh plugin --profile web add ./dsh-super-code-0.4.0.tgz
 ```
 
 </details>
@@ -88,15 +92,22 @@ dsh plugin --profile web add ./dsh-super-code-0.3.11.tgz
 | 删除保护 | 默认引导 Agent 使用可恢复的 `trash`，可切换为严格确认 |
 | Windows 命令环境 | 内置 Bash 与常用命令，可选应用到官方预设 |
 | MCP 连接 | 允许外部 MCP 客户端将任务委派给 DSH 执行，默认关闭 |
-| 预设 Skill | oil-ui、OpenSpec、Matt Pocock Skills、PStack 四个整包开关，按需加载、实时生效 |
+| 预设 Skill | grill-me、OpenSpec、oil-ui 与 Matt Pocock Skills、PStack 分组控制，开启后同步到 DSH Skill 目录、实时生效，支持快捷打开目录 |
 
 详见[使用说明](docs/UsageGuide.md)。
 
+内置及适配后的 Skill 源码统一公开在 [builtin/skills](builtin/skills)，保留各自的来源、许可证和配套资源；[目录与维护说明](builtin/README.md)。
+
 ## 最近更新
+
+- **0.4.0**
+
+  1. 简化任务与记忆工具的调用，提供按操作的帮助与示例，支持直接读取指定主题的项目记忆。
+  2. 新增 grill-me、OpenSpec、oil-ui、Matt Pocock Skills 和 PStack 五项预置 Skill 与工作流，默认关闭。启用后同步到 DSH Skill 目录，在已有对话中实时生效，支持按包名搜索原生命令。
+  3. 优化设置与任务侧栏，完善新版 Harness 兼容，修复预设恢复、MCP、删除保护等功能中的大量问题。
 
 - **0.3.11**：修复了大量 bug。
 - **0.3.10**：新增 Windows 内置 Bash 和官方预设开关，修复旧宿主兼容与提示气泡样式。
-- **0.3.9**：美化设置和任务侧栏，完善 MCP 对话控制并修复 PTC 子工具审批，验证 rc.4 Web 兼容性。
 
 [完整版本记录](docs/Changelog.md)
 
@@ -106,7 +117,7 @@ dsh plugin --profile web add ./dsh-super-code-0.3.11.tgz
 
 ### 插件方案对比
 
-SWE-bench Pro hard-100 完整成绩，按通过数量降序排列。统一使用 Harness `0.2.1-rc.2`、`deepseek-v4.1-flash-1017`、high、旧预算，各组内部连续复用环境。
+SWE-bench Pro hard-100 完整成绩，按通过数量降序排列。统一使用 Harness `0.2.1-rc.2`、`评测模型 B`、high、旧预算，各组内部连续复用环境。
 
 | 方案 | 通过/有效 | 平均总 Token（M） | 平均耗时（分钟） | 平均模型调用 | 平均工具调用 | 缓存率 |
 |---|---:|---:|---:|---:|---:|---:|
@@ -127,8 +138,8 @@ M 为百万 Token，包含思考 Token；耗时包含部分运行内服务等待
 
 ### 历史评测过程
 
-1. **旧宿主基线**（DSH `0.1.5-rc.2`，`deepseek-v4.1-flash`，high）：Super Code `0.3.0` 候选通过 56 题，官方标准预设 51 题，minimal 46 题。相对 minimal，耗时减少 47.6%，token 减少 44.9%。
-2. **宿主升级后效果下降**：升级到 DSH `0.2.1-rc.2` 和 `deepseek-v4.1-flash-1017` 后，在默认预算下标准降至 46 题，Super Code `0.3.4` 降至 41 题，低于标准。排查发现新宿主收紧了上下文预算：压缩阈值由 800,000 降至 550,464 token，保留原文由 160,000 降至 98,560 token。
+1. **旧宿主基线**（DSH `0.1.5-rc.2`，`评测模型 B`，high）：Super Code `0.3.0` 候选通过 56 题，官方标准预设 51 题，minimal 46 题。相对 minimal，耗时减少 47.6%，token 减少 44.9%。
+2. **宿主升级后效果下降**：升级到 DSH `0.2.1-rc.2` 和 `评测模型 B` 后，在默认预算下标准降至 46 题，Super Code `0.3.4` 降至 41 题，低于标准。排查发现新宿主收紧了上下文预算：压缩阈值由 800,000 降至 550,464 token，保留原文由 160,000 降至 98,560 token。
 3. **恢复旧预算后复测**：双方均使用旧预算。标准仍为 46 题，token 增加 14.2%；Super Code `0.3.5` 提升至 49 题，token 仅增加 0.4%，净耗时减少 19.4%。据此，`0.3.6` 起插件默认使用旧预算。
 4. **跨模型验证**（`glm-5.3-flash`，max）：Super Code `0.3.4` 通过 45 题，原生 ZCode 通过 29 题；Super Code 每题净耗时更少（32.9 vs 52.3 分钟），token 更多（550 万 vs 361 万）。
 
@@ -148,10 +159,28 @@ M 为百万 Token，包含思考 Token；耗时包含部分运行内服务等待
 
 - 每组配置只运行一轮。同一道题在不同轮次中结果可能不同，目前尚未估计固定配置下的随机波动。
 - 默认预算与旧预算两组的插件版本不同（`0.3.4` → `0.3.5`），收益不能全部归因于预算。
-- `0.3.6` ~ `0.3.11` 未重新运行 100 题评测。
+- `0.3.6` ~ `0.3.10` 未重新运行 100 题评测。
 - 跨模型对比是两套完整系统之间的比较，无法单独分离插件的贡献。
 
 [评测结果与口径](docs/EvaluationResults.md) · [完整成绩表](eval/results/swebench-pro-final-100/ResultsTables.md)
+
+## Star 趋势
+
+<a href="https://star-history.com/#ArtlexYoung/dsh-super-code&amp;Date">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/star-history-dark.svg">
+    <img alt="dsh-super-code Star history" src="docs/images/star-history.svg" width="800">
+  </picture>
+</a>
+
+## npm 下载趋势
+
+<a href="https://npmtrends.com/dsh-super-code">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/npm-downloads-dark.svg">
+    <img alt="dsh-super-code 最近 13 周 npm 下载趋势" src="docs/images/npm-downloads.svg" width="800">
+  </picture>
+</a>
 
 ## 致谢
 

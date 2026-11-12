@@ -3,6 +3,7 @@ import { chmod, cp, lstat, readFile, readdir, writeFile } from 'node:fs/promises
 import { join, resolve } from 'node:path'
 import { homedir } from 'node:os'
 import yaml from 'js-yaml'
+import { declarationSchema } from './preset-declaration.js'
 
 export interface PresetRoot { path: string; trust: 'user' | 'system' }
 export interface DirectoryPreset { id: string; name?: string; description?: string; path: string; trust: 'user' | 'system'; broken?: string }
@@ -28,12 +29,25 @@ export async function copyBundledPreset(bundledRoot: string, staging: string, id
   if (!(await lstat(join(source, 'agent.cordis.yml'))).isFile()) throw new Error('Bundled preset is unavailable')
   const metadata = await readPresetMetadata(source), directory = join(staging, id)
   await cp(source, directory, { recursive: true, dereference: false, force: false, errorOnExist: true })
+  const composition = join(directory, 'agent.cordis.yml')
+  const rows = yaml.load(await readFile(composition, 'utf8'), { schema: declarationSchema })
+  if (!Array.isArray(rows)) throw new Error('Bundled preset composition must be a plugin list')
+  const skills = rows.find(row => row?.name === 'dsh-super-code/skills')
+  if (skills?.config?.layout === 'builtin') {
+    // User copies remain self-contained when renamed or moved with their resources.
+    await cp(join(bundledRoot, '../builtin/skills'), join(directory, 'builtin/skills'), {
+      recursive: true, dereference: false, force: false, errorOnExist: true,
+    })
+    skills.config.bundledSkillDir = { __jsExpr: "new URL('builtin/skills/', baseUrl).href" }
+    await writeFile(composition, yaml.dump(rows, { schema: declarationSchema }))
+  }
   // Reject symlinks in shipped content rather than copying through another tree.
   const pending = [directory]
   while (pending.length) {
     const path = pending.pop()!, stat = await lstat(path)
     if (stat.isSymbolicLink()) throw new Error('Bundled preset contains a symbolic link')
-    await chmod(path, stat.isDirectory() ? 0o700 : 0o600)
+    // Helpers remain runnable after copying; only the owner's access survives.
+    await chmod(path, stat.isDirectory() ? 0o700 : 0o600 | stat.mode & 0o100)
     if (stat.isDirectory()) for (const entry of await readdir(path)) pending.push(join(path, entry))
   }
   await writeFile(join(directory, 'preset.yml'), yaml.dump({ name, ...(metadata.description ? { description: metadata.description } : {}) }), { mode: 0o600 })

@@ -7,7 +7,7 @@ import { adaptMarkdown, relativeTargets } from './adapt.mjs'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const repo = resolve(here, '../../..')
-const pack = resolve(repo, 'presets/super-code/skill-packs/pstack')
+const pack = resolve(repo, 'builtin/skills/pstack')
 const output = resolve(pack, 'dsh')
 const sha = data => createHash('sha256').update(data).digest('hex')
 

@@ -31,17 +31,17 @@
 
 内置前端 Skill 按该规范组织：`SKILL.md`、YAML 元数据和 `references/` 目录。平时仅向模型提供名称和简介，需要时才加载正文和参考资料，可与项目及用户自有的 Skill 共存。解析和加载使用 Harness 原生能力。
 
-对应实现：[oil-ui](../presets/super-code/skills/oil-ui/SKILL.md)
+对应实现：[oil-ui](../builtin/skills/oil-ui/SKILL.md)
 
 ## oil-ui
 
-[源码](https://github.com/oil-oil/oil-ui) · [MIT](../presets/super-code/skills/oil-ui/LICENSE) · [固定版本与改动](../presets/super-code/skills/oil-ui/UPSTREAM.md)
+[源码](https://github.com/oil-oil/oil-ui) · [MIT](../builtin/skills/oil-ui/LICENSE) · [固定版本与改动](../builtin/skills/oil-ui/UPSTREAM.md)
 
 感谢 oil-oil 提供开源前端设计 Skill。本插件内置 oil-ui 0.32.0 的设计流程、参考资料、风格对比页及辅助脚本，通过 Harness 原生 Skill 机制按需加载，替代原来自写的前端 Skill。
 
 内置副本固定到上游 commit `0d64a00f3a5c45bf7a30d35bded9b7c0fdff2128`，仅将独立版本检查和更新入口改为随插件升级，未引入上游安装器或付费插件。MIT 许可证与原作者版权声明随包保留。
 
-风格对比页还包含 [Instrument Serif](https://github.com/Instrument/instrument-serif)，采用 [SIL OFL 1.1](../presets/super-code/skills/oil-ui/assets/fonts/instrument-serif/OFL.txt)，用于对比页字体。
+风格对比页还包含 [Instrument Serif](https://github.com/Instrument/instrument-serif)，采用 [SIL OFL 1.1](../builtin/skills/oil-ui/assets/fonts/instrument-serif/OFL.txt)，用于对比页字体。
 
 ## SWE-bench
 
@@ -71,18 +71,18 @@
 
 ## OpenSpec
 
-[Source](https://github.com/Fission-AI/OpenSpec) · [MIT](../presets/super-code/skill-packs/openspec/LICENSE) · [Upstream](../presets/super-code/skill-packs/openspec/UPSTREAM.md)
+[Source](https://github.com/Fission-AI/OpenSpec) · [MIT](../builtin/skills/openspec/LICENSE) · [Upstream](../builtin/skills/openspec/UPSTREAM.md)
 
 感谢 OpenSpec 贡献者提供完整的规范驱动工作流 Skill。插件保留上游正文和许可证，通过 DSH 原生机制按需加载，不自动安装其 CLI。
 
 ## Matt Pocock Skills
 
-[Source](https://github.com/mattpocock/skills) · [MIT](../presets/super-code/skill-packs/mattpocock/LICENSE) · [Upstream](../presets/super-code/skill-packs/mattpocock/UPSTREAM.md)
+[Source](https://github.com/mattpocock/skills) · [MIT](../builtin/skills/mattpocock/LICENSE) · [Upstream](../builtin/skills/mattpocock/UPSTREAM.md)
 
 感谢 Matt Pocock 及贡献者提供完整的工程与生产力 Skill 包。插件内置正式插件清单及其配套参考、模板和调用规则，不在启用时运行 setup。
 
 ## PStack
 
-[Source](https://github.com/cursor/plugins/tree/main/pstack) · [MIT](../presets/super-code/skill-packs/pstack/LICENSE) · [Upstream](../presets/super-code/skill-packs/pstack/UPSTREAM.md)
+[Source](https://github.com/cursor/plugins/tree/main/pstack) · [MIT](../builtin/skills/pstack/LICENSE) · [Upstream](../builtin/skills/pstack/UPSTREAM.md)
 
 感谢 Lauren Tan 与 Cursor 插件贡献者提供 PStack。插件保留其58个标准 Skill 的正文、调用规则、配套参考与脚本，通过 DSH 原生 Skill 和斜杠命令按需加载；不注册 Cursor 自动化，也不在开启时运行安装或全局配置。部分流程仍依赖 Cursor 或外部工具，详见上游说明。

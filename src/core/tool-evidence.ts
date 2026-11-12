@@ -6,6 +6,13 @@ export interface ToolEvidenceIdentity {
   seq: number; type: 'call' | 'result'; callId: string; turn: number; step: number
   tool?: string; arguments?: string; truncated?: boolean; isError?: boolean
 }
+
+/** Keep bounded argument previews from splitting a UTF-16 surrogate pair. */
+function argumentPreview(value: string, limit: number): string {
+  const high = value.charCodeAt(limit - 1), low = value.charCodeAt(limit)
+  if (high >= 0xD800 && high <= 0xDBFF && low >= 0xDC00 && low <= 0xDFFF) limit--
+  return value.slice(0, limit)
+}
 /** Discover identities only on demand; unmatched events remain explicit across pages. */
 export async function listToolEvidence(end: number, before: number, eventAt: (seq: number) => SessionEvent | undefined, signal: AbortSignal): Promise<{
   kind: 'directory'; records: ToolEvidenceIdentity[]; nextBeforeSeq: number; done: boolean; scanned: number
@@ -13,7 +20,7 @@ export async function listToolEvidence(end: number, before: number, eventAt: (se
   const records: ToolEvidenceIdentity[] = []
   const page = await scanSessionPage(end, before, eventAt, event => {
     if (event.type === 'tool/call') records.push({ seq: event.seq, type: 'call', callId: event.data.callId,
-      turn: event.data.turn, step: event.data.step, tool: event.data.name, arguments: event.data.arguments.slice(0, 240), truncated: event.data.arguments.length > 240 })
+      turn: event.data.turn, step: event.data.step, tool: event.data.name, arguments: argumentPreview(event.data.arguments, 240), truncated: event.data.arguments.length > 240 })
     if (event.type === 'tool/result') {
       const block = recordedToolResult(event.data.message)
       if (block.kind === 'record') records.push({ seq: event.seq, type: 'result', callId: block.callId,
@@ -86,7 +93,7 @@ export function readToolEvidence(sessionId: string, ref: string, eventAt: (seq: 
   }
   const nextOffset = excerpt ? 0 : end
   return { kind: 'recorded', ref, tool: call.data.name, callId: call.data.callId, time: result.time,
-    outcome: block.isError ? 'tool-error' : 'tool-returned', arguments: call.data.arguments.slice(0, 2000), output,
+    outcome: block.isError ? 'tool-error' : 'tool-returned', arguments: argumentPreview(call.data.arguments, 2000), output,
     outputChars: total, outputView: excerpt ? 'head-tail' : offset !== undefined ? 'page' : 'complete',
     ...(offset === undefined ? {} : { offset }),
     ...(nextOffset < total ? { readMore: { tool: 'super_code_task' as const, action: 'evidence' as const, record: { ref, offset: nextOffset } } } : {}),

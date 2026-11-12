@@ -5,6 +5,7 @@ import type { Agent } from '@deepseek-ai/dsh-agent'
 import type {} from '@deepseek-ai/dsh-user-approval'
 import type { ConnectionService } from '../connection/service.js'
 import type { ApprovalOutcome } from '../connection/approvals.js'
+import { recordedToolResult } from '../core/host-messages.js'
 
 interface ApprovalRequest { agent: Agent; toolName: string; callId?: string; reason?: string; signal?: AbortSignal }
 interface ActiveCall { callId: string; toolName: string; arguments: string | false }
@@ -32,8 +33,19 @@ export function applyConnectionApproval(ctx: Context, current: () => ConnectionS
     const service = current()
     if (!service || !service.read().configuration.allowCallerApproval) return next()
     const roots = scopeChainOf(request.agent).flatMap(key => {
-      const id = (key as Partial<Agent>).session?.id
-      return typeof id === 'string' ? [id] : []
+      const session = (key as Partial<Agent>).session
+      if (!session) return []
+      const events = session.ownEvents(), requestIds: string[] = []
+      // A session can be reused manually; only its latest admitted turn carries caller authority.
+      for (let index = events.length - 1; index >= 0; index--) {
+        const event = events[index]!
+        if (event.type === 'turn/start') break
+        if (event.type === 'user/message') {
+          const source = event.data.source
+          if (source?.kind === 'user' && 'rpcId' in source && typeof source.rpcId === 'string') requestIds.push(source.rpcId)
+        }
+      }
+      return [{ sessionId: session.id, requestIds }]
     })
     // A seed parentSession alone does not authorize a fork. Only the live scope ancestry counts.
     let argumentsText = ''
@@ -49,6 +61,11 @@ export function applyConnectionApproval(ctx: Context, current: () => ConnectionS
         let found = false
         for (let index = events.length - 1; index >= 0; index--) {
           const event = events[index]!
+          if (event.type === 'turn/start') break
+          if (event.type === 'tool/result') {
+            const result = recordedToolResult(event.data.message)
+            if (result.kind === 'record' && result.callId === request.callId) break
+          }
           if (event.type === 'tool/call' && event.data.callId === request.callId && event.data.name === request.toolName) { argumentsText = event.data.arguments; found = true; break }
         }
         if (!found) return next()

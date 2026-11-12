@@ -244,6 +244,67 @@ test('generic successful applied diff metadata supports new tools without name-s
   }
 })
 
+test('published write and edit results distinguish no-op updates from file creation', () => {
+  for (const modern of [false, true]) {
+    const edit = fold(initial(), call(1, 'edit', 'edit', { file_path: 'same.ts' }))
+    const unchanged = fold(edit, result(2, 'edit', false, modern, modern ? { path: '/project/same.ts', diffs: [] } : { diffs: [] }))
+    assert.deepEqual(unchanged.files, [])
+    assert.equal(unchanged.activities[0]?.status, 'succeeded')
+    const write = fold(initial(), call(1, 'write', 'write', { file_path: 'alias.ts' }))
+    const created = fold(write, result(2, 'write', false, modern, modern ? { operation: 'create', path: '/project/new.ts', diffs: [] } : { diffs: [] }))
+    assert.deepEqual(created.files.map(file => file.path), [modern ? '/project/new.ts' : '/project/alias.ts'])
+    if (modern) assert.deepEqual(fold(write, result(2, 'write', false, modern, { operation: 'update', path: '/project/alias.ts', diffs: [] })).files, [])
+  }
+})
+
+test('native patch results include creations without claiming skipped operations or no-op updates', () => {
+  const input = ['*** Begin Patch', '*** Update File: changed.ts', '@@', '-old', '+new',
+    '*** Update File: same.ts', '@@', ' context', '*** Add File: new.ts', '+new',
+    '*** Delete File: removed.ts', '*** End Patch'].join('\r\n')
+  const state = fold(initial(), call(1, 'apply', 'apply_patch', { input }))
+  const diffs = [{ path: '/project/changed.ts', oldText: 'old', newText: 'new' }]
+  const paths = (stopped: boolean, failed = false) => fold(state, result(2, 'apply', failed, true, { diffs, stopped })).files.map(file => file.path).sort()
+  assert.deepEqual(paths(false), ['/project/changed.ts', '/project/new.ts', '/project/removed.ts'])
+  assert.deepEqual(paths(true), ['/project/changed.ts'])
+  assert.deepEqual(paths(true, true), [])
+  assert.deepEqual(fold(state, result(2, 'apply', false, true, { diffs: [], stopped: true })).files, [])
+})
+
+test('native empty-file creation, moves and newline-only hunks retain evidence through PTC', () => {
+  for (const tool of ['edit', 'write', 'apply_patch']) {
+    const input = ['*** Begin Patch', '*** Update File: old.ts', '*** Move to: moved.ts', '@@',
+      ' same', '*** Add File: empty.ts', '*** End Patch'].join('\n')
+    const data = { subCallId: 'inner', rootCallId: 'outer', parentCallId: 'outer', name: tool,
+      arguments: tool === 'apply_patch' ? { input } : { file_path: 'moved.ts' }, isError: false,
+      meta: { diffs: [{ path: '/project/moved.ts', oldText: 'same', newText: 'same' }], stopped: false } }
+    const completed = fold(initial(), event(1, 'tool/ptc-dispatch', data))
+    assert.deepEqual(completed.files.map(file => file.path).sort(), tool === 'apply_patch'
+      ? ['/project/empty.ts', '/project/moved.ts', '/project/old.ts'] : ['/project/moved.ts'])
+    assert.equal(completed.pending.length, 0)
+    assert.equal(completed.activities[0]?.status, 'succeeded')
+  }
+})
+
+test('a v5 checkpoint rebuilds false file changes and a current checkpoint keeps no-op completion', async t => {
+  const ctx = new Context()
+  t.after(() => ctx.fiber.dispose())
+  new SessionStore(ctx)
+  new SessionProjectionRegistry(ctx)
+  ctx.sessionProjections.register(projection)
+  const events = [call(0, 'edit', 'edit', { file_path: 'same.ts' }), result(1, 'edit', false, true, { diffs: [] }),
+    call(2, 'create', 'write', { file_path: 'new.ts' })]
+  const before = events.reduce(fold, initial())
+  const old = { superCodeFeedback: { ver: 5, seq: 2, val: { ...before, files: [{ path: '/project/same.ts', operation: 'edit', seq: 1, tool: 'edit', callId: 'edit' }] } } }
+  assert.equal(ctx.sessionProjections.restoreFloor(old), 0)
+  const restored = ctx.sessionProjections.restore(old, events, 0 as SessionLogOffset, { cwd: '/project' } as SessionHeader, 0 as SessionLogOffset)
+  assert.deepEqual(restored.snapshot.values.superCodeFeedback?.files, [])
+  assert.equal(restored.checkpoint.superCodeFeedback?.ver, projection.stateVersion)
+  const completion = result(3, 'create', false, true, { diffs: [], operation: 'create', path: '/project/new.ts' })
+  const cold = ctx.sessionProjections.restore(JSON.parse(JSON.stringify(restored.checkpoint)), [completion], completion.seq as SessionLogOffset,
+    { cwd: '/project' } as SessionHeader, 0 as SessionLogOffset)
+  assert.deepEqual(cold.snapshot.values.superCodeFeedback?.files.map(file => file.path), ['/project/new.ts'])
+})
+
 test('future todo fields and malformed optional blocks preserve usable facts and disclose partial progress', () => {
   let state = fold(initial(), event(1, 'user/message', { source: { kind: 'user' }, content: [null, 1,
     { type: 'text', text: 'Original request' }, { type: 'text', text: {} }, { type: 'future', data: {} }] }))
@@ -309,6 +370,51 @@ test('the host crash-recovery end marker remains interrupted when rebuilding an 
   const rebuilt = ctx.sessionProjections.restore(old, events, 0 as SessionLogOffset, { cwd: '/project' } as SessionHeader, 0 as SessionLogOffset)
   assert.equal(rebuilt.snapshot.values.superCodeFeedback?.phase, 'interrupted')
   assert.equal(rebuilt.checkpoint.superCodeFeedback?.ver, projection.stateVersion)
+})
+
+for (const modern of [true, false]) {
+  test(`output-token exhaustion remains an error without discarding task or file facts (${modern ? 'tool role' : 'nested result'})`, () => {
+    let state = fold(initial(), event(0, 'turn/start', { turn: 1 }))
+    state = fold(state, event(1, 'user/message', { source: { kind: 'user' }, content: [{ type: 'text', text: 'Finish the implementation' }] }))
+    state = fold(state, event(2, 'todo/write', { todos: [{ content: 'Verify implementation', status: 'in_progress' }] }))
+    state = fold(state, call(3, 'saved', 'edit', { file_path: 'saved.ts' }))
+    state = fold(state, result(4, 'saved', false, modern))
+    state = fold(state, call(5, 'unfinished', 'edit', { file_path: 'unfinished.ts' }))
+    const ended = event(6, 'turn/end', { turn: 1, reason: { kind: 'max-tokens' } })
+    state = fold(state, ended)
+    assert.equal(state.phase, 'error', 'a model output cutoff must not become an ordinary idle state')
+    assert.equal(state.todos[0]?.status, 'in_progress')
+    assert.deepEqual(state.files.map(file => file.path), ['/project/saved.ts'])
+    assert.equal(state.activities.find(row => row.callId === 'unfinished')?.status, 'interrupted')
+    assert.deepEqual(state.pending, [])
+    assert.equal(fold(state, ended), state)
+    assert.doesNotThrow(() => projection.stateSchema.parse(state))
+    state = fold(state, event(7, 'turn/start', { turn: 2 }))
+    assert.equal(state.phase, 'running', 'a later actual turn clears the previous error')
+    state = fold(state, event(8, 'turn/end', { turn: 2, reason: { kind: 'completed' } }))
+    assert.equal(state.phase, 'idle')
+    assert.deepEqual(state.files.map(file => file.path), ['/project/saved.ts'])
+  })
+}
+
+test('old idle checkpoints rebuild output-token exhaustion from the journal and current checkpoints retain it', async t => {
+  const ctx = new Context()
+  t.after(() => ctx.fiber.dispose())
+  new SessionStore(ctx)
+  new SessionProjectionRegistry(ctx)
+  ctx.sessionProjections.register(projection)
+  const events = [event(0, 'turn/start', { turn: 1 }),
+    event(1, 'todo/write', { todos: [{ content: 'Unfinished verification', status: 'in_progress' }] }),
+    event(2, 'turn/end', { turn: 1, reason: { kind: 'max-tokens' } })]
+  const old = { superCodeFeedback: { ver: 4, seq: 2, val: { ...events.reduce(fold, initial()), phase: 'idle' } } }
+  assert.equal(ctx.sessionProjections.restoreFloor(old), 0)
+  const rebuilt = ctx.sessionProjections.restore(old, events, 0 as SessionLogOffset, { cwd: '/project' } as SessionHeader, 0 as SessionLogOffset)
+  assert.equal(rebuilt.snapshot.values.superCodeFeedback?.phase, 'error')
+  assert.equal(rebuilt.snapshot.values.superCodeFeedback?.todos[0]?.status, 'in_progress')
+  const checkpoint = JSON.parse(JSON.stringify(rebuilt.checkpoint))
+  assert.equal(checkpoint.superCodeFeedback.ver, projection.stateVersion)
+  const warm = ctx.sessionProjections.restore(checkpoint, [], 3 as SessionLogOffset, { cwd: '/project' } as SessionHeader, 0 as SessionLogOffset)
+  assert.equal(warm.snapshot.values.superCodeFeedback?.phase, 'error')
 })
 
 test('malformed/future payloads degrade, bounded windows and checkpoints remain valid', () => {

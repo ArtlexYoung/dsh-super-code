@@ -1,7 +1,7 @@
 /** Profile-local storage. Claim before reading/writing; never replay dispatch intents on boot. */
-import { chmod, mkdir, open, readFile, rename, unlink, lstat } from 'node:fs/promises'
+import { chmod, mkdir, open, readFile, rename, unlink, lstat, link } from 'node:fs/promises'
 import { join, isAbsolute, relative } from 'node:path'
-import { randomBytes, randomUUID } from 'node:crypto'
+import { randomBytes, randomUUID, createHash } from 'node:crypto'
 import { z } from 'zod'
 import { connectionConfigSchema, defaultConnectionConfig, ConnectionError } from './types.js'
 import type { ConnectionConfig, DelegatedTask } from './types.js'
@@ -16,10 +16,14 @@ const taskSchema = z.object({
   operations: z.record(z.string(), z.string().length(64)).refine(value => Object.keys(value).length <= 128),
   connectionId: z.string().max(128).optional(),
   previousRequest: z.string().min(1).max(128).optional(),
+  pendingRequests: z.array(z.string().min(1).max(128)).max(128).optional(),
   modelSelection: z.object({ provider: z.string().min(1).max(256), model: z.string().min(1).max(256), reasoningEffort: z.string().min(1).max(128).optional() }).strict().optional(),
   observation: z.object({ lastEventSeq: z.number().int().min(-1), lastEventType: z.string().max(128), outputTruncated: z.boolean(), errorCode: z.string().max(128).optional() }).strict().optional(),
   baseline: z.object({ available: z.boolean(), root: z.string(), head: z.string(), fingerprint: z.string(), dirty: z.array(z.string()).max(160) }).strict(),
 }).strict().refine(value => value.sessionId === value.id && isAbsolute(value.cwd))
+  .transform(({ previousRequest, ...task }) => ({ ...task,
+    pendingRequests: task.pendingRequests ?? (previousRequest ? [previousRequest] : []),
+  }))
 
 const settingsSchema = z.object({ revision: z.number().int().nonnegative(), config: connectionConfigSchema,
   token: z.string().regex(/^[a-f0-9]{64}$/) }).strict()
@@ -40,8 +44,23 @@ export class ConnectionStore {
     const token = `${process.pid}:${randomUUID()}`
     try { await this.claim(path, token) } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error
-      // A separate exclusive claim serializes stale-lock recovery by competing hosts.
-      const recovery = await open(join(this.directory, 'recovery.lock'), 'wx', 0o600).catch(() => { throw new ConnectionError('profile-busy') })
+      // A populated, atomic claim is recoverable even if its process crashes.
+      // Keep the first path shared with older releases; an empty legacy guard
+      // has no provable dead owner and must not be stolen from a live recoverer.
+      let recovery = join(this.directory, 'recovery.lock')
+      for (;;) {
+        try { await this.claim(recovery, token); break }
+        catch (failure) {
+          if ((failure as NodeJS.ErrnoException).code !== 'EEXIST') throw failure
+          let previous: string
+          try { previous = await readFile(recovery, 'utf8') }
+          catch (missing) { if ((missing as NodeJS.ErrnoException).code === 'ENOENT') continue; throw missing }
+          this.assertDead(previous)
+          // Dead guards stay immutable. Contenders for the same dead token
+          // converge on one next-generation guard instead of racing to unlink it.
+          recovery = join(this.directory, `recovery-${createHash('sha256').update(previous).digest('hex')}.lock`)
+        }
+      }
       const failures: unknown[] = []
       try {
         const previous = await readFile(path, 'utf8').catch(failure => {
@@ -50,17 +69,17 @@ export class ConnectionStore {
         })
         // A live owner can finish closing after the exclusive claim saw EEXIST.
         if (previous !== false) {
-          const pid = Number(previous.split(':')[0])
-          if (!Number.isSafeInteger(pid) || pid <= 0) throw new ConnectionError('profile-busy')
-          try { process.kill(pid, 0); throw new ConnectionError('profile-busy') }
-          catch (failure) { if ((failure as NodeJS.ErrnoException).code !== 'ESRCH') throw failure }
+          this.assertDead(previous)
           await unlink(path)
         }
-        await this.claim(path, token)
+        try { await this.claim(path, token) }
+        catch (failure) {
+          // A fresh contender can claim the vacant path while we retire its dead owner.
+          if ((failure as NodeJS.ErrnoException).code === 'EEXIST') throw new ConnectionError('profile-busy')
+          throw failure
+        }
       } catch (failure) { failures.push(failure) }
-      for (const release of [() => recovery.close(), () => unlink(join(this.directory, 'recovery.lock'))]) {
-        try { await release() } catch (failure) { failures.push(failure) }
-      }
+      try { await this.release(token, recovery) } catch (failure) { failures.push(failure) }
       if (failures.length) {
         // Initialization did not complete: never strand a token for this live PID.
         try { await this.release(token) } catch (failure) { failures.push(failure) }
@@ -71,20 +90,27 @@ export class ConnectionStore {
     this.lock = token
     this.owned = true; this.writable = true
   }
+  private assertDead(token: string): void {
+    const pid = Number(token.split(':')[0])
+    if (!Number.isSafeInteger(pid) || pid <= 0) throw new ConnectionError('profile-busy')
+    try { process.kill(pid, 0); throw new ConnectionError('profile-busy') }
+    catch (failure) { if ((failure as NodeJS.ErrnoException).code !== 'ESRCH') throw failure }
+  }
   private async claim(path: string, token: string): Promise<void> {
-    const file = await open(path, 'wx', 0o600)
-    let identity: { dev: number; ino: number } | false = false
+    const temporary = `${path}.${randomUUID()}.tmp`
+    const file = await open(temporary, 'wx', 0o600)
+    let claimed = false
     try {
-      identity = await file.stat()
       await file.writeFile(token); await file.sync(); await file.close()
+      await link(temporary, path)
+      claimed = true
+      await unlink(temporary)
     } catch (error) {
       await file.close().catch(() => {})
-      try {
-        const current = await lstat(path)
-        if (identity && !current.isSymbolicLink() && current.dev === identity.dev && current.ino === identity.ino) await unlink(path)
-      } catch (cleanup) {
-        if ((cleanup as NodeJS.ErrnoException).code !== 'ENOENT') throw new AggregateError([error, cleanup], 'Failed to clean up an incomplete MCP owner lock')
-      }
+      const failures: unknown[] = [error]
+      if (claimed) { try { await this.release(token, path) } catch (failure) { failures.push(failure) } }
+      try { await unlink(temporary) } catch (failure) { if ((failure as NodeJS.ErrnoException).code !== 'ENOENT') failures.push(failure) }
+      if (failures.length > 1) throw new AggregateError(failures, 'MCP lock claim cleanup failed')
       throw error
     }
   }
@@ -96,8 +122,7 @@ export class ConnectionStore {
     // Keep failed releases retryable without permitting further profile writes.
     if (this.lock === token) this.owned = false
   }
-  private async release(token: string): Promise<void> {
-    const path = join(this.directory, 'owner.lock')
+  private async release(token: string, path = join(this.directory, 'owner.lock')): Promise<void> {
     try { if (await readFile(path, 'utf8') === token) await unlink(path) }
     catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error }
   }

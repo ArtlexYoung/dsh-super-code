@@ -7,6 +7,9 @@ import type { Configuration } from './budgets.js'
 import { BasicCompactionEngine } from '@deepseek-ai/dsh-compaction-basic'
 import type { ShellStatus } from './windows-shell.js'
 import { randomUUID } from 'node:crypto'
+import { skillPackages } from './skill-packages.js'
+import type { SkillPackageVersion } from './skill-packages.js'
+import type { SkillDirectoryStatus } from './skill-directory.js'
 
 const namespace = 'super-code-budgets'
 
@@ -20,6 +23,8 @@ export interface BudgetSettingsSnapshot {
   readonly namespace?: string
   readonly generation?: string
   readonly shell?: ShellStatus
+  readonly skillPackages?: Readonly<Record<string, SkillPackageVersion>>
+  readonly skills?: SkillDirectoryStatus
   readonly configuration: Configuration
   readonly revision: number
   readonly writable: boolean
@@ -99,16 +104,29 @@ export class BudgetSettings {
 export class SuperCodeBudgets extends TypertRemoteService {
   constructor(ctx: Context, private readonly settings: BudgetSettings) { super(ctx, 'superCodeBudgets') }
   @Remote
-  readConfig(): BudgetSettingsSnapshot { return { ...this.settings.read(), shell: this.ctx.get('superCodeShell')?.status() } }
+  readConfig(): BudgetSettingsSnapshot { return { ...this.settings.read(), skillPackages, skills: this.ctx.get('superCodeSkills')?.status(), shell: this.ctx.get('superCodeShell')?.status() } }
+  @Remote
+  async openSkillsDirectory(): Promise<{ opened: true }> {
+    const skills = this.ctx.get('superCodeSkills')
+    if (!skills) throw new Error('Skill directory unavailable')
+    return skills.open()
+  }
+  @Remote
+  async syncSkills(): Promise<BudgetSettingsSnapshot> {
+    await this.ctx.get('superCodeSkills')?.synchronize()
+    return this.readConfig()
+  }
   @Remote
   async saveConfig(content: string, expected: string): Promise<BudgetSettingsResult> {
     const result = await this.settings.save(content, expected)
-    return result.ok ? { ...result, snapshot: { ...result.snapshot, shell: this.ctx.get('superCodeShell')?.status() } } : result
+    if (result.ok) await this.ctx.get('superCodeSkills')?.synchronize()
+    return result.ok ? { ...result, snapshot: { ...result.snapshot, skillPackages, skills: this.ctx.get('superCodeSkills')?.status(), shell: this.ctx.get('superCodeShell')?.status() } } : result
   }
   @Remote
   async resetConfig(expected: string): Promise<BudgetSettingsResult> {
     const result = await this.settings.reset(expected)
-    return result.ok ? { ...result, snapshot: { ...result.snapshot, shell: this.ctx.get('superCodeShell')?.status() } } : result
+    if (result.ok) await this.ctx.get('superCodeSkills')?.synchronize()
+    return result.ok ? { ...result, snapshot: { ...result.snapshot, skillPackages, skills: this.ctx.get('superCodeSkills')?.status(), shell: this.ctx.get('superCodeShell')?.status() } } : result
   }
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "dsh-super-code",
-  "version": "0.3.11",
+  "version": "0.4.0",
   "description": "Task-focused coding, specialist teams, and durable task memory with directory and declarative presets for DeepSeek Harness.",
   "license": "Apache-2.0",
   "type": "module",
@@ -24,6 +24,7 @@
       "default": "./lib/dsh/super-code.js"
     },
     "./presets/*": "./presets/*",
+    "./builtin/*": "./builtin/*",
     "./package.json": "./package.json",
     "./locale/*": "./locales/*",
     "./dsh/locale/*": "./locales/*",
@@ -53,8 +54,9 @@
   "files": [
     "lib",
     "presets",
+    "builtin",
     "runtime/windows",
-    "runtime/skills",
+    "runtime/skills/openspec",
     "cordis.patch.yml",
     "README.md",
     "README.en.md",
@@ -72,11 +74,16 @@
     "docs/images/preset-settings-preview.png",
     "docs/images/install-tgz.png",
     "docs/images/install-tgz-preview.png",
+    "docs/images/star-history.svg",
+    "docs/images/star-history-dark.svg",
+    "docs/images/npm-downloads.svg",
+    "docs/images/npm-downloads-dark.svg",
     "LICENSE",
     "client",
     "locales"
   ],
   "dependencies": {
+    "@fission-ai/openspec": "1.17.0",
     "@modelcontextprotocol/sdk": "1.32.2",
     "js-yaml": "^4.1.0",
     "zod": "^4.6.7"
@@ -91,14 +98,14 @@
     "@deepseek-ai/dsh-session": "^0.1.5-alpha.1 || ^0.1.6-alpha.1 || ^0.1.7-alpha.1 || ^0.2.0-rc.1 || ^0.2.1-alpha.1 || ^0.2.2-alpha.2",
     "@deepseek-ai/dsh-session-projection": "^0.1.5-alpha.1 || ^0.1.6-alpha.1 || ^0.1.7-alpha.1 || ^0.2.0-rc.1 || ^0.2.1-alpha.1 || ^0.2.2-alpha.2",
     "@deepseek-ai/dsh-settings": "^0.1.5-alpha.1 || ^0.1.6-alpha.1 || ^0.1.7-alpha.1 || ^0.2.0-rc.1 || ^0.2.1-alpha.1 || ^0.2.2-alpha.2",
+    "@deepseek-ai/dsh-skill": "^0.1.5-alpha.1 || ^0.1.6-alpha.1 || ^0.1.7-alpha.1 || ^0.2.0-rc.1 || ^0.2.1-alpha.1 || ^0.2.2-alpha.2",
+    "@deepseek-ai/dsh-skill-filesystem": "^0.1.5-alpha.1 || ^0.1.6-alpha.1 || ^0.1.7-alpha.1 || ^0.2.0-rc.1 || ^0.2.1-alpha.1 || ^0.2.2-alpha.2",
     "@deepseek-ai/dsh-storage-domain": "^0.1.5-alpha.1 || ^0.1.6-alpha.1 || ^0.1.7-alpha.1 || ^0.2.0-rc.1 || ^0.2.1-alpha.1 || ^0.2.2-alpha.2",
     "@deepseek-ai/dsh-system-prompt": "^0.1.5-alpha.1 || ^0.1.6-alpha.1 || ^0.1.7-alpha.1 || ^0.2.0-rc.1 || ^0.2.1-alpha.1 || ^0.2.2-alpha.2",
     "@deepseek-ai/dsh-token-meter": "^0.1.5-alpha.1 || ^0.1.6-alpha.1 || ^0.1.7-alpha.1 || ^0.2.0-rc.1 || ^0.2.1-alpha.1 || ^0.2.2-alpha.2",
     "@deepseek-ai/dsh-tools": "^0.1.5-alpha.1 || ^0.1.6-alpha.1 || ^0.1.7-alpha.1 || ^0.2.0-rc.1 || ^0.2.1-alpha.1 || ^0.2.2-alpha.2",
     "@deepseek-ai/dsh-typert-protocol": "^0.1.5-alpha.1 || ^0.1.6-alpha.1 || ^0.1.7-alpha.1 || ^0.2.0-rc.1 || ^0.2.1-alpha.1 || ^0.2.2-alpha.2",
-    "@deepseek-ai/schemastery": "^3.18.2 || ^3.18.5-alpha.1 || ^3.18.6-alpha.1",
-    "@deepseek-ai/dsh-skill": "^0.1.5-alpha.1 || ^0.1.6-alpha.1 || ^0.1.7-alpha.1 || ^0.2.0-rc.1 || ^0.2.1-alpha.1 || ^0.2.2-alpha.2",
-    "@deepseek-ai/dsh-skill-filesystem": "^0.1.5-alpha.1 || ^0.1.6-alpha.1 || ^0.1.7-alpha.1 || ^0.2.0-rc.1 || ^0.2.1-alpha.1 || ^0.2.2-alpha.2"
+    "@deepseek-ai/schemastery": "^3.18.2 || ^3.18.5-alpha.1 || ^3.18.6-alpha.1"
   },
   "peerDependenciesMeta": {
     "@deepseek-ai/cordis": {
@@ -127,8 +134,9 @@
     "skills:build": "node runtime/skills/pstack/convert.mjs",
     "skills:check": "node runtime/skills/pstack/convert.mjs --check",
     "build": "npm run skills:build && tsc -p tsconfig.json",
+    "prepare": "npm run build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "npm run skills:check && tsx --test test/**/*.test.ts",
+    "test": "npm run skills:check && tsx --test \"test/**/*.test.ts\"",
     "pack:check": "npm pack --dry-run",
     "eval:super-code": "node lib/evaluate.js"
   },

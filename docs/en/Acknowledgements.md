@@ -31,17 +31,17 @@ Design reference only, not a dependency. The UI is built on Harness's public API
 
 The bundled frontend Skill follows this format: `SKILL.md`, YAML metadata, and a `references/` directory. The model sees only the name and summary until the Skill is needed, then loads the body and relevant references. It coexists with project and user Skills. Parsing and loading use Harness's native support.
 
-Implementation: [oil-ui](../../presets/super-code/skills/oil-ui/SKILL.md)
+Implementation: [oil-ui](../../builtin/skills/oil-ui/SKILL.md)
 
 ## oil-ui
 
-[Source](https://github.com/oil-oil/oil-ui) · [MIT](../../presets/super-code/skills/oil-ui/LICENSE) · [Pinned version and adaptations](../../presets/super-code/skills/oil-ui/UPSTREAM.md)
+[Source](https://github.com/oil-oil/oil-ui) · [MIT](../../builtin/skills/oil-ui/LICENSE) · [Pinned version and adaptations](../../builtin/skills/oil-ui/UPSTREAM.md)
 
 Thanks to oil-oil for this open-source frontend design Skill. The plugin bundles oil-ui 0.32.0's workflow, references, comparison page, and helper scripts, loaded on demand through Harness's native Skill mechanism in place of the previous custom frontend Skill.
 
 The bundled copy is pinned to upstream commit `0d64a00f3a5c45bf7a30d35bded9b7c0fdff2128`. Its only adaptation replaces the standalone update entrypoint with plugin-managed updates; neither the upstream installer nor a paid plugin is included. The MIT license and original copyright notice are preserved in the package.
 
-The comparison page also bundles [Instrument Serif](https://github.com/Instrument/instrument-serif), under [SIL OFL 1.1](../../presets/super-code/skills/oil-ui/assets/fonts/instrument-serif/OFL.txt), for comparison-page typography.
+The comparison page also bundles [Instrument Serif](https://github.com/Instrument/instrument-serif), under [SIL OFL 1.1](../../builtin/skills/oil-ui/assets/fonts/instrument-serif/OFL.txt), for comparison-page typography.
 
 ## SWE-bench
 
@@ -71,18 +71,18 @@ This project uses [Apache-2.0](../../LICENSE). The projects, specifications, des
 
 ## OpenSpec
 
-[Source](https://github.com/Fission-AI/OpenSpec) · [MIT](../../presets/super-code/skill-packs/openspec/LICENSE) · [Upstream](../../presets/super-code/skill-packs/openspec/UPSTREAM.md)
+[Source](https://github.com/Fission-AI/OpenSpec) · [MIT](../../builtin/skills/openspec/LICENSE) · [Upstream](../../builtin/skills/openspec/UPSTREAM.md)
 
 Thanks to the OpenSpec contributors for the complete specification-driven workflow Skill distribution. The plugin preserves the original prompts and licenses and loads them on demand through DSH.
 
 ## Matt Pocock Skills
 
-[Source](https://github.com/mattpocock/skills) · [MIT](../../presets/super-code/skill-packs/mattpocock/LICENSE) · [Upstream](../../presets/super-code/skill-packs/mattpocock/UPSTREAM.md)
+[Source](https://github.com/mattpocock/skills) · [MIT](../../builtin/skills/mattpocock/LICENSE) · [Upstream](../../builtin/skills/mattpocock/UPSTREAM.md)
 
 Thanks to Matt Pocock and contributors for the complete engineering and productivity Skill distribution. The plugin includes the official plugin inventory with its references, templates and invocation rules; it does not run setup on activation.
 
 ## PStack
 
-[Source](https://github.com/cursor/plugins/tree/main/pstack) · [MIT](../../presets/super-code/skill-packs/pstack/LICENSE) · [Upstream](../../presets/super-code/skill-packs/pstack/UPSTREAM.md)
+[Source](https://github.com/cursor/plugins/tree/main/pstack) · [MIT](../../builtin/skills/pstack/LICENSE) · [Upstream](../../builtin/skills/pstack/UPSTREAM.md)
 
 Thanks to Lauren Tan and the Cursor plugin contributors for PStack. The plugin preserves its 58 standard Skills, invocation rules, references and scripts, loaded on demand through native DSH Skills and slash commands. It does not register Cursor automations or run setup on activation. Some workflows still require Cursor capabilities or external tools; see the upstream notes.

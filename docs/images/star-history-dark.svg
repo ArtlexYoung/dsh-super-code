@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="320" viewBox="0 0 960 320" role="img" aria-labelledby="title description">
+<title id="title">dsh-super-code Star history</title>
+<desc id="description">ArtlexYoung/dsh-super-code. 30 stars. Through 2026-11-12. Source: GitHub.</desc>
+<style>text{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:12px;fill:#9da7b3;font-variant-numeric:tabular-nums}</style>
+<rect x=".5" y=".5" width="959" height="319" rx="12" fill="#0d1117" stroke="#30363d"/>
+<text x="28" y="35" style="font-size:19px;font-weight:600;fill:#e6edf3">Star history</text>
+<text x="28" y="58">ArtlexYoung/dsh-super-code</text>
+<text x="932" y="35" text-anchor="end" style="font-size:19px;font-weight:600;fill:#e6edf3">30 stars</text>
+<text x="932" y="58" text-anchor="end">Through 2026-11-12</text>
+<path d="M68 260H926" stroke="#212830"/><text x="56" y="264" text-anchor="end">0</text>
+<path d="M68 201.67H926" stroke="#212830"/><text x="56" y="205.67" text-anchor="end">10</text>
+<path d="M68 143.33H926" stroke="#212830"/><text x="56" y="147.33" text-anchor="end">20</text>
+<path d="M68 85H926" stroke="#212830"/><text x="56" y="89" text-anchor="end">30</text>
+<polyline points="68,260 96.13,254.17 208.66,248.33 532.16,225 546.23,201.67 602.49,195.83 616.56,190 644.69,178.33 715.02,166.67 729.08,149.17 743.15,137.5 771.28,131.67 785.34,125.83 799.41,114.17 813.48,108.33 827.54,102.5 855.67,96.67 897.87,90.83 926,85" fill="none" stroke="#e3a008" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="926" cy="85" r="3.5" fill="#e3a008"/>
+<text x="68" y="285" text-anchor="middle">09/12</text>
+<text x="278.98" y="285" text-anchor="middle">09/27</text>
+<text x="489.97" y="285" text-anchor="middle">10/12</text>
+<text x="700.95" y="285" text-anchor="middle">10/27</text>
+<text x="926" y="285" text-anchor="middle">11/12</text>
+<text x="28" y="307">Source: GitHub</text>
+</svg>

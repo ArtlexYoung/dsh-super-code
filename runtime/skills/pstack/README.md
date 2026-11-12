@@ -1,6 +1,6 @@
 # Maintaining the PStack DSH edition
 
-The original, audited PStack distribution remains under `presets/super-code/skill-packs/pstack/`. Its `distribution.json` maps upstream paths to local files and SHA-256 hashes. Do not edit those files to adapt a workflow.
+The original, audited PStack distribution remains under `builtin/skills/pstack/`. Its `distribution.json` maps upstream paths to local files and SHA-256 hashes. Do not edit those files to adapt a workflow.
 
 `convert.mjs` verifies the pinned revision and every original hash, then generates `pstack/dsh/`. The native provider loads only `dsh/skills/`. `adapt.mjs` translates host operations while retaining the workflow; `overrides/` replaces procedures whose host contract differs substantially, such as setup, history and bot UI. DSH.md and authoring.md are shared, on-demand references. No runtime prompt rewrite or agent execution layer is installed.
 

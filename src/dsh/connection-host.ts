@@ -29,26 +29,37 @@ export interface ConnectionHostServices {
     interrupt(id: string, authority: { kind: 'user'; parentSessionId: string }): Promise<unknown> }
 }
 interface SessionFacts { status: HostObservation['status']; output: string; observation: ObservationDetails }
-interface ObservedFacts extends SessionFacts { requestAt: number; endedAt: number }
+interface ObservedFacts extends SessionFacts { requestAt: number; endedAt: number; latestRequestId: string }
 function record(value: unknown): Record<string, any> { return value && typeof value === 'object' ? value as Record<string, any> : {} }
 /** Own events only; idle without a settled, admitted request is not a completed task. */
-export function connectionSessionFacts(events: readonly SessionEvent[], agentStatus: string, requestId: string, cancelling = false): SessionFacts {
+function scanSessionFacts(events: readonly SessionEvent[], agentStatus: string, requestId: string, cancelling = false, start = 0): ObservedFacts {
   let admitted = requestId === '', requestSeq = -1, endSeq = -1, reason = '', output = '', outputTruncated = false, errorCode = ''
-  let lastEventSeq = -1, lastEventType = ''
+  let lastEventSeq = -1, lastEventType = '', requestClosed = false
+  let requestAt = 0, endedAt = 0, latestRequestId = ''
   const approvals = new Set<string>(), external = new Set<string>()
-  for (const event of events) {
+  for (let index = start; index < events.length; index++) {
+    const event = events[index]!
     const data = record(event.data), type: string = event.type
+    // Whole-session timing and request admission still include later turns,
+    // while the requested turn's output and outcome remain fixed below.
+    if (type === 'user/message' && typeof data.source?.rpcId === 'string') latestRequestId = data.source.rpcId
+    if (type === 'user/message' && data.source?.rpcId === requestId) requestAt = event.time
+    if (type === 'turn/end') endedAt = event.time
+    // Keep live-work safety across the session, but attribute results to one admitted turn.
+    if (type === 'subagent/start' && data.runId) external.add(data.runId)
+    if (type === 'subagent/end') external.delete(data.runId)
+    if (requestId && admitted && (endSeq > requestSeq || type === 'turn/start')) requestClosed = true
+    if (requestClosed) continue
     if (type === 'user/message' && data.source?.rpcId === requestId) { admitted = true; requestSeq = event.seq; output = ''; outputTruncated = false; errorCode = '' }
-    if (admitted && ['user/message', 'assistant/message', 'tool/call', 'tool/result', 'tool/ptc-dispatch-start', 'tool/ptc-dispatch', 'step/start', 'turn/end', 'approval/asked', 'approval/decided', 'llm/retry'].includes(type)) {
+    if (!admitted) continue
+    if (['user/message', 'assistant/message', 'tool/call', 'tool/result', 'tool/ptc-dispatch-start', 'tool/ptc-dispatch', 'step/start', 'turn/end', 'approval/asked', 'approval/decided', 'llm/retry'].includes(type)) {
       lastEventSeq = event.seq; lastEventType = type
     }
     if (type === 'turn/start') { reason = ''; errorCode = ''; approvals.clear() }
     if (type === 'turn/end') { endSeq = event.seq; reason = data.reason?.kind ?? ''; errorCode = typeof data.reason?.error?.code === 'string' ? data.reason.error.code.slice(0, 128) : ''; approvals.clear() }
     if (type === 'approval/asked' && typeof data.id === 'string') approvals.add(data.id)
     if (type === 'approval/decided') approvals.delete(data.id)
-    if (type === 'subagent/start' && data.runId) external.add(data.runId)
-    if (type === 'subagent/end') external.delete(data.runId)
-    if (type === 'assistant/message' && admitted && event.seq > requestSeq) {
+    if (type === 'assistant/message' && event.seq > requestSeq) {
       const text = publicMessageText(data.message?.content ?? data.content)
       if (text) {
         let start = Math.max(0, text.length - 12000)
@@ -58,7 +69,7 @@ export function connectionSessionFacts(events: readonly SessionEvent[], agentSta
     }
   }
   const observation: ObservationDetails = { lastEventSeq, lastEventType, outputTruncated, ...(errorCode ? { errorCode } : {}) }
-  const result = (status: HostObservation['status']): SessionFacts => ({ status, output, observation })
+  const result = (status: HostObservation['status']): ObservedFacts => ({ status, output, observation, requestAt, endedAt, latestRequestId })
   if (approvals.size) return result('waiting_confirmation')
   if (agentStatus === 'running' || external.size) return result(agentStatus === 'missing' ? 'unavailable' : 'running')
   if (cancelling && agentStatus === 'idle') return result('interrupted')
@@ -67,6 +78,10 @@ export function connectionSessionFacts(events: readonly SessionEvent[], agentSta
   if (['aborted', 'interrupted', 'forked'].includes(reason)) return result('interrupted')
   if (reason === 'blocked') return result('waiting_confirmation')
   return result(reason === 'completed' ? 'finished' : 'unavailable')
+}
+export function connectionSessionFacts(events: readonly SessionEvent[], agentStatus: string, requestId: string, cancelling = false): SessionFacts {
+  const { status, output, observation } = scanSessionFacts(events, agentStatus, requestId, cancelling)
+  return { status, output, observation }
 }
 export class ConnectionHost implements DelegationHost {
   constructor(private readonly services: ConnectionHostServices) {}
@@ -104,7 +119,7 @@ export class ConnectionHost implements DelegationHost {
     const descendants = await this.services.subagents.listDescendants(sessionId, AbortSignal.timeout(5000)).catch(() => [])
     if (descendantId !== sessionId && !descendants.some(child => child.id === descendantId)) throw new ConnectionError('history-session-not-owned')
     const cut = await this.services.query.observeSession(descendantId, { projectionMode: 'none', signal: AbortSignal.timeout(5000) })
-    try { return { ...connectionHistoryPage(cut.events.slice(cut.inheritedEventCount), cursor, limit), sessionId: descendantId,
+    try { return { ...connectionHistoryPage(cut.events, cursor, limit, cut.inheritedEventCount), sessionId: descendantId,
       descendants: descendants.slice(0, 100).map(child => ({ sessionId: child.id, kind: child.kind })), descendantsTruncated: descendants.length > 100 } }
     finally { cut[Symbol.dispose]() }
   }
@@ -121,13 +136,7 @@ export class ConnectionHost implements DelegationHost {
   private async facts(id: string, requestId: string, cancelling = false): Promise<ObservedFacts> {
     const cut = await this.services.query.observeSession(id, { projectionMode: 'none', signal: AbortSignal.timeout(5000) })
     try {
-      const events = cut.events.slice(cut.inheritedEventCount)
-      let requestAt = 0, endedAt = 0
-      for (const event of events) {
-        if (event.type === 'user/message' && record(event.data).source?.rpcId === requestId) requestAt = event.time
-        if (event.type === 'turn/end') endedAt = event.time
-      }
-      return { ...connectionSessionFacts(events, this.services.agents.get(id)?.status ?? 'missing', requestId, cancelling), requestAt, endedAt }
+      return scanSessionFacts(cut.events, this.services.agents.get(id)?.status ?? 'missing', requestId, cancelling, cut.inheritedEventCount)
     }
     finally { cut[Symbol.dispose]() }
   }
@@ -147,22 +156,27 @@ export class ConnectionHost implements DelegationHost {
         if (['failed', 'interrupted'].includes(facts.status) && status === 'finished'
           && (!root.requestAt || !facts.endedAt || facts.endedAt >= root.requestAt)) status = 'failed'
       }
-      return { status, output: root.output, observation: root.observation, detail: status === 'finished' ? 'Root and managed descendants settled. Acceptance has not been verified.'
+      return { status, output: root.output, observation: root.observation, latestRequestId: root.latestRequestId, detail: status === 'finished' ? 'Root and managed descendants settled. Acceptance has not been verified.'
         : status === 'failed' ? `DSH task tree failed${root.observation.errorCode ? ` (${root.observation.errorCode})` : ''}; inspect public history with dsh_read. No automatic retry.`
         : status === 'waiting_confirmation' ? 'A permission request or blocked turn is pending. Check dsh_wait.callerApproval for the authorized approval path; otherwise resolve it in DSH.' : `DSH task tree: ${status}.` }
     } catch { return { status: 'unavailable', output: '', detail: 'Could not observe the complete DSH task tree. No request was replayed.' } }
   }
   async cancel(sessionId: string): Promise<void> {
     // Clear queued follow-ups as well as aborting the root, so cancellation cannot wake another turn.
-    this.services.agents.get(sessionId)?.cancel({ kind: 'user' }, { keepInbox: false })
+    let unconfirmed = false
+    try { this.services.agents.get(sessionId)?.cancel({ kind: 'user' }, { keepInbox: false }) }
+    catch { unconfirmed = true }
     const children = await this.services.subagents.listDescendants(sessionId, AbortSignal.timeout(5000))
     for (const child of [...children].reverse()) {
-      if (child.kind === 'diagnostic') throw new ConnectionError('cancellation-unconfirmed')
+      if (child.kind === 'diagnostic') { unconfirmed = true; continue }
       const agent = this.services.agents.get(child.id)
-      agent?.cancel({ kind: 'user' }, { keepInbox: false })
+      try { agent?.cancel({ kind: 'user' }, { keepInbox: false }) }
+      catch { unconfirmed = true }
       if (child.mode === 'external' || agent?.status === 'running') {
-        await this.services.subagents.interrupt(child.id, { kind: 'user', parentSessionId: child.parentId })
+        try { await this.services.subagents.interrupt(child.id, { kind: 'user', parentSessionId: child.parentId }) }
+        catch { unconfirmed = true }
       }
     }
+    if (unconfirmed) throw new ConnectionError('cancellation-unconfirmed')
   }
 }

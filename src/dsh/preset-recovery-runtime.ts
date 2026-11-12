@@ -66,6 +66,7 @@ export function deletionNoticeMatches(session: Session, instruction: string): bo
 /** Retire only producer-owned rules; keep append-origin history and user instructions intact. */
 export function revokeDeletionNotices(session: Session, message: typeof createUserMessage): void {
   const cursor = deletionCursor(session)
+  if (!cursor.pending.size) return
   const notice = (): UserMessage => message({ source: { kind: revokedSource }, content: [{ type: 'text', text:
     'Super Code 先前添加的删除保护规则已撤销，不再适用；请遵循当前用户指令和宿主权限。\nEarlier deletion-protection rules added by Super Code have been revoked and no longer apply. Follow current user instructions and host permissions.' }] })
   const active = new Set(session.surface.nodes)
@@ -175,11 +176,23 @@ export function installRecovery(ctx: Context, state: RecoveryState, config: Reco
     const hash = await documentHash(preset)
     if (active && hash) await state.save(header.id, { preset, createdAt: header.createdAt, ...(header.cwd === undefined ? {} : { cwd: header.cwd }), fingerprint: hash })
   }
+  // Order the reads as well as the writes: a slow historical read must not
+  // replace a newer live selection. Other sessions can still register in parallel.
+  const pending = new Map<string, Promise<void>>()
+  const update = async (id: string, run: () => Promise<void>): Promise<void> => {
+    const previous = pending.get(id) ?? Promise.resolve()
+    const operation = previous.catch(() => {}).then(async () => { if (active) await run() })
+    pending.set(id, operation)
+    try { await operation }
+    finally { if (pending.get(id) === operation) pending.delete(id) }
+  }
   const service: RecoveryService = {
     async remember(agent) {
-      if (!active || !ctx.get('tools')?.get('super_code_task', agent)) return
-      const preset = registry.composedPreset(agent.ctx)
-      if (preset) await rememberHeader(agent.session.header, preset)
+      await update(agent.session.id, async () => {
+        if (!ctx.get('tools')?.get('super_code_task', agent)) return
+        const preset = registry.composedPreset(agent.ctx)
+        if (preset) await rememberHeader(agent.session.header, preset)
+      })
     },
     async backfill(presets) {
       const query = ctx.get('sessionQuery') as Query | undefined
@@ -190,10 +203,12 @@ export function installRecovery(ctx: Context, state: RecoveryState, config: Reco
         // A blank conversation can switch from an official preset before its
         // first turn; its immutable header then differs from the selected one.
         try {
-          const history = await query.readSession(header.id)
-          let preset = history.session.agentPreset
-          for (const event of history.events) if (event.type === 'agent-preset/selected') preset = event.data.agentPreset
-          if (preset && owned.has(preset)) await rememberHeader(history.session, preset)
+          await update(header.id, async () => {
+            const history = await query.readSession(header.id)
+            let preset = history.session.agentPreset
+            for (const event of history.events) if (event.type === 'agent-preset/selected') preset = event.data.agentPreset
+            if (preset && owned.has(preset)) await rememberHeader(history.session, preset)
+          })
         } catch { ctx.logger.warn('A historical Super Code session could not be registered for uninstall recovery.') }
       }
     },

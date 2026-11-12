@@ -5,6 +5,7 @@ import type { CallerApproval, CallerApprovalDecision } from './types.js'
 
 export type ApprovalOutcome = 'allowed-once' | 'rejected' | 'cancelled' | 'unavailable';
 export type ApprovalAnswer = ApprovalOutcome | 'host';
+export interface ApprovalRoot { sessionId: string; requestIds: readonly string[] }
 interface Pending { view: CallerApproval; settle(answer: ApprovalAnswer): void }
 export class CallerApprovals {
   private readonly requests = new Map<string, Pending>()

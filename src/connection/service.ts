@@ -3,7 +3,7 @@ import { realpath, stat } from 'node:fs/promises'
 import { isAbsolute } from 'node:path'
 import { ConnectionError, connectionConfigSchema } from './types.js'
 import type { CallerApproval, ConnectionConfig, DelegationHost } from './types.js'
-import type { ApprovalAnswer } from './approvals.js'
+import type { ApprovalAnswer, ApprovalRoot } from './approvals.js'
 import { ConnectionStore } from './store.js'
 import type { ConnectionSettings } from './store.js'
 import { DelegatedTasks } from './tasks.js'
@@ -33,6 +33,7 @@ export class ConnectionService {
   private cleanupFailed: boolean = false
   private state: ConnectionSnapshot['state'] = 'disabled'
   private error: string = ''
+  private observationError: boolean = false
   private observing: boolean = false
   constructor(private readonly store: ConnectionStore, private readonly host: DelegationHost) {}
   async initialize(): Promise<void> {
@@ -51,17 +52,20 @@ export class ConnectionService {
       this.timer = setInterval(() => {
         if (this.closing || this.observing) return
         this.observing = true
-        void this.tasks.tick().catch(() => { if (!this.closing) this.error = 'storage-unavailable' }).finally(() => { this.observing = false })
+        void this.tasks.tick().then(
+          () => { if (!this.closing) this.observationError = false },
+          () => { if (!this.closing) this.observationError = true },
+        ).finally(() => { this.observing = false })
       }, 1000)
       this.timer.unref()
     } catch (error) { await this.store.close(); throw error }
   }
   read(): ConnectionSnapshot {
     return { configuration: structuredClone(this.settings.config), revision: this.settings.revision, writable: !this.closing,
-      state: this.closing ? 'disabled' : this.state, error: this.error, url: `http://127.0.0.1:${this.settings.config.port}/mcp` }
+      state: this.closing ? 'disabled' : this.state, error: this.error || (this.observationError ? 'storage-unavailable' : ''), url: `http://127.0.0.1:${this.settings.config.port}/mcp` }
   }
   overview(): ConnectionOverview { return { connections: this.http.connections(), sessions: this.tasks.overview() } }
-  requestApproval(input: Omit<CallerApproval, 'id' | 'createdAt' | 'expiresAt' | 'taskId' | 'cwd'>, roots: readonly string[], signal?: AbortSignal): Promise<ApprovalAnswer> {
+  requestApproval(input: Omit<CallerApproval, 'id' | 'createdAt' | 'expiresAt' | 'taskId' | 'cwd'>, roots: readonly ApprovalRoot[], signal?: AbortSignal): Promise<ApprovalAnswer> {
     if (this.closing || this.state !== 'listening') return Promise.resolve('host')
     return this.tasks.requestApproval(input, roots, signal)
   }
@@ -99,6 +103,8 @@ export class ConnectionService {
         config.knownDirectories = await canonicalKnownDirectories(config.knownDirectories)
         config.allowedDirectories = [...new Set(await Promise.all(config.allowedDirectories.map(async path => {
           if (!isAbsolute(path)) throw new Error()
+          // Stopping admission must not require saved grants to remain accessible.
+          if (!config.enabled && this.settings.config.allowedDirectories.includes(path)) return path
           const canonical = await realpath(path)
           if (!(await stat(canonical)).isDirectory()) throw new Error()
           return canonical

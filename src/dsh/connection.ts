@@ -41,10 +41,12 @@ export class SuperCodeConnection extends TypertRemoteService {
   async directories(): Promise<{ items: { path: string; title: string; available: boolean; workspace: boolean }[]; picker: string; available: boolean }> {
     const workspaces = this.environment.workspaces ? this.environment.workspaces.list() : []
     const config = this.current() ? this.service().read().configuration : defaultConnectionConfig
+    const configured = new Set([...config.knownDirectories, ...config.allowedDirectories])
     // Registry entities expose these fields through prototype getters.
-    const rows = [...workspaces.map(row => ({ path: row.path, title: row.title, workspace: true })),
-      ...[...config.knownDirectories, ...config.allowedDirectories].map(path => ({ path, title: '', workspace: false }))]
-    const items = await Promise.all(rows.slice(0, 500).map(async row => {
+    // Bound automatic discovery while preserving saved workspace metadata and availability.
+    const rows = [...workspaces.filter((row, index) => index < 500 || configured.has(row.path)).map(row => ({ path: row.path, title: row.title, workspace: true })),
+      ...[...configured].map(path => ({ path, title: '', workspace: false }))]
+    const items = await Promise.all(rows.map(async row => {
       try { const path = await realpath(row.path); return { path, title: row.title, workspace: row.workspace, available: (await stat(path)).isDirectory() } }
       catch { return { path: row.path, title: row.title, workspace: row.workspace, available: false } }
     }))
@@ -114,6 +116,11 @@ export function applyConnection(ctx: Context): void {
       startup = { connection, initialized: connection.initialize() }
       await startup.initialized
       if (!disposed) service = connection
-    } catch { owner.logger.warn('Super Code connection storage is unavailable or already owned by another host. No endpoint was started.') }
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code
+      owner.logger.warn(code === 'ENOTSUP' || code === 'EOPNOTSUPP' || code === 'ENOSYS'
+        ? 'Super Code connection storage requires atomic hard links. Move the DSH profile to a local APFS, NTFS or ext4 filesystem. No endpoint was started.'
+        : 'Super Code connection storage is unavailable or already owned by another host. No endpoint was started.')
+    }
   })
 }

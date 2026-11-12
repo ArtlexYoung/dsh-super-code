@@ -262,6 +262,8 @@ Under the **Connection** tab:
 
 **Allow caller approval** is off by default. When enabled, an exact one-time tool approval for a delegated task can be sent to the caller through an interactive form or `dsh_approve`. Host policy remains authoritative, and directory consent always stays in DSH.
 
+MCP tasks and connection settings are stored in the DSH profile. Keep this profile on a local filesystem with atomic hard-link support, such as APFS, NTFS or ext4, and do not share it across machines. exFAT and FAT cannot provide this lock mechanism; the startup log explains how to move the profile. This requirement applies to profile storage, not to the working directories you grant access to.
+
 Directories:
 
 - The DSH workspace list is reread every time you open the tab. On first setup, existing workspaces are preselected; workspaces added later are **not** granted access automatically.
@@ -335,20 +337,25 @@ On capacity refusal, retain the same `requestId` and input and wait through `dsh
 
 ## Preset Skill packages
 
-Open **Settings → Super Code → Preset Skills**. There are four independent whole-package switches, with no per-Skill checklist:
+Open **Settings → Super Code → Preset Skills**. All packages are off by default; existing saved choices are preserved. Individual Skills and workflows have separate groups; workflows remain whole-package switches:
 
-| Package | Purpose | Default |
-|---|---|---|
-| oil-ui | Design, improve and review frontend interfaces. | On |
-| OpenSpec | Organize requirements, design, tasks, implementation and verification around specifications. | Off |
-| Matt Pocock Skills | Question requirements, plan, develop, test, debug and review code through complete engineering workflows. | Off |
-| PStack | Collaborative architecture, development, verification and review workflows. | Off |
+| Category | Name | Purpose | Default |
+|---|---|---|---|
+| Skill | grill-me | Sharpen requirements, plans and decisions through rounds of questions. | Off |
+| Skill | OpenSpec | Organize requirements, design, tasks, implementation and verification around specifications. | Off |
+| Skill | oil-ui | Design, improve and review frontend interfaces. | Off |
+| Workflow | Matt Pocock Skills | Question requirements, plan, develop, test, debug and review code through complete engineering workflows. | Off |
+| Workflow | PStack | Collaborative architecture, development, verification and review workflows. | Off |
 
-Matt bundles the complete official plugin distribution (1.3.2, 27 Skills), not a selected subset. OpenSpec bundles its complete static skills.sh distribution (12 Skills). PStack is a Cursor plugin containing 58 standard `SKILL.md` entrypoints (0.15.36). All its Skills, references and helpers are bundled; Cursor plugins, agents and automations are not registered. Provenance, inventories and licenses are included in each package's `UPSTREAM.md` and `distribution.json` under `presets/super-code/skill-packs/`.
+The independent grill-me switch reuses Matt Pocock 1.3.2's original `grill-me` entry and its `grilling` dependency without enabling the whole workflow package. The complete Matt Pocock package still includes both; enabling both switches does not register duplicates.
+
+Matt bundles the complete official plugin distribution (1.3.2, 27 Skills), not a selected subset. OpenSpec bundles its complete static skills.sh distribution (12 Skills). PStack is a Cursor plugin containing 58 standard `SKILL.md` entrypoints (0.15.36). All its Skills, references and helpers are bundled; Cursor plugins, agents and automations are not registered. Provenance, inventories and licenses are included in each package's `UPSTREAM.md` and `distribution.json` under `builtin/skills/`.
 
 Changes save automatically. Once accepted, they update the Skill catalog, subsequent loads and native slash menus in existing conversations without refreshing the page, creating a conversation or switching presets. Disabling a package does not retract instructions already loaded into a conversation; start a fresh conversation when you need an empty context. Project/user Skills are unaffected, including same-name overrides. The original invocation rules remain: some Matt Skills require an explicit user invocation instead of automatic model selection.
 
-In a main conversation using the Super Code preset, type `/` to select a Skill from DSH’s native menu, or enter `/oil-ui`, `/grill-me`, `/openspec-propose` or `/poteto-mode` followed by your task. Disabled packages no longer supply commands or bodies. The plugin uses public DSH lifecycle APIs to reload only the native Skill UI cache. It does not restart the host, change input drafts or model calls, or install a second slash source. In-flight model requests and instructions already in context remain.
+Enabled packages are copied in full to `skills/dsh-super-code/` under the DSH user home, preserving references and helper paths. A custom `DSH_HOME` is respected. **Open Skill directory** opens `skills/` in the file manager on the device running DSH; it is unavailable on headless hosts. Disabling removes unchanged plugin copies. User edits and existing conflicting directories are preserved and reported; inspect them before retrying sync. Uninstalling the plugin stops registering these nested resources.
+
+In a main conversation using the Super Code preset, type `/` to select a Skill from DSH’s native menu, or enter `/oil-ui`, `/grill-me`, `/openspec-propose` or `/poteto-mode` followed by your task. Disabled packages no longer supply commands or bodies. Search by package with `/pstack` or `/mattpocock` to find enabled Skills, then pick one to insert its real `/skill-name`. Package names are search terms, not standalone commands. The plugin uses public DSH APIs to supplement package search and refresh the native menu without restarting the host or changing drafts or model calls. In-flight model requests and instructions already in context remain.
 
 Native same-name precedence is preserved: project/user Skills take priority. With Matt and PStack both enabled, `/tdd` and `/teach` use the earlier-registered Matt version; disable Matt to use PStack’s versions.
 
@@ -358,9 +365,9 @@ Configuration retains all 17 upstream role categories. Reasoning budget, panel s
 
 Browser, Git/GitHub and model-checking workflows still require real tools. Helpers may need Bun, authenticated gh, mise/Java/TLC or Pele, subject to the environment and user authorization. Enabling the package runs no helpers or installs. Missing capabilities are reported; sequential self-review is not presented as independent or cross-model verification.
 
-Existing installed preset compositions are not overwritten automatically. If the page asks you to upgrade, reinstall the preset in **Preset configuration**, then start or resume the conversation to load the new composition. Reinstallation keeps the normal recovery backup.
+The plugin manages directory synchronization globally; reinstalling a preset is unnecessary. A preset must still expose the host's native Skill tools to load and invoke Skills in that conversation. The Super Code preset includes them.
 
-OpenSpec workflows require a compatible OpenSpec CLI in the project environment. Enabling this package does not install the CLI, run `openspec init`, or generate additional project Skills. Matt's tracker workflows may require an authenticated `gh`/`glab`; its setup workflow runs only when explicitly requested. Package switches do not grant permission for commands, commits, remote writes, or paid services. Skill resources update with this plugin.
+Each bundled package displays its own pinned version. The matching OpenSpec CLI is installed with the plugin and exposed as `openspec` inside enabled Super Code shell calls, with no global installation. Switching, listing and loading Skills execute no commands and change no project files, dependencies or configuration. Run `openspec init` only after an explicit user request. Matt's tracker workflows may require an authenticated `gh`/`glab`; its setup workflow runs only when explicitly requested. Package switches do not grant permission for commands, commits, remote writes, or paid services. Skill resources update with this plugin.
 
 ## Frontend Skill
 
@@ -370,11 +377,11 @@ The plugin bundles [oil-ui](https://github.com/oil-oil/oil-ui) **0.32.0**, repla
 - On-demand style comparison pages with local assets for offline viewing
 - Reviewing and refining UI using rendered screenshots and interaction results
 
-It follows the project's framework and implementation conventions and loads through Harness's native Skill mechanism. Normally only its name and short description go to the model; the body and relevant references load when a task matches. You can also ask for it directly: "use oil-ui".
+Enable oil-ui in Preset Skills settings first; it then loads through Harness's native Skill mechanism and follows the project's framework and implementation conventions. Normally only its name and short description go to the model; the body and relevant references load when a task matches. You can also ask for it directly: "use oil-ui".
 
 - Existing directory presets are not overwritten automatically. After updating to a plugin containing oil-ui, back up customizations and reinstall the preset from Settings. Declarative presets read the resources directly from the current plugin package.
 - A project or user skill with the same name overrides the bundled one, following host precedence.
-- This bundled copy updates with the plugin; it does not check for updates separately or run the upstream installer. See [provenance, adaptations, and licenses](../../presets/super-code/skills/oil-ui/UPSTREAM.md).
+- This bundled copy updates with the plugin; it does not check for updates separately or run the upstream installer. See [provenance, adaptations, and licenses](../../builtin/skills/oil-ui/UPSTREAM.md).
 - The design guidance needs no extra dependencies. The optional comparison generator requires Python 3.10+; screenshot and image-processing scripts need Node.js 22+ and Chrome, Chromium, or Edge. Some media operations also need ffmpeg/ffprobe. Host tools can be used when these are unavailable, with unverified behavior stated explicitly.
 - Optional media searches contact their providers. Oil image generation needs an account and explicit authorization to spend credits; plugin startup never invokes it. The upstream Pro recommendation script writes a one-time local marker only when used as directed by the Skill.
 - Whether it improves frontend quality needs a separate real-task evaluation; install tests and SWE scores can't show that.

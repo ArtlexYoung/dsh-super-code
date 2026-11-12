@@ -45,10 +45,12 @@ function SelectControl({ id, label, value, choices, onChange, disabled = false }
     setOpen(true)
   }
   const choose = index => {
+    if (unavailable) return
     onChange(choices[index][0])
     setOpen(false)
     trigger.current.focus({ preventScroll: true })
   }
+  useLayoutEffect(() => { if (unavailable) setOpen(false) }, [unavailable])
   useLayoutEffect(() => {
     if (!open) return
     const place = () => setPlacement(selectControlPlacement(trigger.current.getBoundingClientRect(), choices.length))
@@ -303,14 +305,20 @@ const zh = {
   'status.blocked': '受阻',
 
   'settings.skillsTab': '预设 Skill',
-  'skills.title': '预设 Skill', 'skills.scope': '整包开启或关闭，仅用于 Super Code 预设；按需加载，自动保存并在当前对话实时生效。',
-  'skills.oilUiSkill': 'oil-ui', 'skills.oilUiSkillHint': '设计、改进与评审前端界面，提供风格参考和页面验证工具。',
-  'skills.openspecSkills': 'OpenSpec', 'skills.openspecSkillsHint': '用规范组织需求、方案、任务、实现与验收，覆盖完整变更流程。',
-  'skills.mattpocockSkills': 'Matt Pocock Skills', 'skills.mattpocockSkillsHint': '覆盖需求追问、方案规划、开发、测试、排错与代码评审的完整工程工作流。',
-  'skills.pstackSkills': 'PStack', 'skills.pstackSkillsHint': '围绕架构、开发、验证与评审组织协作，提供可手动调用的工程工作流。',
-  'skills.commands': '在 Super Code 对话中输入 / 选择 Skill，也可直接输入 /skill-name。开关保存后实时更新命令列表与后续加载，不撤回已进入上下文的内容。',
+  'skills.title': '预设 Skill', 'skills.scope': '开启后同步到 DSH 的 Skill 目录，按需加载，自动保存并在当前对话实时生效。',
+  'skills.openDirectory': '打开 Skill 目录', 'skills.openFailed': '无法打开 Skill 目录，请确认 DSH 所在设备支持文件管理器。',
+  'skills.directoryUnavailable': '当前 DSH 所在环境不支持打开文件管理器。',
+  'skills.directoryError': '部分 Skill 未能同步。已有的用户文件和修改已保留，请打开 Skill 目录检查后重试。',
+  'skills.retry': '重试同步',
+  'skills.individual': 'Skill', 'skills.workflows': '工作流',
+  'skills.grillMeSkill': 'grill-me', 'skills.grillMeSkillHint': '需求还不清楚或想检验方案时，输入 /grill-me，通过逐轮追问理清关键决策。',
+  'skills.oilUiSkill': 'oil-ui', 'skills.oilUiSkillHint': '设计或改进页面时，输入 /oil-ui，获得布局、配色和交互方面的设计建议。',
+  'skills.openspecSkills': 'OpenSpec', 'skills.openspecSkillsHint': '需要先明确规范再开发时，输入 /openspec-propose，生成包含需求、设计和任务的变更提案。',
+  'skills.mattpocockSkills': 'Matt Pocock Skills', 'skills.mattpocockSkillsHint': '规划、开发、测试或排查代码问题时，输入 /mattpocock 搜索并选择对应工作流。',
+  'skills.pstackSkills': 'PStack', 'skills.pstackSkillsHint': '需要规划、协作开发或代码评审时，输入 /pstack 选择工作流，也可用 /poteto-mode 启用整套工作方式。',
+  'skills.commands': '输入 / 选择 Skill，也可输入 /pstack、/mattpocock 等包名查找，选择后使用真实 Skill 命令。开关保存后实时生效，不撤回已进入上下文的内容。',
   'skills.pstackRequirement': 'PStack 已针对 DSH 0.2.1-alpha.1 及之后版本适配；部分流程仍需 Git、Bun 或模型检查器等外部工具。',
-  'skills.openspecRequirement': 'OpenSpec 工作流需要项目环境中的 OpenSpec CLI；此开关不会自动安装 CLI 或初始化项目。',
+  'skills.openspecRequirement': 'OpenSpec CLI 随插件安装就绪。开关不改动项目，仅在你明确要求时初始化项目。',
   'skills.upgrade': '当前预设尚未接入 Skill 包开关，请在“预设配置”中重新安装预设后使用。',
   'skills.missing': '安装 Super Code 预设后即可使用这些 Skill 包。',
   'settings.homeTab': '首页', 'settings.presetTab': '预设配置', 'settings.protectionTab': '删除保护',
@@ -404,6 +412,7 @@ const zh = {
   'tree.collapsedLabel': '已收起', 'tree.organizeLabel': '自动整理',
   'detail.toolCall': '工具调用', 'detail.toolResult': '工具结果', 'detail.toolError': '工具失败',
   'detail.authError': '模型身份验证失败，请检查模型配置。',
+  'detail.maxTokens': '模型输出达到 Token 上限，可继续对话。',
   'detail.copy': '复制', 'detail.copied': '已复制', 'detail.footnotes': '脚注',
   'detail.cache': '缓存', 'detail.info': '详情', 'tree.countCompact': '{shown}/{total} · 运行 {running}',
   'memory.loading': '正在读取记忆…', 'memory.topics': '知识主题', 'memory.allTopics': '全部主题', 'memory.related': '同主题知识', 'preset.configuration': '预设配置',
@@ -508,14 +517,20 @@ const en = {
   'status.blocked': 'Blocked',
 
   'settings.skillsTab': 'Preset Skills',
-  'skills.title': 'Preset Skills', 'skills.scope': 'Enable or disable whole packages for the Super Code preset. Skills load on demand; changes save automatically and apply to current conversations.',
-  'skills.oilUiSkill': 'oil-ui', 'skills.oilUiSkillHint': 'Design, improve and review frontend interfaces with style references and page verification tools.',
-  'skills.openspecSkills': 'OpenSpec', 'skills.openspecSkillsHint': 'Organize requirements, design, tasks, implementation and verification around a complete specification workflow.',
-  'skills.mattpocockSkills': 'Matt Pocock Skills', 'skills.mattpocockSkillsHint': 'A complete engineering workflow for questioning requirements, planning, development, testing, debugging and code review.',
-  'skills.pstackSkills': 'PStack', 'skills.pstackSkillsHint': 'Organize architecture, development, verification and review with user-invoked engineering workflows.',
-  'skills.commands': 'Type / in a Super Code conversation to select a Skill, or enter /skill-name directly. Saved switches update commands and subsequent loads immediately; instructions already in context remain.',
+  'skills.title': 'Preset Skills', 'skills.scope': 'Enabled packages sync to the DSH Skill directory. Skills load on demand; changes save automatically and apply to current conversations.',
+  'skills.openDirectory': 'Open Skill directory', 'skills.openFailed': 'Could not open the Skill directory. Check that the device running DSH supports a file manager.',
+  'skills.directoryUnavailable': 'The device running DSH does not support opening a file manager.',
+  'skills.directoryError': 'Some Skills could not be synced. Existing user files and edits were preserved. Check the Skill directory and retry.',
+  'skills.retry': 'Retry sync',
+  'skills.individual': 'Skills', 'skills.workflows': 'Workflows',
+  'skills.grillMeSkill': 'grill-me', 'skills.grillMeSkillHint': 'When requirements are unclear or a plan needs scrutiny, use /grill-me to clarify key decisions through focused questions.',
+  'skills.oilUiSkill': 'oil-ui', 'skills.oilUiSkillHint': 'When designing or improving a page, use /oil-ui for layout, color and interaction design guidance.',
+  'skills.openspecSkills': 'OpenSpec', 'skills.openspecSkillsHint': 'When a change needs a specification before development, use /openspec-propose to generate a proposal with requirements, design and tasks.',
+  'skills.mattpocockSkills': 'Matt Pocock Skills', 'skills.mattpocockSkillsHint': 'For planning, development, testing or debugging, type /mattpocock to search for and select the appropriate workflow.',
+  'skills.pstackSkills': 'PStack', 'skills.pstackSkillsHint': 'For planning, collaborative development or code review, type /pstack to select a workflow, or use /poteto-mode to adopt the full working approach.',
+  'skills.commands': 'Type / to select a Skill, or search by package with /pstack or /mattpocock. Picking inserts the real Skill command. Saved switches take effect immediately; instructions already in context remain.',
   'skills.pstackRequirement': 'PStack is adapted for DSH 0.2.1-alpha.1 and later; some workflows still need external tools such as Git, Bun or a model checker.',
-  'skills.openspecRequirement': 'OpenSpec workflows require the OpenSpec CLI in the project environment. This switch does not install the CLI or initialize projects.',
+  'skills.openspecRequirement': 'The OpenSpec CLI is installed with the plugin. Switches do not change projects; initialization runs only when you explicitly request it.',
   'skills.upgrade': 'This preset does not support Skill package switches yet. Reinstall it in Preset configuration to apply these choices.',
   'skills.missing': 'Install the Super Code preset to use these Skill packages.',
   'settings.homeTab': 'Home', 'settings.presetTab': 'Preset configuration', 'settings.protectionTab': 'Deletion protection',
@@ -609,6 +624,7 @@ const en = {
   'tree.collapsedLabel': 'Collapsed', 'tree.organizeLabel': 'Organize',
   'detail.toolCall': 'Tool call', 'detail.toolResult': 'Tool result', 'detail.toolError': 'Tool failed',
   'detail.authError': 'Model authentication failed. Check the model settings.',
+  'detail.maxTokens': 'The model reached its output token limit. Continue the conversation to proceed.',
   'detail.copy': 'Copy', 'detail.copied': 'Copied', 'detail.footnotes': 'Footnotes',
   'detail.cache': 'Cache', 'detail.info': 'Details', 'tree.countCompact': '{shown}/{total} · Running {running}',
   'memory.loading': 'Loading memories…', 'memory.topics': 'Knowledge topics', 'memory.allTopics': 'All topics', 'memory.related': 'More in this topic', 'preset.configuration': 'Preset configuration',
@@ -1277,9 +1293,13 @@ function TaskFeedback({ useSessions, useSessionStatus, sessionId, useTabInfo, tr
     if (!value || value.root !== view.root) { value = { root: view.root, limit: 200, focused: state.current, expanded: new Set(), collapsed: new Set() }; treeStates.set(tab.signal, value) }
     return value
   }, [treeStates, tab.signal, view.root])
+  const catalogs = state.subagentsByParent
+  return React.createElement(TaskFeedbackBody, { key: view.root, view, catalogs, saved, openDetail, refresh, watchCatalog, onToggle, t })
+}
+function TaskFeedbackBody({ view, catalogs, saved, openDetail, refresh, watchCatalog, onToggle, t }) {
   const [busy, setBusy] = useState(false), [error, setError] = useState(false)
   const model = useMemo(() => taskFeedbackRows(view), [view])
-  const partial = model.partial || Object.values(state.subagentsByParent || {}).some(value => value.state === 'error')
+  const partial = model.partial || [...view.nodes.keys()].some(id => catalogs?.[id]?.state === 'error')
   const items = useMemo(() => {
     const rows = feedbackListItems(model, view.root, partial)
     if (!view.root) rows.unshift({ kind: 'note', key: 'empty', label: 'tree.empty', signature: 'empty' })
@@ -1299,7 +1319,7 @@ function TaskFeedback({ useSessions, useSessionStatus, sessionId, useTabInfo, tr
     React.createElement('header', null,
       React.createElement(WorkspaceSectionToggle, { section: 'tasks', expanded: true, onToggle, t }),
       React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-icon-button', title: text(t, 'feedback.refresh'), 'aria-label': text(t, 'feedback.refresh'), disabled: busy || !view.root, onClick: () => void reload() }, React.createElement(IconRefreshOutline16))),
-    React.createElement(FeedbackVirtualList, { key: view.root, items, root: view.root, saved, openDetail, t, watchCatalog }))
+    React.createElement(FeedbackVirtualList, { items, root: view.root, saved, openDetail, t, watchCatalog }))
 }
 
 function WorkspaceSectionToggle({ section, expanded, onToggle, children, t }) {
@@ -1551,7 +1571,7 @@ function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog, 
         const parent = positions.get(edge.parent), child = positions.get(edge.child)
         return React.createElement('path', { key: edge.child, d: `M ${parent.x} ${parent.y + agentTreeNodeHeight} V ${child.y - 16} H ${child.x} V ${child.y - 10}`, fill: 'none' })
       })),
-      rows.map(row => {
+      rows.map((row, index) => {
       const node = view.nodes.get(row.id)
       const title = node.title || node.displayTitle || text(t, 'main.agent')
       const { label: status, tone } = agentExecutionStatus(node, row.id === view.root, t)
@@ -1571,7 +1591,7 @@ function AgentTreeBody({ state, view, saved, openDetail, refresh, watchCatalog, 
           onFocus: () => setFocused(row.id), onClick: () => { if (!node.unavailable) open(node) },
           onKeyDown: event => { if (event.target === event.currentTarget) keyDown(event, row) },
         },
-        React.createElement('span', { className: 'dsh-super-code-circle ' + tone, 'aria-hidden': true }, row.id === view.root ? text(t, 'main.agent').slice(0, 1) : String(rows.findIndex(item => item.id === row.id))),
+        React.createElement('span', { className: 'dsh-super-code-circle ' + tone, 'aria-hidden': true }, row.id === view.root ? text(t, 'main.agent').slice(0, 1) : String(index)),
         React.createElement('span', { className: 'dsh-super-code-tree-content' },
           React.createElement('span', { className: 'dsh-super-code-tree-title' }, title),
           React.createElement('span', { className: 'dsh-super-code-node-status', 'data-tone': tone }, React.createElement('i', { 'aria-hidden': true }), status),
@@ -1661,10 +1681,10 @@ function detailRecord(entry, t = key => zh[key] || key) {
       label: text(t, failed ? 'detail.toolError' : 'detail.toolResult'),
       text: contentText(direct ? data.message.content : blocks.flatMap(block => block.content || []), t) }
   }
-  if (event.type === 'turn/end' && data.reason?.kind === 'error') {
+  if (event.type === 'turn/end' && ['error', 'max-tokens'].includes(data.reason?.kind)) {
     const failure = data.reason.error
     // Match the host's AUTH handling: provider diagnostics can echo credentials.
-    const message = failure?.code === 'AUTH' ? text(t, 'detail.authError')
+    const message = data.reason.kind === 'max-tokens' ? text(t, 'detail.maxTokens') : failure?.code === 'AUTH' ? text(t, 'detail.authError')
       : (typeof failure?.message === 'string' && failure.message) || text(t, 'detail.incomplete')
     return { ...base, kind: 'error', format: 'text', label: text(t, 'detail.error'), text: message }
   }
@@ -1789,10 +1809,12 @@ function memoryLibraryTarget(address, current) {
 /** A repeated explicit navigation reopens its entry; ordinary remounts retain reading state. */
 function memoryLibraryNavigation(saved, tab, current) {
   const address = typeof tab.navigation?.params?.memory === 'string' ? tab.navigation.params.memory : tab.contentId
-  const navigationKey = `${address}/${tab.navigation?.revision || 0}`
-  if (saved.navigationKey === navigationKey) return saved
   const target = memoryLibraryTarget(address, current)
-  return { ...saved, navigationKey, ...(target.id ? {
+  const navigationKey = `${address}/${tab.navigation?.revision || 0}/${target.sessionId}`
+  if (saved.navigationKey === navigationKey) return saved
+  return { ...saved, navigationKey, sessionId: target.sessionId,
+    ...(!target.id && saved.sessionId && saved.sessionId !== target.sessionId && saved.scope !== 'global'
+      ? { selected: null, query: '', topicFilter: '', top: 0, detailTop: 0 } : {}), ...(target.id ? {
     scope: target.scope, selected: { topic: target.topic, id: target.id }, detailTop: 0,
     ...(saved.scope && saved.scope !== target.scope ? { topicFilter: '', top: 0 } : {}),
   } : {}) }
@@ -1895,7 +1917,8 @@ function MemoryLibrary({ useTabInfo, useSessions, sessionId: scopeSessionId, api
   const target = memoryLibraryTarget(address, current)
   const saved = useMemo(() => {
     const value = memoryStates.get(tab.signal) || {}
-    Object.assign(value, memoryLibraryNavigation(value, tab, current))
+    const editing = value.editorStore?.getSnapshot()
+    if (!editing?.draft && !editing?.confirmation && !editing?.busy) Object.assign(value, memoryLibraryNavigation(value, tab, current))
     memoryStates.set(tab.signal, value)
     return value
   }, [memoryStates, tab.signal])
@@ -1917,10 +1940,11 @@ function MemoryLibrary({ useTabInfo, useSessions, sessionId: scopeSessionId, api
     if (next === saved) return
     Object.assign(saved, next)
     setScope(saved.scope || target.scope); setSelected(saved.selected || null)
+    setQuery(saved.query || '')
     setTopicFilter(saved.topicFilter || '')
     setViewport(value => ({ ...value, top: saved.top || 0 }))
     if (detailBody.current) detailBody.current.scrollTop = 0
-  }, [saved, address, tab.navigation?.revision, editing.draft, editing.confirmation, editing.busy])
+  }, [saved, address, current, tab.navigation?.revision, editing.draft, editing.confirmation, editing.busy])
   useLayoutEffect(() => {
     if (!editing.refresh) return
     setScope(saved.scope); setSelected(saved.selected); setRevision(value => value + 1)
@@ -1945,13 +1969,13 @@ function MemoryLibrary({ useTabInfo, useSessions, sessionId: scopeSessionId, api
   }, [api, tab.visible, sessionId, scope, selectionKey, revision])
   useLayoutEffect(() => {
     const element = list.current
-    if (!element) return
+    if (!element || visibleState.loading) return
     element.scrollTop = saved.top || 0
     const resize = () => setViewport({ top: element.scrollTop, height: element.clientHeight || 600 })
     resize()
     const observer = new ResizeObserver(resize); observer.observe(element)
     return () => observer.disconnect()
-  }, [selected, key, tab.visible, Boolean(editing.draft)])
+  }, [selected, key, tab.visible, Boolean(editing.draft), visibleState])
   useLayoutEffect(() => {
     if (detailBody.current) detailBody.current.scrollTop = saved.detailTop || 0
   }, [selectionKey, detail?.key, tab.visible, Boolean(editing.draft)])
@@ -2014,7 +2038,7 @@ function MemoryLibrary({ useTabInfo, useSessions, sessionId: scopeSessionId, api
         React.createElement('div', { className: 'dsh-super-code-memory-results' },
           React.createElement('div', { className: 'dsh-super-code-memory-list-heading' }, React.createElement('strong', null, topicFilter || text(t, 'memory.allTopics')), React.createElement('small', null, text(t, 'memory.count', { count: page.count }))),
           React.createElement('div', { ref: list, className: 'dsh-super-code-memory-list', role: 'list', 'aria-busy': visibleState.loading, onScroll: event => { saved.top = event.currentTarget.scrollTop; setViewport(value => ({ ...value, top: saved.top })) } },
-            visibleState.loading && !visibleState.error && React.createElement('p', { role: 'status', className: 'dsh-super-code-memory-empty' }, text(t, 'memory.loading')),
+            visibleState.loading && !visibleState.error && !visibleState.items.length && React.createElement('p', { role: 'status', className: 'dsh-super-code-memory-empty' }, text(t, 'memory.loading')),
             visibleState.error && React.createElement('p', { role: 'alert' }, text(t, 'memory.error')),
             !visibleState.error && !visibleState.loading && !page.count && React.createElement('p', { className: 'dsh-super-code-memory-empty' }, text(t, query || topicFilter ? 'memory.noMatches' : 'memory.empty')),
             React.createElement('div', { 'aria-hidden': true, style: { height: page.before } }),
@@ -2077,7 +2101,7 @@ function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, cre
   const input = totals ? (totals.uncachedInputTokens || 0) + (totals.cacheReadTokens || 0) + (totals.cacheWriteTokens || 0) : 0
   const format = value => value === undefined ? text(t, 'detail.unavailable') : value.toLocaleString(localeCode(t))
   const tasks = projections.superCodeTasks
-  const toolNames = new Map(snapshot.items.filter(item => item.toolName && item.callId).map(item => [item.callId, item.toolName]))
+  const toolNames = new Map()
   const task = tasks?.current?.kind === 'task' ? tasks.current : undefined
   const title = node?.title || node?.displayTitle || text(t, 'detail.title')
   const metrics = [
@@ -2117,7 +2141,12 @@ function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, cre
       snapshot.hasMore && React.createElement(ActionButton, { type: 'button', disabled: snapshot.status === 'paging', onClick: inspector.older }, snapshot.status === 'paging' ? text(t, 'detail.read') : text(t, 'detail.older')),
       (snapshot.earlier || snapshot.truncated) && React.createElement(ActionButton, { type: 'button', onClick: latest }, text(t, 'detail.latest')),
       snapshot.status === 'ready' && !snapshot.items.length && React.createElement('p', null, text(t, 'detail.empty')),
-      snapshot.items.map(record => React.createElement(AgentMessage, { key: record.seq, record, saved, t, toolName: toolNames.get(record.callId) }))),
+      snapshot.items.map(record => {
+        const data = record.entry?.event?.data
+        const key = JSON.stringify([data?.turn, data?.step, record.callId])
+        if (record.toolName && record.callId) toolNames.set(key, record.toolName)
+        return React.createElement(AgentMessage, { key: record.seq, record, saved, t, toolName: toolNames.get(key) })
+      })),
     unread && React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-new-content', onClick: () => {
       saved.following = true; log.current.scrollTop = log.current.scrollHeight; markUnread(false)
     } }, text(t, 'detail.new')))
@@ -2151,7 +2180,7 @@ const memoryRemoteContribution = {
 
 // Budget settings use the same public Remote transport as the preset settings.
 const budgetRemoteContribution = {
-  package: 'dsh-super-code', descriptors: ['readConfig', 'saveConfig', 'resetConfig'].map(method => ({
+  package: 'dsh-super-code', descriptors: ['readConfig', 'saveConfig', 'resetConfig', 'openSkillsDirectory', 'syncSkills'].map(method => ({
     id: `dsh-super-code:superCodeBudgets/${method}`, service: 'superCodeBudgets', namespace: 'superCodeBudgets', method, invocation: { kind: 'direct' },
     parameters: (method === 'saveConfig' ? ['content', 'expected'] : method === 'resetConfig' ? ['expected'] : [])
       .map(name => ({ name, wire: name, source: 'json', codec: remoteStringCodec })), result: { mode: 'src-json' },
@@ -2166,7 +2195,11 @@ const connectionRemoteContribution = {
   })),
 }
 
-const skillPackageKeys = ['oilUiSkill', 'openspecSkills', 'mattpocockSkills', 'pstackSkills']
+const skillGroups = [
+  { id: 'individual', keys: ['grillMeSkill', 'openspecSkills', 'oilUiSkill'] },
+  { id: 'workflows', keys: ['mattpocockSkills', 'pstackSkills'] },
+]
+const skillPackageKeys = skillGroups.flatMap(group => group.keys)
 const budgetFields = [
   { key: 'thresholdRatio', group: 'context', factor: 0.01, min: 1, max: 100, step: 'any' },
   { key: 'retainRatio', group: 'context', factor: 0.01, min: 0, max: 100, step: 'any' },
@@ -2180,7 +2213,7 @@ const budgetFields = [
 ]
 function budgetDraft(configuration) {
   const deletion = configuration.deletionProtection
-  return Object.fromEntries([['oilUiSkill', configuration.oilUiSkill ?? true], ['openspecSkills', configuration.openspecSkills ?? false], ['mattpocockSkills', configuration.mattpocockSkills ?? false], ['pstackSkills', configuration.pstackSkills ?? false], ['windowsBash', configuration.windowsBash ?? true], ['windowsBashForOfficialPresets', configuration.windowsBashForOfficialPresets ?? false], ['deletionProtection', deletion === true ? 'strict' : deletion === false ? 'off' : deletion ?? 'relaxed'], ['deletionProtectionForOfficialPresets', configuration.deletionProtectionForOfficialPresets ?? false], ['applyToOfficialPresets', configuration.applyToOfficialPresets ?? false], ['pressureBasis', configuration.budgets?.pressureBasis ?? ''],
+  return Object.fromEntries([...skillPackageKeys.map(key => [key, configuration[key] ?? false]), ['windowsBash', configuration.windowsBash ?? true], ['windowsBashForOfficialPresets', configuration.windowsBashForOfficialPresets ?? false], ['deletionProtection', deletion === true ? 'strict' : deletion === false ? 'off' : deletion ?? 'relaxed'], ['deletionProtectionForOfficialPresets', configuration.deletionProtectionForOfficialPresets ?? false], ['applyToOfficialPresets', configuration.applyToOfficialPresets ?? false], ['pressureBasis', configuration.budgets?.pressureBasis ?? ''],
     ...budgetFields.map(field => {
       const value = field.root ? configuration[field.key] : configuration.budgets?.[field.key]
       return [field.key, value === undefined ? '' : String(value / field.factor)]
@@ -2270,7 +2303,7 @@ function ChoiceCards({ name, label, value, choices, onChange, disabled = false }
 /** Each budget tab writes only its own fields and carries the other tab's stored values through. */
 function budgetSectionConfiguration(section, draft, snapshot) {
   if (section === 'skills') return skillPackageKeys.every(key => typeof draft[key] === 'boolean')
-    ? { ok: true, configuration: { ...snapshot.configuration, oilUiSkill: draft.oilUiSkill, openspecSkills: draft.openspecSkills, mattpocockSkills: draft.mattpocockSkills, pstackSkills: draft.pstackSkills } }
+    ? { ok: true, configuration: { ...snapshot.configuration, ...Object.fromEntries(skillPackageKeys.map(key => [key, draft[key]])) } }
     : { ok: false, error: 'invalid' }
   if (section === 'shell') return typeof draft.windowsBash === 'boolean' && typeof draft.windowsBashForOfficialPresets === 'boolean'
     ? { ok: true, configuration: { ...snapshot.configuration, windowsBash: draft.windowsBash, windowsBashForOfficialPresets: draft.windowsBashForOfficialPresets } }
@@ -2280,7 +2313,7 @@ function budgetSectionConfiguration(section, draft, snapshot) {
   const current = snapshot.configuration
   return { ok: true, configuration: section === 'protection'
     ? { ...current, deletionProtection: draft.deletionProtection, deletionProtectionForOfficialPresets: draft.deletionProtectionForOfficialPresets }
-    : { ...parsed.configuration, oilUiSkill: current.oilUiSkill, openspecSkills: current.openspecSkills, mattpocockSkills: current.mattpocockSkills, pstackSkills: current.pstackSkills, windowsBash: current.windowsBash, windowsBashForOfficialPresets: current.windowsBashForOfficialPresets, deletionProtection: current.deletionProtection, deletionProtectionForOfficialPresets: current.deletionProtectionForOfficialPresets } }
+    : { ...parsed.configuration, ...Object.fromEntries(skillPackageKeys.map(key => [key, current[key]])), windowsBash: current.windowsBash, windowsBashForOfficialPresets: current.windowsBashForOfficialPresets, deletionProtection: current.deletionProtection, deletionProtectionForOfficialPresets: current.deletionProtectionForOfficialPresets } }
 }
 function createBudgetAutosave(api, section = 'context') {
   return createAutosave(api, { draft: budgetDraft({}), toDraft: budgetDraft,
@@ -2289,8 +2322,9 @@ function createBudgetAutosave(api, section = 'context') {
 
 /** All budget tabs edit one document; finish local writes before another tab reads it. */
 function createBudgetEditors(api) {
-  return createSettingsEditors(api, Object.fromEntries(['context', 'shell', 'protection', 'skills']
-    .map(section => [section, source => createBudgetAutosave(source, section)])))
+  return { ...createSettingsEditors(api, Object.fromEntries(['context', 'shell', 'protection', 'skills']
+    .map(section => [section, source => createBudgetAutosave(source, section)]))),
+    openSkillsDirectory: () => api.openSkillsDirectory(), syncSkills: () => api.syncSkills() }
 }
 
 /** Recreate only the native Skill UI cache; Agent and input lifetimes stay owned by DSH. */
@@ -2321,8 +2355,8 @@ function synchronizeSkillMenus(ctx, api, plugin, onError) {
         const response = await api.readConfig()
         if (lifetime.signal.aborted) return
         if (!response.ok) throw new Error('Skill settings could not be read')
-        namespace = response.value.namespace
         if (dirty) continue
+        namespace = response.value.namespace
         const draft = budgetDraft(response.value.configuration)
         const next = JSON.stringify(skillPackageKeys.map(key => draft[key]))
         if (next !== applied) {
@@ -2338,6 +2372,38 @@ function synchronizeSkillMenus(ctx, api, plugin, onError) {
   const offReset = ctx.on('connection/reset', () => { namespace = undefined; refresh() })
   refresh()
   return () => { lifetime.abort(); off(); offReset() }
+}
+
+// 只补充包名搜索；真实命令、覆盖优先级和加载仍由宿主负责。
+function skillPackageSource(ctx) {
+  const packages = [
+    { name: 'grill-me', label: 'grill-me', directory: 'mattpocock/skills/', names: ['grill-me', 'grilling'] },
+    { name: 'openspec', label: 'OpenSpec', directory: 'openspec/skills/' },
+    { name: 'oil-ui', label: 'oil-ui', directory: '', names: ['oil-ui'] },
+    { name: 'mattpocock', label: 'Matt Pocock Skills', directory: 'mattpocock/skills/' },
+    { name: 'pstack', label: 'PStack', directory: 'pstack/dsh/skills/' },
+  ]
+  return {
+    trigger: '/', name: 'Super Code', order: 3,
+    async candidates(session, { query, signal }) {
+      if (!query || signal.aborted || ctx.sessions.subagentAddress(session.sessionId) !== undefined) return []
+      const matching = icons.rankByName(packages, query)
+      if (!matching.length) return []
+      const response = await ctx.remote.skills.list({ sessionId: session.sessionId }, signal)
+      if (signal.aborted) return []
+      if (!response.ok) throw new Error('Skill catalog could not be read')
+      const skills = response.value.skills
+      const native = new Set(icons.rankByName(skills, query).map(skill => skill.name))
+      return skills.flatMap(skill => {
+        if (native.has(skill.name)) return []
+        const relative = skill.path?.replaceAll('\\', '/').match(/(?:^|\/)(?:skills\/dsh-super-code|builtin\/skills)\/(.+)$/i)?.[1]
+        const pack = matching.find(pack => relative === `${pack.directory}${skill.name}/SKILL.md`
+          && (!pack.names || pack.names.includes(skill.name)))
+        return pack ? [{ name: skill.name, description: skill.description, section: pack.label }] : []
+      })
+    },
+    onPick({ candidate }) { return { text: `/${candidate.name} ` } },
+  }
 }
 
 function settingsRevision(snapshot) {
@@ -2405,6 +2471,16 @@ function BudgetSettings({ api, t, active, section = 'context', presetStatus, onS
   const { snapshot, draft } = editing
   const [loading, setLoading] = useState(false), [failure, setFailure] = useState(''), [notice, setNotice] = useState('')
   const [confirmReset, setConfirmReset] = useState(false)
+  const [openingSkills, setOpeningSkills] = useState(false), [directoryError, setDirectoryError] = useState(false)
+  const openSkills = async () => {
+    if (openingSkills) return
+    setOpeningSkills(true); setDirectoryError(false)
+    try {
+      const result = await api.openSkillsDirectory()
+      if (!result.ok || !result.value?.opened) throw new Error('Open failed')
+    } catch { if (alive.current) setDirectoryError(true) }
+    finally { if (alive.current) setOpeningSkills(false) }
+  }
   const alive = useRef(false), pending = useRef(false)
   const load = async (discard = false) => {
     if (pending.current) return
@@ -2435,7 +2511,7 @@ function BudgetSettings({ api, t, active, section = 'context', presetStatus, onS
       const base = current.configuration
       const configuration = protection
         ? { ...base, deletionProtection: 'relaxed', deletionProtectionForOfficialPresets: false }
-        : { oilUiSkill: base.oilUiSkill, openspecSkills: base.openspecSkills, mattpocockSkills: base.mattpocockSkills, pstackSkills: base.pstackSkills, windowsBash: base.windowsBash, windowsBashForOfficialPresets: base.windowsBashForOfficialPresets, deletionProtection: base.deletionProtection, deletionProtectionForOfficialPresets: base.deletionProtectionForOfficialPresets }
+        : { ...Object.fromEntries(skillPackageKeys.map(key => [key, base[key]])), windowsBash: base.windowsBash, windowsBashForOfficialPresets: base.windowsBashForOfficialPresets, deletionProtection: base.deletionProtection, deletionProtectionForOfficialPresets: base.deletionProtectionForOfficialPresets }
       const response = await api.saveConfig(JSON.stringify(configuration), settingsRevision(current))
       if (!response.ok) throw new Error('Remote unavailable')
       if (!alive.current) return
@@ -2473,10 +2549,19 @@ function BudgetSettings({ api, t, active, section = 'context', presetStatus, onS
   const windowsHost = shellStatus?.platform === 'win32'
   const shellTooltip = shellStatus && !windowsHost ? t('shell.windowsOnly') : undefined
   const content = skills ? React.createElement(React.Fragment, null,
-    React.createElement(SettingsSection, { id: 'super-code-skill-packs', title: t('skills.title'), description: t('skills.scope') },
-      ...skillPackageKeys.map(key => React.createElement(SettingRow, { key, id: `super-code-skill-${key}`, label: t(`skills.${key}`), hint: t(`skills.${key}Hint`) }, described =>
-        React.createElement(ConnectionSwitch, { id: `super-code-skill-${key}`, checked: draft[key], disabled, 'aria-describedby': described, onChange: value => edit(key, value) })))),
-    presetStatus && !presetStatus.skillPacks && React.createElement(Callout, { tone: 'warning' }, React.createElement('p', null, t(presetStatus.state === 'missing' ? 'skills.missing' : 'skills.upgrade'))),
+    React.createElement('div', { className: 'dsh-super-code-settings-footer-actions' },
+      button(t('skills.openDirectory'), openSkills, { disabled: openingSkills || !snapshot?.skills?.canOpen, title: snapshot?.skills?.canOpen ? t('skills.openDirectory') : t('skills.directoryUnavailable') })),
+    directoryError && React.createElement(Callout, { tone: 'error' }, React.createElement('p', null, t('skills.openFailed'))),
+    snapshot?.skills?.state === 'error' && React.createElement(Callout, { tone: 'warning', action: button(t('skills.retry'), async () => {
+      try { await editor.flush(); const result = await api.syncSkills(); if (!result.ok) throw new Error('Sync failed'); if (alive.current) await load() }
+      catch { if (alive.current) setDirectoryError(true) }
+    }) }, React.createElement('p', null, t('skills.directoryError'))),
+    ...skillGroups.map((group, index) => React.createElement(SettingsSection, { key: group.id, id: `super-code-skills-${group.id}`, title: t(`skills.${group.id}`), description: index === 0 ? t('skills.scope') : undefined },
+      ...group.keys.map(key => React.createElement(SettingRow, { key, id: `super-code-skill-${key}`,
+        label: React.createElement(React.Fragment, null, t(`skills.${key}`), snapshot?.skillPackages?.[key]?.version &&
+          React.createElement('span', { className: 'dsh-super-code-skill-version' }, `v${snapshot.skillPackages[key].version}`)), hint: t(`skills.${key}Hint`) }, described =>
+        React.createElement(ConnectionSwitch, { id: `super-code-skill-${key}`, checked: draft[key], disabled, 'aria-describedby': described, onChange: value => edit(key, value) }))))),
+    !snapshot?.skills && presetStatus && !presetStatus.skillPacks && React.createElement(Callout, { tone: 'warning' }, React.createElement('p', null, t(presetStatus.state === 'missing' ? 'skills.missing' : 'skills.upgrade'))),
     React.createElement('div', { className: 'dsh-super-code-settings-guidance' },
       ...['commands', 'openspecRequirement', 'pstackRequirement'].map(key =>
         React.createElement('p', { key }, t(`skills.${key}`)))))
@@ -2571,7 +2656,7 @@ function synchronizePresetDisplay(api, locale, reload, onError, preferenceScope)
           last = language
           needsReload ||= result.value.changed
         }
-        if (!disposed && settled && needsReload && pending === last) reload()
+        if (!disposed && settled && needsReload && pending === last) { reload(); needsReload = false }
       } catch (error) { if (!disposed) onError(error) }
       finally { running = false }
     })()
@@ -2704,22 +2789,27 @@ function connectionSessions(overview) {
 }
 function ConnectionActivity({ api, t, active, openSession }) {
   const [overview, setOverview] = useState(null), [busy, setBusy] = useState(false), [error, setError] = useState(false)
-  const alive = useRef(false), pending = useRef(false)
-  const load = async () => {
-    if (pending.current) return
-    pending.current = true
-    try { const result = await api.overview(); if (!result.ok) throw new Error(); if (alive.current) { setOverview(result.value); setError(false) } }
-    catch { if (alive.current) setError(true) }
-    finally { pending.current = false }
+  const alive = useRef(false), pending = useRef(false), disconnecting = useRef(false)
+  const load = () => {
+    if (pending.current || disconnecting.current) return pending.current
+    pending.current = (async () => {
+      try { const result = await api.overview(); if (!result.ok) throw new Error(); if (alive.current) { setOverview(result.value); setError(false) } }
+      catch { if (alive.current) setError(true) }
+    })().finally(() => { pending.current = false })
+    return pending.current
   }
   useEffect(() => { alive.current = true; return () => { alive.current = false } }, [api])
   useEffect(() => { if (!active) return; load(); const timer = setInterval(load, 2000); return () => clearInterval(timer) }, [active, api])
   const disconnect = async id => {
-    if (pending.current) return
-    pending.current = true; setBusy(true)
-    try { const result = await api.disconnectClient(id); if (!result.ok) throw new Error() }
+    if (disconnecting.current) return
+    disconnecting.current = true; setBusy(true)
+    try {
+      await pending.current
+      if (!alive.current) return
+      const result = await api.disconnectClient(id); if (!result.ok) throw new Error()
+    }
     catch { if (alive.current) setError(true); return }
-    finally { pending.current = false; if (alive.current) setBusy(false) }
+    finally { disconnecting.current = false; if (alive.current) setBusy(false) }
     if (alive.current) load()
   }
   const groups = overview ? connectionSessions(overview) : { connected: [], history: [] }
@@ -2757,12 +2847,13 @@ function ConnectionSettings({ api, settings, t, active, openSession, onSaved = (
     pending.current = true; setBusy(true); setError('')
     try {
       const [config, directories, credential] = await Promise.all([
-        settings.readConfig(), api.directories(), api.revealToken().catch(() => ({ ok: false })),
+        settings.readConfig(), api.directories().catch(() => ({ ok: false })), api.revealToken().catch(() => ({ ok: false })),
       ])
-      if (!config.ok || !directories.ok) throw new Error()
+      if (!config.ok) throw new Error()
       if (!alive.current) return
-      setCatalog(directories.value)
-      if (discard || !editor.hasChanges()) receive(config.value, directories.value)
+      if (directories.ok) setCatalog(directories.value)
+      else setError('unavailable')
+      if (discard || !editor.hasChanges()) receive(config.value, directories.ok ? directories.value : catalog)
       else editor.permissions(config.value.writable)
       if (visible.current) {
         setToken(credential.ok ? credential.value.token : '')
@@ -3074,7 +3165,7 @@ function PresetSettings({ api, budgetApi: budgets, connectionApi, connectionSett
       if (!install || value.ok) {
         const synced = await api.synchronize(localeCode(t))
         if (!synced.ok) throw new Error('Preset display synchronization failed')
-        if (install || synced.value.changed) window.location.reload()
+        if (alive.current && (install || synced.value.changed)) window.location.reload()
       }
     } catch {
       if (alive.current) setError('preset.error.connection')
@@ -3221,6 +3312,9 @@ function apply(ctx) {
     ready.effect(() => synchronizeSkillMenus(ready, ready.remote.superCodeBudgets, skillUi,
       error => console.warn('Super Code Skill menu refresh:', error)), 'super-code: live skill menus')
   })
+  ctx.inject(['remote.skills', 'inputTriggers'], ready => {
+    ready.effect(() => ready.inputTriggers.registerSource(skillPackageSource(ready)), 'super-code: skill package search')
+  })
   ctx.inject(['remote.superCodeConnection'], ready => {
     ready.slots.inject('shell.overlay', () => ready.slots.register({
       name: 'shell.overlay', id: 'super-code-directory-consent', order: 180, locale: LOCALE_NS,
@@ -3295,6 +3389,7 @@ function apply(ctx) {
 .dsh-super-code-settings-mark svg{width:22px;height:22px;color:var(--sc-text)}
 .dsh-super-code-settings-head-text{display:grid;gap:4px;min-width:0}
 .dsh-super-code-settings-name{font-size:16px;font-weight:600;line-height:1.4;margin:0}
+.dsh-super-code-skill-version{margin-left:8px;font-size:12px;font-weight:400;color:var(--sc-muted);font-variant-numeric:tabular-nums}
 .dsh-super-code-settings-body{padding:20px 24px 24px}
 .dsh-super-code-settings-status-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .dsh-super-code-preset-status{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:4px 0;font-size:13px;min-width:0;flex:1}
@@ -3969,5 +4064,5 @@ function apply(ctx) {
   ctx.effect(() => disposeMemoryType, 'super-code: memory library tab')
 }
 
-return { inject, apply, synchronizeSkillMenus, refreshNativeSkillMenus, taskFeedbackRows, feedbackStatus, feedbackListItems, feedbackListLayout, feedbackListIndex, feedbackListWindow, feedbackListAnchor, connectionSessions, createConnectionAutosave, createBudgetAutosave, createBudgetEditors, connectionDraft, connectionConfiguration, budgetDraft, budgetConfiguration, synchronizePresetDisplay, agentSessionState, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector, agentHistoryRange, agentHistoryRows, agentHistoryWindow, memoryLibraryAddress, memoryLibraryTarget, memoryLibraryNavigation, memoryLibraryWindow, createMemoryEditor, MemoryLibrary }
+return { inject, apply, skillPackageSource, synchronizeSkillMenus, refreshNativeSkillMenus, taskFeedbackRows, feedbackStatus, feedbackListItems, feedbackListLayout, feedbackListIndex, feedbackListWindow, feedbackListAnchor, connectionSessions, createConnectionAutosave, createBudgetAutosave, createBudgetEditors, connectionDraft, connectionConfiguration, budgetDraft, budgetConfiguration, synchronizePresetDisplay, agentSessionState, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector, agentHistoryRange, agentHistoryRows, agentHistoryWindow, memoryLibraryAddress, memoryLibraryTarget, memoryLibraryNavigation, memoryLibraryWindow, createMemoryEditor, MemoryLibrary }
 } })

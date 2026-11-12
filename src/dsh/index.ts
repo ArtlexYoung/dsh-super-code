@@ -17,6 +17,7 @@ import { applyDeletionProtection } from './deletion-protection.js'
 import { applyWindowsShell } from './windows-shell.js'
 import { applyOfficialWindowsShell } from './official-windows-shell.js'
 import { applyPresetRecovery } from './preset-recovery.js'
+import { applySkillDirectory } from './skill-directory.js'
 
 export const name = 'super-code'
 export const Config: typeof configurationSchema = configurationSchema
@@ -37,6 +38,7 @@ async function installLongMemory(ctx: Context): Promise<void> {
 
 export async function apply(ctx: Context, config: Configuration = {}): Promise<void> {
   applyBudgetSettings(ctx, config)
+  applySkillDirectory(ctx)
   applyWindowsShell(ctx)
   applyOfficialWindowsShell(ctx)
   applyOfficialBudgets(ctx)

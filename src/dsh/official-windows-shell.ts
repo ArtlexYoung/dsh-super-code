@@ -4,6 +4,7 @@ import type { Agent } from '@deepseek-ai/dsh-agent'
 import type { Scope } from '@deepseek-ai/dsh-scope'
 import { configurationOf } from './budgets.js'
 import { hostModule, mountBundledBash, creatorOf } from './windows-shell.js'
+import { applyShellLifecycle } from './windows-shell-lifecycle.js'
 
 interface Registry { composedPreset(ctx: Context): string | undefined }
 interface ScopeApi {
@@ -111,9 +112,8 @@ export function applyOfficialWindowsShell(ctx: Context): void {
       })()
       return state.ready
     }
-    owner.on('agent/created', ({ agent }) => install(agent))
     // Blank conversations can switch preset before their first step.
-    owner.on('agent/pre-step', async ({ agent }, next) => { await install(agent); return next() }, true)
+    applyShellLifecycle(owner, install, true)
     owner.systemPrompt.section({ name: 'super-code:official-windows-shell', order: 94,
       text: ({ agent }) => agent && selected.get(agent)?.enabled
         ? 'Command environment: Windows with GNU Bash and BusyBox utilities. Native programs still run on Windows.' : '' })

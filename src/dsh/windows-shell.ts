@@ -7,6 +7,9 @@ import { configurationOf } from './budgets.js'
 import { prepareWindowsRuntime, windowsRuntimeEnvironment } from '../core/windows-runtime.js'
 import type { WindowsRuntime } from '../core/windows-runtime.js'
 import { openspecProvider } from './openspec-shell.js'
+import { creatorOf, applyShellLifecycle } from './windows-shell-lifecycle.js'
+
+export { creatorOf } from './windows-shell-lifecycle.js'
 
 export interface ShellSpec {
   command: string
@@ -100,12 +103,6 @@ export function applyWindowsShell(ctx: Context): void {
 export const name = 'super-code-shell'
 export const inject: string[] = ['tools', 'systemPrompt', 'shell']
 
-/** Runtime ownership is distinct from durable session lineage or shared preset scope. */
-export function creatorOf(ctx: Context, agent: Agent): Agent | false {
-  const agents = ctx.get('agents')
-  return agents?.list().find(candidate => agents.isOwnedBy(agent.id, candidate)) ?? false
-}
-
 /** Contribute an inherited tool without changing the host provider or session policy. */
 export async function mountBundledBash(ctx: Context): Promise<false | (() => Promise<void>)> {
   const host = ctx.get('shell') as unknown as HostShell
@@ -169,8 +166,7 @@ export async function apply(ctx: Context): Promise<void> {
         throw new Error('Unsupported host shell provider; disable bundled Bash to use the host shell')
       }
     }
-    ctx.on('agent/created', ({ agent }) => { check(agent) })
-    ctx.on('agent/pre-step', async ({ agent }, next) => { check(agent); return next() })
+    applyShellLifecycle(ctx, check)
     return
   }
   const installed = new WeakMap<Agent, { enabled: boolean; ready: Promise<void> }>()
@@ -218,6 +214,5 @@ export async function apply(ctx: Context): Promise<void> {
     installed.set(agent, { enabled, ready })
     return ready
   }
-  ctx.on('agent/created', async ({ agent }) => { await install(agent) })
-  ctx.on('agent/pre-step', async ({ agent }, next) => { await install(agent); return next() })
+  applyShellLifecycle(ctx, install)
 }

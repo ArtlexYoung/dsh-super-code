@@ -43,7 +43,7 @@ test('Windows confinement refuses Bash before execution and accepts only the hos
 })
 
 /** Fake host executors avoid platform binaries; the real scope, tool and prompt engines run. */
-async function fixture(t: test.TestContext, options: { platform?: NodeJS.Platform; customProvider?: boolean; preparationGate?: Promise<void>; profileContext?: boolean; official?: string; brokenTool?: boolean; sharedGeneration?: boolean } = {}) {
+async function fixture(t: test.TestContext, options: { platform?: NodeJS.Platform; customProvider?: boolean; preparationGate?: Promise<void>; profileContext?: boolean; official?: string; brokenTool?: boolean; sharedGeneration?: boolean; modernOwnership?: boolean } = {}) {
   const ctx = new Context(), root = await mkdtemp(join(tmpdir(), 'super-code-shell-test-'))
   t.after(async () => { await ctx.fiber.dispose(); await rm(root, { recursive: true, force: true }) })
   const require = createRequire(import.meta.url)
@@ -100,13 +100,27 @@ async function fixture(t: test.TestContext, options: { platform?: NodeJS.Platfor
   let stopOfficial = async () => {}, stopShell = async () => {}
   const ids = new WeakMap<object, string>([[generation, options.official ?? 'super-code']])
   const creators = new Map<Agent, Agent | undefined>()
+  const active = new WeakSet<Agent>()
   if (options.official) {
     ctx.provide('agentPresets', { composedPreset(context: Context) {
       const key = scopeParentOf(scopeOf(context)!)
       return key && ids.get(key)
     } })
   }
-  if (options.official || options.sharedGeneration) ctx.provide('agents', { list: () => [...creators.keys()], isOwnedBy: (id: string, parent: Agent) =>
+  if (options.modernOwnership) {
+    ctx.provide('agents', { list: () => [...creators.keys()] })
+    ctx.provide('subagents', { rootOf(agent: Agent) {
+      if (!creators.has(agent) || (creators.get(agent) && !active.has(agent))) {
+        throw Object.assign(new Error('agent has no active runtime owner'), { code: 'UNAUTHORIZED' })
+      }
+      let root = agent
+      for (let parent = creators.get(root); parent; parent = creators.get(root)) root = parent
+      return root
+    }, namesOf(agent: Agent) {
+      const root = this.rootOf(agent), parent = creators.get(agent)
+      return root === agent ? { self: 'lead' } : { self: agent.id, parent: parent === root ? 'lead' : parent!.id }
+    } })
+  } else if (options.official || options.sharedGeneration) ctx.provide('agents', { list: () => [...creators.keys()], isOwnedBy: (id: string, parent: Agent) =>
     [...creators].some(([agent, creator]) => agent.id === id && creator === parent) })
   const platform = process.platform
   Object.defineProperty(process, 'platform', { value: options.platform ?? 'win32' })
@@ -153,8 +167,109 @@ async function fixture(t: test.TestContext, options: { platform?: NodeJS.Platfor
     return key
   }
   return { ctx, policy, make, names, prompt, call, generation, anotherPreset, stopOfficial, stopShell, started: started.promise,
+    activate: (agent: Agent) => { active.add(agent) },
     preparations: () => preparations, broken(value: boolean) { broken = value } }
 }
+
+test('rc.2 ownership keeps root and child shells usable without the removed agent registry API', async t => {
+  for (const options of [{}, { customProvider: true }, { official: 'standard' }]) {
+    const f = await fixture(t, { ...options, sharedGeneration: true, modernOwnership: true })
+    f.policy.windowsBash = false
+    const parent = f.make('modern-root')
+    await parent.ready()
+    assert.equal((await f.call(parent.agent, 'pwsh')).isError, false)
+    f.policy.windowsBash = true
+    f.policy.windowsBashForOfficialPresets = true
+    const child = f.make('modern-child', parent.agent)
+    f.activate(child.agent)
+    await child.ready()
+    await child.step()
+    assert.deepEqual(await f.names(child.agent), ['pwsh'])
+    assert.equal((await f.call(child.agent, 'pwsh')).isError, false)
+  }
+})
+
+test('rc.2 child creation waits for live ownership before freezing the inherited shell choice', async t => {
+  for (const options of [{}, { customProvider: true }, { official: 'standard' }]) {
+    const f = await fixture(t, { ...options, sharedGeneration: true, modernOwnership: true })
+    f.policy.windowsBash = false
+    const parent = f.make('modern-pending-root')
+    await parent.ready()
+    f.policy.windowsBash = true
+    f.policy.windowsBashForOfficialPresets = true
+    const child = f.make('modern-pending-child', parent.agent)
+    await child.ready()
+    f.activate(child.agent)
+    await child.step()
+    assert.deepEqual(await f.names(child.agent), ['pwsh'])
+    assert.equal((await f.call(child.agent, 'pwsh')).isError, false)
+  }
+})
+
+test('rc.2 enabled roots pass their shell choice to nested children while preserving capability restrictions', async t => {
+  for (const options of [{}, { official: 'standard' }]) {
+    const f = await fixture(t, { ...options, sharedGeneration: true, modernOwnership: true })
+    f.policy.windowsBashForOfficialPresets = true
+    const parent = f.make('modern-enabled-root')
+    await parent.ready()
+    f.policy.windowsBash = false
+    f.policy.windowsBashForOfficialPresets = false
+    const child = f.make('modern-enabled-child', parent.agent)
+    await child.ready()
+    f.activate(child.agent)
+    await child.step()
+    const grandchild = f.make('modern-enabled-grandchild', child.agent, ['bash'])
+    await grandchild.ready()
+    f.activate(grandchild.agent)
+    await grandchild.step()
+    assert.deepEqual(await f.names(child.agent), ['bash'])
+    assert.equal((await f.call(child.agent, 'bash')).isError, false)
+    assert.deepEqual(await f.names(grandchild.agent), [])
+    for (const name of ['bash', 'pwsh']) assert.equal((await f.call(grandchild.agent, name)).isError, true)
+  }
+})
+
+test('ownership lookup defers only its pending creation state and never hides other failures', async t => {
+  const f = await fixture(t, { sharedGeneration: true, modernOwnership: true })
+  const service = f.ctx.get('subagents') as unknown as { rootOf(agent: Agent): Agent }
+  const pending = Object.assign(new Error('ownership still pending'), { code: 'UNAUTHORIZED' })
+  service.rootOf = () => { throw pending }
+  const child = f.make('still-pending')
+  await child.ready()
+  await assert.rejects(child.step(), error => error instanceof Error && error.cause === pending)
+  const failure = Object.assign(new Error('ownership storage failed'), { code: 'EIO' })
+  service.rootOf = () => { throw failure }
+  const broken = f.make('lookup-failed')
+  await assert.rejects(broken.ready(), error => error === failure)
+  await assert.rejects(broken.step(), error => error === failure)
+  // 相同错误码来自初始化流程时，也不能被归属检查的暂缓逻辑吞掉。
+  service.rootOf = agent => agent
+  f.ctx.superCodeShell.prepare = async () => { throw pending }
+  const brokenRuntime = f.make('runtime-unauthorized')
+  await assert.rejects(brokenRuntime.ready(), error => error === pending)
+})
+
+test('rc.2 descendants inherit their direct creator when its preset generation differs from the tree root', async t => {
+  const f = await fixture(t, { official: 'standard', modernOwnership: true })
+  const root = f.make('different-preset-root')
+  await root.ready()
+  const generation = await f.anotherPreset('standard')
+  f.policy.windowsBashForOfficialPresets = true
+  const parent = f.make('different-preset-parent', root.agent)
+  parent.binding.rebind(generation)
+  await parent.ready()
+  f.activate(parent.agent)
+  await parent.step()
+  f.policy.windowsBashForOfficialPresets = false
+  const child = f.make('different-preset-child', parent.agent)
+  child.binding.rebind(generation)
+  await child.ready()
+  f.activate(child.agent)
+  await child.step()
+  assert.deepEqual(await f.names(root.agent), ['pwsh'])
+  assert.deepEqual(await f.names(parent.agent), ['bash'])
+  assert.deepEqual(await f.names(child.agent), ['bash'])
+})
 
 test('pending parent preparation is shared by duplicate events and children without changing their capability filters', async t => {
   const gate = Promise.withResolvers<void>(), f = await fixture(t, { preparationGate: gate.promise })

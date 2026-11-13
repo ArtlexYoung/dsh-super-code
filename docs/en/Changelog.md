@@ -4,6 +4,12 @@
 
 Versions are `major.performance.maintenance`. The second number changes when coding results or efficiency improve; the third covers fixes, UI, and compatibility. See [Compatibility](Compatibility.md) for what each release was tested on.
 
+## 0.4.1 · 2026-11-14
+
+- Fixed Windows sessions failing to load when Harness `0.2.2-rc.2` removed `agents.isOwnedBy()` ([#2](https://github.com/ArtlexYoung/dsh-super-code/issues/2)); retained older-host compatibility and inheritance of the direct creator’s command environment for child and grandchild sessions.
+- Bundled existing runtime dependencies and their transitive dependencies. With Harness installed and a local `.tgz` downloaded beforehand, the plugin installs offline with an empty cache without additional npm downloads. Cloud models still need network access; local or LAN model services must be reachable.
+- Added regression checks for runtime ownership and the package dependency closure. See [Compatibility](Compatibility.md) for macOS and Windows offline installation, session tools, and real-model validation coverage.
+
 ## 0.4.0 · 2026-11-12
 
 **Task and memory tools**

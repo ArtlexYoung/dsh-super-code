@@ -25,6 +25,17 @@ test('模块开关写入失败时保留之前的有效状态', () => {
   assert.equal(preference.snapshot(), false)
 })
 
+test('学习与编辑器开关独立，其他窗口的更新不串用设置', () => {
+  const data = new Map<string, string>(), storage = { getItem: (key: string) => data.get(key), setItem: (key: string, value: string) => data.set(key, value) }
+  const editor = createWorkbenchPreference(storage), reading = createWorkbenchPreference(storage, 'dsh-super-code-reading-enabled')
+  assert.equal(reading.snapshot(), false)
+  reading.save(true); assert.equal(editor.snapshot(), false)
+  data.set('dsh-super-code-reading-enabled', 'false')
+  editor.refresh({ key: 'dsh-super-code-reading-enabled' }); assert.equal(editor.snapshot(), false)
+  reading.refresh({ key: 'dsh-super-code-reading-enabled' }); assert.equal(reading.snapshot(), false)
+  editor.save(true); assert.equal(reading.snapshot(), false)
+})
+
 test('编辑器默认 IDEA，支持独立配色、VS Code 绑定及无冲突的自定义快捷键', () => {
   const preferences = defaults()
   assert.equal(preferences.keymap, 'idea'); assert.equal(preferences.palette, 'idea')

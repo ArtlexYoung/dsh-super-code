@@ -5,6 +5,7 @@ import { defaults, readPreferences } from './editor/preferences.js';
 import { wordAt } from './editor/code-info.js';
 import { createSelectionAssistant } from './assistant/controller.js';
 import { message, errorText } from './locales.js';
+import { createReading } from './reading/controller.js';
 
 const INDEX_BYTES = 16 * 1024 * 1024;
 const STORAGE_KEY = 'dsh-super-code-workbench';
@@ -18,6 +19,7 @@ export function createWorkbench(api, t) {
   const fail = error => { publish({ error: errorText(error, t) }); };
   const tabs = () => [...documents].map(([path, doc]) => ({ path, dirty: doc.text !== doc.original }));
   const assistant = createSelectionAssistant({ editor: { file: () => current, view: () => editor?.view }, api, t, changed: value => publish({ assistant: value }) });
+  const reading = createReading({ api, documents, currentFile: () => current, visit, t, locale: () => t('readingLanguage') });
 
   function position() {
     const view = editor?.view;
@@ -41,6 +43,7 @@ export function createWorkbench(api, t) {
     if (update.docChanged) {
       const doc = documents.get(current);
       doc.text = update.state.doc.toString(); doc.state = update.state;
+      reading.changed(current);
       publish({ tabs: tabs(), status: doc.text === doc.original ? t('saved') : t('unsaved') });
       clearTimeout(timer); timer = setTimeout(() => { void updateIndex().catch(fail); }, 180);
     }
@@ -49,6 +52,12 @@ export function createWorkbench(api, t) {
   async function display(target) {
     const file = target.file;
     if (!editor) return false;
+    const cached = documents.get(file);
+    if (target.source && cached && cached.text === cached.original && cached.version !== target.source.version) {
+      Object.assign(cached, target.source, { original: target.source.text, state: null });
+      if (current === file) editor.view.dispatch({ changes: { from: 0, to: editor.view.state.doc.length, insert: cached.text } });
+      await updateIndex(file); reading.changed(file);
+    }
     if (current !== file) {
       const turn = ++generation;
       opening?.abort(); opening = new AbortController();
@@ -120,6 +129,7 @@ export function createWorkbench(api, t) {
             text = doc && (doc.text !== doc.original || doc.version !== version) ? doc.text : loaded.text;
             if (doc && doc.text === doc.original && doc.version === version && doc.version !== loaded.version) {
               Object.assign(doc, loaded, { original: text, state: null });
+              reading.changed(path);
               if (path === current && editor?.view) {
                 editor.view.dispatch({ changes: { from: 0, to: editor.view.state.doc.length, insert: text } });
                 doc.state = editor.view.state;
@@ -167,7 +177,7 @@ export function createWorkbench(api, t) {
   }
   return {
     subscribe(listener) { subscribers.add(listener); return () => subscribers.delete(listener); },
-    snapshot: () => snapshot, documents, index, assistant, t, git: api.git,
+    snapshot: () => snapshot, documents, index, assistant, reading, t, git: api.git,
     async attach(parent, tooltipParent) {
       try { const saved = localStorage.getItem(STORAGE_KEY); if (saved) preferences = readPreferences(JSON.parse(saved)); }
       catch { publish({ error: t('settingInvalid') }); }
@@ -181,7 +191,7 @@ export function createWorkbench(api, t) {
       if (editor === attached) await refresh();
     },
     detach() { opening?.abort(); scanning?.abort(); generation++; clearTimeout(timer); assistant.switchFile(); if (current && editor?.view) documents.get(current).state = editor.view.state; editor?.dispose(); editor = null; },
-    dispose() { this.detach(); disposed = true; assistant.dispose(); documents.clear(); index.clear(); subscribers.clear(); },
+    dispose() { this.detach(); disposed = true; assistant.dispose(); reading.dispose(); documents.clear(); index.clear(); subscribers.clear(); },
     visit, move, list, refresh, save, settings, definition, fail,
     view: () => editor?.view,
     panel(value) { publish({ panel: value }); },

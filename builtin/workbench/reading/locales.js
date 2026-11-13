@@ -1,0 +1,28 @@
+export const zh = {
+  readingTitle: '学习', readingLanguage: 'zh', readingEnable: '启用学习模式', readingEnableHint: '在对话旁显示“学习”，沿阅读路径理解项目，或直接查看当前代码的分段解释。',
+  readingGoal: '阅读目标', readingGoalPlaceholder: '例如：一个请求从哪里进入，怎样处理并返回？', readingStart: '生成阅读路径', readingFile: '解释当前文件',
+  readingFileGoal: '按完整逻辑段解释当前文件，说明每段的输入、处理、输出与边界，并交代关键概念如何协作。',
+  readingOverviewGoal: '先了解这个项目的核心概念与运行过程', readingEmpty: '从代码里读懂一个过程', readingEmptyHint: '输入想弄懂的问题，或打开文件后直接阅读分段解释。',
+  readingStep: '{current} / {total}', readingPrevious: '上一步', readingNext: '下一步', readingRegenerate: '重新生成',
+  readingStale: '引用的代码已变化，以下说明可能过期。请重新生成。', readingStopped: '已停止生成，已显示的内容仅为部分结果。', readingPartial: '部分文件或内容未读取，本次说明仅覆盖已取得的源码。',
+  readingEnd: '可以点击代码引用，或在左侧选择代码继续提问。', readingStage_catalog: '正在查找项目入口…', readingStage_reading: '正在读取相关代码…', readingStage_generating: '正在组织解释…',
+  readingCopy: '复制', readingCopied: '已复制', readingFootnotes: '注释',
+  READING_EMPTY: '工作目录中没有可读取的源码或文档', READING_BUFFER_SIZE: '未保存的代码过多，请保存部分文件后重试',
+  READING_READ_LIMIT: '本次源码读取已达到上限，请缩小阅读目标', READING_RANGE: '请求的源码范围不存在，请刷新文件后重试', READING_SOURCE_SIZE: '代码行过长，无法生成可核对的片段',
+  READING_CONTEXT_LIMIT: '当前目标需要更多源码，请缩小到具体文件或过程后重试', READING_REFERENCE: '解释包含无法核对的源码引用，本次生成未完成',
+  READING_FORMAT: '模型未返回有效的阅读内容，请重试', READING_REQUEST: '阅读请求无效，请重新选择目标',
+};
+export const en = {
+  readingTitle: 'Learn', readingLanguage: 'en', readingEnable: 'Enable learning mode', readingEnableHint: 'Show Learn beside Conversation for guided source reading and explanations of the current file.',
+  readingGoal: 'Reading goal', readingGoalPlaceholder: 'For example: where does a request enter, and how does it return?', readingStart: 'Create reading path', readingFile: 'Explain current file',
+  readingFileGoal: 'Explain the current file in meaningful sections, covering inputs, processing, outputs, boundaries, and how the key concepts work together.',
+  readingOverviewGoal: 'Understand this project’s core concepts and execution flow', readingEmpty: 'Follow the code to understand a process', readingEmptyHint: 'Enter a question, or open a file and read its explanation section by section.',
+  readingStep: '{current} / {total}', readingPrevious: 'Previous step', readingNext: 'Next step', readingRegenerate: 'Regenerate',
+  readingStale: 'Referenced code has changed. These explanations may be out of date. Regenerate to update them.', readingStopped: 'Generation stopped. The content shown is incomplete.', readingPartial: 'Some files or content were not read. This explanation covers the sources obtained.',
+  readingEnd: 'Open a source reference, or select code on the left to ask a question.', readingStage_catalog: 'Finding project entry points…', readingStage_reading: 'Reading related code…', readingStage_generating: 'Preparing explanations…',
+  readingCopy: 'Copy', readingCopied: 'Copied', readingFootnotes: 'Footnotes',
+  READING_EMPTY: 'No readable source files or documents were found', READING_BUFFER_SIZE: 'Too much unsaved code. Save some files and try again.',
+  READING_READ_LIMIT: 'Source reading limit reached. Narrow your reading goal.', READING_RANGE: 'The requested source range does not exist. Refresh and try again.', READING_SOURCE_SIZE: 'This code line is too long for a verifiable excerpt.',
+  READING_CONTEXT_LIMIT: 'This goal needs more source context. Narrow it to a file or process.', READING_REFERENCE: 'An explanation cites source that could not be verified. Generation is incomplete.',
+  READING_FORMAT: 'The model returned invalid reading content. Try again.', READING_REQUEST: 'Invalid reading request. Select a goal again.',
+};

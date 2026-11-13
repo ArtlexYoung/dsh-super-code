@@ -13,6 +13,9 @@ import type { AssistantResult, WorkbenchModel } from '../workbench/assistant.js'
 import { WorkbenchGit } from './workbench-git.js'
 import type { WorkbenchGitResult } from './workbench-git.js'
 import { MAX_GIT_REQUEST_LENGTH } from '../workbench/git/request.js'
+import { generateReading } from '../workbench/reading/generate.js'
+import { parseReadingRequest, MAX_READING_REQUEST_CHARS } from '../workbench/reading/types.js'
+import type { ReadingEvent } from '../workbench/reading/types.js'
 
 const sessionSchema = z.string().min(1).max(256)
 const requestSchema = z.string().max(2 * 1024 * 1024 + 16000)
@@ -75,6 +78,14 @@ export class SuperCodeWorkbench extends TypertRemoteService {
     const input: unknown = JSON.parse(gitRequestSchema.parse(content))
     const combined = AbortSignal.any([signal, this.lifetime.signal, AbortSignal.timeout(5 * 60 * 1000)])
     yield await this.repository.execute(session, input, this.ctx.get('sandboxPolicy')?.resolve({ session }), combined)
+  }
+
+  @Remote({ mode: 'stream' })
+  async *reading(sessionId: string, content: string, signal: AbortSignal): AsyncGenerator<ReadingEvent> {
+    const input = parseReadingRequest(JSON.parse(z.string().max(MAX_READING_REQUEST_CHARS).parse(content)))
+    const session = await this.sessionOf(sessionId)
+    const combined = AbortSignal.any([signal, this.lifetime.signal, AbortSignal.timeout(ASSISTANT_TIMEOUT_MS)])
+    yield* generateReading(this.files, sessionId, input, this.modelOf(session), options => this.ctx.llm.stream(options), combined)
   }
 
   @Remote({ mode: 'stream' })

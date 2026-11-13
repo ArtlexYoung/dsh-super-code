@@ -1,7 +1,9 @@
 import { zh as gitZh, en as gitEn } from './git/locales.js';
+import { zh as readingZh, en as readingEn } from './reading/locales.js';
 export const NS = 'dsh-super-code-workbench';
 export const zh = {
   ...gitZh,
+  ...readingZh,
   moduleTitle: '代码工作台', enable: '启用代码工作台', enableHint: '在对话和轨迹旁显示“代码工作台”，打开项目文件并围绕选区提问或修改。',
   sourceLocation: '{file} · 第 {line} 行', space: '空格', syntaxKeyword: '语法关键词', basicType: '基础类型', functionTemplate: '函数模板',
   action_definition: '跳到定义', action_complete: '代码补全', action_find: '当前文件搜索', action_project: '全局搜索',
@@ -29,6 +31,7 @@ export const zh = {
 };
 export const en = {
   ...gitEn,
+  ...readingEn,
   moduleTitle: 'Code workbench', enable: 'Enable code workbench', enableHint: 'Show Code workbench beside Conversation and Trajectory to edit project files and ask about selections.',
   sourceLocation: '{file} · Line {line}', space: 'Space', syntaxKeyword: 'Keyword', basicType: 'Primitive type', functionTemplate: 'Function snippet',
   action_definition: 'Go to definition', action_complete: 'Complete', action_find: 'Find in file', action_project: 'Project search',
@@ -55,4 +58,4 @@ export const en = {
   WORKBENCH_MODEL_INCOMPLETE: 'The model did not finish normally. Its result was not applied.', WORKBENCH_MODEL_EMPTY: 'The model returned no answer', WORKBENCH_OUTPUT_SIZE: 'Model output is too large. Its result was not applied.',
 };
 export function message(t, key, values = {}) { return Object.entries(values).reduce((text, [name, value]) => text.replaceAll(`{${name}}`, String(value)), t(key)); }
-export function errorText(error, t) { const code = /WORKBENCH_[A-Z_]+|FS_STALE_VERSION/.exec(error.message)?.[0]; return code ? t(code === 'FS_STALE_VERSION' ? 'WORKBENCH_CONFLICT' : code) : error.message; }
+export function errorText(error, t) { const code = /WORKBENCH_[A-Z_]+|READING_[A-Z_]+|FS_STALE_VERSION/.exec(error.message)?.[0]; return code ? t(code === 'FS_STALE_VERSION' ? 'WORKBENCH_CONFLICT' : code) : error.message; }

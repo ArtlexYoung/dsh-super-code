@@ -14,7 +14,7 @@
 .sc-workbench button[aria-pressed=true]{color:var(--wb-accent);background:var(--wb-hover)}
 .sc-workbench .sc-wb-primary{background:var(--wb-accent);color:var(--dsw-alias-label-primary-foreground,#fff);padding-inline:14px}
 .sc-workbench .sc-wb-primary:hover{background:color-mix(in srgb,var(--wb-accent) 90%,var(--wb-text))}
-.sc-wb-main{height:100%;min-height:220px;min-width:0;display:flex;flex-direction:column;background:var(--wb-bg);overflow:hidden;border-top:1px solid var(--wb-line)}
+.sc-wb-main{height:var(--dsh-conversation-viewport-height,100%);padding-bottom:var(--dsh-composer-height,0px);min-height:220px;min-width:0;display:flex;flex-direction:column;background:var(--wb-bg);overflow:hidden;border-top:1px solid var(--wb-line)}
 .sc-wb-toolbar{display:flex;flex:none;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;padding:7px 10px;border-bottom:1px solid var(--wb-line)}
 .sc-wb-nav{display:flex;align-items:center;gap:3px;min-width:0;flex-wrap:wrap}
 .sc-wb-toolbar-divider{height:16px;border-left:1px solid var(--wb-line);margin:0 5px}

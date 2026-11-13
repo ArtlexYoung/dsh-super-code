@@ -4,7 +4,7 @@
 
 Supports Harness `0.1.5-alpha.1` through `0.2.2-rc.2`, including `0.2.2-alpha.3`. Version 0.4.0 has been checked against all 27 complete Web hosts in this range, official macOS arm64 Desktop `0.2.2-rc.2`, and NEXT `2.0.22-next` (bundled `0.2.2-rc.1`). This round's scope and limits are recorded below.
 
-Full-process Windows coverage currently reaches official Desktop `0.2.1-rc.5` and NEXT `2.0.21-next` (bundled `0.2.1-rc.4`). New macOS/Web results do not extend that Windows scope.
+Historical Windows full-process coverage includes official Desktop `0.2.1-rc.5` and NEXT `2.0.21-next` (embedded `0.2.1-rc.4`). A November 14, 2026 supplemental check covers offline installation, sessions, and models on official Desktop `0.2.2-rc.2`; see the environment and limits below.
 
 The records below distinguish each code baseline and test layer. Component checks, static-frontend fixtures, and earlier development-package results do not establish a complete rerun of every version and platform.
 
@@ -58,6 +58,14 @@ Under npm rules, a range like `>=0.1.5-alpha.1 <0.3.0` excludes prereleases such
 The original 0.4.0 release omitted npm runtime dependencies, so installing even a local tgz with an empty cache required network access. The current fix bundles OpenSpec, the MCP SDK, `js-yaml`, `zod`, and their transitive dependencies from `dependencies`. DSH itself must already be installed. Use a local tgz for offline installation; installation by package name still requires cached npm metadata and the plugin tarball. Remote models and network tools still require connectivity.
 
 The Windows shell also packages separately licensed programs that run as subprocesses; see [runtime notes](../../runtime/windows/README.md) for sources, licenses, and corresponding source.
+
+## November 14, 2026 · 0.4.1 fix validation
+
+- Runtime ownership and offline packaging fixes were validated on macOS arm64 Web `0.2.2-rc.2` and official x64 Desktop `0.2.2-rc.2` in a Windows 11 ARM64 VM. Windows runs the desktop through its compatibility layer; this is not x64 physical-hardware acceptance. Full-host checks used the frozen fixed candidate whose internal version was still `0.4.0`; 0.4.1 release preparation changes version metadata and documentation only.
+- With the tested host denied external network access by the OS and using isolated empty dependency caches, the original release failed both ordinary and `--offline` installation, while the fixed package passed both. Harness and the local tgz were prepared beforehand.
+- Windows checks passed for real sessions, Bash 5.3.15, OpenSpec 1.17.0, parent/child/grandchild shell inheritance, PowerShell for a new root, tasks, Skills, project memory, local MCP, and cold-start recovery. A deterministic adapter triggered tool workflows; the tools themselves actually executed.
+- Real Tencent DeepSeek Responses answers, disconnected transport errors, and continued answers after restoring the route passed. Windows cloud calls went through a temporary Mac relay, not direct guest internet. Qwen2.5-0.5B Q4_K_M ran on the Mac CPU over localhost/LAN and produced normal answers in full Windows Super Code sessions and the desktop UI without external network access. Tests used a 32K context and temperature=0 and establish simple answers only. Failures with 135M/360M models, default sampling, and an 8K context remain recorded.
+- This round does not cover a native Windows inference engine, a complete native Linux host, all models, every feature on every version, or a new coding-effectiveness evaluation. It does not extend older batches beyond their recorded scope.
 
 ## November 12, 2026 · 0.4.0 compatibility rerun
 

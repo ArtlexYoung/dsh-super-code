@@ -44,8 +44,10 @@ dsh plugin --profile web add dsh-super-code
 Web 版：运行以下命令（文件名以实际下载的为准）：
 
 ```bash
-dsh plugin --profile web add ./dsh-super-code-0.4.0.tgz
+dsh plugin --profile web add ./dsh-super-code-0.4.1.tgz
 ```
+
+从 0.4.1 起，安装包自带插件所需的运行依赖。提前下载 `.tgz` 并安装好 Harness 后，即可断网安装；Web 版也可在上述命令末尾加 `--offline`。云端模型仍需联网；使用本机或局域网模型时，模型服务必须可达。
 
 </details>
 
@@ -100,14 +102,9 @@ dsh plugin --profile web add ./dsh-super-code-0.4.0.tgz
 
 ## 最近更新
 
-- **0.4.0**
-
-  1. 简化任务与记忆工具的调用，提供按操作的帮助与示例，支持直接读取指定主题的项目记忆。
-  2. 新增 grill-me、OpenSpec、oil-ui、Matt Pocock Skills 和 PStack 五项预置 Skill 与工作流，默认关闭。启用后同步到 DSH Skill 目录，在已有对话中实时生效，支持按包名搜索原生命令。
-  3. 优化设置与任务侧栏，完善新版 Harness 兼容，修复预设恢复、MCP、删除保护等功能中的大量问题。
-
-- **0.3.11**：修复了大量 bug。
-- **0.3.10**：新增 Windows 内置 Bash 和官方预设开关，修复旧宿主兼容与提示气泡样式。
+- **0.4.1**：修复 Windows 在 Harness `0.2.2-rc.2` 中因运行时归属接口变化而无法加载会话的问题（[#2](https://github.com/ArtlexYoung/dsh-super-code/issues/2)），并补齐运行依赖，支持使用本地 `.tgz` 在断网、空缓存环境下安装插件。
+- **0.4.0**：简化任务与记忆工具，新增五组预置 Skill 与工作流，并完善设置、任务侧栏及新版 Harness 兼容。
+- **0.3.11**：修复预设恢复、侧栏、记忆、MCP 与 Windows 命令环境等问题。
 
 [完整版本记录](docs/Changelog.md)
 

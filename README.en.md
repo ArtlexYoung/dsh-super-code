@@ -44,8 +44,10 @@ Desktop: enter the full path of the package in "Package name or address", then c
 Web: run the following command (use the actual file name):
 
 ```bash
-dsh plugin --profile web add ./dsh-super-code-0.4.0.tgz
+dsh plugin --profile web add ./dsh-super-code-0.4.1.tgz
 ```
+
+Starting with 0.4.1, the package includes the plugin runtime dependencies. Download the `.tgz` and install Harness beforehand, then install the plugin without internet access; Web users can also append `--offline` to the command above. Cloud models still require network access. Local or LAN models require a reachable model service.
 
 </details>
 
@@ -100,14 +102,9 @@ Bundled and adapted Skill sources are published under [builtin/skills](builtin/s
 
 ## Recent releases
 
-- **0.4.0**
-
-  1. Simplified task and memory tool calls with action-specific help and examples, plus direct reads of a named project-memory topic.
-  2. Added five opt-in Skills and workflow packages: grill-me, OpenSpec, oil-ui, Matt Pocock Skills, and PStack. Enabled packages sync to the DSH Skill directory, take effect in existing conversations, and can be found by package name in the native command menu.
-  3. Improved Settings and the task sidebar, expanded compatibility with newer Harness versions, and fixed numerous issues in preset recovery, MCP, deletion protection, and other features.
-
-- **0.3.11**: Fixed numerous bugs.
-- **0.3.10**: Added bundled Bash on Windows and an official-preset switch, with legacy-host compatibility and tooltip fixes.
+- **0.4.1**: Fixed Windows sessions failing to load after the runtime ownership API changed in Harness `0.2.2-rc.2` ([#2](https://github.com/ArtlexYoung/dsh-super-code/issues/2)), and bundled runtime dependencies so a local `.tgz` installs offline with an empty cache.
+- **0.4.0**: Simplified task and memory tools, added five preset Skill and workflow packs, and improved Settings, the task sidebar, and compatibility with newer Harness versions.
+- **0.3.11**: Fixed preset recovery, sidebar, memory, MCP, and Windows command-environment issues.
 
 [Full changelog](docs/en/Changelog.md)
 

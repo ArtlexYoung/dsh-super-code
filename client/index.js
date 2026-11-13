@@ -3290,14 +3290,14 @@ const inject = [
   'sidebarRightTabs', 'sidebarRight',
 ]
 
-function apply(ctx, extraRemoteDescriptors = []) {
+function apply(ctx) {
   const locale = ctx.locale || { register: () => () => {}, bind: () => key => zh[key] || key }
   ctx.effect(() => locale.register(LOCALE_NS, { zh, en }), 'dsh-super-code: dictionaries')
   const t = locale.bind(LOCALE_NS)
   // $mount creates a lifecycle effect on this same fiber; awaiting it from
   // another effect would stall the namespace and the settings contribution.
   void ctx.remote.$mount({ package: 'dsh-super-code', descriptors: [
-    ...presetRemoteContribution.descriptors, ...memoryRemoteContribution.descriptors, ...budgetRemoteContribution.descriptors, ...connectionRemoteContribution.descriptors, ...extraRemoteDescriptors,
+    ...presetRemoteContribution.descriptors, ...memoryRemoteContribution.descriptors, ...budgetRemoteContribution.descriptors, ...connectionRemoteContribution.descriptors,
   ] }).catch(error => console.warn('Super Code Remote:', error))
   const memoryStates = new WeakMap(), workspaceStates = new WeakMap()
   const navigation = { openSession: () => {} }
@@ -4064,5 +4064,5 @@ function apply(ctx, extraRemoteDescriptors = []) {
   ctx.effect(() => disposeMemoryType, 'super-code: memory library tab')
 }
 
-return { inject, apply, workbenchControls: { Button: ActionButton, Select: SelectControl }, skillPackageSource, synchronizeSkillMenus, refreshNativeSkillMenus, taskFeedbackRows, feedbackStatus, feedbackListItems, feedbackListLayout, feedbackListIndex, feedbackListWindow, feedbackListAnchor, connectionSessions, createConnectionAutosave, createBudgetAutosave, createBudgetEditors, connectionDraft, connectionConfiguration, budgetDraft, budgetConfiguration, synchronizePresetDisplay, agentSessionState, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector, agentHistoryRange, agentHistoryRows, agentHistoryWindow, memoryLibraryAddress, memoryLibraryTarget, memoryLibraryNavigation, memoryLibraryWindow, createMemoryEditor, MemoryLibrary }
+return { inject, apply, skillPackageSource, synchronizeSkillMenus, refreshNativeSkillMenus, taskFeedbackRows, feedbackStatus, feedbackListItems, feedbackListLayout, feedbackListIndex, feedbackListWindow, feedbackListAnchor, connectionSessions, createConnectionAutosave, createBudgetAutosave, createBudgetEditors, connectionDraft, connectionConfiguration, budgetDraft, budgetConfiguration, synchronizePresetDisplay, agentSessionState, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector, agentHistoryRange, agentHistoryRows, agentHistoryWindow, memoryLibraryAddress, memoryLibraryTarget, memoryLibraryNavigation, memoryLibraryWindow, createMemoryEditor, MemoryLibrary }
 } })

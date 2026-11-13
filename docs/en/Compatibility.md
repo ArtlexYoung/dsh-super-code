@@ -55,7 +55,9 @@ The test environments use exact overrides, but that does not fix the upstream de
 
 Under npm rules, a range like `>=0.1.5-alpha.1 <0.3.0` excludes prereleases such as `0.1.6-alpha.1` and `0.2.0-rc.2`, so peer dependencies have to list each series separately.
 
-`zod`, `js-yaml`, and `@modelcontextprotocol/sdk` are runtime dependencies and are not bundled. The Windows shell also packages separately licensed programs that run as subprocesses; see [runtime notes](../../runtime/windows/README.md) for sources, licenses, and corresponding source.
+The original 0.4.0 release omitted npm runtime dependencies, so installing even a local tgz with an empty cache required network access. The current fix bundles OpenSpec, the MCP SDK, `js-yaml`, `zod`, and their transitive dependencies from `dependencies`. DSH itself must already be installed. Use a local tgz for offline installation; installation by package name still requires cached npm metadata and the plugin tarball. Remote models and network tools still require connectivity.
+
+The Windows shell also packages separately licensed programs that run as subprocesses; see [runtime notes](../../runtime/windows/README.md) for sources, licenses, and corresponding source.
 
 ## November 12, 2026 · 0.4.0 compatibility rerun
 

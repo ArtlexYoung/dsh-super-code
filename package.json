@@ -88,6 +88,7 @@
     "js-yaml": "^4.1.0",
     "zod": "^4.6.7"
   },
+  "bundleDependencies": true,
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.2 || ^4.0.5-alpha.1 || ^4.0.6-alpha.1",
     "@deepseek-ai/dsh-agent": "^0.1.5-alpha.1 || ^0.1.6-alpha.1 || ^0.1.7-alpha.1 || ^0.2.0-rc.1 || ^0.2.1-alpha.1 || ^0.2.2-alpha.2",
@@ -137,7 +138,7 @@
     "prepare": "npm run build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "npm run skills:check && tsx --test \"test/**/*.test.ts\"",
-    "pack:check": "npm pack --dry-run",
+    "pack:check": "tsx --test \"test/package/*.test.ts\"",
     "eval:super-code": "node lib/evaluate.js"
   },
   "engines": {

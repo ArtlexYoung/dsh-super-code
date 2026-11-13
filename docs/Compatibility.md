@@ -55,7 +55,9 @@ Windows 的完整进程验证目前至官方 Desktop `0.2.1-rc.5`、NEXT `2.0.21
 
 按照 npm 规则，`>=0.1.5-alpha.1 <0.3.0` 这类写法会排除 `0.1.6-alpha.1`、`0.2.0-rc.2` 等预发布版本，因此 peer 依赖只能按系列分别列出。
 
-`zod`、`js-yaml`、`@modelcontextprotocol/sdk` 为运行依赖，不打包进插件。Windows Shell 另随包携带独立进程运行的第三方程序，其来源、许可证和对应源码见[运行时说明](../runtime/windows/README.md)。
+原发布的 0.4.0 包没有携带 npm 运行依赖，空缓存时即使使用本地 tgz 也需要联网下载。当前修复将 `dependencies` 中的 OpenSpec、MCP SDK、`js-yaml`、`zod` 及其传递依赖随包携带，DSH 宿主仍须预先安装。离线安装应使用本地 tgz；按包名安装仍需要 npm 元数据及插件包缓存。远程模型和联网工具仍需要网络。
+
+Windows Shell 另随包携带独立进程运行的第三方程序，其来源、许可证和对应源码见[运行时说明](../runtime/windows/README.md)。
 
 ## 2026-11-12 · 0.4.0 兼容复验
 

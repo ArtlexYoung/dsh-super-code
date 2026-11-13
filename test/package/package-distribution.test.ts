@@ -2,6 +2,9 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import { spawnSync } from 'node:child_process'
+import { createRequire } from 'node:module'
+import { existsSync } from 'node:fs'
+import { join, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 test('npm ships every runtime resource once and retains public exports and third-party notices', { timeout: 90000 }, async () => {
@@ -14,7 +17,23 @@ test('npm ships every runtime resource once and retains public exports and third
   })
   assert.equal(packed.status, 0, packed.stderr || String(packed.error))
   const files = new Set<string>(JSON.parse(packed.stdout)[0].files.map((row: { path: string }) => row.path))
+  assert.ok([...files].every(path => !path.split('/').includes('..')), 'Bundled dependencies must stay inside the package')
   const pkg = JSON.parse(await readFile(new URL('../../package.json', import.meta.url), 'utf8'))
+  for (const name of Object.keys(pkg.dependencies)) {
+    assert.ok(files.has('node_modules/' + name + '/package.json'), name + ' must ship for offline installation')
+  }
+  for (const path of files) {
+    if (!/(^|\/)node_modules\/(?:@[^/]+\/)?[^/]+\/package\.json$/.test(path)) continue
+    const manifest = JSON.parse(await readFile(join(root, path), 'utf8'))
+    const require = createRequire(join(root, path))
+    for (const name of Object.keys(manifest.dependencies ?? {})) {
+      const dependency = require.resolve.paths(name)?.map(base => join(base, name, 'package.json')).find(existsSync)
+      assert.ok(dependency, path + ': missing dependency ' + name)
+      assert.ok(files.has(relative(root, dependency).split(sep).join('/')), path + ': unbundled dependency ' + name)
+    }
+  }
+  assert.ok(![...files].some(path => path.startsWith('node_modules/@deepseek-ai/')), 'Host modules remain supplied by DSH')
+  for (const name of ['typescript', 'tsx', '@types/node']) assert.ok(!files.has('node_modules/' + name + '/package.json'), name + ' is build-only')
   for (const target of Object.values(pkg.exports).flatMap(value => typeof value === 'string' ? [value] : Object.values(value as object))) {
     if (!(target as string).includes('*')) assert.ok(files.has((target as string).replace(/^\.\//, '')), String(target))
   }

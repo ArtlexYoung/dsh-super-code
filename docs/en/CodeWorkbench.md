@@ -2,7 +2,7 @@
 
 [中文](../CodeWorkbench.md) · English
 
-Enable **Settings → Code workbench** to add **Code** beside Conversation and Trajectory. It is off by default and saved in the current client. Toggling it does not initialize projects or change presets.
+Enable **Settings → Code workbench** to add **Code workbench** beside Conversation and Trajectory. It is off by default and saved in the current client. Toggling it does not initialize projects or change presets.
 
 Browse the current conversation's working directory on the left. Edits stay in buffers until **Save** or Ctrl/⌘+S. Switching files or leaving the page preserves buffers and undo history; save before closing the application or unloading the plugin. If another program changes a file on disk, saving refuses to overwrite it and keeps your edits.
 

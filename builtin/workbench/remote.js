@@ -1,6 +1,6 @@
 const schema = { parse(value) { if (typeof value !== 'string') throw new Error('Expected string'); return value; } };
 const codec = { mode: 'strict', typeSymbol: 'string', schema, create: () => schema };
-export const descriptors = Object.entries({ list: ['sessionId', 'path'], read: ['sessionId', 'path'], save: ['sessionId', 'content'], project: ['sessionId'], assist: ['sessionId', 'content'], git: ['sessionId', 'content'], reading: ['sessionId', 'content'] }).map(([method, names]) => ({
+export const descriptors = Object.entries({ list: ['sessionId', 'path'], read: ['sessionId', 'path'], save: ['sessionId', 'content'], project: ['sessionId'], directory: ['sessionId'], recoverDirectory: ['sessionId', 'content'], assist: ['sessionId', 'content'], git: ['sessionId', 'content'], reading: ['sessionId', 'content'] }).map(([method, names]) => ({
   id: `dsh-super-code:superCodeWorkbench/${method}`, service: 'superCodeWorkbench', namespace: 'superCodeWorkbench', method,
   ...(['assist', 'git', 'reading'].includes(method) ? { mode: 'stream' } : {}),
   invocation: { kind: 'direct' }, parameters: names.map(name => ({ name, wire: name, source: 'json', codec })),

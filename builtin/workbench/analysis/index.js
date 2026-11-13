@@ -1,4 +1,4 @@
-import { parseSource, sourceSignature, precedingComment, pythonDocstring, identifierOccurrences } from './source-info.js';
+import { parseSource, sourceSignature, precedingComment, pythonDocstring, identifierOccurrences, lineAt, excludedAt } from './source-info.js';
 import { parseDocumentation } from './documentation.js';
 import { extension } from '../editor/languages.js';
 
@@ -39,7 +39,7 @@ export async function analyze(file, text) {
   const parsed = await parseSource(file, text), ext = extension(file), found = new Map(), starts = [0];
   for (let i = 0; i < text.length; i++) if (text[i] === '\n') starts.push(i + 1);
   const add = (name, offset, kind) => {
-    if (parsed.excluded.some(range => range.from <= offset && offset < range.to)) return;
+    if (excludedAt(parsed.excluded, offset)) return;
     found.set(offset, { name, offset, kind });
   };
   parsed.tree?.iterate({ enter(cursor) {
@@ -67,48 +67,72 @@ export async function analyze(file, text) {
   } });
   if (ext === 'sql') for (const match of text.matchAll(/\bCREATE\s+(?:OR\s+REPLACE\s+)?(?:TABLE|VIEW|INDEX|FUNCTION|PROCEDURE)\s+(?:IF\s+NOT\s+EXISTS\s+)?([\p{L}_][\p{L}\p{N}_.]*)/giu)) add(match[1], match.index + match[0].lastIndexOf(match[1]), 'schema');
   const symbols = [...found.values()].sort((a, b) => a.offset - b.offset).map(symbol => {
-    let line = 0;
-    while (starts[line + 1] <= symbol.offset) line++;
+    const line = lineAt(starts, symbol.offset);
     const value = { ...symbol, file, line, character: symbol.offset - starts[line] };
     const raw = ext === 'py' ? pythonDocstring(text, value.offset, parsed) || precedingComment(text, value.offset, parsed) : precedingComment(text, value.offset, parsed);
     return { ...value, declaration: sourceSignature(text, value, parsed), documentation: parseDocumentation(raw, languageNames[ext]) };
   });
   const occurrences = identifierOccurrences(text, parsed).map(item => ext === 'php' && item.name.startsWith('$') ? { ...item, name: item.name.slice(1), offset: item.offset + 1 } : item);
-  return { text, symbols, occurrences, starts };
+  const references = new Map();
+  for (const item of occurrences) {
+    if (!references.has(item.name)) references.set(item.name, []);
+    references.get(item.name).push(item);
+  }
+  return { text, symbols, occurrences, starts, references };
 }
 
 export class SymbolIndex {
   files = new Map();
   versions = new Map();
+  names = new Map();
+  pending = new Map();
+  constructor(analyzer = analyze) { this.analyzer = analyzer; }
   async change(file, text) {
     const version = Symbol();
     this.versions.set(file, version);
     if (this.files.get(file)?.text === text) return;
-    const result = await analyze(file, text);
-    if (this.versions.get(file) === version) this.files.set(file, result);
+    const previous = this.pending.get(file);
+    const work = previous?.text === text ? previous.work : this.analyzer(file, text);
+    this.pending.set(file, { text, work });
+    try {
+      const result = await work;
+      if (this.versions.get(file) !== version) return;
+      this.removeNames(file);
+      this.files.set(file, result);
+      for (const symbol of result.symbols) {
+        const key = `${family(file)}\0${symbol.name}`;
+        if (!this.names.has(key)) this.names.set(key, []);
+        this.names.get(key).push(symbol);
+      }
+    } finally { if (this.pending.get(file)?.work === work) this.pending.delete(file); }
   }
-  remove(file) { this.versions.delete(file); this.files.delete(file); }
-  clear() { this.versions.clear(); this.files.clear(); }
+  removeNames(file) {
+    for (const name of new Set(this.files.get(file)?.symbols.map(item => item.name))) {
+      const key = `${family(file)}\0${name}`, remaining = this.names.get(key).filter(item => item.file !== file);
+      if (remaining.length) this.names.set(key, remaining); else this.names.delete(key);
+    }
+  }
+  remove(file) { this.removeNames(file); this.versions.delete(file); this.files.delete(file); this.pending.delete(file); }
+  clear() { this.versions.clear(); this.files.clear(); this.names.clear(); this.pending.clear(); }
   candidates(file, name, exact = true) {
     if (extension(file) === 'php') name = name.replace(/^\$/, '');
-    return [...this.files].filter(([path]) => family(path) === family(file)).flatMap(([, value]) => value.symbols)
-      .filter(item => exact ? item.name === name : item.name.toLowerCase().startsWith(name.toLowerCase()))
+    const prefix = `${family(file)}\0`, wanted = name.toLowerCase();
+    return (exact ? [...(this.names.get(prefix + name) || [])] : [...this.names].filter(([key]) => key.startsWith(prefix) && key.slice(prefix.length).toLowerCase().startsWith(wanted)).flatMap(([, items]) => items))
       .sort((a, b) => Number(b.file === file) - Number(a.file === file) || a.file.localeCompare(b.file) || a.offset - b.offset);
   }
   navigate(file, name, offset) {
     if (extension(file) === 'php') name = name.replace(/^\$/, '');
     const definitions = this.candidates(file, name), declarations = new Set(definitions.map(item => `${item.file}:${item.offset}`));
     const source = this.files.get(file);
-    if (!source?.occurrences.some(item => item.name === name && item.offset <= offset && offset <= item.offset + name.length)) return { kind: 'definitions', matches: [] };
+    if (!source?.references.get(name)?.some(item => item.offset <= offset && offset <= item.offset + name.length)) return { kind: 'definitions', matches: [] };
     if (!definitions.some(item => item.file === file && item.offset <= offset && offset <= item.offset + name.length)) return { kind: 'definitions', matches: definitions };
     const matches = [];
     for (const [path, value] of this.files) {
       if (family(file) !== family(path)) continue;
-      for (const item of value.occurrences) {
-        if (item.name !== name || declarations.has(`${path}:${item.offset}`)) continue;
-        let line = 0;
-        while (value.starts[line + 1] <= item.offset) line++;
-        matches.push({ file: path, line, character: item.offset - value.starts[line], length: name.length, lineText: value.text.split('\n')[line] });
+      for (const item of value.references.get(name) || []) {
+        if (declarations.has(`${path}:${item.offset}`)) continue;
+        const line = lineAt(value.starts, item.offset), end = value.starts[line + 1];
+        matches.push({ file: path, line, character: item.offset - value.starts[line], length: name.length, lineText: value.text.slice(value.starts[line], end === undefined ? undefined : end - 1) });
       }
     }
     return { kind: 'usages', matches, ambiguous: definitions.length > 1 };

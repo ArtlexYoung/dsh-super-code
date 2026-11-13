@@ -4,6 +4,9 @@ export const NS = 'dsh-super-code-workbench';
 export const zh = {
   ...gitZh,
   ...readingZh,
+  changesTitle: '修改文件', changesRefresh: '刷新修改文件', changesBinary: '二进制',
+  WORKBENCH_ANALYSIS: '代码索引未能完成，请刷新文件与索引后重试',
+  WORKBENCH_DIRECTORY_MISSING: '当前回答目录不存在，请使用对话顶部的「切换回答目录」选择其他目录继续',
   resizeExplorer: '调整文件目录宽度', resizeReading: '调整学习侧栏宽度',
   sourceLocation: '{file} · 第 {line} 行', space: '空格', syntaxKeyword: '语法关键词', basicType: '基础类型', functionTemplate: '函数模板',
   action_definition: '跳到定义', action_complete: '代码补全', action_find: '当前文件搜索', action_project: '全局搜索',
@@ -32,6 +35,9 @@ export const zh = {
 export const en = {
   ...gitEn,
   ...readingEn,
+  changesTitle: 'Changed files', changesRefresh: 'Refresh changed files', changesBinary: 'Binary',
+  WORKBENCH_ANALYSIS: 'Code analysis failed. Refresh files and index to retry.',
+  WORKBENCH_DIRECTORY_MISSING: 'This directory is missing. Use “Change working directory” in the conversation header to continue elsewhere.',
   resizeExplorer: 'Resize file explorer', resizeReading: 'Resize learning sidebar',
   sourceLocation: '{file} · Line {line}', space: 'Space', syntaxKeyword: 'Keyword', basicType: 'Primitive type', functionTemplate: 'Function snippet',
   action_definition: 'Go to definition', action_complete: 'Complete', action_find: 'Find in file', action_project: 'Project search',

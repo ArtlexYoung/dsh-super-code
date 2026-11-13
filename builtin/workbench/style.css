@@ -46,6 +46,19 @@ body[data-ds-dark-theme] .sc-workbench[data-palette=vscode]{
 .sc-wb-outline{max-height:32%;min-height:50px;overflow:auto;padding:0 5px 8px}
 .sc-wb-outline i{color:var(--wb-accent);font:italic 14px Georgia;min-width:17px}
 .sc-wb-outline small{margin-left:auto;color:var(--wb-muted);font-size:10px}
+.sc-wb-changes{display:flex;flex-direction:column;min-width:0;min-height:115px;max-height:35%;flex:1;border-top:1px solid var(--wb-line);background:var(--wb-panel)}
+.sc-wb-changes>header{display:flex;justify-content:space-between;align-items:center;flex:none;padding:4px 9px 4px 12px;min-height:33px;font-size:11px;color:var(--wb-muted)}
+.sc-wb-changes>header strong{font-weight:600}.sc-wb-changes>header small{margin-left:5px;font-variant-numeric:tabular-nums;font-weight:400}
+.sc-wb-changes>p{margin:5px 12px;font-size:11px;color:var(--wb-muted);overflow-wrap:anywhere}
+.sc-wb-changes-filter{padding:0 8px 4px;flex:none}.sc-wb-changes-filter .dsh-super-code-select-trigger{height:27px;font-size:11px;padding-block:3px}
+.sc-wb-changes .sc-wb-changes-list{min-height:45px;padding:0 4px 4px}
+.sc-workbench .sc-wb-change{display:flex;align-items:center;gap:6px;justify-content:flex-start;width:100%;height:38px;padding:3px 7px;text-align:left;font-size:11px}
+.sc-wb-change>i{font:10px ui-monospace,monospace;flex:none;width:13px;color:var(--wb-accent)}
+.sc-wb-change>i[data-status=A],.sc-wb-change-stat>b{color:#388e58}.sc-wb-change>i[data-status=D],.sc-wb-change>i[data-status=U],.sc-wb-change-stat>em{color:#ba5454}
+.sc-wb-change>span{min-width:0;display:flex;flex-direction:column;flex:1;line-height:1.4}.sc-wb-change strong{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sc-wb-change small{font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--wb-muted)}
+.sc-wb-change>.sc-wb-change-stat{flex:none;flex-direction:row;gap:5px;font:10px ui-monospace,monospace;color:var(--wb-muted)}
+.sc-wb-change-stat :is(b,em){font:inherit}
 .sc-wb-code{display:flex;flex:1;flex-direction:column;min-width:0;min-height:0;position:relative}
 .sc-wb-tabs{display:flex;min-height:34px;flex:none;overflow:auto;background:var(--wb-chrome);border-bottom:1px solid var(--wb-line)}
 .sc-workbench .sc-wb-tabs>button{border-radius:0;border-right:1px solid var(--wb-line);padding:6px 14px;position:relative}

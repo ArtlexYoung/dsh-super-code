@@ -7,20 +7,21 @@ import { library } from './library.js'
 import { containsPath, gitFileSystem } from './filesystem.js'
 import { gitRequestSchema, remoteUrl } from './request.js'
 import type { GitRequest, GitResult, GitState } from './request.js'
-import { repositoryDiff, commitFiles, commitDiff } from './diff.js'
+import { repositoryDiff, repositoryContents, textStat, commitFiles, commitDiff } from './diff.js'
 import { mergeHead, conflictPaths, mergeBranch, abortMerge, clearMerge } from './merge.js'
 import { detectGit, NativeGit } from './native.js'
 import type { ConfineGit } from './native.js'
+import { updateFileVersions } from './version.js'
 
 const { git, http } = library
-type Options = { fs: PromiseFsClient; dir: string }
+type Options = { fs: PromiseFsClient; dir: string; cache: object }
 
 async function optionalFile(options: Options, file: string): Promise<Buffer> {
   try { return await options.fs.promises.readFile(join(options.dir, file)) }
   catch (error) { if (error instanceof Error && 'code' in error && error.code === 'ENOENT') return Buffer.alloc(0); throw error }
 }
 
-async function snapshot(options: Options, writable: boolean): Promise<GitState> {
+async function snapshot(options: Options, writable: boolean, signal: AbortSignal): Promise<GitState> {
   const dotgit = await options.fs.promises.lstat(join(options.dir, '.git')).catch((error: NodeJS.ErrnoException) => { if (error.code === 'ENOENT') return null; throw error })
   if (dotgit && !dotgit.isDirectory()) throw new Error('WORKBENCH_GIT_LAYOUT')
   const state: GitState = { exists: !!dotgit, version: '', branch: null, head: null, writable, changes: [], branches: [], remotes: [], history: [], author: { name: '', email: '' }, backend: 'builtin', merging: false, remoteBranches: [] }
@@ -52,10 +53,7 @@ async function snapshot(options: Options, writable: boolean): Promise<GitState> 
     if (state.head) state.history = (await git.log({ ...options, depth: 30 })).map(({ oid, commit }) => ({ oid, message: commit.message, author: commit.author.name, timestamp: commit.author.timestamp }))
     state.author = { name: await git.getConfig({ ...options, path: 'user.name' }) || '', email: await git.getConfig({ ...options, path: 'user.email' }) || '' }
     for (const file of ['.git/HEAD', '.git/index', '.git/config', '.git/MERGE_HEAD']) hash.update(await optionalFile(options, file))
-    for (const file of state.changes) {
-      const info = await options.fs.promises.lstat(join(options.dir, file.path)).catch((error: NodeJS.ErrnoException) => { if (error.code === 'ENOENT') return null; throw error })
-      hash.update(JSON.stringify([file, info && [info.dev, info.ino, info.mode, info.size, info.mtimeMs, info.ctimeMs]]))
-    }
+    await updateFileVersions(hash, options.dir, state.changes, path => options.fs.promises.lstat(path), signal)
   }
   hash.update(JSON.stringify([state.head, state.branch, state.branches, state.remoteBranches, state.remotes, state.merging]))
   state.version = hash.digest('hex')
@@ -66,6 +64,7 @@ async function snapshot(options: Options, writable: boolean): Promise<GitState> 
 export class GitRepository {
   private pending: Promise<unknown> = Promise.resolve()
   private readonly nativeAvailable: Promise<boolean>
+  private readonly cache: object = {}
   constructor(private readonly root: string, private readonly executable: string = 'git', private readonly confine: ConfineGit | undefined = undefined) { this.nativeAvailable = detectGit(executable) }
 
   async execute(input: unknown, policy: SandboxExecutionPolicy | undefined, signal: AbortSignal): Promise<GitResult> {
@@ -79,10 +78,10 @@ export class GitRepository {
     signal.throwIfAborted()
     const root = await native.realpath(this.root)
     if (policy?.mode === 'workspace-write') policy = { ...policy, workspaceRoot: await native.realpath(policy.workspaceRoot) }
-    const options = { fs: gitFileSystem(root, policy, signal), dir: root }
+    const options = { fs: gitFileSystem(root, policy, signal), dir: root, cache: this.cache }
     const writable = !policy || policy.mode === 'danger-full-access' || policy.mode === 'workspace-write' && containsPath(policy.workspaceRoot, root)
     const engine = await this.nativeAvailable ? new NativeGit(root, this.executable, signal, policy, this.confine) : null
-    const read = () => engine ? engine.snapshot(writable) : snapshot(options, writable)
+    const read = () => engine ? engine.snapshot(writable) : snapshot(options, writable, signal)
     const state = await read()
     if (request.action === 'status') return { kind: 'state', state }
     if (request.action === 'init') {
@@ -94,6 +93,22 @@ export class GitRepository {
     }
     if (!state.exists) throw new Error('WORKBENCH_GIT_MISSING')
     if (request.version !== state.version) throw new Error('WORKBENCH_GIT_STALE')
+    if (request.action === 'stats') {
+      const changed = new Set(state.changes.map(file => file.path))
+      if (request.paths.some(path => !changed.has(path))) throw new Error('WORKBENCH_GIT_STALE')
+      const stats = []
+      for (const path of request.paths) {
+        signal.throwIfAborted()
+        try {
+          const { before, after } = engine ? await engine.contents(path, 'total', state) : await repositoryContents({ ...options, head: state.head }, path, 'total')
+          stats.push(textStat(path, before, after))
+        } catch (error) {
+          if (!(error instanceof Error) || error.message !== 'WORKBENCH_FILE_SIZE') throw error
+          stats.push({ path, added: 0, removed: 0, binary: false, limited: true })
+        }
+      }
+      return { kind: 'stats', version: state.version, stats }
+    }
     if (request.action === 'diff') {
       const file = state.changes.find(file => file.path === request.path)
       if (!file) throw new Error('WORKBENCH_GIT_STALE')
@@ -117,17 +132,17 @@ export class GitRepository {
     const lock = await native.open(lockPath, 'wx').catch((error: NodeJS.ErrnoException) => { if (error.code === 'EEXIST') throw new Error('WORKBENCH_GIT_BUSY'); throw error })
     const identity = await lock.stat()
     try {
-      if ((await snapshot(options, state.writable)).version !== state.version) throw new Error('WORKBENCH_GIT_STALE')
+      if ((await snapshot(options, state.writable, signal)).version !== state.version) throw new Error('WORKBENCH_GIT_STALE')
       await this.mutate(request, options, state, signal)
     } finally {
       await lock.close()
       const current = await native.lstat(lockPath).catch((error: NodeJS.ErrnoException) => { if (error.code === 'ENOENT') return null; throw error })
       if (current?.dev === identity.dev && current.ino === identity.ino) await native.unlink(lockPath)
     }
-    return { kind: 'state', state: await snapshot(options, state.writable) }
+    return { kind: 'state', state: await snapshot(options, state.writable, signal) }
   }
 
-  private async mutate(request: Exclude<GitRequest, { action: 'status' | 'diff' | 'init' | 'commitFiles' | 'historyDiff' }>, options: Options, state: GitState, signal: AbortSignal): Promise<void> {
+  private async mutate(request: Exclude<GitRequest, { action: 'status' | 'stats' | 'diff' | 'init' | 'commitFiles' | 'historyDiff' }>, options: Options, state: GitState, signal: AbortSignal): Promise<void> {
     switch (request.action) {
       case 'stage': {
         const selected = new Set(request.paths)

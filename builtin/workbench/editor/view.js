@@ -6,7 +6,7 @@ import { editorSetup, editingCommands, editorPointerEvents } from './input.js';
 import { loadLanguage, syntaxSuggestions } from './languages.js';
 import { bindingsOf } from './preferences.js';
 import { editorTheme } from './theme.js';
-import { signatureTooltip } from './code-info.js';
+import { signatureTooltip, wordAt } from './code-info.js';
 import { selectionExtension } from '../assistant/selection-extension.js';
 
 export function createEditor({ parent, tooltipParent, index, t, changed, commands, assistant, currentFile }) {
@@ -21,13 +21,13 @@ export function createEditor({ parent, tooltipParent, index, t, changed, command
       ...index.candidates(file, word?.text || '', false).map(item => ({ label: item.name, type: item.kind, detail: `${item.file}:${item.line + 1}`, boost: 10 })),
       ...syntaxSuggestions(file, t), ...(completeAnyWord(context)?.options || []),
     ].filter(item => { if (seen.has(item.label)) return false; seen.add(item.label); return true; });
-    const suffix = /^[\p{L}\p{N}_$]*/u.exec(context.state.sliceDoc(context.pos))[0];
-    return { from: word?.from ?? context.pos, to: context.pos + suffix.length, options, validFor: /^[\p{L}\p{N}_$]*$/u };
+    return { from: word?.from ?? context.pos, to: wordAt(context.state.doc, context.pos).to, options, validFor: /^[\p{L}\p{N}_$]*$/u };
   }
   async function state(file, text, preferences, saved) {
     const language = await loadLanguage(file);
     const extensions = [
       editorSetup, language, theme.of(editorTheme(preferences.palette)), tooltips({ parent: tooltipParent }), search({ top: true }),
+      EditorState.lineSeparator.of(text.includes('\r\n') ? '\r\n' : text.includes('\r') ? '\r' : '\n'),
       EditorView.contentAttributes.of({ 'aria-label': t('title') }), autocompletion(), EditorState.languageData.of(() => [{ autocomplete: complete }]),
       keys.of(Prec.highest(keymap.of(bindingsOf(preferences, bound())))),
       Prec.highest(EditorView.domEventHandlers(editorPointerEvents(commands.definition))),

@@ -7,21 +7,26 @@ const source = await readFile(new URL('client/index.js', root), 'utf8');
 const start = "factory: (require) => {", end = '\n} })';
 const from = source.indexOf(start), to = source.lastIndexOf(end);
 if (from < 0 || to < from) throw new Error('Client factory boundary changed; update the workbench build entry');
+const worker = await build({
+  absWorkingDir: fileURLToPath(root), entryPoints: ['builtin/workbench/analysis/worker.js'], bundle: true, write: false,
+  format: 'iife', platform: 'browser', target: ['safari16', 'chrome110'], minify: true, sourcemap: false, legalComments: 'eof', metafile: true,
+});
 const built = await build({
   absWorkingDir: fileURLToPath(root), entryPoints: ['builtin/workbench/index.jsx'], bundle: true, write: false,
   format: 'cjs', platform: 'browser', target: ['safari16', 'chrome110'], minify: true, sourcemap: false,
   external: ['react', 'react-dom'], loader: { '.css': 'text' }, legalComments: 'eof', metafile: true,
+  define: { __WORKBENCH_ANALYSIS_WORKER__: JSON.stringify(worker.outputFiles[0].text) },
 });
 const git = await build({
   absWorkingDir: fileURLToPath(root), entryPoints: ['builtin/git/index.js'], bundle: true, write: false,
   format: 'cjs', platform: 'node', target: 'node22', minify: true, sourcemap: false, legalComments: 'eof', metafile: true,
 });
 const base = source.slice(from + start.length, to);
-const bundle = `;(globalThis.window||globalThis).__ModuleLoader__.load({id:'dsh-super-code',factory:require=>{\nconst base=(()=>{${base}\n})();\nconst builtin=(()=>{const module={exports:{}};const exports=module.exports;${built.outputFiles[0].text}\nreturn module.exports})();\nreturn {...base,apply(ctx){const preference=builtin.createWorkbenchPreference(localStorage);base.apply(ctx,builtin.descriptors,preference);builtin.apply(ctx,{...base.workbenchControls,preference})}};\n}});\n`;
+const bundle = `;(globalThis.window||globalThis).__ModuleLoader__.load({id:'dsh-super-code',factory:require=>{\nconst base=(()=>{${base}\n})();\nconst builtin=(()=>{const module={exports:{}};const exports=module.exports;${built.outputFiles[0].text}\nreturn module.exports})();\nreturn {...base,apply(ctx){const preference=builtin.createWorkbenchPreference(localStorage);const workbench=builtin.apply(ctx,{...base.workbenchControls,preference});base.apply(ctx,builtin.descriptors,preference,workbench)}};\n}});\n`;
 await mkdir(new URL('dist/', root), { recursive: true });
 await writeFile(new URL('dist/client.js', root), bundle);
 await writeFile(new URL('dist/git.cjs', root), git.outputFiles[0].contents);
-const packages = [...new Set([...Object.keys(built.metafile.inputs), ...Object.keys(git.metafile.inputs)].map(path => path.match(/^(.*node_modules\/(?:@[^/]+\/)?[^/]+)\//)?.[1]).filter(Boolean))].sort();
+const packages = [...new Set([...Object.keys(built.metafile.inputs), ...Object.keys(git.metafile.inputs), ...Object.keys(worker.metafile.inputs)].map(path => path.match(/^(.*node_modules\/(?:@[^/]+\/)?[^/]+)\//)?.[1]).filter(Boolean))].sort();
 const notices = [];
 for (const path of packages) {
   const directory = new URL(path + '/', root), manifest = JSON.parse(await readFile(new URL('package.json', directory), 'utf8'));

@@ -263,6 +263,16 @@ const ActionButton = React.forwardRef(function ActionButton({ as: Tag = 'button'
 
 const LOCALE_NS = 'dshSuperCode'
 const zh = {
+  'directory.title': '当前回答目录不可用', 'directory.switch': '切换回答目录',
+  'directory.explain': '当前回答目录已被移除或不再是文件夹。选择其他目录后，将保留已完成的对话历史并创建续聊副本；原对话保留，不会自动重发问题。',
+  'directory.choose': '选择其他目录…', 'directory.continue': '在此目录继续', 'directory.failed': '目录操作未能完成，请重试。',
+  'directory.WORKBENCH_DIRECTORY_BUSY': '当前对话仍在运行，请先停止或等待回答结束后重试。',
+  'directory.WORKBENCH_DIRECTORY_STALE': '对话已有新记录，请核对后重试。',
+  'directory.WORKBENCH_DIRECTORY_TARGET': '所选目录不存在，请重新选择。',
+  'directory.WORKBENCH_DIRECTORY_AVAILABLE': '原目录已恢复，可以返回原对话继续。',
+  'directory.WORKBENCH_DIRECTORY_CHILD': '请从主对话切换回答目录。',
+  'directory.WORKBENCH_DIRECTORY_PRESET': '当前预设不可用，请先修复预设。',
+  'directory.WORKBENCH_DIRECTORY_UNSUPPORTED': '此宿主未提供保留历史所需的会话能力。',
   'feedback.title': '任务',
   'feedback.tools': '工具调用汇总',
   'feedback.toolCount': '{tool} 成功 {ok} 次，失败 {failed} 次',
@@ -476,6 +486,16 @@ const zh = {
   'detail.path': 'Agent 路径', 'detail.title': 'Agent 详情', 'detail.refresh': '刷新对话详情', 'detail.task': '任务', 'detail.agent': 'Agent', 'detail.interrupted': 'Agent · 已中断', 'detail.error': '执行错误', 'detail.incomplete': '执行未完成，请稍后重试。', 'detail.input': '输入', 'detail.output': '输出', 'detail.cacheRead': '缓存读取', 'detail.cacheWrite': '缓存写入', 'detail.total': 'Token 总量', 'detail.hitRate': '缓存命中率', 'detail.moreUsage': '用量详情', 'detail.unavailable': '未提供', 'detail.reading': '正在读取对话…', 'detail.read': '读取中…', 'detail.older': '加载更早记录', 'detail.latest': '回到最新', 'detail.empty': '暂无执行内容', 'detail.new': '有新内容 · 查看最新', 'detail.loadError': '对话详情读取失败', 'detail.connection': '连接中断，正在重连', 'detail.historyError': '历史记录读取失败', 'detail.open': '展开全文', 'detail.noAccess': '无法打开详情，请重试', 'tree.loadError': '部分执行记录读取失败，请刷新重试', 'detail.unknown': '用量未知', 'main.agent': '主 Agent', 'tree.open': '点击查看详情', 'tree.expand': '展开', 'tree.collapse': '收起', 'image': '[图片]'
 }
 const en = {
+  'directory.title': 'Working directory unavailable', 'directory.switch': 'Change working directory',
+  'directory.explain': 'This conversation’s directory was removed or is no longer a folder. Choose another directory to continue in a new conversation with completed history. The original is kept; no question is resent automatically.',
+  'directory.choose': 'Choose another directory…', 'directory.continue': 'Continue here', 'directory.failed': 'The directory operation failed. Please retry.',
+  'directory.WORKBENCH_DIRECTORY_BUSY': 'This conversation is still running. Stop it or wait for the reply to finish, then retry.',
+  'directory.WORKBENCH_DIRECTORY_STALE': 'This conversation has new records. Review and retry.',
+  'directory.WORKBENCH_DIRECTORY_TARGET': 'The chosen directory does not exist. Choose another.',
+  'directory.WORKBENCH_DIRECTORY_AVAILABLE': 'The original directory is available again. Return to continue there.',
+  'directory.WORKBENCH_DIRECTORY_CHILD': 'Change the directory from the main conversation.',
+  'directory.WORKBENCH_DIRECTORY_PRESET': 'The current preset is unavailable. Repair it first.',
+  'directory.WORKBENCH_DIRECTORY_UNSUPPORTED': 'This host cannot continue with preserved history.',
   'feedback.title': 'Tasks',
   'feedback.tools': 'Tool call summary',
   'feedback.toolCount': '{tool}: {ok} succeeded, {failed} failed',
@@ -1373,7 +1393,12 @@ function SuperCodeWorkspace(props) {
       return active === section ? React.createElement(section === 'tasks' ? TaskFeedback : section === 'tree' ? AgentTree : MemoryLibrary, { ...props, key: section, onToggle })
         : React.createElement('header', { key: section + '-collapsed', className: 'dsh-super-code-workspace-collapsed' },
           React.createElement(WorkspaceSectionToggle, { section, expanded: false, onToggle, t: props.t }))
-    })))
+    })), props.workbenchUi && React.createElement(WorkspaceFileChanges, props))
+}
+
+function WorkspaceFileChanges({ useSessions, sessionId, workbenchUi, workbenchRemote }) {
+  const revision = useSessions(state => state)
+  return React.createElement(workbenchUi.Changes, { remote: workbenchRemote, sessionId, revision })
 }
 
 function AgentCatalogWatch({ id, watchCatalog }) {
@@ -2784,6 +2809,86 @@ function DirectoryBrowser({ api, t, onSelect, onClose }) {
       React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-primary-button', disabled: busy || error || !listing,
         onClick: () => onSelect(listing.path) }, t('connection.selectDirectory'))))
 }
+function DirectoryRecovery({ sessionId, useSessions, api, directoryApi, openSession, t }) {
+  const revision = useSessions(state => state.byId[sessionId])
+  const [info, setInfo] = useState(null), [open, setOpen] = useState(false), [choices, setChoices] = useState(null)
+  const [selected, setSelected] = useState(''), [busy, setBusy] = useState(false), [browser, setBrowser] = useState(false), [error, setError] = useState('')
+  const dialog = useRef(null), lifetime = useRef(null), dismissed = useRef(false), checking = useRef(null)
+  const check = async () => {
+    if (checking.current || !lifetime.current) return
+    const signal = lifetime.current.signal
+    const request = api.directory(sessionId, signal); checking.current = request
+    try {
+      const result = await request
+      if (signal.aborted || !result.ok) return
+      setInfo(result.value)
+      if (result.value.state === 'missing' && !dismissed.current) { dismissed.current = true; setOpen(true) }
+      if (result.value.state !== 'missing') { dismissed.current = false; setOpen(false) }
+    } finally { if (checking.current === request) checking.current = null }
+  }
+  useEffect(() => {
+    lifetime.current = new AbortController(); dismissed.current = false
+    setInfo(null); setSelected(''); setChoices(null); setError(''); setBusy(false); setOpen(false); setBrowser(false)
+    const refresh = () => { void check().catch(() => {}) }
+    refresh(); window.addEventListener('focus', refresh)
+    return () => { lifetime.current?.abort(); lifetime.current = null; checking.current = null; window.removeEventListener('focus', refresh) }
+  }, [sessionId, api])
+  useEffect(() => { const timer = setTimeout(() => { void check().catch(() => {}) }, 500); return () => clearTimeout(timer) }, [revision, sessionId, api])
+  useEffect(() => {
+    if (!open) return
+    const element = dialog.current; element.showModal()
+    let active = true
+    directoryApi.directories().then(result => {
+      if (!active) return
+      if (result.ok) setChoices(result.value); else setError(t('directory.failed'))
+    }).catch(() => { if (active) setError(t('directory.failed')) })
+    return () => { active = false; if (element.open) element.close() }
+  }, [open, directoryApi])
+  const choose = async () => {
+    if (choices?.picker === 'browse') { setBrowser(true); return }
+    const signal = lifetime.current.signal
+    setBusy(true); setError('')
+    try {
+      const result = await directoryApi.pickDirectory(signal)
+      if (signal.aborted) return
+      if (!result.ok) throw new Error()
+      if (result.value.kind === 'selected') setSelected(result.value.path)
+    } catch { if (!signal.aborted) setError(t('directory.failed')) } finally { if (!signal.aborted) setBusy(false) }
+  }
+  const recover = async () => {
+    const signal = lifetime.current.signal
+    setBusy(true); setError('')
+    try {
+      const result = await api.recoverDirectory(sessionId, JSON.stringify({ path: selected, sequence: info.sequence }), signal)
+      if (signal.aborted) return
+      if (!result.ok) throw new Error(result.error?.message || '')
+      await openSession(result.value.sessionId); setOpen(false)
+    } catch (failure) {
+      if (signal.aborted) return
+      const code = /WORKBENCH_DIRECTORY_[A-Z_]+/.exec(failure.message)?.[0]
+      setError(code ? t(`directory.${code}`) : t('directory.failed')); await check()
+    } finally { if (!signal.aborted) setBusy(false) }
+  }
+  if (info?.state !== 'missing') return null
+  return React.createElement('div', { className: 'dsh-super-code-directory-recovery' },
+    React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-view-button', title: t('directory.switch'), onClick: () => { setError(''); setOpen(true) } }, t('directory.switch')),
+    open && React.createElement('dialog', { ref: dialog, className: 'dsh-super-code-confirm', 'aria-labelledby': `super-code-directory-recovery-${sessionId}`,
+      onCancel: event => { event.preventDefault(); if (!busy) setOpen(false) }, onKeyDown: event => event.stopPropagation() },
+      React.createElement('h3', { id: `super-code-directory-recovery-${sessionId}` }, t('directory.title')),
+      React.createElement('p', null, t('directory.explain')), React.createElement('code', { className: 'dsh-super-code-directory-path' }, info.cwd),
+      React.createElement('div', { className: 'dsh-super-code-directory-options' },
+        (choices?.items || []).filter(item => item.available).map(item => React.createElement('label', { key: item.path },
+          React.createElement('input', { type: 'radio', name: `directory-${sessionId}`, value: item.path, checked: selected === item.path, disabled: busy, onChange: () => setSelected(item.path) }),
+          React.createElement('span', null, item.title || item.path))),
+        selected && !choices?.items.some(item => item.path === selected) && React.createElement('code', null, selected)),
+      React.createElement(ActionButton, { type: 'button', disabled: busy || !choices || choices.picker === 'unavailable', onClick: () => { void choose() } }, t('directory.choose')),
+      error && React.createElement('p', { role: 'alert' }, error),
+      React.createElement('div', { className: 'dsh-super-code-confirm-actions' },
+        React.createElement(ActionButton, { type: 'button', disabled: busy, onClick: () => setOpen(false) }, t('preset.cancel')),
+        React.createElement(ActionButton, { type: 'button', disabled: busy || !selected, className: 'dsh-super-code-primary-button', onClick: () => { void recover() } }, t('directory.continue')))),
+    browser && React.createElement(DirectoryBrowser, { api: directoryApi, t, onClose: () => setBrowser(false), onSelect: path => { setSelected(path); setBrowser(false) } }))
+}
+
 function connectionSessions(overview) {
   const online = new Set(overview.connections.map(row => row.id)), connected = [], history = []
   for (const row of overview.sessions) (row.connectionId && online.has(row.connectionId) ? connected : history).push(row)
@@ -3303,7 +3408,7 @@ const inject = [
   'sidebarRightTabs', 'sidebarRight',
 ]
 
-function apply(ctx, extraRemoteDescriptors = [], workbenchPreference) {
+function apply(ctx, extraRemoteDescriptors = [], workbenchPreference, workbenchUi) {
   const locale = ctx.locale || { register: () => () => {}, bind: () => key => zh[key] || key }
   ctx.effect(() => locale.register(LOCALE_NS, { zh, en }), 'dsh-super-code: dictionaries')
   const t = locale.bind(LOCALE_NS)
@@ -3334,6 +3439,12 @@ function apply(ctx, extraRemoteDescriptors = [], workbenchPreference) {
       inject: () => ({ api: ready.remote.superCodeConnection }),
     }, ConnectionConsent))
   })
+  if (workbenchUi) ctx.inject(['remote.superCodeWorkbench', 'remote.superCodeConnection'], ready => {
+    ready.slots.inject('conversation.session.header.actions', () => ready.slots.register({
+      name: 'conversation.session.header.actions', id: 'super-code-directory-recovery', order: 140, locale: LOCALE_NS,
+      inject: () => ({ api: ready.remote.superCodeWorkbench, directoryApi: ready.remote.superCodeConnection, openSession: id => navigation.openSession(id) }),
+    }, DirectoryRecovery))
+  })
   // Locale already requires its host's preference service. Declare that same
   // service here: Cordis rejects even optional reads without an injection.
   const preferenceService = 'configForms' in ctx ? 'configForms' : 'settingsScope'
@@ -3356,7 +3467,7 @@ function apply(ctx, extraRemoteDescriptors = [], workbenchPreference) {
     style.dataset.dshSuperCode = 'true'
     style.textContent = `
 /* Host aliases remain the source of theme colors. */
-:where(.dsh-super-code-workspace,.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-detail,.dsh-super-code-memory,.dsh-super-code-confirm,.dsh-super-code-select,.dsh-super-code-tooltip){
+:where(.dsh-super-code-workspace,.dsh-super-code-settings,.dsh-super-code-tree,.dsh-super-code-detail,.dsh-super-code-memory,.dsh-super-code-confirm,.dsh-super-code-select,.dsh-super-code-tooltip,.dsh-super-code-directory-recovery){
   --sc-text:var(--dsw-alias-label-primary,#242831);
   --sc-muted:var(--dsw-alias-label-secondary,#6a707a);
   --sc-faint:var(--dsw-alias-label-tertiary,#818793);
@@ -3657,8 +3768,11 @@ function apply(ctx, extraRemoteDescriptors = [], workbenchPreference) {
 .dsh-super-code-confirm .dsh-super-code-confirm-empty{padding:20px 16px;background:var(--sc-surface);border-radius:12px}
 
 /* Exactly one section fills the pane; the other keeps its clickable heading. */
-.dsh-super-code-workspace{height:100%;min-height:0;overflow:auto;background:var(--sc-bg)}
-.dsh-super-code-workspace-layout{display:grid;height:100%;min-height:368px;min-width:0}
+.dsh-super-code-workspace{height:100%;min-height:0;overflow:auto;background:var(--sc-bg);display:flex;flex-direction:column}
+.dsh-super-code-workspace-layout{display:grid;flex:1;min-height:368px;min-width:0}
+.dsh-super-code-workspace>.sc-wb-changes{flex:0 0 210px;min-height:140px;max-height:32%;--wb-bg:var(--sc-bg);--wb-surface:var(--sc-surface);--wb-text:var(--sc-text);--wb-muted:var(--sc-muted);--wb-line:var(--sc-line);--wb-accent:var(--sc-accent);background:var(--sc-bg)}
+.dsh-super-code-directory-options{display:flex;flex-direction:column;gap:10px;max-height:180px;overflow:auto;margin:12px 0;font-size:12px}
+.dsh-super-code-directory-options>label{display:flex;gap:8px;align-items:center;overflow-wrap:anywhere}
 .dsh-super-code-workspace-collapsed{display:flex;align-items:center;border-block:1px solid var(--sc-line);background:var(--sc-bg);padding:0 12px}
 .dsh-super-code-section-toggle{display:flex;align-items:center;gap:6px;flex:1;min-width:0;width:100%;min-height:36px;border:0;border-radius:6px;background:transparent;padding:6px 8px;text-align:left}
 .dsh-super-code-section-toggle>.dsh-super-code-tree-count{margin-left:auto}
@@ -4063,12 +4177,13 @@ function apply(ctx, extraRemoteDescriptors = [], workbenchPreference) {
   ctx.slots.inject('sidebar.right.pane.tab', () => ctx.slots.register({
     name: 'sidebar.right.pane.tab', key: 'dsh-super-code-detail', locale: LOCALE_NS, inject: () => ({ ...detailActions }),
   }, AgentDetail))
-  ctx.inject(['remote.superCodeMemory'], ready => {
+  ctx.inject(['remote.superCodeMemory', ...(workbenchUi ? ['remote.superCodeWorkbench'] : [])], ready => {
     ready.slots.inject('sidebar.right.pane.tab', function* () {
       // The hidden legacy key restores old memory tabs and resource URLs.
       for (const key of [treeId, 'dsh-super-code-memory']) yield ready.slots.register({
         name: 'sidebar.right.pane.tab', key, locale: LOCALE_NS,
-        inject: () => ({ ...treeActions, api: ready.remote.superCodeMemory, memoryStates, workspaceStates }),
+        inject: () => ({ ...treeActions, api: ready.remote.superCodeMemory, memoryStates, workspaceStates,
+          workbenchUi, workbenchRemote: workbenchUi ? ready.remote.superCodeWorkbench : undefined }),
       }, SuperCodeWorkspace)
     })
   })

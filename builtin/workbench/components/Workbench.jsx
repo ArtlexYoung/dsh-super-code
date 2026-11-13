@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import { openSearchPanel } from '@codemirror/search';
 import { startCompletion } from '@codemirror/autocomplete';
@@ -11,6 +11,8 @@ import { message } from '../locales.js';
 import { ReadingPanel } from '../reading/Panel.jsx';
 import { Splitter } from './Splitter.jsx';
 import { readLayout, saveLayout } from '../layout.js';
+import { FileList } from '../git/FileList.jsx';
+import { FileChanges } from '../git/Changes.jsx';
 
 function Directory({ path = '', snapshot, workbench, Button, t }) {
   const [open, setOpen] = useState(path === '');
@@ -52,6 +54,7 @@ export function Workbench({ workbench, Button, Select, MarkdownText, t }) {
   }, [workbench]);
   useEffect(() => { if (layout.learningOpen) void workbench.reading.verify(); }, [workbench, layout.learningOpen]);
   const current = snapshot.tabs.find(item => item.path === snapshot.file), panel = snapshot.panel;
+  const symbols = useMemo(() => snapshot.symbols.map(symbol => ({ key: symbol.offset, symbol })), [snapshot.symbols]);
   const action = callback => () => { Promise.resolve().then(callback).catch(workbench.fail); };
   return <section className={`sc-workbench sc-wb-main${layout.learningOpen ? ' sc-reading-main' : ''}`} data-conversation-composer-overlay="" data-palette={snapshot.preferences.palette} aria-label={t('title')}
     style={{ '--wb-explorer-width': `${layout.explorer}px`, '--wb-reading-width': `${layout.reading}px` }}
@@ -81,7 +84,8 @@ export function Workbench({ workbench, Button, Select, MarkdownText, t }) {
       <div className="sc-wb-section"><strong>{t('files')}</strong><small>{snapshot.indexing ? t('indexing') : snapshot.indexed}</small></div>
       <div className="sc-wb-file-list"><Directory snapshot={snapshot} workbench={workbench} Button={Button} t={t} /></div>
       <div className="sc-wb-section"><strong>{t('symbols')}</strong><small>{snapshot.symbols.length}</small></div>
-      <div className="sc-wb-outline">{snapshot.symbols.map(item => <Button key={item.offset} title={item.declaration} className="sc-wb-file" onClick={action(() => workbench.visit(item))}><i aria-hidden>{item.kind === 'function' ? 'ƒ' : 'v'}</i><span>{item.name}</span><small>{item.line + 1}</small></Button>)}</div>
+      <FileList className="sc-wb-outline" items={symbols} rowHeight={27}>{({ symbol: item }) => <Button title={item.declaration} className="sc-wb-file" onClick={action(() => workbench.visit(item))}><i aria-hidden>{item.kind === 'function' ? 'ƒ' : 'v'}</i><span>{item.name}</span><small>{item.line + 1}</small></Button>}</FileList>
+      <FileChanges workbench={workbench} Button={Button} Select={Select} t={t} palette={snapshot.preferences.palette} />
     </aside><Splitter panel="explorer" label={t('resizeExplorer')} value={layout.explorer} ratio={layout.learningOpen ? .3 : .4}
       change={value => changeLayout({ explorer: value })} commit={persistLayout} /><main className="sc-wb-code">
       <nav className="sc-wb-tabs" aria-label={t('files')}>{snapshot.tabs.map(item => <Button key={item.path} aria-current={snapshot.file === item.path ? 'page' : undefined} title={item.path} onClick={action(() => workbench.visit({ file: item.path }))}>{item.path.split('/').at(-1)}{item.dirty && <i aria-label={t('unsaved')}>•</i>}</Button>)}</nav>

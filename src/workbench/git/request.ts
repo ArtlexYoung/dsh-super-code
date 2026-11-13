@@ -12,7 +12,8 @@ const author = z.object({ name: z.string().trim().min(1).max(256).refine(value =
 
 export const gitRequestSchema: z.ZodType<GitRequest> = z.discriminatedUnion('action', [
   z.object({ action: z.literal('status') }).strict(),
-  z.object({ action: z.literal('diff'), path, side: z.enum(['worktree', 'staged']), version }).strict(),
+  z.object({ action: z.literal('diff'), path, side: z.enum(['worktree', 'staged', 'total']), version }).strict(),
+  z.object({ action: z.literal('stats'), paths: paths.max(64), version }).strict(),
   z.object({ action: z.literal('init'), branch }).strict(),
   z.object({ action: z.literal('stage'), paths, version }).strict(),
   z.object({ action: z.literal('unstage'), paths, version }).strict(),
@@ -30,7 +31,8 @@ export const gitRequestSchema: z.ZodType<GitRequest> = z.discriminatedUnion('act
 
 export type GitRequest =
   | { action: 'status' }
-  | { action: 'diff'; path: string; side: 'worktree' | 'staged'; version: string }
+  | { action: 'diff'; path: string; side: 'worktree' | 'staged' | 'total'; version: string }
+  | { action: 'stats'; paths: string[]; version: string }
   | { action: 'init'; branch: string }
   | { action: 'stage' | 'unstage'; paths: string[]; version: string }
   | { action: 'commitFiles'; oid: string; version: string }
@@ -54,7 +56,8 @@ export interface GitDiff {
   path: string; binary: boolean; before: string; after: string
   lines: { kind: 'context' | 'added' | 'removed'; text: string; before: number | null; after: number | null }[]
 }
-export type GitResult = { kind: 'state'; state: GitState } | { kind: 'diff'; diff: GitDiff } | { kind: 'commitFiles'; oid: string; files: string[] }
+export interface GitStat { path: string; added: number; removed: number; binary: boolean; limited?: boolean }
+export type GitResult = { kind: 'state'; state: GitState } | { kind: 'diff'; diff: GitDiff } | { kind: 'commitFiles'; oid: string; files: string[] } | { kind: 'stats'; version: string; stats: GitStat[] }
 
 export function remoteUrl(value: string, native = false): string {
   if (native && /^[\w.-]+@[\w.-]+:[^\s\0]+$/.test(value)) return value

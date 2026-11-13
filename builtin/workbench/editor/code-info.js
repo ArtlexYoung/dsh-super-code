@@ -4,9 +4,23 @@ import { classHighlighter, highlightCode } from '@lezer/highlight';
 import { loadLanguage } from './languages.js';
 
 export function wordAt(source, pos) {
-  const before = /[\p{L}\p{N}_$]+$/u.exec(source.slice(0, pos))?.[0] || '';
-  const after = /^[\p{L}\p{N}_$]*/u.exec(source.slice(pos))[0];
-  return { word: before + after, from: pos - before.length, to: pos + after.length };
+  const slice = (from, to) => typeof source === 'string' ? source.slice(from, to) : source.sliceString(from, to);
+  let from = pos, to = pos;
+  while (from > 0) {
+    let start = Math.max(0, from - 128);
+    if (start && /[\uDC00-\uDFFF]/.test(slice(start, start + 1))) start--;
+    const chunk = slice(start, from), word = /[\p{L}\p{N}_$]+$/u.exec(chunk)?.[0] || '';
+    from -= word.length;
+    if (word.length < chunk.length) break;
+  }
+  while (to < source.length) {
+    let end = Math.min(source.length, to + 128);
+    if (end < source.length && /[\uD800-\uDBFF]/.test(slice(end - 1, end))) end++;
+    const chunk = slice(to, end), word = /^[\p{L}\p{N}_$]*/u.exec(chunk)[0];
+    to += word.length;
+    if (word.length < chunk.length) break;
+  }
+  return { word: slice(from, to), from, to };
 }
 
 function node(tag, text, className) {
@@ -50,11 +64,11 @@ export function symbolCard(item, language, t) {
 
 export function signatureTooltip(request, getFile, t) {
   return hoverTooltip(async (view, pos, side) => {
-    const state = view.state, source = state.doc.toString(), file = getFile();
-    const word = wordAt(source, pos);
+    const state = view.state, file = getFile();
+    const word = wordAt(state.doc, pos);
     if (!word.word || pos === word.from && side < 0 || pos === word.to && side > 0) return null;
     if (state.selection.ranges.some(range => !range.empty && range.from < word.to && range.to > word.from)) return null;
-    const symbols = await request('definition', { file, text: source, word: word.word });
+    const symbols = await request('definition', { file, text: state.doc.toString(), word: word.word });
     const languages = await Promise.all(symbols.map(async item => {
       const support = await loadLanguage(item.file); return support.language || support;
     }));

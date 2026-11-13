@@ -6,20 +6,24 @@ import { wordAt } from './editor/code-info.js';
 import { createSelectionAssistant } from './assistant/controller.js';
 import { message, errorText } from './locales.js';
 import { createReading } from './reading/controller.js';
+import { createAnalyzer } from './analysis/background.js';
+import { createBuffer } from './buffer.js';
+import { createChanges } from './git/changes.js';
 
 const INDEX_BYTES = 16 * 1024 * 1024;
 const STORAGE_KEY = 'dsh-super-code-workbench';
 
 export function createWorkbench(api, t) {
-  const index = new SymbolIndex(), documents = new Map(), subscribers = new Set(), directories = new Map();
+  const analyzer = createAnalyzer(), index = new SymbolIndex(analyzer.analyze), documents = new Map(), subscribers = new Set(), directories = new Map();
   let editor, current = null, generation = 0, opening, scanning, timer, preferences = defaults(), disposed = false;
   let history = [], at = -1, moving = false, navigation = Promise.resolve();
   let snapshot = { file: null, tabs: [], directories, symbols: [], cursor: null, status: t('ready'), error: '', preferences, panel: null, assistant: null, indexing: false, indexed: 0, back: false, forward: false };
   const publish = patch => { if (disposed) return; snapshot = { ...snapshot, ...patch }; for (const listener of subscribers) listener(); };
-  const fail = error => { publish({ error: errorText(error, t) }); };
-  const tabs = () => [...documents].map(([path, doc]) => ({ path, dirty: doc.text !== doc.original }));
+  const fail = error => { if (error.name !== 'AbortError') publish({ error: errorText(error, t) }); };
+  const tabs = () => [...documents].map(([path, doc]) => ({ path, dirty: doc.dirty }));
   const assistant = createSelectionAssistant({ editor: { file: () => current, view: () => editor?.view }, api, t, changed: value => publish({ assistant: value }) });
   const reading = createReading({ api, documents, currentFile: () => current, visit, t, locale: () => t('readingLanguage') });
+  const changes = createChanges(api.git, error => errorText(error, t));
 
   function position() {
     const view = editor?.view;
@@ -42,9 +46,9 @@ export function createWorkbench(api, t) {
   function changed(update) {
     if (update.docChanged) {
       const doc = documents.get(current);
-      doc.text = update.state.doc.toString(); doc.state = update.state;
+      doc.state = update.state;
       reading.changed(current);
-      publish({ tabs: tabs(), status: doc.text === doc.original ? t('saved') : t('unsaved') });
+      publish({ tabs: tabs(), status: doc.dirty ? t('unsaved') : t('saved') });
       clearTimeout(timer); timer = setTimeout(() => { void updateIndex().catch(fail); }, 180);
     }
     if (update.docChanged || update.selectionSet) cursor();
@@ -66,15 +70,16 @@ export function createWorkbench(api, t) {
       if (!doc) {
         const result = await api.read(file, opening.signal);
         if (turn !== generation) return false;
-        doc = { ...result, original: result.text, state: null }; documents.set(file, doc);
+        doc = createBuffer(result); documents.set(file, doc);
       }
       const state = await editor.state(file, doc.text, preferences, doc.state);
       if (turn !== generation) return false;
       if (current) documents.get(current).state = editor.view.state;
+      doc.state = state;
       assistant.switchFile(); current = file; editor.show(state); editor.preferences(preferences);
-      await updateIndex(file);
+      void updateIndex(file).catch(fail);
       if (turn !== generation || !editor) return false;
-      publish({ file, tabs: tabs(), status: doc.text === doc.original ? t('saved') : t('unsaved') });
+      publish({ file, tabs: tabs(), status: doc.dirty ? t('unsaved') : t('saved') });
     }
     const view = editor.view, line = view.state.doc.line(Math.min((target.line ?? 0) + 1, view.state.doc.lines));
     const from = Math.min(line.to, line.from + (target.character ?? 0));
@@ -161,11 +166,12 @@ export function createWorkbench(api, t) {
     const result = await api.save({ path: current, text: doc.text, version: doc.version });
     doc.original = result.text; doc.version = result.version;
     publish({ tabs: tabs(), status: doc.text === doc.original ? t('saved') : t('unsaved'), error: '' });
+    changes.invalidate();
   }
   async function definition() {
     if (!current) return;
     await updateIndex();
-    const view = editor.view, offset = view.state.selection.main.head, { word } = wordAt(view.state.doc.toString(), offset);
+    const view = editor.view, offset = view.state.selection.main.head, { word } = wordAt(view.state.doc, offset);
     if (!word) return;
     const result = index.navigate(current, word, offset);
     if (result.kind === 'definitions' && result.matches.length === 1) await visit(result.matches[0]);
@@ -177,7 +183,8 @@ export function createWorkbench(api, t) {
   }
   return {
     subscribe(listener) { subscribers.add(listener); return () => subscribers.delete(listener); },
-    snapshot: () => snapshot, documents, index, assistant, reading, t, git: api.git,
+    snapshot: () => snapshot, documents, index, assistant, reading, changes, t,
+    async git(input, signal) { const result = await api.git(input, signal); changes.accept(result); return result; },
     async attach(parent, tooltipParent) {
       try { const saved = localStorage.getItem(STORAGE_KEY); if (saved) preferences = readPreferences(JSON.parse(saved)); }
       catch { publish({ error: t('settingInvalid') }); }
@@ -190,8 +197,8 @@ export function createWorkbench(api, t) {
       if (current) { const target = history[at] || { file: current }; current = null; await display(target); }
       if (editor === attached) await refresh();
     },
-    detach() { opening?.abort(); scanning?.abort(); generation++; clearTimeout(timer); assistant.switchFile(); if (current && editor?.view) documents.get(current).state = editor.view.state; editor?.dispose(); editor = null; },
-    dispose() { this.detach(); disposed = true; assistant.dispose(); reading.dispose(); documents.clear(); index.clear(); subscribers.clear(); },
+    detach() { opening?.abort(); scanning?.abort(); generation++; clearTimeout(timer); assistant.switchFile(); analyzer.dispose(); if (current && editor?.view) documents.get(current).state = editor.view.state; editor?.dispose(); editor = null; },
+    dispose() { this.detach(); disposed = true; assistant.dispose(); reading.dispose(); changes.dispose(); documents.clear(); index.clear(); subscribers.clear(); },
     visit, move, list, refresh, save, settings, definition, fail,
     view: () => editor?.view,
     panel(value) { publish({ panel: value }); },

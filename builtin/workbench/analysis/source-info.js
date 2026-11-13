@@ -5,6 +5,24 @@ const bodies = /^(?:Block|CompoundStatement|Body|ConstructorBody)$/;
 const ignored = /^(?:LineComment|BlockComment|Comment|String|StringLiteral|RawString|CharLiteral|CharacterLiteral|RegExp|comment|string(?:\..*)?)$/;
 const interpolations = { TemplateString: 'Interpolation', FormatString: 'FormatReplacement' };
 
+export function lineAt(starts, offset) {
+  let low = 0, high = starts.length;
+  while (low + 1 < high) {
+    const middle = (low + high) >>> 1;
+    if (starts[middle] <= offset) low = middle; else high = middle;
+  }
+  return low;
+}
+
+export function excludedAt(ranges, offset) {
+  let low = 0, high = ranges.length;
+  while (low < high) {
+    const middle = (low + high) >>> 1;
+    if (ranges[middle].to <= offset) low = middle + 1; else high = middle;
+  }
+  return ranges[low]?.from <= offset;
+}
+
 export async function parseSource(file, text) {
   const support = await loadLanguage(file);
   const language = support.language || support;
@@ -44,9 +62,9 @@ export function sourceSignature(text, symbol, parsed) {
   }
   // 旧语言模式只提供着色标记，保留源码声明头，不猜测缺少的类型。
   const lineStart = text.lastIndexOf('\n', symbol.offset - 1) + 1;
-  const lines = text.slice(lineStart).split('\n');
   let header = '', depth = 0;
-  for (const line of lines) {
+  for (let from = lineStart; from < text.length;) {
+    const end = text.indexOf('\n', from), line = text.slice(from, end < 0 ? text.length : end);
     for (let column = 0; column < line.length; column++) {
       const character = line[column];
       if (character === '(') depth++;
@@ -54,7 +72,8 @@ export function sourceSignature(text, symbol, parsed) {
       if (character === '{' && depth === 0) return (header + line.slice(0, column)).trim();
     }
     header += (header ? '\n' : '') + line.trim();
-    if (depth <= 0) break;
+    if (depth <= 0 || end < 0) break;
+    from = end + 1;
   }
   return header.replace(/;$/, '').trim();
 }
@@ -65,8 +84,13 @@ export function precedingComment(text, offset, parsed) {
   // export、装饰器和模板包装属于声明，不阻断紧邻的文档注释。
   for (let node = declaration?.parent; node && /^(?:ExportDeclaration|DecoratedStatement|TemplateDeclaration)$/.test(node.name); node = node.parent) start = node.from;
   const parts = [];
-  for (const range of [...parsed.excluded].reverse()) {
-    if (range.to > start) continue;
+  let low = 0, high = parsed.excluded.length;
+  while (low < high) {
+    const middle = (low + high) >>> 1;
+    if (parsed.excluded[middle].to <= start) low = middle + 1; else high = middle;
+  }
+  for (let index = low - 1; index >= 0; index--) {
+    const range = parsed.excluded[index];
     if (text.slice(range.to, start).trim()) break;
     if (range.kind !== 'comment') break;
     parts.unshift(text.slice(range.from, range.to)); start = range.from;

@@ -15,6 +15,8 @@ import type { WorkbenchGitResult } from './workbench-git.js'
 import { generateReading } from '../workbench/reading/generate.js'
 import { parseReadingRequest, MAX_READING_REQUEST_CHARS } from '../workbench/reading/types.js'
 import type { ReadingEvent } from '../workbench/reading/types.js'
+import { WorkbenchDirectory } from './workbench-directory.js'
+import type { DirectoryState } from './workbench-directory.js'
 
 const sessionSchema = z.string().min(1).max(256)
 const requestSchema = z.string().max(2 * 1024 * 1024 + 16000)
@@ -25,11 +27,16 @@ export class SuperCodeWorkbench extends TypertRemoteService {
   private readonly files: WorkbenchFiles
   private readonly lifetime = new AbortController()
   private readonly repository: WorkbenchGit
+  private directories?: WorkbenchDirectory
 
   constructor(ctx: Context) {
     super(ctx, 'superCodeWorkbench')
     this.files = new WorkbenchFiles(ctx.fs, id => this.rootOf(id))
     this.repository = new WorkbenchGit(ctx)
+    ctx.inject(['agents', 'sessionQuery', 'sessionController', 'agentPresets', ...['workspaceRegistry', 'subagents'].filter(key => key in ctx)], owner => {
+      const service = new WorkbenchDirectory(owner); this.directories = service
+      owner.effect(() => () => { if (this.directories === service) this.directories = undefined })
+    })
     ctx.effect(() => () => { this.lifetime.abort() })
   }
 
@@ -43,6 +50,13 @@ export class SuperCodeWorkbench extends TypertRemoteService {
   private async rootOf(sessionId: string): Promise<WorkbenchRoot> {
     const session = await this.sessionOf(sessionId)
     if (!session.header.cwd) throw new Error('WORKBENCH_WORKSPACE')
+    try {
+      const root = await this.ctx.fs.resolve(session.header.cwd)
+      if ((await this.ctx.fs.stat(root))?.type !== 'directory') throw new Error('WORKBENCH_DIRECTORY_MISSING')
+    } catch (error) {
+      if (['ENOENT', 'ENOTDIR', 'FS_NOT_FOUND'].includes((error as { code?: string }).code || '')) throw new Error('WORKBENCH_DIRECTORY_MISSING')
+      throw error
+    }
     return { cwd: session.header.cwd, policy: this.ctx.get('sandboxPolicy')?.resolve({ session }) }
   }
 
@@ -70,9 +84,24 @@ export class SuperCodeWorkbench extends TypertRemoteService {
   @Remote
   async project(sessionId: string, signal: AbortSignal): Promise<{ files: string[]; truncated: boolean }> { return this.files.project(sessionId, signal) }
 
+  @Remote
+  async directory(sessionId: string, signal: AbortSignal): Promise<DirectoryState> {
+    sessionSchema.parse(sessionId)
+    if (!this.directories) throw new Error('WORKBENCH_DIRECTORY_UNSUPPORTED')
+    return this.directories.status(sessionId, AbortSignal.any([signal, this.lifetime.signal]))
+  }
+
+  @Remote
+  async recoverDirectory(sessionId: string, content: string, signal: AbortSignal): Promise<{ sessionId: string }> {
+    sessionSchema.parse(sessionId)
+    if (!this.directories) throw new Error('WORKBENCH_DIRECTORY_UNSUPPORTED')
+    return this.directories.recover(sessionId, JSON.parse(z.string().max(32768).parse(content)), AbortSignal.any([signal, this.lifetime.signal]))
+  }
+
   @Remote({ mode: 'stream' })
   async *git(sessionId: string, content: string, signal: AbortSignal): AsyncGenerator<WorkbenchGitResult> {
     const session = await this.sessionOf(sessionId)
+    await this.rootOf(sessionId)
     const input: unknown = JSON.parse(z.string().parse(content))
     const combined = AbortSignal.any([signal, this.lifetime.signal, AbortSignal.timeout(5 * 60 * 1000)])
     yield await this.repository.execute(session, input, this.ctx.get('sandboxPolicy')?.resolve({ session }), combined)

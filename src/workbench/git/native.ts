@@ -8,6 +8,7 @@ import { textDiff } from './diff.js'
 import type { GitDiff } from './request.js'
 import { remoteUrl } from './request.js'
 import { MAX_FILE_BYTES } from '../files.js'
+import { updateFileVersions } from './version.js'
 
 export type ConfineGit = (argv: readonly string[], policy: SandboxExecutionPolicy, signal: AbortSignal) => readonly string[] | Promise<readonly string[]>
 interface CommandResult { code: number; stdout: Buffer; stderr: string }
@@ -108,24 +109,26 @@ export class NativeGit {
     hash.update(JSON.stringify([state.head, state.branch, state.branches, state.remoteBranches, state.remotes, state.merging]))
     hash.update(refs)
     for (const name of ['index', 'config', 'MERGE_HEAD']) hash.update(await fs.readFile(join(gitdir, name)).catch((error: NodeJS.ErrnoException) => { if (error.code === 'ENOENT') return Buffer.alloc(0); throw error }))
-    for (const file of state.changes) {
-      const info = await fs.lstat(join(this.root, file.path)).catch((error: NodeJS.ErrnoException) => { if (error.code === 'ENOENT') return null; throw error })
-      hash.update(JSON.stringify([file, info && [info.dev, info.ino, info.mode, info.size, info.mtimeMs, info.ctimeMs]]))
-    }
+    await updateFileVersions(hash, this.root, state.changes, path => fs.lstat(path), this.signal)
     state.version = hash.digest('hex'); return state
   }
 
-  async diff(file: string, side: 'staged' | 'worktree', state: GitState): Promise<GitDiff> {
+  async contents(file: string, side: 'staged' | 'worktree' | 'total', state: GitState): Promise<{ before: Buffer; after: Buffer }> {
     const entry = state.changes.find(change => change.path === file)
     if (!entry) throw new Error('WORKBENCH_GIT_STALE')
-    const staged = entry.conflict ? await this.blob(`HEAD:${file}`, true) : entry.stage ? await this.blob(`:${file}`) : Buffer.alloc(0)
-    const before = side === 'staged' ? entry.head ? await this.blob(`HEAD:${file}`) : Buffer.alloc(0) : staged
+    const staged = side === 'total' ? Buffer.alloc(0) : entry.conflict ? await this.blob(`HEAD:${file}`, true) : entry.stage ? await this.blob(`:${file}`) : Buffer.alloc(0)
+    const before = side === 'staged' || side === 'total' ? entry.head ? await this.blob(`HEAD:${file}`) : Buffer.alloc(0) : staged
     let after = staged
-    if (side === 'worktree') {
+    if (side !== 'staged') {
       const info = await fs.lstat(join(this.root, file)).catch((error: NodeJS.ErrnoException) => { if (error.code === 'ENOENT') return null; throw error })
       if (info && info.size > MAX_FILE_BYTES) throw new Error('WORKBENCH_FILE_SIZE')
       after = !info ? Buffer.alloc(0) : info.isSymbolicLink() ? Buffer.from(await fs.readlink(join(this.root, file))) : await fs.readFile(join(this.root, file))
     }
+    return { before, after }
+  }
+
+  async diff(file: string, side: 'staged' | 'worktree' | 'total', state: GitState): Promise<GitDiff> {
+    const { before, after } = await this.contents(file, side, state)
     return textDiff(file, before, after)
   }
 

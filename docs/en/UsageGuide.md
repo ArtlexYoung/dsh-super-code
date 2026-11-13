@@ -55,7 +55,7 @@ Before plugin 0.2.0, the settings page lives under **Plugins → Plugin configur
 
 Switching tabs keeps unsaved input.
 
-The separate **Settings → Code workbench** switch enables the conversation's **Code** page and is off by default. See [Code workbench](CodeWorkbench.md) for editing, navigation, and selection assistance.
+The separate **Settings → Code workbench** switch enables the conversation's **Code workbench** page and is off by default. See [Code workbench](CodeWorkbench.md) for editing, navigation, and selection assistance.
 
 ### Names and language
 

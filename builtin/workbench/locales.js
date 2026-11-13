@@ -1,12 +1,12 @@
 export const NS = 'dsh-super-code-workbench';
 export const zh = {
-  moduleTitle: '代码工作台', enable: '启用代码工作台', enableHint: '在对话和轨迹旁显示“代码”，打开项目文件并围绕选区提问或修改。',
+  moduleTitle: '代码工作台', enable: '启用代码工作台', enableHint: '在对话和轨迹旁显示“代码工作台”，打开项目文件并围绕选区提问或修改。',
   sourceLocation: '{file} · 第 {line} 行', space: '空格', syntaxKeyword: '语法关键词', basicType: '基础类型', functionTemplate: '函数模板',
   action_definition: '跳到定义', action_complete: '代码补全', action_find: '当前文件搜索', action_project: '全局搜索',
   action_back: '后退', action_forward: '前进', action_indent: '缩进／接受补全', action_outdent: '反缩进',
   action_undo: '撤销', action_redo: '重做', action_comment: '切换行注释', action_deleteLine: '删除当前行',
   WORKBENCH_PREFERENCES_INVALID: '编辑器设置格式无效', WORKBENCH_SHORTCUT_INVALID: '自定义快捷键无效', WORKBENCH_SHORTCUT_CONFLICT: '自定义快捷键有冲突，请恢复默认',
-  title: '代码', files: '文件', symbols: '文件结构', search: '全局搜索', settings: '编辑器设置', save: '保存', refresh: '刷新文件与索引',
+  title: '代码工作台', files: '文件', symbols: '文件结构', search: '全局搜索', settings: '编辑器设置', save: '保存', refresh: '刷新文件与索引',
   back: '后退', forward: '前进', definition: '定义与用法', complete: '代码补全', find: '文件内搜索', close: '关闭',
   pin: '固定', unpin: '取消固定', remove: '删除', maximize: '最大化', restore: '还原', center: '居中', collapse: '收起', expand: '展开',
   ask: '提问', edit: '修改', selectionAction: '提问 / 修改', selection: '所选代码', send: '发送', stop: '停止', question: '输入问题或修改要求…',
@@ -26,13 +26,13 @@ export const zh = {
   WORKBENCH_MODEL_INCOMPLETE: '模型未完整结束，本次结果未应用', WORKBENCH_MODEL_EMPTY: '模型没有返回回答', WORKBENCH_OUTPUT_SIZE: '模型输出过长，本次结果未应用',
 };
 export const en = {
-  moduleTitle: 'Code workbench', enable: 'Enable code workbench', enableHint: 'Show Code beside Conversation and Trajectory to edit project files and ask about selections.',
+  moduleTitle: 'Code workbench', enable: 'Enable code workbench', enableHint: 'Show Code workbench beside Conversation and Trajectory to edit project files and ask about selections.',
   sourceLocation: '{file} · Line {line}', space: 'Space', syntaxKeyword: 'Keyword', basicType: 'Primitive type', functionTemplate: 'Function snippet',
   action_definition: 'Go to definition', action_complete: 'Complete', action_find: 'Find in file', action_project: 'Project search',
   action_back: 'Back', action_forward: 'Forward', action_indent: 'Indent / Accept completion', action_outdent: 'Outdent',
   action_undo: 'Undo', action_redo: 'Redo', action_comment: 'Toggle line comment', action_deleteLine: 'Delete current line',
   WORKBENCH_PREFERENCES_INVALID: 'Invalid editor preferences', WORKBENCH_SHORTCUT_INVALID: 'Invalid custom shortcut', WORKBENCH_SHORTCUT_CONFLICT: 'Custom shortcuts conflict. Reset them to defaults.',
-  title: 'Code', files: 'Files', symbols: 'Outline', search: 'Project search', settings: 'Editor settings', save: 'Save', refresh: 'Refresh files and index',
+  title: 'Code workbench', files: 'Files', symbols: 'Outline', search: 'Project search', settings: 'Editor settings', save: 'Save', refresh: 'Refresh files and index',
   back: 'Back', forward: 'Forward', definition: 'Definitions and usages', complete: 'Complete', find: 'Find in file', close: 'Close',
   pin: 'Pin', unpin: 'Unpin', remove: 'Delete', maximize: 'Maximize', restore: 'Restore', center: 'Center', collapse: 'Collapse', expand: 'Expand',
   ask: 'Ask', edit: 'Edit', selectionAction: 'Ask / Edit', selection: 'Selected code', send: 'Send', stop: 'Stop', question: 'Ask about or request changes to this code…',

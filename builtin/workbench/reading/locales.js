@@ -1,5 +1,5 @@
 export const zh = {
-  readingTitle: '学习', readingLanguage: 'zh', readingEnable: '启用学习模式', readingEnableHint: '在对话旁显示“学习”，沿阅读路径理解项目，或直接查看当前代码的分段解释。',
+  readingTitle: '学习', readingLanguage: 'zh', readingOpen: '打开学习侧栏', readingClose: '收起学习侧栏',
   readingGoal: '阅读目标', readingGoalPlaceholder: '例如：一个请求从哪里进入，怎样处理并返回？', readingStart: '生成阅读路径', readingFile: '解释当前文件',
   readingFileGoal: '按完整逻辑段解释当前文件，说明每段的输入、处理、输出与边界，并交代关键概念如何协作。',
   readingOverviewGoal: '先了解这个项目的核心概念与运行过程', readingEmpty: '从代码里读懂一个过程', readingEmptyHint: '输入想弄懂的问题，或打开文件后直接阅读分段解释。',
@@ -13,7 +13,7 @@ export const zh = {
   READING_FORMAT: '模型未返回有效的阅读内容，请重试', READING_REQUEST: '阅读请求无效，请重新选择目标',
 };
 export const en = {
-  readingTitle: 'Learn', readingLanguage: 'en', readingEnable: 'Enable learning mode', readingEnableHint: 'Show Learn beside Conversation for guided source reading and explanations of the current file.',
+  readingTitle: 'Learn', readingLanguage: 'en', readingOpen: 'Open learning sidebar', readingClose: 'Hide learning sidebar',
   readingGoal: 'Reading goal', readingGoalPlaceholder: 'For example: where does a request enter, and how does it return?', readingStart: 'Create reading path', readingFile: 'Explain current file',
   readingFileGoal: 'Explain the current file in meaningful sections, covering inputs, processing, outputs, boundaries, and how the key concepts work together.',
   readingOverviewGoal: 'Understand this project’s core concepts and execution flow', readingEmpty: 'Follow the code to understand a process', readingEmptyHint: 'Enter a question, or open a file and read its explanation section by section.',

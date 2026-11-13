@@ -371,7 +371,8 @@ const zh = {
   'connection.rotated': '已更换凭证，请更新客户端。', 'connection.copied': '已复制。',
   'connection.error.unavailable': '连接服务尚未就绪或当前配置目录不可写，请重新读取。', 'connection.error.invalid': '请检查端口、最大连接数和目录。启用连接至少需要一个有效目录。', 'connection.error.new-conversation-disabled': 'MCP 新增对话已关闭，请选择已有对话继续。',
   'connection.error.conflict': '连接设置已在别处修改。草稿已保留，请重新读取。', 'connection.error.save-failed': '保存失败，草稿已保留。', 'connection.error.port-unavailable': '端口被占用或无法监听。请更换端口，或稍后重试。', 'connection.error.cleanup-failed': '设置已保存，但连接清理失败。请点击“重试”恢复连接。', 'connection.error.storage-unavailable': '任务状态保存失败，请检查配置目录。', 'connection.error.clipboard': '复制失败，请手动复制。',
-  'settings.contextTab': '上下文配置', 'settings.tabs': 'Super Code 配置',
+  'settings.contextTab': '上下文配置', 'settings.workbenchTab': '代码工作台', 'settings.tabs': 'Super Code 配置',
+  'workbench.enable': '启用代码工作台', 'workbench.hint': '在对话和轨迹旁打开项目代码、Git 与学习侧栏。', 'workbench.error': '代码工作台设置未能保存，请重试。',
   'budget.common': '通用预算', 'budget.superCode': 'Super Code 专属预算',
   'budget.applyToOfficialPresets': '同时应用到官方预设', 'budget.officialHint': '开启后，通用预算也用于标准、PTC、极简和创造模式；不包含下方的 Super Code 专属预算。',
   'budget.superCodeHint': '仅用于 Super Code 的任务记录和任务记忆，始终不影响官方预设。',
@@ -583,7 +584,8 @@ const en = {
   'connection.rotated': 'Token rotated. Update your client.', 'connection.copied': 'Copied.',
   'connection.error.unavailable': 'The service is not ready or the profile directory is not writable. Reload to retry.', 'connection.error.invalid': 'Check the port, maximum connections and directories. Enabling requires at least one valid directory.', 'connection.error.new-conversation-disabled': 'MCP new conversations are disabled. Choose an existing conversation to continue.',
   'connection.error.conflict': 'Connection settings changed elsewhere. Your draft is retained; reload to continue.', 'connection.error.save-failed': 'Save failed. Your draft is retained.', 'connection.error.port-unavailable': 'The port is occupied or cannot be opened. Choose another port or retry later.', 'connection.error.cleanup-failed': 'Settings were saved, but connection cleanup failed. Click Retry to restore the connection.', 'connection.error.storage-unavailable': 'Task state could not be saved. Check the profile directory.', 'connection.error.clipboard': 'Copy failed. Copy the text manually.',
-  'settings.contextTab': 'Context settings', 'settings.tabs': 'Super Code settings',
+  'settings.contextTab': 'Context settings', 'settings.workbenchTab': 'Code workbench', 'settings.tabs': 'Super Code settings',
+  'workbench.enable': 'Enable code workbench', 'workbench.hint': 'Open project code, Git and the learning sidebar beside Conversation and Trajectory.', 'workbench.error': 'Could not save code workbench settings. Try again.',
   'budget.common': 'Common budgets', 'budget.superCode': 'Super Code budgets',
   'budget.applyToOfficialPresets': 'Also apply to official presets', 'budget.officialHint': 'Apply common budgets to Standard, PTC, Minimal and Create. Super Code task and memory limits below remain exclusive to Super Code.',
   'budget.superCodeHint': 'Task records and task memory for Super Code. These limits never affect official presets.',
@@ -3118,7 +3120,16 @@ function ConnectionConsent({ api, t }) {
       React.createElement(ActionButton, { type: 'button', disabled: busy, className: 'dsh-super-code-primary-button', onClick: () => resolve('approved') }, t('connection.approveDirectory'))))
 }
 
-function PresetSettings({ api, budgetApi: budgets, connectionApi, connectionSettings, openSession = () => {}, t }) {
+function WorkbenchSettings({ preference, t }) {
+  const enabled = useSyncExternalStore(preference.subscribe, preference.snapshot)
+  const [error, setError] = useState(false)
+  return React.createElement(SettingsSection, { id: 'super-code-workbench-settings', title: t('settings.workbenchTab') },
+    React.createElement(SettingRow, { id: 'super-code-workbench-enabled', label: t('workbench.enable'), hint: t('workbench.hint'), error: error ? t('workbench.error') : '' },
+      described => React.createElement(ConnectionSwitch, { id: 'super-code-workbench-enabled', checked: enabled, 'aria-label': t('workbench.enable'), 'aria-describedby': described,
+        onChange: value => { try { preference.save(value); setError(false) } catch { setError(true) } } })))
+}
+
+function PresetSettings({ api, budgetApi: budgets, connectionApi, connectionSettings, workbenchPreference, openSession = () => {}, t }) {
   const [tab, setTab] = useState('home')
   const [status, setStatus] = useState(null), [customId, setCustomId] = useState(null)
   const reinstall = status?.reinstallable ?? status?.state === 'installed'
@@ -3188,7 +3199,7 @@ function PresetSettings({ api, budgetApi: budgets, connectionApi, connectionSett
   const versionProblem = Boolean(status) && status.state !== 'missing' && versionState !== 'match'
   const [overviewRevision, setOverviewRevision] = useState(0)
   const onSaved = () => setOverviewRevision(value => value + 1)
-  const tabs = ['home', 'preset', 'skills', 'context', 'protection', 'connection']
+  const tabs = ['home', 'preset', 'skills', ...(workbenchPreference ? ['workbench'] : []), 'context', 'protection', 'connection']
   return React.createElement('section', { className: 'dsh-super-code-settings' },
     React.createElement('div', { className: 'dsh-super-code-settings-tabs', role: 'tablist', 'aria-label': t('settings.tabs'), onKeyDown: event => {
       if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
@@ -3254,6 +3265,8 @@ function PresetSettings({ api, budgetApi: budgets, connectionApi, connectionSett
       React.createElement(BudgetSettings, { api: budgets, t, section: 'shell', active: tab === 'preset', onSaved })),
       React.createElement('div', { role: 'tabpanel', id: 'super-code-panel-skills', 'aria-labelledby': 'super-code-tab-skills', hidden: tab !== 'skills' },
         React.createElement(BudgetSettings, { api: budgets, t, section: 'skills', presetStatus: status, active: tab === 'skills', onSaved })),
+      workbenchPreference && React.createElement('div', { role: 'tabpanel', id: 'super-code-panel-workbench', 'aria-labelledby': 'super-code-tab-workbench', hidden: tab !== 'workbench' },
+        React.createElement(WorkbenchSettings, { preference: workbenchPreference, t })),
       React.createElement('div', { role: 'tabpanel', id: 'super-code-panel-context', 'aria-labelledby': 'super-code-tab-context', hidden: tab !== 'context' },
         React.createElement(BudgetSettings, { api: budgets, t, active: tab === 'context', onSaved })),
       React.createElement('div', { role: 'tabpanel', id: 'super-code-panel-protection', 'aria-labelledby': 'super-code-tab-protection', hidden: tab !== 'protection' },
@@ -3290,7 +3303,7 @@ const inject = [
   'sidebarRightTabs', 'sidebarRight',
 ]
 
-function apply(ctx, extraRemoteDescriptors = []) {
+function apply(ctx, extraRemoteDescriptors = [], workbenchPreference) {
   const locale = ctx.locale || { register: () => () => {}, bind: () => key => zh[key] || key }
   ctx.effect(() => locale.register(LOCALE_NS, { zh, en }), 'dsh-super-code: dictionaries')
   const t = locale.bind(LOCALE_NS)
@@ -3335,7 +3348,7 @@ function apply(ctx, extraRemoteDescriptors = []) {
       () => window.location.reload(), error => console.warn('Super Code preset display:', error), preferenceScope), 'super-code: preset display')
     ready.slots.inject('settings.section', () => ready.slots.register({
       name: 'settings.section', id: 'super-code', order: 120, label: () => t('preset.title'), locale: LOCALE_NS,
-      inject: () => ({ api: ready.remote.superCodePresets, budgetApi: budgets, connectionApi: ready.remote.superCodeConnection, connectionSettings: connections, openSession: id => navigation.openSession(id) }),
+      inject: () => ({ api: ready.remote.superCodePresets, budgetApi: budgets, connectionApi: ready.remote.superCodeConnection, connectionSettings: connections, workbenchPreference, openSession: id => navigation.openSession(id) }),
     }, PresetSettings))
   })
   ctx.effect(() => {
@@ -3417,7 +3430,7 @@ function apply(ctx, extraRemoteDescriptors = []) {
 .dsh-super-code-settings-guidance:empty{display:none}
 .dsh-super-code-settings-guidance{margin-top:20px;padding-top:12px;border-top:1px solid var(--sc-line);color:var(--sc-muted);font-size:12px}
 .dsh-super-code-settings-guidance p{margin:0 0 4px}
-.dsh-super-code-settings-tabs{display:flex;gap:24px;padding:0 24px;border-bottom:1px solid var(--sc-line)}
+.dsh-super-code-settings-tabs{display:flex;gap:24px;padding:0 24px;border-bottom:1px solid var(--sc-line);overflow-x:auto}
 .dsh-super-code-settings-tabs>[role=tab]{flex:none;border:0;border-bottom:2px solid transparent;background:none;color:var(--sc-muted);padding:12px 0;font-size:13px;cursor:pointer}
 .dsh-super-code-settings-tabs>[role=tab][aria-selected=true]{border-bottom-color:var(--sc-text);color:var(--sc-text);font-weight:600}
 .dsh-super-code-settings-tabs>[role=tab]:focus-visible{outline:2px solid var(--sc-active);outline-offset:3px;border-radius:2px}

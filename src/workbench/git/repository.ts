@@ -12,7 +12,6 @@ import { mergeHead, conflictPaths, mergeBranch, abortMerge, clearMerge } from '.
 import { detectGit, NativeGit } from './native.js'
 import type { ConfineGit } from './native.js'
 
-const MAX_CHANGES = 2000
 const { git, http } = library
 type Options = { fs: PromiseFsClient; dir: string }
 
@@ -29,7 +28,6 @@ async function snapshot(options: Options, writable: boolean): Promise<GitState> 
   if (dotgit) {
     const rows = await git.statusMatrix({ ...options, refresh: false })
     state.changes = rows.filter(([, head, worktree, stage]) => head !== worktree || head !== stage).map(([path, head, worktree, stage]) => ({ path, head, worktree, stage }))
-    if (state.changes.length > MAX_CHANGES) throw new Error('WORKBENCH_GIT_CHANGE_LIMIT')
     state.branch = await git.currentBranch(options) || null
     try { state.head = await git.resolveRef({ ...options, ref: 'HEAD' }) }
     catch (error) { if (!(error instanceof git.Errors.NotFoundError)) throw error }
@@ -109,7 +107,10 @@ export class GitRepository {
       return { kind: 'diff', diff: engine ? await engine.commitDiff(request.oid, request.path) : await commitDiff(options, request.oid, request.path) }
     }
     if (!state.writable) throw new Error('WORKBENCH_GIT_READONLY')
-    if ('paths' in request && request.paths.some(path => !state.changes.some(file => file.path === path))) throw new Error('WORKBENCH_GIT_STALE')
+    if ('paths' in request) {
+      const changed = new Set(state.changes.map(file => file.path))
+      if (request.paths.some(path => !changed.has(path))) throw new Error('WORKBENCH_GIT_STALE')
+    }
     if (engine) { await engine.mutate(request, state); return { kind: 'state', state: await read() } }
     // Native Git 同样尊重 index.lock，避免覆盖其他进程正在写入的暂存区。
     const lockPath = join(root, '.git/index.lock')
@@ -129,18 +130,17 @@ export class GitRepository {
   private async mutate(request: Exclude<GitRequest, { action: 'status' | 'diff' | 'init' | 'commitFiles' | 'historyDiff' }>, options: Options, state: GitState, signal: AbortSignal): Promise<void> {
     switch (request.action) {
       case 'stage': {
-        for (const path of request.paths) {
-          const file = state.changes.find(file => file.path === path)!
-          if (file.worktree === 0) await git.remove({ ...options, filepath: path })
-          else await git.add({ ...options, filepath: path })
-        }
+        const selected = new Set(request.paths)
+        const files = state.changes.filter(file => selected.has(file.path))
+        const removed = files.filter(file => file.worktree === 0).map(file => file.path)
+        const added = files.filter(file => file.worktree !== 0).map(file => file.path)
+        if (removed.length) await git.remove({ ...options, filepath: removed })
+        if (added.length) await git.add({ ...options, filepath: added })
         return
       }
       case 'unstage':
-        for (const path of request.paths) {
-          if (state.head) await git.resetIndex({ ...options, filepath: path })
-          else await git.remove({ ...options, filepath: path })
-        }
+        if (!state.head) await git.remove({ ...options, filepath: request.paths })
+        else for (const path of request.paths) await git.resetIndex({ ...options, filepath: path })
         return
       case 'commit': {
         if (!state.merging && !state.changes.some(file => file.head !== file.stage)) throw new Error('WORKBENCH_GIT_EMPTY_COMMIT')

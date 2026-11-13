@@ -25,15 +25,20 @@ test('模块开关写入失败时保留之前的有效状态', () => {
   assert.equal(preference.snapshot(), false)
 })
 
-test('学习与编辑器开关独立，其他窗口的更新不串用设置', () => {
+test('旧学习开关迁移到统一工作台，关闭后不会被旧开关重新开启', () => {
   const data = new Map<string, string>(), storage = { getItem: (key: string) => data.get(key), setItem: (key: string, value: string) => data.set(key, value) }
-  const editor = createWorkbenchPreference(storage), reading = createWorkbenchPreference(storage, 'dsh-super-code-reading-enabled')
-  assert.equal(reading.snapshot(), false)
-  reading.save(true); assert.equal(editor.snapshot(), false)
-  data.set('dsh-super-code-reading-enabled', 'false')
-  editor.refresh({ key: 'dsh-super-code-reading-enabled' }); assert.equal(editor.snapshot(), false)
-  reading.refresh({ key: 'dsh-super-code-reading-enabled' }); assert.equal(reading.snapshot(), false)
-  editor.save(true); assert.equal(reading.snapshot(), false)
+  data.set('dsh-super-code-workbench-enabled', 'false')
+  data.set('dsh-super-code-reading-enabled', 'true')
+  const preference = createWorkbenchPreference(storage)
+  assert.equal(preference.snapshot(), true)
+  preference.save(false)
+  assert.equal(preference.snapshot(), false)
+  assert.equal(createWorkbenchPreference(storage).snapshot(), false)
+  assert.equal(data.get('dsh-super-code-reading-enabled'), 'false')
+  data.set('dsh-super-code-workbench-enabled', 'true')
+  preference.refresh({ key: 'unrelated' }); assert.equal(preference.snapshot(), false)
+  preference.refresh({ key: 'dsh-super-code-workbench-enabled' }); assert.equal(preference.snapshot(), true)
+  data.clear(); preference.refresh({ key: null }); assert.equal(preference.snapshot(), false)
 })
 
 test('编辑器默认 IDEA，支持独立配色、VS Code 绑定及无冲突的自定义快捷键', () => {

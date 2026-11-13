@@ -39,7 +39,6 @@ export async function commitFiles(options: Options, oid: string): Promise<string
       return await before?.oid() === await after?.oid() && await before?.mode() === await after?.mode() ? undefined : path
     },
   })
-  if (files.length > 2000) throw new Error('WORKBENCH_GIT_CHANGE_LIMIT')
   return files
 }
 

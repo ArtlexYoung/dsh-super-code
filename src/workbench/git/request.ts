@@ -1,13 +1,10 @@
 import { z } from 'zod'
 
 const MAX_PATH_LENGTH = 4096
-const MAX_PATHS = 2000
-// 路径的单个字符在 JSON 中最多占六个字符，另留请求字段的空间。
-export const MAX_GIT_REQUEST_LENGTH: number = MAX_PATHS * (MAX_PATH_LENGTH * 6 + 3) + 16384
 const path = z.string().min(1).max(MAX_PATH_LENGTH).refine(value => !value.includes('\\') && !value.includes('\0') && !value.startsWith('/') && !/^[a-z]:/i.test(value) && !value.split('/').some(part => ['.', '..', '.git'].includes(part)), 'WORKBENCH_GIT_PATH')
 const version = z.string().regex(/^[a-f0-9]{64}$/)
 const oid = z.string().regex(/^[a-f0-9]{40}$/)
-const paths = z.array(path).min(1).max(MAX_PATHS).refine(items => new Set(items).size === items.length)
+const paths = z.array(path).min(1).refine(items => new Set(items).size === items.length)
 const branch = z.string().min(1).max(240).refine(value => !['@', 'HEAD'].includes(value) && !value.startsWith('-') && !value.startsWith('/') && !value.endsWith('/') && !value.endsWith('.') && !/[\s~^:?*\[\\\x00-\x1f\x7f]/.test(value) && !value.includes('..') && !value.includes('@{') && !value.split('/').some(part => !part || part.startsWith('.') || part.endsWith('.lock')), 'WORKBENCH_GIT_BRANCH')
 const remote = z.string().regex(/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,100}$/)
 const auth = z.object({ username: z.string().max(256), password: z.string().max(8192) }).strict().optional()

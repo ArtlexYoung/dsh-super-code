@@ -4,7 +4,7 @@ export const NS = 'dsh-super-code-workbench';
 export const zh = {
   ...gitZh,
   ...readingZh,
-  moduleTitle: '代码工作台', enable: '启用代码工作台', enableHint: '在对话和轨迹旁显示“代码工作台”，打开项目文件并围绕选区提问或修改。',
+  resizeExplorer: '调整文件目录宽度', resizeReading: '调整学习侧栏宽度',
   sourceLocation: '{file} · 第 {line} 行', space: '空格', syntaxKeyword: '语法关键词', basicType: '基础类型', functionTemplate: '函数模板',
   action_definition: '跳到定义', action_complete: '代码补全', action_find: '当前文件搜索', action_project: '全局搜索',
   action_back: '后退', action_forward: '前进', action_indent: '缩进／接受补全', action_outdent: '反缩进',
@@ -32,7 +32,7 @@ export const zh = {
 export const en = {
   ...gitEn,
   ...readingEn,
-  moduleTitle: 'Code workbench', enable: 'Enable code workbench', enableHint: 'Show Code workbench beside Conversation and Trajectory to edit project files and ask about selections.',
+  resizeExplorer: 'Resize file explorer', resizeReading: 'Resize learning sidebar',
   sourceLocation: '{file} · Line {line}', space: 'Space', syntaxKeyword: 'Keyword', basicType: 'Primitive type', functionTemplate: 'Function snippet',
   action_definition: 'Go to definition', action_complete: 'Complete', action_find: 'Find in file', action_project: 'Project search',
   action_back: 'Back', action_forward: 'Forward', action_indent: 'Indent / Accept completion', action_outdent: 'Outdent',

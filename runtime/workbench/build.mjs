@@ -17,7 +17,7 @@ const git = await build({
   format: 'cjs', platform: 'node', target: 'node22', minify: true, sourcemap: false, legalComments: 'eof', metafile: true,
 });
 const base = source.slice(from + start.length, to);
-const bundle = `;(globalThis.window||globalThis).__ModuleLoader__.load({id:'dsh-super-code',factory:require=>{\nconst base=(()=>{${base}\n})();\nconst builtin=(()=>{const module={exports:{}};const exports=module.exports;${built.outputFiles[0].text}\nreturn module.exports})();\nreturn {...base,apply(ctx){base.apply(ctx,builtin.descriptors);builtin.apply(ctx,{Button:base.workbenchControls.Button,Select:base.workbenchControls.Select,MarkdownText:base.workbenchControls.MarkdownText})}};\n}});\n`;
+const bundle = `;(globalThis.window||globalThis).__ModuleLoader__.load({id:'dsh-super-code',factory:require=>{\nconst base=(()=>{${base}\n})();\nconst builtin=(()=>{const module={exports:{}};const exports=module.exports;${built.outputFiles[0].text}\nreturn module.exports})();\nreturn {...base,apply(ctx){const preference=builtin.createWorkbenchPreference(localStorage);base.apply(ctx,builtin.descriptors,preference);builtin.apply(ctx,{...base.workbenchControls,preference})}};\n}});\n`;
 await mkdir(new URL('dist/', root), { recursive: true });
 await writeFile(new URL('dist/client.js', root), bundle);
 await writeFile(new URL('dist/git.cjs', root), git.outputFiles[0].contents);

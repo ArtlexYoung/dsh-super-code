@@ -1,7 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { GitDiff } from './Diff.jsx';
 import { GitBranches, GitRemotes, GitConfirmation } from './Controls.jsx';
 import { errorText } from '../locales.js';
+import { FileList } from './FileList.jsx';
 
 const DISK_ACTIONS = ['checkout', 'pull', 'merge', 'abortMerge'];
 export function GitPanel({ workbench, Button, Select, palette, t }) {
@@ -33,13 +34,25 @@ export function GitPanel({ workbench, Button, Select, palette, t }) {
   }
   useEffect(() => { mounted.current = true; void run({ action: 'status' }); return () => { mounted.current = false; active.current?.abort(); }; }, [workbench]);
   const canWrite = !!state?.writable && !busy;
-  const associated = file => sources.filter(item => item.files.includes(file.path));
+  const sourcesByFile = useMemo(() => {
+    const result = new Map();
+    for (const source of sources) for (const path of source.files) {
+      if (!result.has(path)) result.set(path, []);
+      result.get(path).push(source);
+    }
+    return result;
+  }, [sources]);
+  const associated = file => sourcesByFile.get(file.path) || [];
   const visible = file => source === 'all' || (source === 'unknown' ? !associated(file).length : associated(file).some(item => item.id === source));
   const confirm = input => setConfirmation({ ...input, ...(state?.exists ? { version: state.version } : {}) });
   const command = input => () => { void run(input); };
   const author = { name, email }, authorValid = !!name.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const openFile = () => { const file = diff.path; workbench.panel(null); void workbench.visit({ file }).catch(workbench.fail); };
   const staged = state?.changes.filter(file => file.head !== file.stage && !file.conflict) || [];
+  const rows = ['worktree', 'staged'].flatMap(side => {
+    const files = state?.changes.filter(file => visible(file) && (side === 'staged' ? !file.conflict && file.head !== file.stage : file.conflict || file.worktree !== file.stage)) || [];
+    return [{ key: side, side, files }, ...files.map(file => ({ key: `${side}:${file.path}`, side, file }))];
+  });
   const comparison = (history = false) => <GitDiff diff={diff} palette={palette} t={t} Button={Button}
     labels={history ? undefined : selected.startsWith('staged:') ? [t('gitHead'), t('gitIndex')] : [t(state?.changes.find(file => file.path === diff?.path)?.conflict ? 'gitHead' : 'gitIndex'), t('gitDisk')]}
     open={!history && diff && state?.changes.find(file => file.path === diff.path)?.worktree !== 0 ? openFile : undefined} />;
@@ -55,17 +68,17 @@ export function GitPanel({ workbench, Button, Select, palette, t }) {
     {state && !state.exists && <div className="sc-wb-git-empty"><strong>{t('gitNoRepository')}</strong><p>{t('gitInitHint')}</p><Button title={t('gitInit')} disabled={!canWrite} onClick={() => confirm({ action: 'init', branch: 'main' })}>{t('gitInit')}</Button></div>}
     {state?.exists && tab === 'changes' && <div className="sc-wb-git-split"><aside className="sc-wb-git-files">
       <div className="sc-wb-git-source"><Select label={t('gitSource')} value={source} choices={[["all", t('gitAll')], ['unknown', t('gitUnknown')], ...sources.map(item => [item.id, `${item.parent ? 'Agent' : t('gitSession')} · ${item.name}`])]} onChange={setSource} /></div>
-      <div className="sc-wb-git-file-list">{['worktree', 'staged'].map(side => {
-        const files = state.changes.filter(file => visible(file) && (side === 'staged' ? !file.conflict && file.head !== file.stage : file.conflict || file.worktree !== file.stage));
+      <FileList items={rows} rowHeight={48}>{({ side, files, file }) => {
         const action = side === 'staged' ? 'unstage' : 'stage';
-        return <section key={side}><h3><span>{t(`git_${side}`)} <small>{files.length}</small></span><Button title={t(side === 'staged' ? 'gitUnstageAll' : 'gitStageAll')} disabled={!canWrite || !files.length} onClick={command({ action, paths: files.map(file => file.path) })}>{side === 'staged' ? '−' : '+'}</Button></h3>
-          {files.map(file => <div className="sc-wb-git-file" key={file.path}>
+        if (files) return <h3><span>{t(`git_${side}`)} <small>{files.length}</small></span><Button title={t(side === 'staged' ? 'gitUnstageAll' : 'gitStageAll')} disabled={!canWrite || !files.length} onClick={command({ action, paths: files.map(file => file.path) })}>{side === 'staged' ? '−' : '+'}</Button></h3>;
+        return <div className="sc-wb-git-file">
             <Button title={file.path} aria-pressed={selected === `${side}:${file.path}`} disabled={busy} onClick={command({ action: 'diff', path: file.path, side })}>
               <i data-status={file.conflict ? 'U' : (side === 'staged' ? file.stage : file.worktree) === 0 ? 'D' : file.head === 0 ? 'A' : 'M'}>{file.conflict ? '!' : (side === 'staged' ? file.stage : file.worktree) === 0 ? 'D' : file.head === 0 ? 'A' : 'M'}</i>
-              <span>{file.path}<small>{file.conflict ? t('gitConflict') : associated(file).map(item => item.name).join(' · ') || t('gitUnknown')}</small></span></Button>
+              <span><span>{file.path}</span><small>{file.conflict ? t('gitConflict') : associated(file).map(item => item.name).join(' · ') || t('gitUnknown')}</small></span></Button>
             <Button title={t(side === 'staged' ? 'gitUnstage' : 'gitStage')} disabled={!canWrite} onClick={command({ action, paths: [file.path] })}>{side === 'staged' ? '−' : '+'}</Button>
-          </div>)}</section>;
-      })}{!state.changes.length && <p className="sc-wb-git-muted">{t('gitClean')}</p>}</div>
+          </div>;
+      }}</FileList>
+      {!state.changes.length && <p className="sc-wb-git-source-hint">{t('gitClean')}</p>}
       <small className="sc-wb-git-source-hint">{t('gitSourceHint')}{sources.some(item => item.partial) && ` ${t('gitSourcePartial')}`}</small>
       <form className="sc-wb-git-commit" onSubmit={event => { event.preventDefault(); confirm({ action: 'commit', message: summary, author }); }}>
         <textarea aria-label={t('gitCommitMessage')} placeholder={t('gitCommitMessage')} value={summary} onChange={event => setSummary(event.target.value)} disabled={busy} />
@@ -76,7 +89,7 @@ export function GitPanel({ workbench, Button, Select, palette, t }) {
     </aside>{comparison()}</div>}
     {state?.exists && tab === 'history' && <div className="sc-wb-git-history-body"><div className="sc-wb-git-history">{state.history.map(item => <Button key={item.oid} title={item.message} aria-pressed={commit?.oid === item.oid} disabled={busy} onClick={command({ action: 'commitFiles', oid: item.oid })}>
       <code>{item.oid.slice(0, 8)}</code><span><strong>{item.message.split('\n')[0]}</strong><small>{item.author} · {new Date(item.timestamp * 1000).toLocaleString()}</small></span></Button>)}{!state.history.length && <p>{t('gitNoHistory')}</p>}</div>
-      {commit && <div className="sc-wb-git-split sc-wb-git-history-diff"><aside className="sc-wb-git-files"><div className="sc-wb-git-file-list">{commit.files.map(path => <Button className="sc-wb-git-history-file" key={path} title={path} disabled={busy} aria-pressed={selected === `${commit.oid}:${path}`} onClick={command({ action: 'historyDiff', oid: commit.oid, path })}>{path}</Button>)}</div></aside>{comparison(true)}</div>}</div>}
+      {commit && <div className="sc-wb-git-split sc-wb-git-history-diff"><aside className="sc-wb-git-files"><FileList items={commit.files.map(path => ({ key: path, path }))} rowHeight={30}>{({ path }) => <Button className="sc-wb-git-history-file" title={path} disabled={busy} aria-pressed={selected === `${commit.oid}:${path}`} onClick={command({ action: 'historyDiff', oid: commit.oid, path })}>{path}</Button>}</FileList></aside>{comparison(true)}</div>}</div>}
     {state?.exists && tab === 'branches' && <GitBranches state={state} canWrite={canWrite} author={author} authorValid={authorValid} setName={setName} setEmail={setEmail} run={run} confirm={confirm} t={t} Button={Button} />}
     {state?.exists && tab === 'remotes' && <GitRemotes state={state} canWrite={canWrite} run={run} confirm={confirm} t={t} Button={Button} Select={Select} />}
     {confirmation && <GitConfirmation input={confirmation} state={state} staged={staged} cancel={() => setConfirmation(null)} accept={() => { const input = confirmation; setConfirmation(null); void run(input); }} t={t} Button={Button} />}

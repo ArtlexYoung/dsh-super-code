@@ -9,6 +9,8 @@ import { Settings } from './Settings.jsx';
 import { GitPanel } from '../git/Panel.jsx';
 import { message } from '../locales.js';
 import { ReadingPanel } from '../reading/Panel.jsx';
+import { Splitter } from './Splitter.jsx';
+import { readLayout, saveLayout } from '../layout.js';
 
 function Directory({ path = '', snapshot, workbench, Button, t }) {
   const [open, setOpen] = useState(path === '');
@@ -37,18 +39,22 @@ function Locations({ data, query, search, workbench, Button, t }) {
   </div>;
 }
 
-export function Workbench({ workbench, Button, Select, MarkdownText, t, readingMode = false }) {
+export function Workbench({ workbench, Button, Select, MarkdownText, t }) {
   const snapshot = useSyncExternalStore(workbench.subscribe, workbench.snapshot), editor = useRef(null), tooltips = useRef(null);
+  const [layout, setLayout] = useState(() => readLayout(localStorage)), savedLayout = useRef(layout);
+  const changeLayout = patch => { savedLayout.current = { ...savedLayout.current, ...patch }; setLayout(savedLayout.current); };
+  const persistLayout = () => { try { saveLayout(localStorage, savedLayout.current); } catch { workbench.fail(new Error(t('settingsFailed'))); } };
   useEffect(() => {
     void workbench.attach(editor.current, tooltips.current).catch(workbench.fail);
     const warn = event => { if ([...workbench.documents.values()].some(doc => doc.original !== doc.text)) { event.preventDefault(); event.returnValue = ''; } };
     window.addEventListener('beforeunload', warn);
-    if (readingMode) void workbench.reading.verify();
-    return () => { if (readingMode) workbench.reading.stop(); workbench.detach(); window.removeEventListener('beforeunload', warn); };
-  }, [workbench, readingMode]);
+    return () => { workbench.reading.stop(); workbench.detach(); window.removeEventListener('beforeunload', warn); };
+  }, [workbench]);
+  useEffect(() => { if (layout.learningOpen) void workbench.reading.verify(); }, [workbench, layout.learningOpen]);
   const current = snapshot.tabs.find(item => item.path === snapshot.file), panel = snapshot.panel;
   const action = callback => () => { Promise.resolve().then(callback).catch(workbench.fail); };
-  return <section className={`sc-workbench sc-wb-main${readingMode ? ' sc-reading-main' : ''}`} data-conversation-composer-overlay="" data-palette={snapshot.preferences.palette} aria-label={t(readingMode ? 'readingTitle' : 'title')}
+  return <section className={`sc-workbench sc-wb-main${layout.learningOpen ? ' sc-reading-main' : ''}`} data-conversation-composer-overlay="" data-palette={snapshot.preferences.palette} aria-label={t('title')}
+    style={{ '--wb-explorer-width': `${layout.explorer}px`, '--wb-reading-width': `${layout.reading}px` }}
     onKeyDown={event => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') { event.preventDefault(); void workbench.save().catch(workbench.fail); }
       else workbenchKeydown(event, workbench.view());
@@ -67,17 +73,22 @@ export function Workbench({ workbench, Button, Select, MarkdownText, t, readingM
       <Button title={t('refresh')} onClick={action(workbench.refresh)} disabled={snapshot.indexing}>↻</Button>
       <Button title={t('settings')} onClick={() => workbench.panel({ kind: 'settings' })}>{t('settings')}</Button>
       <Button title={`${t('save')} · Ctrl/⌘ + S`} disabled={!current?.dirty} onClick={action(workbench.save)} className="sc-wb-primary">{t('save')}</Button>
+      <span className="sc-wb-toolbar-divider" />
+      <Button title={t(layout.learningOpen ? 'readingClose' : 'readingOpen')} aria-pressed={layout.learningOpen} aria-controls="sc-reading-panel"
+        onClick={() => { changeLayout({ learningOpen: !layout.learningOpen }); persistLayout(); }}>{t('readingTitle')}</Button>
     </div></header>
     <div className="sc-wb-body"><aside className="sc-wb-explorer">
       <div className="sc-wb-section"><strong>{t('files')}</strong><small>{snapshot.indexing ? t('indexing') : snapshot.indexed}</small></div>
       <div className="sc-wb-file-list"><Directory snapshot={snapshot} workbench={workbench} Button={Button} t={t} /></div>
       <div className="sc-wb-section"><strong>{t('symbols')}</strong><small>{snapshot.symbols.length}</small></div>
       <div className="sc-wb-outline">{snapshot.symbols.map(item => <Button key={item.offset} title={item.declaration} className="sc-wb-file" onClick={action(() => workbench.visit(item))}><i aria-hidden>{item.kind === 'function' ? 'ƒ' : 'v'}</i><span>{item.name}</span><small>{item.line + 1}</small></Button>)}</div>
-    </aside><main className="sc-wb-code">
+    </aside><Splitter panel="explorer" label={t('resizeExplorer')} value={layout.explorer} ratio={layout.learningOpen ? .3 : .4}
+      change={value => changeLayout({ explorer: value })} commit={persistLayout} /><main className="sc-wb-code">
       <nav className="sc-wb-tabs" aria-label={t('files')}>{snapshot.tabs.map(item => <Button key={item.path} aria-current={snapshot.file === item.path ? 'page' : undefined} title={item.path} onClick={action(() => workbench.visit({ file: item.path }))}>{item.path.split('/').at(-1)}{item.dirty && <i aria-label={t('unsaved')}>•</i>}</Button>)}</nav>
       <div className="sc-wb-path">{snapshot.file || t('title')}</div><div ref={editor} className="sc-wb-editor" />
       {!snapshot.file && <div className="sc-wb-empty"><strong>{t('title')}</strong><span>{t('empty')}</span></div>}
-    </main>{readingMode && <ReadingPanel workbench={workbench} file={snapshot.file} Button={Button} MarkdownText={MarkdownText} t={t} />}</div>
+    </main>{layout.learningOpen && <><Splitter panel="reading" label={t('resizeReading')} value={layout.reading} ratio={.48}
+      change={value => changeLayout({ reading: value })} commit={persistLayout} /><ReadingPanel workbench={workbench} file={snapshot.file} Button={Button} MarkdownText={MarkdownText} t={t} /></>}</div>
     <footer className="sc-wb-status" role="status"><span className={snapshot.error ? 'sc-wb-error' : ''}>{snapshot.error || snapshot.status}</span>
       {snapshot.cursor && <span>{message(t, 'position', { line: snapshot.cursor.line + 1, column: snapshot.cursor.character + 1 })}{snapshot.cursor.length > 0 && ` · ${message(t, 'selected', { count: snapshot.cursor.length })}`}</span>}</footer>
     {createPortal(<div ref={tooltips} className="sc-workbench sc-wb-tooltips" data-palette={snapshot.preferences.palette} />, document.body)}

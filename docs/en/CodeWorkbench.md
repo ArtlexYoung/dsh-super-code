@@ -2,7 +2,9 @@
 
 [中文](../CodeWorkbench.md) · English
 
-Enable **Settings → Code workbench** to add **Code workbench** beside Conversation and Trajectory. It is off by default and saved in the current client. Toggling it does not initialize projects or change presets.
+Enable **Settings → Super Code → Code workbench** to add **Code workbench** beside Conversation and Trajectory. It is off by default, takes effect immediately, and is saved in the current client. Toggling it does not initialize projects or change presets.
+
+Choose **Learn** at the top right of the workbench to open or hide its learning sidebar. The same editor keeps the current file, selection, and unsaved edits; opening the sidebar makes no model request. Drag the dividers to resize the file explorer and learning sidebar, or use the arrow keys when a divider is focused. Their widths and the sidebar state are remembered in the current client. The workbench hides the host chat composer; returning to Conversation restores it. IDEA and VS Code styles cover code, explorer, toolbar, popups, and learning, following the host light or dark theme.
 
 Browse the current conversation's working directory on the left. Edits stay in buffers until **Save** or Ctrl/⌘+S. Switching files or leaving the page preserves buffers and undo history; save before closing the application or unloading the plugin. If another program changes a file on disk, saving refuses to overwrite it and keeps your edits.
 
@@ -22,9 +24,9 @@ Choose **Git** in the toolbar to manage the repository in the current conversati
 
 **Remotes** supports URL configuration, fetch, fast-forward-only pull, and normal push, without force push. The bundled engine supports HTTP(S); native Git also supports SSH. Credentials must not be embedded in URLs. Entered passwords or tokens stay in memory and are cleared when leaving the remote tab or closing the window. Native Git may also use existing credential helpers and SSH configuration. Pull and push confirmation identifies the branch and remote URL.
 
-The session working directory must be the repository root on a locally accessible filesystem. Read-only sessions can inspect state and diffs. In restricted sessions, all native Git commands use the host command sandbox, including reads that may execute repository-configured filters. The bundled engine does not support linked worktrees or `.git` files/symlinks; use native Git for those layouts. At most 2,000 changed files are shown. Text comparisons are limited to 2 MiB per side and 20,000 lines total.
+The session working directory must be the repository root on a locally accessible filesystem. Read-only sessions can inspect state and diffs. In restricted sessions, all native Git commands use the host command sandbox, including reads that may execute repository-configured filters. The bundled engine does not support linked worktrees or `.git` files/symlinks; use native Git for those layouts. Changed-file lists, commit-file lists, and batch staging have no file-count cap; the lists use virtual scrolling. Text comparisons are limited to 2 MiB per side and 20,000 lines total.
 
-The same settings page has a separate, disabled-by-default **Learn** switch. It adds a Learn tab without requiring the code workbench switch. Browse source on the left and enter a reading goal on the right. Follow a path organized around concepts and execution flow, read each step in sections, and select the original code by clicking a source reference. **Explain current file** works without a path. Navigation, editor buffers, selection questions, and pinned markers are shared with the workbench.
+With the learning sidebar open, browse source on the left and enter a reading goal on the right. Follow a path organized around concepts and execution flow, read each step in sections, and select the original code by clicking a source reference. **Explain current file** works without a path. Navigation, editor buffers, selection questions, and pinned markers are shared with the workbench.
 
 Learning uses the conversation’s selected model and reads or searches relevant files in its working directory. Unsaved buffers take priority. It does not execute commands, modify files, add messages to the main conversation, or change presets. Incomplete source coverage is indicated. References follow unchanged excerpts when lines are inserted. Changed or ambiguous excerpts are marked out of date. Stopping preserves the partial result and marks it incomplete.
 

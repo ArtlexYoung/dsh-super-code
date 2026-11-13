@@ -21,7 +21,7 @@ export const zh = {
   WORKBENCH_GIT_AUTH_PROTOCOL: '该协议使用本机认证配置，不能填写 HTTP 凭据', WORKBENCH_GIT_NETWORK: '远程操作失败，请检查网络、地址和权限后刷新', WORKBENCH_GIT_DIVERGED: '分支已经分叉，请先获取并合并远程分支',
   WORKBENCH_GIT_PUSH_REJECTED: '远程拒绝了推送，请检查权限，或先获取并合并更新', WORKBENCH_GIT_NATIVE: '本机 Git 执行失败，请检查仓库、钩子或认证配置后刷新', WORKBENCH_GIT_AUTHOR: '请填写有效的作者姓名和邮箱',
   WORKBENCH_GIT_LAYOUT: '当前引擎无法读取该仓库结构', WORKBENCH_GIT_ROOT: '请从会话工作目录的仓库根目录使用 Git', WORKBENCH_GIT_LOCAL: '当前宿主的文件系统映射不支持本地 Git',
-  WORKBENCH_GIT_SANDBOX: '宿主未提供可用的命令沙箱，无法在当前受限会话中执行本机 Git', WORKBENCH_GIT_DIFF_LIMIT: '差异过大，请在外部工具中查看', WORKBENCH_GIT_CHANGE_LIMIT: '文件过多，单次最多显示 2,000 个变化文件',
+  WORKBENCH_GIT_SANDBOX: '宿主未提供可用的命令沙箱，无法在当前受限会话中执行本机 Git', WORKBENCH_GIT_DIFF_LIMIT: '差异过大，请在外部工具中查看',
   WORKBENCH_GIT_INCOMPLETE: 'Git 请求未完整结束，请刷新核对状态', WORKBENCH_GIT_REQUEST: 'Git 请求格式无效',
 };
 export const en = {
@@ -47,6 +47,6 @@ export const en = {
   WORKBENCH_GIT_AUTH_PROTOCOL: 'This protocol uses native authentication, not HTTP credentials', WORKBENCH_GIT_NETWORK: 'Remote operation failed. Check network, URL and access, then refresh.', WORKBENCH_GIT_DIVERGED: 'Branches diverged. Fetch and merge the remote branch first.',
   WORKBENCH_GIT_PUSH_REJECTED: 'The remote rejected the push. Check access or fetch and merge updates.', WORKBENCH_GIT_NATIVE: 'Native Git failed. Check repository, hooks or authentication, then refresh.', WORKBENCH_GIT_AUTHOR: 'Enter a valid author name and email',
   WORKBENCH_GIT_LAYOUT: 'This repository layout is unsupported by the selected engine', WORKBENCH_GIT_ROOT: 'Use the repository root as the session working directory', WORKBENCH_GIT_LOCAL: 'This host filesystem mapping does not support local Git',
-  WORKBENCH_GIT_SANDBOX: 'The host cannot confine native Git in this restricted session', WORKBENCH_GIT_DIFF_LIMIT: 'This diff is too large. Use an external tool.', WORKBENCH_GIT_CHANGE_LIMIT: 'At most 2,000 changed files can be displayed',
+  WORKBENCH_GIT_SANDBOX: 'The host cannot confine native Git in this restricted session', WORKBENCH_GIT_DIFF_LIMIT: 'This diff is too large. Use an external tool.',
   WORKBENCH_GIT_INCOMPLETE: 'The Git request did not finish. Refresh to check repository state.', WORKBENCH_GIT_REQUEST: 'Invalid Git request',
 };

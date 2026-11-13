@@ -1,4 +1,4 @@
-import { execFile } from 'node:child_process'
+import { execFile, spawn } from 'node:child_process'
 import * as fs from 'node:fs/promises'
 import { join } from 'node:path'
 import { createHash } from 'node:crypto'
@@ -44,10 +44,15 @@ export class NativeGit {
     const env: NodeJS.ProcessEnv = { ...process.env, LC_ALL: 'C', GIT_TERMINAL_PROMPT: '0', GIT_OPTIONAL_LOCKS: '0', ...options.env }
     for (const key of ['GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_OBJECT_DIRECTORY', 'GIT_ALTERNATE_OBJECT_DIRECTORIES']) delete env[key]
     return new Promise((resolve, reject) => {
-      const child = execFile(argv[0]!, argv.slice(1), { cwd: this.root, env, signal: this.signal, encoding: 'buffer', maxBuffer: 8 * 1024 * 1024, windowsHide: true }, (error, stdout, stderr) => {
+      const stdout: Buffer[] = [], stderr: Buffer[] = []
+      const child = spawn(argv[0]!, argv.slice(1), { cwd: this.root, env, signal: this.signal, windowsHide: true })
+      child.stdout.on('data', (data: Buffer) => stdout.push(data))
+      child.stderr.on('data', (data: Buffer) => stderr.push(data))
+      child.on('error', () => reject(this.signal.aborted ? this.signal.reason : new Error('WORKBENCH_GIT_NATIVE')))
+      child.on('close', code => {
         if (this.signal.aborted) { reject(this.signal.reason); return }
-        if (error && typeof error.code !== 'number') { reject(new Error('WORKBENCH_GIT_NATIVE')); return }
-        const result = { code: typeof error?.code === 'number' ? error.code : 0, stdout, stderr: stderr.toString('utf8') }
+        if (code === null) { reject(new Error('WORKBENCH_GIT_NATIVE')); return }
+        const result = { code, stdout: Buffer.concat(stdout), stderr: Buffer.concat(stderr).toString('utf8') }
         if (result.code && !options.optional) reject(commandError(result.stderr)); else resolve(result)
       })
       child.stdin?.on('error', error => { if ((error as NodeJS.ErrnoException).code !== 'EPIPE') reject(error) })
@@ -90,7 +95,6 @@ export class NativeGit {
       changes.set(path, old && x === '?' ? { ...old, worktree: 3 } : { path, head, stage, worktree, conflict: x === 'U' || y === 'U' || x === 'A' && y === 'A' || x === 'D' && y === 'D' })
     }
     state.changes = [...changes.values()]
-    if (state.changes.length > 2000) throw new Error('WORKBENCH_GIT_CHANGE_LIMIT')
     for (const entry of remotes.split('\n').filter(Boolean)) {
       const match = /^remote\.(.+)\.url (.*)$/.exec(entry)
       if (!match) continue
@@ -136,7 +140,6 @@ export class NativeGit {
     const parent = (await this.text(['rev-list', '--parents', '-n', '1', oid])).split(' ')[1]
     const args = parent ? [parent, oid] : ['--root', oid]
     const files = (await this.text(['diff-tree', '--no-commit-id', '--name-only', '--no-renames', '-r', '-z', ...args])).split('\0').filter(Boolean)
-    if (files.length > 2000) throw new Error('WORKBENCH_GIT_CHANGE_LIMIT')
     return files
   }
 

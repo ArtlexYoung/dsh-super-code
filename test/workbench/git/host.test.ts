@@ -26,8 +26,10 @@ test('宿主批量暂存接受合法的长路径清单，不被过小的请求�
     return result.state
   }
   await request({ action: 'init', branch: 'main' })
-  const paths = Array.from({ length: 200 }, (_, i) => `${'file-'.repeat(44)}${i}.txt`)
-  await Promise.all(paths.map(path => fs.writeFile(join(root, path), 'content\n')))
+  const paths = Array.from({ length: 2105 }, (_, i) => `${'file-'.repeat(44)}${i}.txt`)
+  for (let offset = 0; offset < paths.length; offset += 100) {
+    await Promise.all(paths.slice(offset, offset + 100).map(path => fs.writeFile(join(root, path), 'content\n')))
+  }
   const state = await request({ action: 'status' })
   const input = { action: 'stage', paths, version: state.version }
   assert.ok(JSON.stringify(input).length > 40000)

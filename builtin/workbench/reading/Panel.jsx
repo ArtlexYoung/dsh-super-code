@@ -31,7 +31,7 @@ function ReadingNotice({ state, reading, Button, t, busy }) {
 export function ReadingPanel({ workbench, file, Button, MarkdownText, t }) {
   const reading = workbench.reading, state = useSyncExternalStore(reading.subscribe, reading.snapshot), busy = state.status === 'running';
   const labels = useMemo(() => ({ code: { copyLabel: t('readingCopy'), copiedLabel: t('readingCopied') }, footnotes: t('readingFootnotes') }), [t]);
-  return <aside className="sc-reading-panel" aria-label={t('readingTitle')}><style>{stylesheet}</style>
+  return <aside id="sc-reading-panel" className="sc-reading-panel" aria-label={t('readingTitle')}><style>{stylesheet}</style>
     <form className="sc-reading-goal" onSubmit={event => { event.preventDefault(); void reading.plan(); }}>
       <label htmlFor="sc-reading-goal">{t('readingGoal')}</label>
       <textarea id="sc-reading-goal" value={state.goal} placeholder={t('readingGoalPlaceholder')} maxLength={4000}

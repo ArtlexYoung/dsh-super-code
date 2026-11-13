@@ -1,5 +1,7 @@
+import { zh as gitZh, en as gitEn } from './git/locales.js';
 export const NS = 'dsh-super-code-workbench';
 export const zh = {
+  ...gitZh,
   moduleTitle: '代码工作台', enable: '启用代码工作台', enableHint: '在对话和轨迹旁显示“代码工作台”，打开项目文件并围绕选区提问或修改。',
   sourceLocation: '{file} · 第 {line} 行', space: '空格', syntaxKeyword: '语法关键词', basicType: '基础类型', functionTemplate: '函数模板',
   action_definition: '跳到定义', action_complete: '代码补全', action_find: '当前文件搜索', action_project: '全局搜索',
@@ -26,6 +28,7 @@ export const zh = {
   WORKBENCH_MODEL_INCOMPLETE: '模型未完整结束，本次结果未应用', WORKBENCH_MODEL_EMPTY: '模型没有返回回答', WORKBENCH_OUTPUT_SIZE: '模型输出过长，本次结果未应用',
 };
 export const en = {
+  ...gitEn,
   moduleTitle: 'Code workbench', enable: 'Enable code workbench', enableHint: 'Show Code workbench beside Conversation and Trajectory to edit project files and ask about selections.',
   sourceLocation: '{file} · Line {line}', space: 'Space', syntaxKeyword: 'Keyword', basicType: 'Primitive type', functionTemplate: 'Function snippet',
   action_definition: 'Go to definition', action_complete: 'Complete', action_find: 'Find in file', action_project: 'Project search',

@@ -10,19 +10,25 @@ import { WorkbenchFiles, MAX_FILE_BYTES } from '../workbench/files.js'
 import type { WorkbenchEntry, WorkbenchFile, WorkbenchRoot } from '../workbench/files.js'
 import { parseAssistant, assistantRequest, assistantResponse } from '../workbench/assistant.js'
 import type { AssistantResult, WorkbenchModel } from '../workbench/assistant.js'
+import { WorkbenchGit } from './workbench-git.js'
+import type { WorkbenchGitResult } from './workbench-git.js'
+import { MAX_GIT_REQUEST_LENGTH } from '../workbench/git/request.js'
 
 const sessionSchema = z.string().min(1).max(256)
 const requestSchema = z.string().max(2 * 1024 * 1024 + 16000)
 const saveRequestSchema = z.string().max(MAX_FILE_BYTES * 6 + 16384)
+const gitRequestSchema = z.string().max(MAX_GIT_REQUEST_LENGTH)
 const ASSISTANT_TIMEOUT_MS = 10 * 60 * 1000
 
 export class SuperCodeWorkbench extends TypertRemoteService {
   private readonly files: WorkbenchFiles
   private readonly lifetime = new AbortController()
+  private readonly repository: WorkbenchGit
 
   constructor(ctx: Context) {
     super(ctx, 'superCodeWorkbench')
     this.files = new WorkbenchFiles(ctx.fs, id => this.rootOf(id))
+    this.repository = new WorkbenchGit(ctx)
     ctx.effect(() => () => { this.lifetime.abort() })
   }
 
@@ -62,6 +68,14 @@ export class SuperCodeWorkbench extends TypertRemoteService {
 
   @Remote
   async project(sessionId: string, signal: AbortSignal): Promise<{ files: string[]; truncated: boolean }> { return this.files.project(sessionId, signal) }
+
+  @Remote({ mode: 'stream' })
+  async *git(sessionId: string, content: string, signal: AbortSignal): AsyncGenerator<WorkbenchGitResult> {
+    const session = await this.sessionOf(sessionId)
+    const input: unknown = JSON.parse(gitRequestSchema.parse(content))
+    const combined = AbortSignal.any([signal, this.lifetime.signal, AbortSignal.timeout(5 * 60 * 1000)])
+    yield await this.repository.execute(session, input, this.ctx.get('sandboxPolicy')?.resolve({ session }), combined)
+  }
 
   @Remote({ mode: 'stream' })
   async *assist(sessionId: string, content: string, signal: AbortSignal): AsyncGenerator<AssistantResult> {

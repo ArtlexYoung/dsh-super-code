@@ -1,8 +1,8 @@
 const schema = { parse(value) { if (typeof value !== 'string') throw new Error('Expected string'); return value; } };
 const codec = { mode: 'strict', typeSymbol: 'string', schema, create: () => schema };
-export const descriptors = Object.entries({ list: ['sessionId', 'path'], read: ['sessionId', 'path'], save: ['sessionId', 'content'], project: ['sessionId'], assist: ['sessionId', 'content'] }).map(([method, names]) => ({
+export const descriptors = Object.entries({ list: ['sessionId', 'path'], read: ['sessionId', 'path'], save: ['sessionId', 'content'], project: ['sessionId'], assist: ['sessionId', 'content'], git: ['sessionId', 'content'] }).map(([method, names]) => ({
   id: `dsh-super-code:superCodeWorkbench/${method}`, service: 'superCodeWorkbench', namespace: 'superCodeWorkbench', method,
-  ...(method === 'assist' ? { mode: 'stream' } : {}),
+  ...(['assist', 'git'].includes(method) ? { mode: 'stream' } : {}),
   invocation: { kind: 'direct' }, parameters: names.map(name => ({ name, wire: name, source: 'json', codec })),
   cancellation: { parameter: 'signal' }, result: { mode: 'src-json' },
 }));
@@ -18,6 +18,12 @@ export function workspaceApi(remote, sessionId) {
     read: (path, signal) => call('read', [path], signal),
     save: (content, signal) => call('save', [JSON.stringify(content)], signal),
     project: signal => call('project', [], signal),
+    async git(content, signal) {
+      let result;
+      for await (const value of remote.git(sessionId, JSON.stringify(content), signal)) result = value;
+      if (!result) throw new Error('WORKBENCH_GIT_INCOMPLETE');
+      return result;
+    },
     async assist(content, signal) {
       let result;
       // 使用宿主的逻辑流传递取消，避免桌面协议转发滞留普通 HTTP 请求。

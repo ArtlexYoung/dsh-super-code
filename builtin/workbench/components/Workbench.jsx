@@ -6,6 +6,7 @@ import { navigationPointer, workbenchKeydown } from '../editor/input.js';
 import { Floating } from './Floating.jsx';
 import { Selection } from './Selection.jsx';
 import { Settings } from './Settings.jsx';
+import { GitPanel } from '../git/Panel.jsx';
 import { message } from '../locales.js';
 
 function Directory({ path = '', snapshot, workbench, Button, t }) {
@@ -60,6 +61,7 @@ export function Workbench({ workbench, Button, Select, t }) {
       <Button title={t('definition')} disabled={!current} onClick={action(workbench.definition)}>{t('definition')}</Button>
       <Button title={t('complete')} disabled={!current} onClick={() => { const view = workbench.view(); view?.focus(); if (view) startCompletion(view); }}>{t('complete')}</Button>
     </div><div className="sc-wb-nav">
+      <Button title={t('git')} onClick={() => workbench.panel({ kind: 'git' })}>{t('git')}</Button>
       <Button title={t('refresh')} onClick={action(workbench.refresh)} disabled={snapshot.indexing}>↻</Button>
       <Button title={t('settings')} onClick={() => workbench.panel({ kind: 'settings' })}>{t('settings')}</Button>
       <Button title={`${t('save')} · Ctrl/⌘ + S`} disabled={!current?.dirty} onClick={action(workbench.save)} className="sc-wb-primary">{t('save')}</Button>
@@ -77,8 +79,10 @@ export function Workbench({ workbench, Button, Select, t }) {
     <footer className="sc-wb-status" role="status"><span className={snapshot.error ? 'sc-wb-error' : ''}>{snapshot.error || snapshot.status}</span>
       {snapshot.cursor && <span>{message(t, 'position', { line: snapshot.cursor.line + 1, column: snapshot.cursor.character + 1 })}{snapshot.cursor.length > 0 && ` · ${message(t, 'selected', { count: snapshot.cursor.length })}`}</span>}</footer>
     {createPortal(<div ref={tooltips} className="sc-workbench sc-wb-tooltips" data-palette={snapshot.preferences.palette} />, document.body)}
-    {panel && <Floating key={panel.kind} title={panel.title || t(panel.kind)} close={() => workbench.panel(null)} t={t} Button={Button} palette={snapshot.preferences.palette}>
+    {panel && <Floating key={panel.kind} title={panel.title || t(panel.kind)} close={() => workbench.panel(null)} t={t} Button={Button} palette={snapshot.preferences.palette}
+      className={panel.kind === 'git' ? 'sc-wb-git-window' : ''} initialSize={panel.kind === 'git' ? { width: 1180, height: 720 } : undefined}>
       {panel.kind === 'settings' ? <Settings workbench={workbench} preferences={snapshot.preferences} Button={Button} Select={Select} t={t} />
+        : panel.kind === 'git' ? <GitPanel workbench={workbench} Button={Button} Select={Select} t={t} palette={snapshot.preferences.palette} />
         : <Locations data={panel} search={panel.kind === 'search'} workbench={workbench} Button={Button} t={t} />}
     </Floating>}
     <Selection value={snapshot.assistant} workbench={workbench} Button={Button} t={t} palette={snapshot.preferences.palette} />

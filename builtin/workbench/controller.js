@@ -103,15 +103,19 @@ export function createWorkbench(api, t) {
       const project = await api.project(abort.signal); let bytes = 0, partial = false, truncated = project.truncated;
       abort.signal.throwIfAborted();
       await list('', abort.signal);
+      for (const path of [...directories.keys()].filter(Boolean)) {
+        try { await list(path, abort.signal); }
+        catch (error) { if (abort.signal.aborted) throw error; directories.delete(path); partial = true; }
+      }
       const paths = new Set(project.files);
       for (const path of [...index.files.keys()]) if (!paths.has(path) && !documents.has(path)) index.remove(path);
-      for (const path of project.files) {
+      for (const path of new Set([...project.files, ...documents.keys()])) {
         abort.signal.throwIfAborted();
-        let doc = documents.get(path), text;
+        let doc = documents.get(path), text; const version = doc?.version;
         try {
           if (doc && doc.text !== doc.original) text = doc.text;
           else {
-            const version = doc?.version, loaded = await api.read(path, abort.signal);
+            const loaded = await api.read(path, abort.signal);
             abort.signal.throwIfAborted();
             text = doc && (doc.text !== doc.original || doc.version !== version) ? doc.text : loaded.text;
             if (doc && doc.text === doc.original && doc.version === version && doc.version !== loaded.version) {
@@ -126,7 +130,13 @@ export function createWorkbench(api, t) {
           if (bytes > INDEX_BYTES) { truncated = true; break; }
           await index.change(path, text);
           abort.signal.throwIfAborted();
-        } catch (error) { if (abort.signal.aborted) throw error; partial = true; }
+        } catch (error) {
+          if (abort.signal.aborted) throw error;
+          if (error.message.includes('WORKBENCH_NOT_FILE') && doc && doc.text === doc.original && doc.version === version) {
+            documents.delete(path); index.remove(path);
+            if (current === path) { assistant.switchFile(); current = null; editor?.dispose(); publish({ file: null, cursor: null, symbols: [] }); }
+          } else partial = true;
+        }
         if (index.files.size % 20 === 0) publish({ indexed: index.files.size });
       }
       await updateIndex();
@@ -157,7 +167,7 @@ export function createWorkbench(api, t) {
   }
   return {
     subscribe(listener) { subscribers.add(listener); return () => subscribers.delete(listener); },
-    snapshot: () => snapshot, documents, index, assistant, t,
+    snapshot: () => snapshot, documents, index, assistant, t, git: api.git,
     async attach(parent, tooltipParent) {
       try { const saved = localStorage.getItem(STORAGE_KEY); if (saved) preferences = readPreferences(JSON.parse(saved)); }
       catch { publish({ error: t('settingInvalid') }); }

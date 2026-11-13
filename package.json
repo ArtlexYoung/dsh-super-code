@@ -80,6 +80,7 @@
     "docs/images/npm-downloads-dark.svg",
     "LICENSE",
     "dist/client.js",
+    "dist/git.cjs",
     "locales",
     "dist/THIRD_PARTY_NOTICES.txt",
     "docs/CodeWorkbench.md"
@@ -154,7 +155,9 @@
     "@lezer/highlight": "1.2.5",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.0.0",
+    "diff": "9.0.0",
     "esbuild": "0.28.2",
+    "isomorphic-git": "1.44.13",
     "playwright": "1.61.1",
     "react": "18.3.1",
     "react-dom": "18.3.1",

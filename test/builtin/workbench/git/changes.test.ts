@@ -73,3 +73,47 @@ test('快速滚动和关闭一个侧栏时不累计离开视口的统计，重�
   assert.ok(store.snapshot().stats.has('new'))
   release(); store.dispose()
 })
+
+test('前台读取暂停后台统计，结束后补回被取消的可见行', async () => {
+  const started = Promise.withResolvers<void>(), foreground = Promise.withResolvers<any>()
+  const calls: any[] = [], signals: AbortSignal[] = []
+  const store = createChanges(async (input: any, signal: AbortSignal) => {
+    calls.push(input)
+    if (input.action === 'diff') { started.resolve(); return foreground.promise }
+    signals.push(signal)
+    if (signals.length === 1) return new Promise((_, reject) => signal.addEventListener('abort', () => reject(signal.reason), { once: true }))
+    return { kind: 'stats', version: 'a', stats: input.paths.map((path: string) => ({ path, added: 2, removed: 1 })) }
+  }, (error: Error) => error.message)
+  const release = store.subscribe(() => {})
+  store.accept({ kind: 'state', state: { version: 'a', exists: true, changes: [{ path: 'file' }] } })
+  store.visible(['file'])
+  const work = store.diff('file'); await started.promise
+  store.visible(['file'])
+  assert.equal(signals[0].aborted, true)
+  assert.equal(signals.length, 1)
+  foreground.resolve({ kind: 'diff', diff: { path: 'file' } }); await work
+  await new Promise(resolve => setTimeout(resolve, 0))
+  assert.equal(store.snapshot().stats.get('file').added, 2)
+  assert.deepEqual(calls.map(call => call.action), ['stats', 'diff', 'stats'])
+  release(); store.dispose()
+})
+
+test('旧刷新晚到不覆盖较新的写入状态，失败的前台操作也恢复统计', async () => {
+  const waiting = Promise.withResolvers<any>()
+  const state = (version: string) => ({ kind: 'state', state: { version, exists: true, changes: [{ path: 'file' }] } })
+  const store = createChanges(async (input: any) => {
+    if (input.action === 'status') return waiting.promise
+    if (input.action === 'stage') return state('new')
+    if (input.action === 'diff') throw new Error('read failed')
+    return { kind: 'stats', version: input.version, stats: [{ path: 'file', added: 1 }] }
+  }, (error: Error) => error.message)
+  const release = store.subscribe(() => {})
+  const refresh = store.refresh(); await store.run({ action: 'stage' })
+  waiting.resolve(state('old')); await refresh
+  assert.equal(store.snapshot().state.version, 'new')
+  store.visible(['file'])
+  await assert.rejects(store.diff('file'), /read failed/)
+  await new Promise(resolve => setTimeout(resolve, 0))
+  assert.equal(store.snapshot().stats.get('file').added, 1)
+  release(); store.dispose()
+})

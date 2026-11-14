@@ -184,7 +184,7 @@ export function createWorkbench(api, t) {
   return {
     subscribe(listener) { subscribers.add(listener); return () => subscribers.delete(listener); },
     snapshot: () => snapshot, documents, index, assistant, reading, changes, t,
-    async git(input, signal) { const result = await api.git(input, signal); changes.accept(result); return result; },
+    git: changes.run,
     async attach(parent, tooltipParent) {
       try { const saved = localStorage.getItem(STORAGE_KEY); if (saved) preferences = readPreferences(JSON.parse(saved)); }
       catch { publish({ error: t('settingInvalid') }); }

@@ -21,7 +21,7 @@ async function optionalFile(options: Options, file: string): Promise<Buffer> {
   catch (error) { if (error instanceof Error && 'code' in error && error.code === 'ENOENT') return Buffer.alloc(0); throw error }
 }
 
-async function snapshot(options: Options, writable: boolean, signal: AbortSignal): Promise<GitState> {
+async function snapshot(options: Options, writable: boolean, signal: AbortSignal, details = true): Promise<GitState> {
   const dotgit = await options.fs.promises.lstat(join(options.dir, '.git')).catch((error: NodeJS.ErrnoException) => { if (error.code === 'ENOENT') return null; throw error })
   if (dotgit && !dotgit.isDirectory()) throw new Error('WORKBENCH_GIT_LAYOUT')
   const state: GitState = { exists: !!dotgit, version: '', branch: null, head: null, writable, changes: [], branches: [], remotes: [], history: [], author: { name: '', email: '' }, backend: 'builtin', merging: false, remoteBranches: [] }
@@ -50,8 +50,8 @@ async function snapshot(options: Options, writable: boolean, signal: AbortSignal
     for (const ref of [...state.branches.map(branch => `refs/heads/${branch}`), ...state.remoteBranches.map(branch => `refs/remotes/${branch}`)]) {
       hash.update(ref).update(await git.resolveRef({ ...options, ref }))
     }
-    if (state.head) state.history = (await git.log({ ...options, depth: 30 })).map(({ oid, commit }) => ({ oid, message: commit.message, author: commit.author.name, timestamp: commit.author.timestamp }))
-    state.author = { name: await git.getConfig({ ...options, path: 'user.name' }) || '', email: await git.getConfig({ ...options, path: 'user.email' }) || '' }
+    if (details && state.head) state.history = (await git.log({ ...options, depth: 30 })).map(({ oid, commit }) => ({ oid, message: commit.message, author: commit.author.name, timestamp: commit.author.timestamp }))
+    if (details) state.author = { name: await git.getConfig({ ...options, path: 'user.name' }) || '', email: await git.getConfig({ ...options, path: 'user.email' }) || '' }
     for (const file of ['.git/HEAD', '.git/index', '.git/config', '.git/MERGE_HEAD']) hash.update(await optionalFile(options, file))
     await updateFileVersions(hash, options.dir, state.changes, path => options.fs.promises.lstat(path), signal)
   }
@@ -60,17 +60,25 @@ async function snapshot(options: Options, writable: boolean, signal: AbortSignal
   return state
 }
 
-/** 每个仓库只允许一项操作；不同对话共享同一个队列。 */
+const READ_ACTIONS = new Set(['status', 'stats', 'diff', 'commitFiles', 'historyDiff'])
+
+/** 读取可并行；写入等待先前读取，后续读取等待写入结束。 */
 export class GitRepository {
   private pending: Promise<unknown> = Promise.resolve()
+  private readonly readers = new Set<Promise<unknown>>()
   private readonly nativeAvailable: Promise<boolean>
   private readonly cache: object = {}
   constructor(private readonly root: string, private readonly executable: string = 'git', private readonly confine: ConfineGit | undefined = undefined) { this.nativeAvailable = detectGit(executable) }
 
   async execute(input: unknown, policy: SandboxExecutionPolicy | undefined, signal: AbortSignal): Promise<GitResult> {
     const request = gitRequestSchema.parse(input)
-    const task = this.pending.then(() => this.run(request, policy, signal))
-    this.pending = task.catch(() => undefined)
+    const reading = READ_ACTIONS.has(request.action)
+    const task = (reading ? this.pending : Promise.all([this.pending, ...this.readers])).then(() => this.run(request, policy, signal))
+    if (reading) {
+      const settled = task.catch(() => undefined)
+      this.readers.add(settled)
+      void settled.then(() => this.readers.delete(settled))
+    } else this.pending = task.catch(() => undefined)
     return task
   }
 
@@ -81,8 +89,9 @@ export class GitRepository {
     const options = { fs: gitFileSystem(root, policy, signal), dir: root, cache: this.cache }
     const writable = !policy || policy.mode === 'danger-full-access' || policy.mode === 'workspace-write' && containsPath(policy.workspaceRoot, root)
     const engine = await this.nativeAvailable ? new NativeGit(root, this.executable, signal, policy, this.confine) : null
-    const read = () => engine ? engine.snapshot(writable) : snapshot(options, writable, signal)
-    const state = await read()
+    const read = (details = true) => engine ? engine.snapshot(writable, details) : snapshot(options, writable, signal, details)
+    const state = await read(request.action !== 'diff' && request.action !== 'stats')
+    signal.throwIfAborted()
     if (request.action === 'status') return { kind: 'state', state }
     if (request.action === 'init') {
       if (state.exists) throw new Error('WORKBENCH_GIT_EXISTS')

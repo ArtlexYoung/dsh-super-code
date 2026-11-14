@@ -64,3 +64,26 @@ for (const backend of ['builtin', 'native'] as const) {
     try { await assert.rejects(pending, /test cancellation/) } finally { clearTimeout(timer) }
   })
 }
+
+test('原生 Git 默认复用仓库已有的凭据管理器，无需从前端传入凭据', { timeout: 30000 }, async t => {
+  await fs.mkdir(validationRoot, { recursive: true })
+  const root = await fs.mkdtemp(join(validationRoot, 'git-credential-'))
+  t.after(() => fs.rm(root, { recursive: true, force: true }))
+  await exec('git', ['init', '--bare', '--initial-branch=main', join(root, 'remote.git')])
+  const server = await gitHttpServer(root, t), directory = join(root, 'client')
+  await fs.mkdir(directory)
+  const repo = new GitRepository(directory), signal = new AbortController().signal
+  const run = (input: unknown) => repo.execute(input, undefined, signal)
+  const act = async (input: object) => {
+    const value = await run({ action: 'status' }); if (value.kind !== 'state') throw new Error('state')
+    return run({ ...input, version: value.state.version })
+  }
+  await run({ action: 'init', branch: 'main' }); await act({ action: 'remote', remote: 'origin', url: server.url })
+  const helper = join(root, 'helper.cjs')
+  await fs.writeFile(helper, `process.stdin.resume();process.stdin.on('end',()=>{if(process.argv[2]==='get')process.stdout.write('username=tester\\npassword=fixture-token\\n\\n')});`)
+  const quote = (value: string) => '"' + value.replaceAll('\\', '/').replaceAll('"', '\\"') + '"'
+  await exec('git', ['-C', directory, 'config', 'credential.helper', `!${quote(process.execPath)} ${quote(helper)}`])
+  await act({ action: 'fetch', remote: 'origin' })
+  assert.ok(server.requests.some(request => request.authenticated))
+  assert.equal((await fs.readFile(join(directory, '.git/config'), 'utf8')).includes(auth.password), false)
+})

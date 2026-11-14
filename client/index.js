@@ -2179,6 +2179,41 @@ function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, cre
     } }, text(t, 'detail.new')))
 }
 
+function WorkbenchConversation({ sessionId, useSessions, useSessionStatus, useInput, inputActions, remote, detailT, openView, t }) {
+  const [lifetime] = useState(() => new AbortController())
+  const tab = useMemo(() => ({ signal: lifetime.signal, visible: true, contentId: 'dsh-resource://super-agent/' + encodeURIComponent(sessionId) }), [sessionId, lifetime])
+  const detailStates = useMemo(() => new WeakMap(), [])
+  const createInspector = useMemo(() => (address, initial) => createAgentInspector(
+    (target, options) => new SessionEventStream(remote, target, options), address,
+    (request, signal) => remote.session.page(request, signal), initial, detailT), [remote, detailT])
+  useEffect(() => () => lifetime.abort(), [lifetime])
+  if (!useInput || !inputActions || !useSessions) return React.createElement('div', { className: 'sc-wb-conversation-fallback' },
+    t('conversationUnavailable'), React.createElement(ActionButton, { onClick: () => openView('chat', '') }, t('openConversation')))
+  return React.createElement('div', { className: 'sc-wb-conversation' },
+    React.createElement(AgentDetail, { useTabInfo: () => ({ tab }), useSessions, useSessionStatus, sessionId, createInspector, detailStates,
+      openMemory: () => openView('chat', ''), t: detailT }),
+    React.createElement(WorkbenchInput, { useInput, inputActions, openView, t }))
+}
+
+function WorkbenchInput({ useInput, inputActions, openView, t }) {
+  const [error, setError] = useState('')
+  const input = useInput(value => value)
+  const rich = input.attachmentIds?.length > 0 || input.occurrences?.length > 0
+  const locked = input.phase !== 'plain' || rich
+  const act = callback => { try { callback(); setError('') } catch { setError(t('conversationFailed')) } }
+  const send = () => act(() => inputActions.submit())
+  return React.createElement('form', { className: 'sc-wb-conversation-input', onSubmit: event => { event.preventDefault(); send() } },
+    error && React.createElement('p', { role: 'alert' }, error),
+    rich && React.createElement('small', null, t('conversationRichDraft')),
+    React.createElement('textarea', { 'aria-label': t('conversationInput'), placeholder: t('conversationInput'), value: input.draft, disabled: locked,
+      onChange: event => act(() => inputActions.setDraft(event.target.value)),
+      onKeyDown: event => {
+        if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); if (!locked && input.draft.trim()) send() }
+      } }),
+    React.createElement('div', null, React.createElement(ActionButton, { type: 'button', onClick: () => openView('chat', '') }, t('openConversation')),
+      React.createElement(ActionButton, { type: 'submit', disabled: locked || !input.draft.trim() }, t('send'))))
+}
+
 // Explicit public Remote contribution; no model tools or private transport hooks.
 const remoteStringSchema = {
   parse(value) {
@@ -4192,5 +4227,5 @@ function apply(ctx, extraRemoteDescriptors = [], workbenchPreference, workbenchU
   ctx.effect(() => disposeMemoryType, 'super-code: memory library tab')
 }
 
-return { inject, apply, workbenchControls: { Button: ActionButton, Select: SelectControl, MarkdownText: icons.MarkdownText }, skillPackageSource, synchronizeSkillMenus, refreshNativeSkillMenus, taskFeedbackRows, feedbackStatus, feedbackListItems, feedbackListLayout, feedbackListIndex, feedbackListWindow, feedbackListAnchor, connectionSessions, createConnectionAutosave, createBudgetAutosave, createBudgetEditors, connectionDraft, connectionConfiguration, budgetDraft, budgetConfiguration, synchronizePresetDisplay, agentSessionState, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector, agentHistoryRange, agentHistoryRows, agentHistoryWindow, memoryLibraryAddress, memoryLibraryTarget, memoryLibraryNavigation, memoryLibraryWindow, createMemoryEditor, MemoryLibrary }
+return { inject, apply, workbenchControls: { Button: ActionButton, Select: SelectControl, MarkdownText: icons.MarkdownText, Conversation: WorkbenchConversation }, skillPackageSource, synchronizeSkillMenus, refreshNativeSkillMenus, taskFeedbackRows, feedbackStatus, feedbackListItems, feedbackListLayout, feedbackListIndex, feedbackListWindow, feedbackListAnchor, connectionSessions, createConnectionAutosave, createBudgetAutosave, createBudgetEditors, connectionDraft, connectionConfiguration, budgetDraft, budgetConfiguration, synchronizePresetDisplay, agentSessionState, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector, agentHistoryRange, agentHistoryRows, agentHistoryWindow, memoryLibraryAddress, memoryLibraryTarget, memoryLibraryNavigation, memoryLibraryWindow, createMemoryEditor, MemoryLibrary }
 } })

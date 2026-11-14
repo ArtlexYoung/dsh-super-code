@@ -17,19 +17,22 @@ export function GitBranches({ state, canWrite, author, authorValid, setName, set
 }
 
 export function GitRemotes({ state, canWrite, run, confirm, t, Button, Select }) {
-  const [remote, setRemote] = useState('origin'), [url, setUrl] = useState(''), [username, setUsername] = useState(''), [password, setPassword] = useState('');
+  const [remote, setRemote] = useState(() => state.remotes.some(item => item.remote === 'origin') ? 'origin' : state.remotes[0]?.remote || 'origin'), [url, setUrl] = useState(''), [username, setUsername] = useState(''), [password, setPassword] = useState('');
+  const [manual, setManual] = useState(state.backend !== 'native');
   const selected = state.remotes.find(item => item.remote === remote);
   useEffect(() => { setUrl(selected?.url || ''); }, [remote, state.remotes]);
-  const auth = password || username ? { username, password } : undefined;
+  const auth = manual && (password || username) ? { username, password } : undefined;
   return <div className="sc-wb-git-form">
     {!!state.remotes.length && <Select label={t('gitRemote')} value={remote} choices={state.remotes.map(item => [item.remote, item.remote])} onChange={setRemote} />}
     <label>{t('gitRemoteName')}<input value={remote} onChange={event => setRemote(event.target.value)} disabled={!canWrite} /></label>
     <label>{t('gitRemoteUrl')}<input value={url} onChange={event => setUrl(event.target.value)} placeholder={state.backend === 'native' ? 'HTTPS / SSH' : 'HTTPS'} autoComplete="off" disabled={!canWrite} /></label>
     <Button title={t('gitSaveRemote')} disabled={!canWrite || !url} onClick={() => confirm({ action: 'remote', remote, url })}>{t('gitSaveRemote')}</Button>
     <div className="sc-wb-git-divider" />
-    <label>{t('gitUsername')}<input value={username} onChange={event => setUsername(event.target.value)} autoComplete="off" disabled={!canWrite} /></label>
-    <label>{t('gitToken')}<input type="password" value={password} onChange={event => setPassword(event.target.value)} autoComplete="new-password" disabled={!canWrite} /></label>
-    <small className="sc-wb-git-muted">{t('gitCredentialHint')}</small>
+    <small className="sc-wb-git-muted">{t(state.backend === 'native' ? 'gitCredentialReuse' : 'gitCredentialBuiltin')}</small>
+    {state.backend === 'native' && <Button title={t(manual ? 'gitSystemCredential' : 'gitManualCredential')} aria-expanded={manual} onClick={() => { setManual(!manual); setUsername(''); setPassword(''); }}>{t(manual ? 'gitSystemCredential' : 'gitManualCredential')}</Button>}
+    {manual && <><label>{t('gitUsername')}<input value={username} onChange={event => setUsername(event.target.value)} autoComplete="off" disabled={!canWrite} /></label>
+      <label>{t('gitToken')}<input type="password" value={password} onChange={event => setPassword(event.target.value)} autoComplete="new-password" disabled={!canWrite} /></label>
+      <small className="sc-wb-git-muted">{t('gitCredentialHint')}</small></>}
     <div className="sc-wb-git-actions">{['fetch', 'pull', 'push'].map(action => <Button key={action} title={t(`git_${action}`)} disabled={!canWrite || !selected?.url || action !== 'fetch' && !state.branch} onClick={() => action === 'fetch' ? void run({ action, remote, auth }) : confirm({ action, remote, auth })}>{t(`git_${action}`)}</Button>)}</div>
   </div>;
 }

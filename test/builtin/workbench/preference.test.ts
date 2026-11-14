@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { createWorkbenchPreference } from '../../../builtin/workbench/preference.js'
-import { readPreferences, defaults, bindingsOf, conflict } from '../../../builtin/workbench/editor/preferences.js'
+import { readPreferences, defaults, bindingsOf, conflict, keyOf, matchesShortcut } from '../../../builtin/workbench/editor/preferences.js'
 import { selectionThread, hasMark, applyReplacement, selectionSnapshot, mapThread } from '../../../builtin/workbench/assistant/selection-state.js'
 import { EditorState, ChangeSet } from '@codemirror/state'
 
@@ -50,6 +50,17 @@ test('编辑器默认 IDEA，支持独立配色、VS Code 绑定及无冲突的�
   assert.ok(conflict(preferences, 'find', 'Mod-b'))
   assert.throws(() => readPreferences({ ...preferences, shortcuts: { find: 'Mod-b' } }))
   assert.throws(() => readPreferences({ ...preferences, shortcuts: { invalid: 'Mod-k' } }))
+})
+
+test('Esc 关闭弹框可配置且不会抢占编辑器补全和搜索的 Esc', () => {
+  const preferences = defaults()
+  assert.equal(keyOf(preferences, 'close'), 'Escape')
+  assert.ok(matchesShortcut({ key: 'Escape' }, 'Escape'))
+  assert.equal(matchesShortcut({ key: 'Escape', ctrlKey: true }, 'Escape'), false)
+  const updated = readPreferences({ ...preferences, shortcuts: { close: 'Ctrl-k' } })
+  assert.ok(matchesShortcut({ key: 'k', ctrlKey: true }, keyOf(updated, 'close')))
+  assert.equal(bindingsOf(updated, {}).some(item => item.key === 'Ctrl-k' || item.key === 'Escape'), false)
+  assert.throws(() => readPreferences({ ...preferences, shortcuts: { close: 'Mod-f' } }), /CONFLICT/)
 })
 
 test('未发送的草稿没有标记，固定或发送后才显示', () => {

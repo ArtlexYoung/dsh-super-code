@@ -1,7 +1,7 @@
 /** 两个侧栏共享仓库快照；只为可见行计算增删数量。 */
 export function createChanges(git, describe) {
   let snapshot = { state: null, sources: [], stats: new Map(), busy: false, error: '' };
-  let loading, statistics, timer, disposed = false;
+  let loading, statistics, timer, disposed = false, foreground = 0, stateRequest = 0;
   const subscribers = new Set(), wanted = new Set(), windows = new Map();
   const publish = patch => { if (disposed) return; snapshot = { ...snapshot, ...patch }; for (const listener of subscribers) listener(); };
   function updateWanted() {
@@ -18,18 +18,27 @@ export function createChanges(git, describe) {
     if (loading) return loading.work;
     const abort = new AbortController(); publish({ busy: true });
     const work = (async () => {
-      try { const result = await git({ action: 'status' }, abort.signal); if (!abort.signal.aborted) accept(result); }
+      try { await run({ action: 'status' }, abort.signal); }
       catch (error) { if (!abort.signal.aborted) publish({ error: describe(error) }); }
       finally { if (loading?.abort === abort) { loading = null; publish({ busy: false }); } }
     })();
     loading = { abort, work }; return work;
+  }
+  async function run(input, signal) {
+    foreground++; statistics?.abort(); statistics = null;
+    const sequence = ['diff', 'stats', 'commitFiles', 'historyDiff'].includes(input.action) ? null : ++stateRequest;
+    try {
+      const result = await git(input, signal);
+      if (!signal?.aborted && sequence === stateRequest) accept(result);
+      return result;
+    } finally { foreground--; updateWanted(); void collect(); }
   }
   function invalidate() {
     if (!subscribers.size || timer) return;
     timer = setTimeout(() => { timer = null; void refresh(); }, 500);
   }
   async function collect() {
-    if (statistics || !wanted.size || !snapshot.state?.exists) return;
+    if (disposed || foreground || !subscribers.size || statistics || !wanted.size || !snapshot.state?.exists) return;
     const abort = new AbortController(), version = snapshot.state.version;
     statistics = abort;
     try {
@@ -62,7 +71,7 @@ export function createChanges(git, describe) {
         }
       };
     },
-    accept, refresh, invalidate,
+    accept, refresh, invalidate, run,
     visible(paths, owner = 'default') {
       windows.set(owner, paths); updateWanted();
       void collect();
@@ -70,7 +79,7 @@ export function createChanges(git, describe) {
     forget(owner) { windows.delete(owner); updateWanted(); },
     async diff(path, signal) {
       if (!snapshot.state) throw new Error('WORKBENCH_GIT_STALE');
-      return (await git({ action: 'diff', path, side: 'total', version: snapshot.state.version }, signal)).diff;
+      return (await run({ action: 'diff', path, side: 'total', version: snapshot.state.version }, signal)).diff;
     },
     dispose() { disposed = true; loading?.abort.abort(); statistics?.abort(); clearTimeout(timer); subscribers.clear(); },
   };

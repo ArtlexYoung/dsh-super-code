@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { EditorState, StateEffect } from '@codemirror/state';
 import { EditorView, Decoration, WidgetType, lineNumbers, keymap, drawSelection } from '@codemirror/view';
 import { search, searchKeymap } from '@codemirror/search';
@@ -23,14 +23,13 @@ export function diffBlocks(lines) {
   return blocks;
 }
 
-export function GitDiff({ diff, palette, t, Button, labels, open }) {
+export function GitDiff({ diff, palette, t, Button, labels, open, loading }) {
   const left = useRef(null), right = useRef(null), views = useRef([]), [at, setAt] = useState(-1);
-  const blocks = diff ? diffBlocks(diff.lines) : [];
+  const blocks = useMemo(() => diff ? diffBlocks(diff.lines) : [], [diff]);
   useEffect(() => {
     setAt(-1);
     if (!diff || diff.binary || !left.current) return;
     let disposed = false;
-    const blocks = diffBlocks(diff.lines);
     views.current = [left, right].map((parent, side) => {
       const state = EditorState.create({ doc: side ? diff.after : diff.before, extensions: [
         EditorState.readOnly.of(true), EditorView.editable.of(false), editorTheme(palette), lineNumbers(), drawSelection(), search(), keymap.of(searchKeymap),
@@ -62,7 +61,7 @@ export function GitDiff({ diff, palette, t, Button, labels, open }) {
     const next = at < 0 ? (direction > 0 ? 0 : blocks.length - 1) : (at + direction + blocks.length) % blocks.length; setAt(next);
     views.current.forEach((view, side) => { const block = blocks[next], line = Math.min(view.state.doc.lines, side ? block.after : block.before); view.dispatch({ effects: EditorView.scrollIntoView(view.state.doc.line(line).from, { y: 'center' }) }); });
   };
-  if (!diff) return <div className="sc-wb-git-empty"><span className="sc-wb-git-empty-icon">±</span><strong>{t('gitChooseFile')}</strong></div>;
+  if (!diff) return <div className="sc-wb-git-empty" role={loading ? 'status' : undefined}><span className="sc-wb-git-empty-icon">±</span><strong>{t(loading ? 'loading' : 'gitChooseFile')}</strong></div>;
   return <div className="sc-wb-git-diff"><header><strong title={diff.path}>{diff.path}</strong><span className="sc-wb-git-diff-tools"><small>{blocks.length} {t('gitHunks')}</small>
     <Button title={t('gitPrevious')} disabled={!blocks.length} onClick={() => move(-1)}>↑</Button><Button title={t('gitNext')} disabled={!blocks.length} onClick={() => move(1)}>↓</Button>
     {open && <Button title={t('gitOpenFile')} onClick={open}>{t('gitOpenFile')}</Button>}</span></header>

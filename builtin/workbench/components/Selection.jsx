@@ -1,7 +1,8 @@
 import React, { useLayoutEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { keyOf, matchesShortcut } from '../editor/preferences.js';
 
-export function Selection({ value, workbench, Button, t, palette }) {
+export function Selection({ value, workbench, Button, t, palette, preferences }) {
   const panel = useRef(null), input = useRef(null), anchor = useRef(null), messages = useRef(null);
   const thread = value?.thread, visible = value?.visible, assistant = workbench.assistant;
   useLayoutEffect(() => {
@@ -28,9 +29,9 @@ export function Selection({ value, workbench, Button, t, palette }) {
   const busy = thread.status === 'running';
   return createPortal(<section ref={panel} className="sc-workbench sc-wb-assistant" data-palette={palette} data-workbench-dialog
     role="dialog" aria-label={t('selection')} aria-busy={busy}
-    onKeyDown={event => { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); assistant.close(); } }}>
+    onKeyDown={event => { if (matchesShortcut(event, keyOf(preferences, 'close'))) { event.preventDefault(); event.stopPropagation(); assistant.close(); } }}>
     <header><strong>{t('selection')}</strong><nav>
-      <Button title={t(thread.pinned ? 'unpin' : 'pin')} aria-pressed={thread.pinned} onClick={assistant.pin}>{t(thread.pinned ? 'unpin' : 'pin')}</Button>
+      <Button title={t(thread.pinned ? 'selectionUnpin' : 'selectionPin')} aria-pressed={thread.pinned} onClick={assistant.pin}>{t(thread.pinned ? 'selectionUnpin' : 'selectionPin')}</Button>
       <Button title={t('remove')} onClick={assistant.remove}>{t('remove')}</Button>
       <Button title={t('close')} onClick={assistant.close}>×</Button>
     </nav></header>

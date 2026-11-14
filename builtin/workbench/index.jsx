@@ -9,7 +9,7 @@ import { createWorkbenchPreference } from './preference.js';
 import { FileChanges } from './git/Changes.jsx';
 export { createWorkbenchPreference } from './preference.js';
 
-export function apply(ctx, { Button, Select, MarkdownText, preference = createWorkbenchPreference(localStorage) }) {
+export function apply(ctx, { Button, Select, MarkdownText, Conversation, preference = createWorkbenchPreference(localStorage) }) {
   const workspaces = new Map();
   function WorkbenchButton({ title, ...props }) { return React.createElement(Button, { ...props, title, 'aria-label': props['aria-label'] || title }); }
   ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'super-code: workbench locale');
@@ -32,7 +32,8 @@ export function apply(ctx, { Button, Select, MarkdownText, preference = createWo
       name: 'conversation.view', id: 'super-code-workbench', order: 20, locale: NS, label: () => t('title'),
       inject: sessionId => {
         const workbench = workspace(ready.remote.superCodeWorkbench, sessionId);
-        return { workbench, Button: WorkbenchButton, Select, MarkdownText };
+        return { workbench, Button: WorkbenchButton, Select, MarkdownText, Conversation, conversationRemote: ready.remote,
+          conversationT: ctx.locale.bind('dshSuperCode') };
       },
     };
     ready.slots.inject('conversation.view', () => {

@@ -1,4 +1,5 @@
 export const actions = [
+  { id: 'close', idea: 'Escape', vscode: 'Escape', dialog: true },
   { id: 'definition', idea: 'Mod-b', vscode: 'F12' },
   { id: 'complete', idea: 'Ctrl-Space', vscode: 'Ctrl-Space' },
   { id: 'find', idea: 'Mod-f', vscode: 'Mod-f', global: true },
@@ -14,7 +15,7 @@ export const actions = [
 ];
 export const defaults = () => ({ keymap: 'idea', palette: 'idea', shortcuts: {} });
 const profiles = ['idea', 'vscode'];
-const knownKeys = /^((?:(?:Mod|Ctrl|Meta|Alt|Shift)-)*)([a-z0-9]|[\[\]\\/.,;='`-]|Space|Tab|Enter|Backspace|Delete|Home|End|PageUp|PageDown|ArrowLeft|ArrowRight|ArrowUp|ArrowDown|F(?:[1-9]|1\d|2[0-4]))$/;
+const knownKeys = /^((?:(?:Mod|Ctrl|Meta|Alt|Shift)-)*)([a-z0-9]|[\[\]\\/.,;='`-]|Space|Tab|Enter|Escape|Backspace|Delete|Home|End|PageUp|PageDown|ArrowLeft|ArrowRight|ArrowUp|ArrowDown|F(?:[1-9]|1\d|2[0-4]))$/;
 const modifierOrder = ['Mod', 'Ctrl', 'Meta', 'Alt', 'Shift'];
 const punctuation = { Minus: '-', Equal: '=', BracketLeft: '[', BracketRight: ']', Backslash: '\\', Semicolon: ';', Quote: "'", Backquote: '`', Comma: ',', Period: '.', Slash: '/' };
 
@@ -51,7 +52,7 @@ export function conflict(preferences, id, key) {
 }
 export function shortcutOf(event) {
   let key = event.key;
-  if (/^(Control|Meta|Alt|Shift|Escape|Dead|Process|Unidentified)$/.test(key) || event.isComposing) return null;
+  if (/^(Control|Meta|Alt|Shift|Dead|Process|Unidentified)$/.test(key) || event.isComposing) return null;
   if (key === ' ') key = 'Space';
   else if (key.length === 1) key = key.toLowerCase();
   key = punctuation[event.code] ?? key;
@@ -60,14 +61,18 @@ export function shortcutOf(event) {
   return normalize([...modifiers, key].join('-'));
 }
 export function bindingsOf(preferences, commands) {
-  const bindings = actions.map(action => ({ key: keyOf(preferences, action.id), run: commands[action.id], scope: action.global ? 'editor workbench' : 'editor', preventDefault: true }));
+  const bindings = actions.filter(action => !action.dialog).map(action => ({ key: keyOf(preferences, action.id), run: commands[action.id], scope: action.global ? 'editor workbench' : 'editor', preventDefault: true }));
   if (!preferences.shortcuts.definition && !bindings.some(binding => binding.key === 'F12')) bindings.push({ key: 'F12', run: commands.definition });
   for (const action of actions) {
     const key = keyOf(preferences, action.id);
     const alias = key.replace(/^Mod-/, 'Ctrl-');
-    if (!preferences.shortcuts[action.id] && alias !== key && !bindings.some(binding => binding.key === alias)) bindings.push({ key: alias, run: commands[action.id], scope: action.global ? 'editor workbench' : 'editor', preventDefault: true });
+    if (!action.dialog && !preferences.shortcuts[action.id] && alias !== key && !bindings.some(binding => binding.key === alias)) bindings.push({ key: alias, run: commands[action.id], scope: action.global ? 'editor workbench' : 'editor', preventDefault: true });
   }
   return bindings;
+}
+export function matchesShortcut(event, key) {
+  const pressed = shortcutOf(event);
+  return pressed !== null && identities(key).includes(pressed);
 }
 export function keyLabel(key, space = 'Space') {
   const parsed = knownKeys.exec(key);

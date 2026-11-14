@@ -32,7 +32,7 @@ export class NativeGit {
   constructor(private readonly root: string, private readonly executable: string, private readonly signal: AbortSignal,
     private readonly policy: SandboxExecutionPolicy | undefined = undefined, private readonly confine: ConfineGit | undefined = undefined) {}
 
-  private async run(args: string[], options: { input?: string; env?: NodeJS.ProcessEnv; write?: boolean; optional?: boolean } = {}): Promise<CommandResult> {
+  private async run(args: string[], options: { input?: string; env?: NodeJS.ProcessEnv; write?: boolean; optional?: boolean; limit?: number } = {}): Promise<CommandResult> {
     this.signal.throwIfAborted()
     let argv: readonly string[] = [this.executable, '--no-optional-locks', '--literal-pathspecs', '-c', 'core.fsmonitor=false', '-C', this.root, ...args]
     if (options.write && this.policy?.mode === 'read-only') throw new Error('WORKBENCH_GIT_READONLY')
@@ -46,8 +46,13 @@ export class NativeGit {
     for (const key of ['GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_OBJECT_DIRECTORY', 'GIT_ALTERNATE_OBJECT_DIRECTORIES']) delete env[key]
     return new Promise((resolve, reject) => {
       const stdout: Buffer[] = [], stderr: Buffer[] = []
+      let bytes = 0
       const child = spawn(argv[0]!, argv.slice(1), { cwd: this.root, env, signal: this.signal, windowsHide: true })
-      child.stdout.on('data', (data: Buffer) => stdout.push(data))
+      child.stdout.on('data', (data: Buffer) => {
+        bytes += data.length
+        if (options.limit !== undefined && bytes > options.limit) { child.kill(); reject(new Error('WORKBENCH_FILE_SIZE')); return }
+        stdout.push(data)
+      })
       child.stderr.on('data', (data: Buffer) => stderr.push(data))
       child.on('error', () => reject(this.signal.aborted ? this.signal.reason : new Error('WORKBENCH_GIT_NATIVE')))
       child.on('close', code => {
@@ -63,9 +68,11 @@ export class NativeGit {
 
   private async text(args: string[], optional = false): Promise<string> { return (await this.run(args, { optional })).stdout.toString('utf8').replace(/\n$/, '') }
 
-  async snapshot(writable: boolean): Promise<GitState> {
+  async snapshot(writable: boolean, details = true): Promise<GitState> {
     const state: GitState = { exists: false, version: '', branch: null, head: null, writable, changes: [], branches: [], remotes: [], history: [], author: { name: '', email: '' }, backend: 'native', merging: false, remoteBranches: [] }
-    const repository = await this.run(['rev-parse', '--show-toplevel'], { optional: true })
+    const [repository, gitdir] = await Promise.all([
+      this.run(['rev-parse', '--show-toplevel'], { optional: true }), this.text(['rev-parse', '--absolute-git-dir'], true),
+    ])
     const hash = createHash('sha256')
     if (repository.code) {
       if (await fs.lstat(join(this.root, '.git')).catch((error: NodeJS.ErrnoException) => { if (error.code === 'ENOENT') return null; throw error })) throw new Error('WORKBENCH_GIT_LAYOUT')
@@ -73,14 +80,15 @@ export class NativeGit {
     }
     if (await fs.realpath(repository.stdout.toString('utf8').replace(/\n$/, '')) !== this.root) throw new Error('WORKBENCH_GIT_ROOT')
     state.exists = true
-    const [branch, head, refs, statusResult, remotes, name, email, gitdir] = await Promise.all([
-      this.text(['symbolic-ref', '--quiet', '--short', 'HEAD'], true), this.text(['rev-parse', '--verify', '--quiet', 'HEAD'], true),
+    const [headFile, refs, statusResult, config] = await Promise.all([
+      fs.readFile(join(gitdir, 'HEAD'), 'utf8'),
       this.text(['for-each-ref', '--format=%(refname) %(objectname)', 'refs/heads', 'refs/remotes']),
       this.run(['status', '--porcelain=v1', '-z', '--untracked-files=all', '--no-renames']),
-      this.text(['config', '--get-regexp', '^remote\\..*\\.url$'], true), this.text(['config', '--get', 'user.name'], true),
-      this.text(['config', '--get', 'user.email'], true), this.text(['rev-parse', '--absolute-git-dir']),
+      this.text(['config', '--null', '--get-regexp', '^(remote\\..*\\.url|user\\.(name|email))$'], true),
     ])
-    state.branch = branch || null; state.head = head || null; state.author = { name, email }
+    const headRef = headFile.startsWith('ref: ') ? headFile.slice(5).trim() : null
+    state.branch = headRef?.replace(/^refs\/heads\//, '') || null
+    state.head = headRef ? refs.split('\n').find(line => line.startsWith(`${headRef} `))?.slice(headRef.length + 1) || null : headFile.trim() || null
     const references = refs.split('\n').filter(Boolean).map(line => line.slice(0, line.lastIndexOf(' ')))
     state.branches = references.filter(ref => ref.startsWith('refs/heads/')).map(ref => ref.slice(11))
     state.remoteBranches = references.filter(ref => ref.startsWith('refs/remotes/') && !ref.endsWith('/HEAD')).map(ref => ref.slice(13))
@@ -96,13 +104,16 @@ export class NativeGit {
       changes.set(path, old && x === '?' ? { ...old, worktree: 3 } : { path, head, stage, worktree, conflict: x === 'U' || y === 'U' || x === 'A' && y === 'A' || x === 'D' && y === 'D' })
     }
     state.changes = [...changes.values()]
-    for (const entry of remotes.split('\n').filter(Boolean)) {
-      const match = /^remote\.(.+)\.url (.*)$/.exec(entry)
+    for (const entry of config.split('\0').filter(Boolean)) {
+      const separator = entry.indexOf('\n'), key = entry.slice(0, separator), value = entry.slice(separator + 1)
+      if (key === 'user.name') { state.author.name = value; continue }
+      if (key === 'user.email') { state.author.email = value; continue }
+      const match = /^remote\.(.+)\.url$/.exec(key)
       if (!match) continue
-      let url = ''; try { url = remoteUrl(match[2]!, true) } catch { /* 非支持地址不回传认证信息。 */ }
+      let url = ''; try { url = remoteUrl(value, true) } catch { /* 非支持地址不回传认证信息。 */ }
       state.remotes.push({ remote: match[1]!, url })
     }
-    if (state.head) state.history = (await this.text(['log', '-30', '-z', '--format=%H%n%an%n%at%n%B'])).split('\0').filter(Boolean).map(record => {
+    if (details && state.head) state.history = (await this.text(['log', '-30', '-z', '--format=%H%n%an%n%at%n%B'])).split('\0').filter(Boolean).map(record => {
       const [oid, author, timestamp, ...message] = record.split('\n')
       return { oid: oid!, author: author!, timestamp: Number(timestamp), message: message.join('\n') }
     })
@@ -133,10 +144,7 @@ export class NativeGit {
   }
 
   private async blob(ref: string, optional = false): Promise<Buffer> {
-    const size = await this.run(['cat-file', '-s', ref], { optional })
-    if (size.code) return Buffer.alloc(0)
-    if (Number(size.stdout.toString('utf8')) > MAX_FILE_BYTES) throw new Error('WORKBENCH_FILE_SIZE')
-    return (await this.run(['show', ref])).stdout
+    return (await this.run(['show', '--no-textconv', ref], { optional, limit: MAX_FILE_BYTES })).stdout
   }
 
   async commitFiles(oid: string): Promise<string[]> {

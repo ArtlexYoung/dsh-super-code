@@ -8,7 +8,7 @@ export function Settings({ workbench, preferences, Button, Select, t }) {
   return <div className="sc-wb-settings" onKeyDownCapture={event => {
     if (!recording) return;
     event.preventDefault(); event.stopPropagation();
-    if (event.key === 'Escape') { record(null); return; }
+    if (event.key === 'Escape' && recording !== 'close') { record(null); return; }
     const key = shortcutOf(event); if (!key) return;
     if (conflict(preferences, recording, key)) { setError(t('shortcutConflict')); return; }
     apply({ ...preferences, shortcuts: { ...preferences.shortcuts, [recording]: key } }); record(null);

@@ -9,6 +9,7 @@ import { createReading } from './reading/controller.js';
 import { createAnalyzer } from './analysis/background.js';
 import { createBuffer } from './buffer.js';
 import { createChanges } from './git/changes.js';
+import { createFileSearch } from './file-search.js';
 
 const INDEX_BYTES = 16 * 1024 * 1024;
 const STORAGE_KEY = 'dsh-super-code-workbench';
@@ -24,6 +25,7 @@ export function createWorkbench(api, t) {
   const assistant = createSelectionAssistant({ editor: { file: () => current, view: () => editor?.view }, api, t, changed: value => publish({ assistant: value }) });
   const reading = createReading({ api, documents, currentFile: () => current, visit, t, locale: () => t('readingLanguage') });
   const changes = createChanges(api.git, error => errorText(error, t));
+  const files = createFileSearch(api.list);
 
   function position() {
     const view = editor?.view;
@@ -111,6 +113,7 @@ export function createWorkbench(api, t) {
     return result;
   }
   async function refresh() {
+    files.reset();
     scanning?.abort(); const abort = new AbortController(); scanning = abort;
     publish({ indexing: true, indexed: 0, error: '' });
     try {
@@ -183,7 +186,7 @@ export function createWorkbench(api, t) {
   }
   return {
     subscribe(listener) { subscribers.add(listener); return () => subscribers.delete(listener); },
-    snapshot: () => snapshot, documents, index, assistant, reading, changes, t,
+    snapshot: () => snapshot, documents, index, assistant, reading, changes, files, t,
     git: changes.run,
     async attach(parent, tooltipParent) {
       try { const saved = localStorage.getItem(STORAGE_KEY); if (saved) preferences = readPreferences(JSON.parse(saved)); }
@@ -197,8 +200,8 @@ export function createWorkbench(api, t) {
       if (current) { const target = history[at] || { file: current }; current = null; await display(target); }
       if (editor === attached) await refresh();
     },
-    detach() { opening?.abort(); scanning?.abort(); generation++; clearTimeout(timer); assistant.switchFile(); analyzer.dispose(); if (current && editor?.view) documents.get(current).state = editor.view.state; editor?.dispose(); editor = null; },
-    dispose() { this.detach(); disposed = true; assistant.dispose(); reading.dispose(); changes.dispose(); documents.clear(); index.clear(); subscribers.clear(); },
+    detach() { opening?.abort(); scanning?.abort(); files.activate(false); generation++; clearTimeout(timer); assistant.switchFile(); analyzer.dispose(); if (current && editor?.view) documents.get(current).state = editor.view.state; editor?.dispose(); editor = null; },
+    dispose() { this.detach(); disposed = true; assistant.dispose(); reading.dispose(); changes.dispose(); files.dispose(); documents.clear(); index.clear(); subscribers.clear(); },
     visit, move, list, refresh, save, settings, definition, fail,
     view: () => editor?.view,
     panel(value) { publish({ panel: value }); },

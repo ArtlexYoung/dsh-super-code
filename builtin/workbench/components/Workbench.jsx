@@ -13,21 +13,7 @@ import { Splitter } from './Splitter.jsx';
 import { readLayout, saveLayout } from '../layout.js';
 import { FileList } from '../git/FileList.jsx';
 import { FileChanges } from '../git/Changes.jsx';
-
-function Directory({ path = '', snapshot, workbench, Button, t }) {
-  const [open, setOpen] = useState(path === '');
-  const list = snapshot.directories.get(path);
-  return <div className="sc-wb-directory">
-    {path && <Button aria-expanded={open} title={path} className="sc-wb-file" onClick={() => {
-      const next = !open; setOpen(next); if (next) void workbench.list(path).catch(workbench.fail);
-    }}><span aria-hidden>{open ? '⌄' : '›'}</span><span>{path.split('/').at(-1)}</span></Button>}
-    {open && <div role="group">{list?.entries.map(entry => entry.type === 'directory'
-      ? <Directory key={entry.path} path={entry.path} snapshot={snapshot} workbench={workbench} Button={Button} t={t} />
-      : <Button key={entry.path} className="sc-wb-file" title={entry.path} aria-current={snapshot.file === entry.path ? 'page' : undefined}
-        onClick={() => { void workbench.visit({ file: entry.path }).catch(workbench.fail); }}><span className="sc-wb-file-ext" aria-hidden>{entry.name.split('.').at(-1).slice(0, 3)}</span><span>{entry.name}</span></Button>)}
-      {list?.truncated && <small>{t('indexLimit')}</small>}</div>}
-  </div>;
-}
+import { Files } from './Files.jsx';
 
 function Locations({ data, query, search, workbench, Button, t }) {
   const [text, setText] = useState(query || '');
@@ -60,7 +46,7 @@ export function Workbench({ workbench, Button, Select, MarkdownText, Conversatio
   return <section className="sc-workbench sc-wb-main" data-conversation-composer-overlay="" data-palette={snapshot.preferences.palette} aria-label={t('title')}
     style={{ '--wb-explorer-width': `${layout.explorer}px`, '--wb-reading-width': `${layout.reading}px`, '--wb-files-height': `${layout.files}px` }}
     onKeyDown={event => {
-      if (event.target.closest('.sc-wb-conversation')) return;
+      if (event.target.closest('.sc-wb-conversation,.sc-wb-file-search')) return;
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') { event.preventDefault(); void workbench.save().catch(workbench.fail); }
       else workbenchKeydown(event, workbench.view());
     }} onPointerDownCapture={event => navigationPointer(event, direction => { void workbench.move(direction).catch(workbench.fail); })}
@@ -86,7 +72,7 @@ export function Workbench({ workbench, Button, Select, MarkdownText, Conversatio
       <section className="sc-wb-explorer-files" data-open={layout.filesOpen}>
         <Button className="sc-wb-section" aria-expanded={layout.filesOpen} aria-controls="sc-wb-file-list" title={t('files')}
           onClick={() => { changeLayout({ filesOpen: !layout.filesOpen }); persistLayout(); }}><span aria-hidden>{layout.filesOpen ? '⌄' : '›'}</span><strong>{t('files')}</strong><small>{snapshot.indexing ? t('indexing') : snapshot.indexed}</small></Button>
-        <div id="sc-wb-file-list" hidden={!layout.filesOpen} className="sc-wb-file-list"><Directory snapshot={snapshot} workbench={workbench} Button={Button} t={t} /></div>
+        <div id="sc-wb-file-list" hidden={!layout.filesOpen} className="sc-wb-explorer-content"><Files snapshot={snapshot} workbench={workbench} Button={Button} t={t} visible={layout.filesOpen} /></div>
       </section>
       {layout.filesOpen && layout.outlineOpen && <Splitter panel="files" label={t('resizeFiles')} value={layout.files} ratio={.85}
         change={value => changeLayout({ files: value })} commit={persistLayout} />}

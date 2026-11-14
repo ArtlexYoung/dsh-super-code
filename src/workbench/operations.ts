@@ -9,7 +9,8 @@ import { containsPath } from './git/filesystem.js'
 import { moveToTrash } from './trash.js'
 
 const entryPath = pathSchema.min(1).refine(path => !path.endsWith('/') && !path.includes('//'), 'WORKBENCH_PATH')
-const operationSchema = z.discriminatedUnion('action', [
+export type FileOperation = { action: 'createFile' | 'createDirectory' | 'trash'; path: string } | { action: 'copy'; path: string; destination: string } | { action: 'absolutePath'; path: string }
+export const operationSchema: z.ZodType<FileOperation> = z.discriminatedUnion('action', [
   z.object({ action: z.enum(['createFile', 'createDirectory', 'trash']), path: entryPath }).strict(),
   z.object({ action: z.literal('copy'), path: entryPath, destination: entryPath }).strict(),
   z.object({ action: z.literal('absolutePath'), path: pathSchema }).strict(),

@@ -1,15 +1,20 @@
+import { saveDelays } from '../editing/autosave.js';
+
 export const actions = [
   { id: 'close', idea: 'Escape', vscode: 'Escape', dialog: true },
   { id: 'definition', idea: 'Mod-b', vscode: 'F12' },
   { id: 'complete', idea: 'Ctrl-Space', vscode: 'Ctrl-Space' },
   { id: 'find', idea: 'Mod-f', vscode: 'Mod-f', global: true },
   { id: 'project', idea: 'Mod-Shift-f', vscode: 'Mod-Shift-f', global: true },
+  { id: 'replace', idea: 'Mod-r', vscode: 'Mod-r', global: true },
+  { id: 'projectReplace', idea: 'Mod-Shift-r', vscode: 'Mod-Shift-r', global: true },
+  { id: 'save', idea: 'Mod-s', vscode: 'Mod-s', global: true },
   { id: 'back', idea: 'Alt-ArrowLeft', vscode: 'Alt-ArrowLeft', global: true },
   { id: 'forward', idea: 'Alt-ArrowRight', vscode: 'Alt-ArrowRight', global: true },
   { id: 'indent', idea: 'Tab', vscode: 'Tab' },
   { id: 'outdent', idea: 'Shift-Tab', vscode: 'Shift-Tab' },
-  { id: 'undo', idea: 'Mod-z', vscode: 'Mod-z' },
-  { id: 'redo', idea: 'Mod-Shift-z', vscode: 'Mod-y' },
+  { id: 'undo', idea: 'Mod-z', vscode: 'Mod-z', global: true },
+  { id: 'redo', idea: 'Mod-Shift-z', vscode: 'Mod-y', global: true },
   { id: 'comment', idea: 'Mod-/', vscode: 'Mod-/' },
   { id: 'caretAbove', idea: 'Ctrl-Alt-ArrowUp', vscode: 'Mod-Alt-ArrowUp' },
   { id: 'caretBelow', idea: 'Ctrl-Alt-ArrowDown', vscode: 'Mod-Alt-ArrowDown' },
@@ -19,7 +24,7 @@ export const actions = [
   { id: 'wordRight', idea: 'Ctrl-ArrowRight', vscode: 'Ctrl-ArrowRight' },
   { id: 'deleteLine', idea: 'Mod-y', vscode: 'Mod-Shift-k' },
 ];
-export const defaults = () => ({ keymap: 'idea', palette: 'idea', shortcuts: {} });
+export const defaults = () => ({ keymap: 'idea', palette: 'idea', shortcuts: {}, autoSave: 'manual', undoLimit: 1000 });
 const profiles = ['idea', 'vscode'];
 const knownKeys = /^((?:(?:Mod|Ctrl|Meta|Alt|Shift)-)*)([a-z0-9]|[\[\]\\/.,;='`-]|Space|Tab|Enter|Escape|Backspace|Delete|Home|End|PageUp|PageDown|ArrowLeft|ArrowRight|ArrowUp|ArrowDown|F(?:[1-9]|1\d|2[0-4]))$/;
 const modifierOrder = ['Mod', 'Ctrl', 'Meta', 'Alt', 'Shift'];
@@ -45,7 +50,9 @@ export function readPreferences(value) {
     if (!actions.some(action => action.id === id)) throw new Error('WORKBENCH_SHORTCUT_INVALID');
     return [id, normalize(key)];
   });
-  const result = { keymap: value.keymap, palette: value.palette, shortcuts: Object.fromEntries(shortcuts) };
+  const autoSave = value.autoSave === undefined ? 'manual' : value.autoSave, undoLimit = value.undoLimit === undefined ? 1000 : value.undoLimit;
+  if (!saveDelays.includes(autoSave) || !Number.isSafeInteger(undoLimit) || undoLimit < 1) throw new Error('WORKBENCH_PREFERENCES_INVALID');
+  const result = { keymap: value.keymap, palette: value.palette, shortcuts: Object.fromEntries(shortcuts), autoSave, undoLimit };
   if (value.translationModel !== undefined) {
     const model = value.translationModel;
     if (!model || typeof model !== 'object' || Object.keys(model).length !== 2 || !['provider', 'model'].every(key => typeof model[key] === 'string' && model[key].trim().length > 0 && model[key].length <= 256)) throw new Error('WORKBENCH_TRANSLATION_MODEL');
@@ -89,5 +96,5 @@ export function keyLabel(key, space = 'Space') {
   const parsed = knownKeys.exec(key);
   const parts = [...parsed[1].split('-').filter(Boolean), parsed[2]];
   const labels = { Mod: 'Ctrl/⌘', Meta: '⌘', ArrowLeft: '←', ArrowRight: '→', ArrowUp: '↑', ArrowDown: '↓', Space: space };
-  return parts.map(part => labels[part] || part).join(' + ');
+  return parts.map(part => labels[part] || (/^[a-z]$/.test(part) ? part.toUpperCase() : part)).join(' + ');
 }

@@ -29,7 +29,7 @@ export function apply(ctx, { Button, Select, MarkdownText, Conversation, prefere
   }
   ctx.effect(() => {
     const style = document.createElement('style'); style.textContent = stylesheet; style.dataset.superCodeWorkbench = 'true'; document.head.append(style);
-    return () => { style.remove(); for (const workspace of workspaces.values()) workspace.dispose(); workspaces.clear(); projects.clear(); };
+    return () => { style.remove(); for (const workspace of workspaces.values()) workspace.dispose(); for (const project of projects.values()) project.dispose(); workspaces.clear(); projects.clear(); };
   }, 'super-code: workbench lifecycle');
   ctx.inject(['remote.superCodeWorkbench'], ready => {
     const contribution = {

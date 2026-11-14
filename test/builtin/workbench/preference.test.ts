@@ -61,6 +61,19 @@ test('新增多光标与扩词动作可配置，Ctrl+/ 保留单行注释绑定'
   assert.throws(() => readPreferences({ ...preferences, translationModel: { provider: '', model: 'x' } }))
 })
 
+test('编辑器保存与历史设置兼容已有偏好，替换和保存快捷键可配置', () => {
+  const preferences = readPreferences({ keymap: 'idea', palette: 'idea', shortcuts: {} })
+  assert.equal(preferences.undoLimit, 1000); assert.equal(preferences.autoSave, 'manual')
+  assert.ok(bindingsOf(preferences, {}).some(binding => binding.key === 'Ctrl-r'))
+  assert.ok(bindingsOf(preferences, {}).some(binding => binding.key === 'Ctrl-Shift-r'))
+  assert.ok(bindingsOf(preferences, {}).some(binding => binding.key === 'Ctrl-s'))
+  assert.equal(readPreferences({ ...preferences, undoLimit: 2000, autoSave: '15' }).undoLimit, 2000)
+  for (const value of [0, -1, 1.5, '1000', null, Infinity, Number.MAX_SAFE_INTEGER + 1]) assert.throws(() => readPreferences({ ...preferences, undoLimit: value }), /WORKBENCH_PREFERENCES_INVALID/)
+  for (const value of ['0', '10', 15, null, false]) assert.throws(() => readPreferences({ ...preferences, autoSave: value }), /WORKBENCH_PREFERENCES_INVALID/)
+  assert.throws(() => readPreferences({ ...preferences, shortcuts: { replace: 'Mod-f' } }), /CONFLICT/)
+  assert.equal(keyOf(readPreferences({ ...preferences, shortcuts: { replace: 'Ctrl-h' } }), 'replace'), 'Ctrl-h')
+})
+
 test('Esc 关闭弹框可配置且不会抢占编辑器补全和搜索的 Esc', () => {
   const preferences = defaults()
   assert.equal(keyOf(preferences, 'close'), 'Escape')

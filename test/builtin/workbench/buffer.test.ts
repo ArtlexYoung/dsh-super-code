@@ -43,6 +43,18 @@ test('编辑缓冲保留 CRLF，撤销后恢复干净状态而不改写整份文
   buffer.state = state; assert.equal(buffer.dirty, false); assert.equal(buffer.text, text)
 })
 
+test('未打开编辑器的全局替换也保留原文件 CRLF，外部重新读取可更新换行风格', () => {
+  const buffer = createBuffer({ path: 'windows.txt', text: 'hello\r\n', version: '1' })
+  buffer.state = EditorState.create({ doc: 'world\n' })
+  assert.equal(buffer.text, 'world\r\n')
+  buffer.original = 'world\r\n'
+  assert.equal(buffer.dirty, false)
+  buffer.state = buffer.state.update({ changes: { from: 0, to: 5, insert: 'hello' } }).state
+  assert.equal(buffer.text, 'hello\r\n')
+  buffer.original = 'world\n'
+  assert.equal(buffer.text, 'hello\n')
+})
+
 test('长单行标识符只扫描新增块，Unicode 字母不被窗口边界截断', () => {
   const name = '𐐀'.repeat(300) + 'a'.repeat(1800000), source = ` ${name} `
   let scanned = 0

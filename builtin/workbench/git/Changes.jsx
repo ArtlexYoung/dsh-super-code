@@ -4,6 +4,7 @@ import { GitDiff } from './Diff.jsx';
 import { Floating } from '../components/Floating.jsx';
 import { errorText } from '../locales.js';
 import { matchFiles } from '../file-search.js';
+import { Icon } from '../components/Icon.jsx';
 
 function ChangeStat({ stat, t }) {
   if (!stat) return '…';
@@ -12,7 +13,8 @@ function ChangeStat({ stat, t }) {
   return <><b>+{stat.added}</b><em>−{stat.removed}</em></>;
 }
 
-export function FileChanges({ workbench, Button, Select, t, revision, palette = 'idea' }) {
+export function FileChanges({ workbench, Button, Select, t, revision }) {
+  const { preferences: { palette } } = useSyncExternalStore(workbench.subscribe, workbench.snapshot);
   const store = workbench.changes, snapshot = useSyncExternalStore(store.subscribe, store.snapshot);
   const [source, setSource] = useState('all'), [comparison, setComparison] = useState(null);
   const [open, setOpen] = useState(false), [text, setText] = useState('');
@@ -50,12 +52,13 @@ export function FileChanges({ workbench, Button, Select, t, revision, palette = 
   }
   function close() { request.current?.abort(); setComparison(null); }
   return <section className="sc-workbench sc-wb-changes" data-open={open} data-palette={palette} aria-label={t('changesTitle')}>
-    <header><Button aria-expanded={open} aria-controls={id} title={t('changesTitle')} onClick={() => setOpen(!open)}><span aria-hidden>{open ? '⌄' : '›'}</span><strong>{t('changesTitle')} <small>{snapshot.state?.changes.length ?? '—'}</small></strong></Button>
-      <Button title={t('changesRefresh')} disabled={snapshot.busy} onClick={() => { void store.refresh(); }}>↻</Button></header>
+    <Button className="sc-wb-section" aria-expanded={open} aria-controls={id} title={t('changesTitle')} onClick={() => setOpen(!open)}>
+      <Icon name="chevron" /><strong>{t('changesTitle')}</strong><small>{snapshot.state?.changes.length ?? '—'}</small></Button>
     <div id={id} className="sc-wb-changes-content" hidden={!open}>
-    <div className="sc-wb-file-search"><input aria-label={t('changesSearch')} placeholder={t('fileSearchPlaceholder')} value={text} onChange={event => setText(event.target.value)}
+    <div className="sc-wb-changes-tools"><div className="sc-wb-file-search"><input aria-label={t('changesSearch')} placeholder={t('fileSearchPlaceholder')} value={text} onChange={event => setText(event.target.value)}
       onKeyDown={event => { if (event.key === 'Escape' && text) { event.preventDefault(); event.stopPropagation(); setText(''); } }} />
       {text && <Button title={t('clearFileSearch')} onClick={() => setText('')}>×</Button>}</div>
+      <Button title={t('changesRefresh')} disabled={snapshot.busy} onClick={() => { void store.refresh(); }}><Icon name="refresh" /></Button></div>
     {snapshot.sources.length > 0 && <div className="sc-wb-changes-filter"><Select label={t('gitSource')} value={source} onChange={setSource}
       choices={[["all", t('gitAll')], ['unknown', t('gitUnknown')], ...snapshot.sources.map(item => [item.id, item.name])]} /></div>}
     {snapshot.error && <p className="sc-wb-error" role="alert">{snapshot.error}</p>}

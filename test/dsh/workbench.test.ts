@@ -19,7 +19,9 @@ test('文件 Remote 使用所选会话目录及访问策略，拒绝坏请求和
   const session = ctx.sessions.create(SessionId('files'), { meta: { cwd: root } })
   const api = new SuperCodeWorkbench(ctx), signal = new AbortController().signal
   const input = JSON.stringify({ action: 'createFile', path: '中文 文件.ts' })
-  assert.deepEqual(await api.fileOperation(session.id, input, signal), { path: '中文 文件.ts' })
+  const created = await api.fileOperation(session.id, input, signal)
+  assert.equal(created.path, '中文 文件.ts'); assert.match(created.token!, /^[0-9a-f-]{36}$/)
+  assert.deepEqual(Object.keys(created).sort(), ['path', 'token'])
   assert.equal(await readFile(join(root, '中文 文件.ts'), 'utf8'), '')
   readonly = true
   await assert.rejects(api.fileOperation(session.id, JSON.stringify({ action: 'createDirectory', path: 'blocked' }), signal), /WORKBENCH_FILES_READONLY/)

@@ -4,6 +4,7 @@ import { matchFiles } from '../file-search.js';
 import { errorText, message } from '../locales.js';
 import { FileIcon } from './FileIcon.jsx';
 import { FileActions } from './FileActions.jsx';
+import { Icon } from './Icon.jsx';
 
 function File({ path, current, workbench, Button, children }) {
   return <Button className="sc-wb-file" title={path} aria-current={current === path ? 'page' : undefined}
@@ -26,7 +27,7 @@ function Directory({ path = '', snapshot, workbench, Button, t }) {
     {path && <Button aria-expanded={open} title={path} className="sc-wb-file"
       onContextMenu={event => { event.preventDefault(); event.stopPropagation(); workbench.menu({ path, type: 'directory', x: event.clientX, y: event.clientY }); }} onClick={() => {
       const next = !open; setOpen(next); if (next) void workbench.list(path).catch(workbench.fail);
-    }}><span aria-hidden>{open ? '⌄' : '›'}</span><FileIcon path={path} directory open={open} /><span>{path.split('/').at(-1)}</span></Button>}
+    }}><Icon name="chevron" /><FileIcon path={path} directory open={open} /><span>{path.split('/').at(-1)}</span></Button>}
     {open && <div role="group">{list?.entries.map(entry => entry.type === 'directory'
       ? <Directory key={entry.path} path={entry.path} snapshot={snapshot} workbench={workbench} Button={Button} t={t} />
       : <File key={entry.path} path={entry.path} current={snapshot.file} workbench={workbench} Button={Button}><span>{entry.name}</span></File>)}

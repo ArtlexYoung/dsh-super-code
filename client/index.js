@@ -129,7 +129,7 @@ function SelectControl({ id, label, value, choices, onChange, disabled = false }
     }, choices.map(([choice, text], index) => React.createElement('div', {
       key: choice, id: `${listId}-${index}`, role: 'option', 'aria-selected': String(choice) === String(value),
       'data-value': String(choice), 'data-option-index': index, 'data-active': index === active,
-      className: 'dsh-super-code-select-option', onPointerMove: () => setActive(index), onClick: () => choose(index),
+      className: 'dsh-super-code-select-option', onPointerMove: () => setActive(index), onClick: event => { event.preventDefault(); choose(index) },
     }, React.createElement('span', null, text),
     React.createElement('svg', { viewBox: '0 0 16 16', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, 'aria-hidden': true },
       React.createElement('path', { d: 'm3.5 8 3 3 6-6', strokeLinecap: 'round', strokeLinejoin: 'round' }))))))
@@ -215,6 +215,8 @@ const ActionButton = React.forwardRef(function ActionButton({ as: Tag = 'button'
     const bubble = document.createElement('div'), id = `super-code-tooltip-${++actionTooltipSequence}`
     bubble.id = id
     bubble.className = 'dsh-super-code-tooltip'
+    const workbench = anchor.closest('.sc-workbench')
+    if (workbench) { bubble.classList.add('sc-workbench'); bubble.dataset.palette = workbench.dataset.palette }
     bubble.setAttribute('role', 'tooltip')
     bubble.textContent = name
     bubble.style.visibility = 'hidden'

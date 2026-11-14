@@ -17,7 +17,10 @@ import { parseReadingRequest, MAX_READING_REQUEST_CHARS } from '../workbench/rea
 import type { ReadingEvent } from '../workbench/reading/types.js'
 import { WorkbenchDirectory } from './workbench-directory.js'
 import type { DirectoryState } from './workbench-directory.js'
-import { operateFile } from '../workbench/operations.js'
+import { FileHistory } from '../workbench/file-history.js'
+import type { FileOperationResult } from '../workbench/file-history.js'
+import { searchProject } from '../workbench/search.js'
+import type { ProjectSearchEvent } from '../workbench/search.js'
 import { parseTranslation, translationModel, translationRequest } from '../workbench/translation.js'
 import type { TranslationModelOption } from '../workbench/translation.js'
 
@@ -30,17 +33,19 @@ export class SuperCodeWorkbench extends TypertRemoteService {
   private readonly files: WorkbenchFiles
   private readonly lifetime = new AbortController()
   private readonly repository: WorkbenchGit
+  private readonly fileHistory: FileHistory
   private directories?: WorkbenchDirectory
 
   constructor(ctx: Context) {
     super(ctx, 'superCodeWorkbench')
     this.files = new WorkbenchFiles(ctx.fs, id => this.rootOf(id))
     this.repository = new WorkbenchGit(ctx)
+    this.fileHistory = new FileHistory(ctx.fs)
     ctx.inject(['agents', 'sessionQuery', 'sessionController', 'agentPresets', ...['workspaceRegistry', 'subagents'].filter(key => key in ctx)], owner => {
       const service = new WorkbenchDirectory(owner); this.directories = service
       owner.effect(() => () => { if (this.directories === service) this.directories = undefined })
     })
-    ctx.effect(() => () => { this.lifetime.abort() })
+    ctx.effect(() => () => { this.lifetime.abort(); return this.fileHistory.dispose() })
   }
 
   private async sessionOf(sessionId: string): Promise<Session> {
@@ -87,10 +92,16 @@ export class SuperCodeWorkbench extends TypertRemoteService {
   @Remote
   async project(sessionId: string, signal: AbortSignal): Promise<{ files: string[]; truncated: boolean }> { return this.files.project(sessionId, signal) }
 
+  @Remote({ mode: 'stream' })
+  async *searchProject(sessionId: string, content: string, signal: AbortSignal): AsyncGenerator<ProjectSearchEvent> {
+    const root = await this.rootOf(sessionId), input: unknown = JSON.parse(z.string().max(400000).parse(content))
+    yield* searchProject(this.ctx.fs, this.files, root, sessionId, input, AbortSignal.any([signal, this.lifetime.signal]))
+  }
+
   @Remote
-  async fileOperation(sessionId: string, content: string, signal: AbortSignal): Promise<{ path: string }> {
+  async fileOperation(sessionId: string, content: string, signal: AbortSignal): Promise<FileOperationResult> {
     const input: unknown = JSON.parse(z.string().max(32768).parse(content))
-    return operateFile(this.ctx.fs, await this.rootOf(sessionId), input, AbortSignal.any([signal, this.lifetime.signal]))
+    return this.fileHistory.run(await this.rootOf(sessionId), input, AbortSignal.any([signal, this.lifetime.signal]))
   }
 
   @Remote

@@ -1,6 +1,6 @@
 import { EditorState } from '@codemirror/state';
 import { keymap, runScopeHandlers, lineNumbers, highlightActiveLineGutter, highlightSpecialChars, drawSelection, dropCursor, rectangularSelection, crosshairCursor, highlightActiveLine } from '@codemirror/view';
-import { indentMore, indentLess, deleteLine, undo, redo, toggleComment, toggleLineComment, addCursorAbove, addCursorBelow, selectGroupBackward, selectGroupForward, defaultKeymap, history, historyKeymap, cursorSyntaxLeft, cursorSyntaxRight } from '@codemirror/commands';
+import { indentMore, indentLess, deleteLine, toggleComment, toggleLineComment, addCursorAbove, addCursorBelow, selectGroupBackward, selectGroupForward, defaultKeymap, cursorSyntaxLeft, cursorSyntaxRight } from '@codemirror/commands';
 import { acceptCompletion, startCompletion, autocompletion, closeBrackets, closeBracketsKeymap, completionKeymap } from '@codemirror/autocomplete';
 import { openSearchPanel, searchKeymap, highlightSelectionMatches, selectNextOccurrence, selectSelectionMatches } from '@codemirror/search';
 import { foldGutter, indentOnInput, syntaxHighlighting, defaultHighlightStyle, bracketMatching, foldKeymap } from '@codemirror/language';
@@ -9,19 +9,20 @@ import { lintKeymap } from '@codemirror/lint';
 const CLICK_DISTANCE = 4;
 export const editingCommands = {
   indent: view => acceptCompletion(view) || indentMore(view),
-  outdent: indentLess, deleteLine, undo, redo, comment: toggleLineComment,
+  outdent: indentLess, deleteLine, comment: toggleLineComment,
   caretAbove: addCursorAbove, caretBelow: addCursorBelow, nextOccurrence: selectNextOccurrence, allOccurrences: selectSelectionMatches,
   wordLeft: selectGroupBackward, wordRight: selectGroupForward,
   complete: startCompletion, find: openSearchPanel,
+  replace(view) { openSearchPanel(view); view.dom.querySelector('[name="replace"]')?.focus(); return true; },
 };
 
 // 可配置动作只保留设置中的绑定，其余编辑行为沿用 CodeMirror。
-const configurable = new Set([indentMore, indentLess, deleteLine, undo, redo, toggleComment, toggleLineComment, addCursorAbove, addCursorBelow, selectNextOccurrence, selectSelectionMatches, startCompletion, openSearchPanel, cursorSyntaxLeft, cursorSyntaxRight]);
+const configurable = new Set([indentMore, indentLess, deleteLine, toggleComment, toggleLineComment, addCursorAbove, addCursorBelow, selectNextOccurrence, selectSelectionMatches, startCompletion, openSearchPanel, cursorSyntaxLeft, cursorSyntaxRight]);
 export const editorSetup = [
-  lineNumbers(), highlightActiveLineGutter(), highlightSpecialChars(), history(), foldGutter(), drawSelection(), dropCursor(),
+  lineNumbers(), highlightActiveLineGutter(), highlightSpecialChars(), foldGutter(), drawSelection(), dropCursor(),
   EditorState.allowMultipleSelections.of(true), indentOnInput(), syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
   bracketMatching(), closeBrackets(), autocompletion(), rectangularSelection(), crosshairCursor(), highlightActiveLine(), highlightSelectionMatches(),
-  keymap.of([...closeBracketsKeymap, ...defaultKeymap, ...searchKeymap, ...historyKeymap, ...foldKeymap, ...completionKeymap, ...lintKeymap].filter(binding => !configurable.has(binding.run))),
+  keymap.of([...closeBracketsKeymap, ...defaultKeymap, ...searchKeymap, ...foldKeymap, ...completionKeymap, ...lintKeymap].filter(binding => !configurable.has(binding.run))),
 ];
 
 export function workbenchKeydown(event, view) {

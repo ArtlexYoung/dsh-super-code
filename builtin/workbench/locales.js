@@ -2,6 +2,16 @@ import { zh as gitZh, en as gitEn } from './git/locales.js';
 import { zh as readingZh, en as readingEn } from './reading/locales.js';
 export const NS = 'dsh-super-code-workbench';
 export const zh = {
+  searchNext: '下一个', searchPrevious: '上一个', searchAll: '全部匹配', searchRegexp: '正则表达式', searchWord: '全词匹配', replaceAll: '全部替换',
+  action_replace: '当前文件替换', action_projectReplace: '全局替换', action_save: '保存文件',
+  replace: '替换', projectReplace: '全局替换', replaceSearch: '查找文本', replaceWith: '替换为', caseSensitive: '区分大小写',
+  replacePreview: '预览匹配', replaceApply: '替换 {count} 个文件', replaceScope: '已检查 {count} 个文件，跳过 {skipped} 个二进制或大文件；不包含依赖和构建目录。',
+  replaceResult: '已替换 {count} 个文件，{failed} 个失败。可在对应文件中撤销。', refreshShort: '刷新',
+  autoSave: '自动保存', autoSave_manual: '手动保存', autoSave_immediate: '修改就保存', autoSave_15: '停止修改 15 秒后', autoSave_30: '停止修改 30 秒后', autoSave_60: '停止修改 60 秒后',
+  undoLimit: '最大撤销历史步数', undoHint: '默认 1000 步。应用未退出时跨对话保留；支持编辑、替换、新建、复制和移到回收站。',
+  undoEmpty: '没有可撤销或重做的操作', undone: '已撤销', redone: '已重做',
+  WORKBENCH_UNDO_CONFLICT: '该位置或文件已被其他来源修改，无法撤销。现有内容已保留，可切换其他文件继续撤销。',
+  WORKBENCH_UNDO_EXPIRED: '该操作的恢复记录已过期或不属于当前目录', WORKBENCH_HISTORY_PARTIAL: '文件恢复未完成，恢复副本已保留。请先检查目标目录中的现有内容。',
   ...gitZh,
   ...readingZh,
   changesSearch: '搜索修改文件', changesTitle: '修改文件', changesRefresh: '刷新修改文件', changesBinary: '二进制',
@@ -57,6 +67,16 @@ export const zh = {
   WORKBENCH_MODEL_INCOMPLETE: '模型未完整结束，本次结果未应用', WORKBENCH_MODEL_EMPTY: '模型没有返回回答', WORKBENCH_OUTPUT_SIZE: '模型输出过长，本次结果未应用',
 };
 export const en = {
+  searchNext: 'Next', searchPrevious: 'Previous', searchAll: 'Select all', searchRegexp: 'Regular expression', searchWord: 'Whole word', replaceAll: 'Replace all',
+  action_replace: 'Replace in file', action_projectReplace: 'Replace in project', action_save: 'Save file',
+  replace: 'Replace', projectReplace: 'Replace in project', replaceSearch: 'Find text', replaceWith: 'Replace with', caseSensitive: 'Match case',
+  replacePreview: 'Preview matches', replaceApply: 'Replace in {count} files', replaceScope: 'Checked {count} files; skipped {skipped} binary or large files. Dependencies and build folders are excluded.',
+  replaceResult: 'Replaced {count} files; {failed} failed. Undo is available in each file.', refreshShort: 'Refresh',
+  autoSave: 'Auto save', autoSave_manual: 'Save manually', autoSave_immediate: 'On every change', autoSave_15: 'After 15 seconds idle', autoSave_30: 'After 30 seconds idle', autoSave_60: 'After 60 seconds idle',
+  undoLimit: 'Maximum undo steps', undoHint: '1000 steps by default, retained across conversations until the app exits. Includes edits, replacements, creation, copies and trash.',
+  undoEmpty: 'Nothing to undo or redo', undone: 'Undone', redone: 'Redone',
+  WORKBENCH_UNDO_CONFLICT: 'This location or file was modified elsewhere and cannot be undone. Existing content is preserved. You can undo in another file.',
+  WORKBENCH_UNDO_EXPIRED: 'The recovery record expired or belongs to another directory.', WORKBENCH_HISTORY_PARTIAL: 'File recovery did not finish. The recovery copy is retained. Check the existing content in the destination first.',
   ...gitEn,
   ...readingEn,
   changesSearch: 'Search changed files', changesTitle: 'Changed files', changesRefresh: 'Refresh changed files', changesBinary: 'Binary',

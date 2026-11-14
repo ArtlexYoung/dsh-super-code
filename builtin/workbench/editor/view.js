@@ -9,7 +9,7 @@ import { editorTheme } from './theme.js';
 import { signatureTooltip, wordAt } from './code-info.js';
 import { selectionExtension } from '../assistant/selection-extension.js';
 
-export function createEditor({ parent, tooltipParent, index, t, changed, commands, assistant, currentFile }) {
+export function createEditor({ parent, tooltipParent, index, t, changed, commands, assistant, receiving = () => false, currentFile }) {
   const keys = new Compartment(), theme = new Compartment(), readonly = new Compartment();
   let view = null;
   const bound = () => ({ ...editingCommands, ...commands });
@@ -28,12 +28,13 @@ export function createEditor({ parent, tooltipParent, index, t, changed, command
     const extensions = [
       editorSetup, language, theme.of(editorTheme(preferences.palette)), readonly.of(EditorState.readOnly.of(false)), tooltips({ parent: tooltipParent }), search({ top: true }),
       EditorState.lineSeparator.of(text.includes('\r\n') ? '\r\n' : text.includes('\r') ? '\r' : '\n'),
+      EditorState.phrases.of({ Find: t('find'), Replace: t('replaceWith'), next: t('searchNext'), previous: t('searchPrevious'), all: t('searchAll'), 'match case': t('caseSensitive'), regexp: t('searchRegexp'), 'by word': t('searchWord'), replace: t('replace'), 'replace all': t('replaceAll'), close: t('close') }),
       EditorView.contentAttributes.of({ 'aria-label': t('title') }), autocompletion(), EditorState.languageData.of(() => [{ autocomplete: complete }]),
       keys.of(Prec.highest(keymap.of(bindingsOf(preferences, bound())))),
       Prec.highest(EditorView.domEventHandlers(editorPointerEvents(commands.definition))),
       signatureTooltip(async (_route, input) => { await index.change(input.file, input.text); return index.candidates(input.file, input.word); }, currentFile, t),
       selectionExtension(assistant.threads(file), assistant.open, assistant.select, t),
-      EditorView.updateListener.of(update => { assistant.update(update); changed(update); }),
+      EditorView.updateListener.of(update => { if (!receiving()) assistant.update(update); changed(update); }),
     ];
     // 重挂载时保留文档、选区和撤销历史，重新绑定当前页面的气泡容器与事件。
     return saved ? saved.update({ effects: StateEffect.reconfigure.of(extensions) }).state : EditorState.create({ doc: text, extensions });

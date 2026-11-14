@@ -66,9 +66,7 @@
           - id: tool-skill
             name: '@deepseek-ai/dsh-tool-skill'
           - id: tool-presentation
-            name: '@deepseek-ai/dsh-agent-tool-presentation'
-            config:
-              mode: ptc
+            name: dsh-super-code/presets/super-code/tool-presentation.js
 
 # Register host projections and discover the browser contribution.
 - insert:

@@ -154,6 +154,7 @@ export async function apply(ctx: Context): Promise<void> {
     const choices = new WeakMap<object, boolean>()
     const check = (agent: Agent): void => {
       if (disposed) return
+      if (ctx.tools.get('remote_bash', agent)) return
       const creator = creatorOf(ctx, agent)
       let enabled = creator ? choices.get(creator) : undefined
       for (let current: object | undefined = agent; current; current = scopeParentOf(current)) {
@@ -188,6 +189,7 @@ export async function apply(ctx: Context): Promise<void> {
   })
   const install = (agent: Agent): Promise<void> => {
     if (disposed) return Promise.resolve()
+    if (ctx.tools.get('remote_bash', agent)) return Promise.resolve()
     const existing = installed.get(agent)
     if (existing) return existing.ready
     // Descendants retain their conversation's shell and capability filters.

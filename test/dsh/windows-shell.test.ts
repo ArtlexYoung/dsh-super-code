@@ -6,7 +6,7 @@ import { join } from 'node:path'
 import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
 import { Context } from '@deepseek-ai/cordis'
-import Tools from '@deepseek-ai/dsh-tools'
+import Tools, { defineTool } from '@deepseek-ai/dsh-tools'
 import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
 import { Session, SessionId } from '@deepseek-ai/dsh-session'
 import { ToolCallId } from '@deepseek-ai/dsh-llm'
@@ -186,6 +186,19 @@ test('rc.2 ownership keeps root and child shells usable without the removed agen
     await child.step()
     assert.deepEqual(await f.names(child.agent), ['pwsh'])
     assert.equal((await f.call(child.agent, 'pwsh')).isError, false)
+  }
+})
+
+test('lightweight remote sessions do not prepare or validate a local Windows Bash provider', async t => {
+  for (const customProvider of [false, true]) {
+    const f = await fixture(t, { customProvider, sharedGeneration: true, modernOwnership: true })
+    const remote = f.make('windows-remote')
+    remote.scope.ctx.get('tools')!.register(defineTool({ name: 'remote_bash', description: 'Remote', parameters: {},
+      output: { schema: { type: 'string' }, render: (_args, value) => [{ type: 'text', text: value }] },
+      execute: async () => 'remote',
+    }))
+    await remote.ready(); await remote.step()
+    assert.equal(f.preparations(), 0)
   }
 })
 

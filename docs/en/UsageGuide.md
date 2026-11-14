@@ -10,6 +10,7 @@ New here? Read the Install and Use sections of the [README](../../README.en.md) 
 - [Preset version and reinstall](#preset-version-and-reinstall)
 - [Sidebar](#sidebar)
 - [Batched tool calls](#batched-tool-calls)
+- [Remote projects](#remote-projects)
 - [Runtime budgets](#runtime-budgets)
 - [Windows command environment](#windows-command-environment)
 - [Deletion protection](#deletion-protection)
@@ -160,7 +161,7 @@ Click a node in the tree → open **Details** → expand **Memory activity**. It
 
 ## Batched tool calls
 
-Super Code uses Harness-native PTC: one model call can combine several tool operations, such as reading a few unrelated files at once, then decide what to do next. No separate mode needed.
+For local projects, Super Code uses Harness-native PTC: one model call can combine several tool operations, such as reading a few unrelated files at once, then decide what to do next. No separate mode needed.
 
 - Independent reads run in parallel; writes, tests, state changes, and dependent steps run in order.
 - On partial failure, successful results are kept and only failed or stale reads are retried.
@@ -168,6 +169,14 @@ Super Code uses Harness-native PTC: one model call can combine several tool oper
 - The host handles permissions, cancellation, and result storage.
 
 Batching cuts round trips between the model and tools. It doesn't make every operation faster.
+
+## Remote projects
+
+Keep Super Code selected when using lightweight remote mode in `dsh-ssh-workspaces`. Once the session provides `remote_bash`, Super Code automatically uses native tool calls: commands go through `remote_bash`, file tools use the mounted directory or relative paths, and task, method, and memory tools remain available. Selection follows the session's tools, not its directory name.
+
+Lightweight mode does not support PTC, local terminals, background commands, worktrees, or subagent execution. Related tools and local command-environment guidance are hidden. The host and remote plugin retain approval, cancellation, and disconnection checks; a disconnected session never falls back to local execution. Bundled local CLI programs and Skill scripts are not automatically installed on the server.
+
+Full remote mode runs in a remote DSH instance, where Super Code must be installed. Sessions without `remote_bash` retain host PTC. The plugin does not synchronize remote models, plugins, or dependencies. After upgrading, reinstall the Super Code preset and start a new session; existing sessions' old preset compositions are not rewritten.
 
 ## Runtime budgets
 

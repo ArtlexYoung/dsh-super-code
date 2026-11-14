@@ -16,12 +16,12 @@ import superCodePlugin from '../../src/dsh/super-code.js'
 
 const root = fileURLToPath(new URL('../..', import.meta.url))
 
-test('batch preset uses the host PTC presentation and keeps the scheduler host-owned', async () => {
+test('batch presets select host execution through the same session-aware entry', async () => {
   const preset = await readFile(join(root, 'presets/super-code/agent.cordis.yml'), 'utf8')
   const patch = await readFile(join(root, 'cordis.patch.yml'), 'utf8')
   for (const text of [preset, patch]) {
-    assert.match(text, /name: '@deepseek-ai\/dsh-agent-tool-presentation'/)
-    assert.match(text, /mode: ptc/)
+    assert.match(text, /name: dsh-super-code\/presets\/super-code\/tool-presentation\.js/)
+    assert.doesNotMatch(text, /mode: ptc/)
   }
   assert.match(SUPER_CODE_INSTRUCTIONS, /one run_code program/)
   assert.match(SUPER_CODE_INSTRUCTIONS, /never replay successes, writes, tests or unknown side effects/)

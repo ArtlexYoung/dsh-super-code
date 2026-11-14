@@ -38,6 +38,7 @@ test('npm ships every runtime resource once and retains public exports and third
     if (!(target as string).includes('*')) assert.ok(files.has((target as string).replace(/^\.\//, '')), String(target))
   }
   for (const target of Object.values(pkg.bin)) assert.ok(files.has(target as string), String(target))
+  for (const path of ['presets/super-code/tool-presentation.js', 'lib/dsh/tool-presentation.js']) assert.ok(files.has(path), path)
   assert.ok(files.has('builtin/README.md'))
   assert.ok(files.has('builtin/skills/oil-ui/SKILL.md'))
   assert.ok(files.has('builtin/skills/oil-ui/LICENSE'))

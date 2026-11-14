@@ -200,9 +200,16 @@ body[data-ds-dark-theme] .sc-workbench[data-palette=vscode]{
 .sc-wb-change-stat :is(b,em){font:inherit}
 .sc-wb-code{display:flex;flex:1;flex-direction:column;min-width:0;min-height:0;position:relative}
 .sc-wb-tabs{display:flex;min-height:34px;flex:none;overflow:auto;background:var(--wb-chrome);border-bottom:1px solid var(--wb-line)}
-.sc-workbench .sc-wb-tabs>button{border-radius:var(--wb-tab-radius);border-right:1px solid var(--wb-line);padding:6px 14px;position:relative}
-.sc-wb-tabs>button[aria-current=page]{background:var(--wb-bg);color:var(--wb-text)}
-.sc-wb-tabs>button[aria-current=page]:before{content:"";position:absolute;top:var(--wb-tab-top);bottom:var(--wb-tab-bottom);left:0;right:0;height:2px;background:var(--wb-accent)}
+.sc-wb-tab{display:flex;align-items:center;flex:none;position:relative;border-radius:var(--wb-tab-radius);border-right:1px solid var(--wb-line);user-select:none;touch-action:none}
+.sc-workbench .sc-wb-tab>button{border-radius:inherit;padding:6px 8px;white-space:nowrap;background:transparent}
+.sc-workbench .sc-wb-tab>.sc-wb-tab-close{padding:0;margin-right:5px;min-width:20px;height:20px;font-size:16px;line-height:1;color:var(--wb-muted)}
+.sc-workbench .sc-wb-tab>.sc-wb-tab-close:hover{background:var(--wb-hover);color:var(--wb-text)}
+.sc-wb-tab[data-active=true]{background:var(--wb-bg);color:var(--wb-text)}
+.sc-wb-tab[data-active=true]:before{content:"";position:absolute;top:var(--wb-tab-top);bottom:var(--wb-tab-bottom);left:0;right:0;height:2px;background:var(--wb-accent)}
+.sc-wb-tab[data-drop]:after{content:"";position:absolute;inset:3px auto 3px -1px;width:2px;background:var(--wb-accent);pointer-events:none}
+.sc-wb-tab[data-drop=after]:after{left:auto;right:0}
+.sc-wb-close-file p{white-space:pre-wrap;overflow-wrap:anywhere}
+.sc-wb-close-file footer{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px;margin-top:20px}
 .sc-wb-tabs i{font-size:14px;font-style:normal;color:var(--wb-accent)}
 .sc-wb-path{padding:4px 16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--wb-muted);font-size:11px;border-bottom:1px solid color-mix(in srgb,var(--wb-line) 55%,transparent)}
 .sc-wb-editor{flex:1;min-height:0;min-width:0}

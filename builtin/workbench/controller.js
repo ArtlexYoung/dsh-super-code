@@ -15,6 +15,7 @@ import { createProject } from './editing/project.js';
 import { asText } from './editing/history.js';
 import { createAutosave } from './editing/autosave.js';
 import { undoEdit, replaceFiles } from './editing/actions.js';
+import { createTabs } from './tabs.js';
 
 const INDEX_BYTES = 16 * 1024 * 1024;
 const STORAGE_KEY = 'dsh-super-code-workbench';
@@ -26,10 +27,10 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
   let saving, operation;
   const owner = Symbol('workbench');
   let project, unsubscribeProject = () => {}, synchronizing = false, receiving = false;
-  let snapshot = { file: null, tabs: [], directories, symbols: [], cursor: null, status: t('ready'), error: '', preferences, panel: null, assistant: null, indexing: false, indexed: 0, back: false, forward: false, fileMenu: null, fileClipboard: null };
+  let snapshot = { file: null, tabs: [], directories, symbols: [], cursor: null, status: t('ready'), error: '', preferences, panel: null, assistant: null, indexing: false, indexed: 0, back: false, forward: false, fileMenu: null, fileClipboard: null, closingFile: null };
   const publish = patch => { if (disposed) return; snapshot = { ...snapshot, ...patch }; for (const listener of subscribers) listener(); };
   const fail = error => { if (error.name !== 'AbortError') publish({ error: errorText(error, t) }); };
-  const tabs = () => [...documents].map(([path, doc]) => ({ path, dirty: doc.dirty, pinned: !!doc.pinned })).sort((a, b) => Number(b.pinned) - Number(a.pinned));
+  const fileTabs = createTabs(documents), tabs = fileTabs.list;
   const assistant = createSelectionAssistant({ editor: { file: () => current, view: () => editor?.view }, api, t, changed: value => publish({ assistant: value }), translationModel: () => preferences.translationModel, translationLanguage });
   const reading = createReading({ api, documents, currentFile: () => current, visit, t, locale: () => t('readingLanguage') });
   const changes = createChanges(api.git, error => errorText(error, t));
@@ -96,23 +97,28 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
       opening?.abort(); opening = new AbortController();
       publish({ status: t('loading'), error: '' });
       let doc = documents.get(file);
-      if (!doc) {
+      const version = doc?.version;
+      if (!doc || fileTabs.isClosed(file) && !doc.dirty) {
         const result = await api.read(file, opening.signal);
         if (turn !== generation) return false;
-        doc = project.documents.get(file) || createBuffer(result); project.documents.set(file, doc); documents.set(file, doc);
+        if (doc) { if (doc.version === version && !doc.dirty) acceptDisk(doc, result); }
+        else { doc = project.documents.get(file) || createBuffer(result); project.documents.set(file, doc); documents.set(file, doc); }
       }
       const state = await editor.state(file, doc.text, preferences, doc.state);
       if (turn !== generation) return false;
       if (current) documents.get(current).state = editor.view.state;
       doc.state = state;
-      assistant.switchFile(); current = file; editor.show(state); editor.preferences(preferences); editor.readonly(project.locked);
+      assistant.switchFile(); current = file; fileTabs.open(file); editor.show(state); editor.preferences(preferences); editor.readonly(project.locked);
       void updateIndex(file).catch(fail);
       if (turn !== generation || !editor) return false;
       publish({ file, tabs: tabs(), status: doc.dirty ? t('unsaved') : t('saved') });
     }
-    const view = editor.view, line = view.state.doc.line(Math.min((target.line ?? 0) + 1, view.state.doc.lines));
-    const from = Math.min(line.to, line.from + (target.character ?? 0));
-    view.dispatch({ selection: { anchor: from, head: Math.min(view.state.doc.length, from + (target.length ?? 0)) }, effects: EditorView.scrollIntoView(from, { y: 'center' }) });
+    const view = editor.view;
+    if (target.line !== undefined || target.character !== undefined || target.length !== undefined) {
+      const line = view.state.doc.line(Math.min((target.line ?? 0) + 1, view.state.doc.lines));
+      const from = Math.min(line.to, line.from + (target.character ?? 0));
+      view.dispatch({ selection: { anchor: from, head: Math.min(view.state.doc.length, from + (target.length ?? 0)) }, effects: EditorView.scrollIntoView(from, { y: 'center' }) });
+    }
     view.focus(); cursor(); return true;
   }
   function visit(target) {
@@ -130,6 +136,37 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
       const before = position(); if (before) history[at] = before;
       moving = true;
       try { if (await display(history[next])) at = next; } finally { moving = false; cursor(); }
+    });
+    navigation = work.catch(fail); return work;
+  }
+  function closeFile(path, mode = 'check') {
+    const work = navigation.then(async () => {
+      await saving;
+      if (operation || project?.locked) throw new Error('WORKBENCH_FILE_BUSY');
+      let items = tabs(), atTab = items.findIndex(item => item.path === path);
+      if (atTab < 0) return;
+      const doc = documents.get(path);
+      if (mode === 'check' && doc.dirty) { publish({ closingFile: path }); return; }
+      if (mode === 'save') { await save(path); if (doc.dirty) throw new Error('WORKBENCH_TAB_CHANGED'); }
+      items = tabs(); atTab = items.findIndex(item => item.path === path);
+      if (atTab < 0) return;
+      if (current === path) {
+        const next = items[atTab + 1] || items[atTab - 1];
+        if (next) {
+          if (!await display({ file: next.path })) return;
+          history.splice(at + 1); history.push(position()); at++;
+        } else {
+          if (editor?.view) doc.state = editor.view.state;
+          assistant.switchFile(); current = null; editor?.dispose(); clearTimeout(timer);
+          publish({ file: null, cursor: null, symbols: [] });
+        }
+      }
+      fileTabs.close(path);
+      let status = current ? documents.get(current).dirty ? 'unsaved' : 'saved' : 'ready';
+      if (doc.dirty) status = 'tabClosedWithEdits';
+      publish({ tabs: tabs(), closingFile: snapshot.closingFile === path ? null : snapshot.closingFile,
+        status: t(status), error: '' });
+      cursor();
     });
     navigation = work.catch(fail); return work;
   }
@@ -224,6 +261,7 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
   }
   function forgetFiles(affected) {
     opening?.abort(); generation++;
+    fileTabs.forget(affected);
     for (const path of [...documents.keys()]) if (affected(path)) { documents.delete(path); autosave.cancel(path); }
     for (const path of [...index.versions.keys()]) if (affected(path)) index.remove(path);
     for (const path of [...directories.keys()]) if (affected(path)) directories.delete(path);
@@ -231,6 +269,7 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
     history = history.filter(item => !affected(item.file)); at = next;
     if (current && affected(current)) { assistant.switchFile(); current = null; editor?.dispose(); publish({ file: null, cursor: null, symbols: [] }); }
     if (snapshot.fileClipboard && affected(snapshot.fileClipboard.path)) publish({ fileClipboard: null });
+    if (snapshot.closingFile && affected(snapshot.closingFile)) publish({ closingFile: null });
   }
   async function fileOperation(input) {
     if (input.action === 'absolutePath') return api.fileOperation(input);
@@ -316,7 +355,7 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
   function bindProject(root) {
     if (!projects.has(root.path)) projects.set(root.path, createProject(api, fail));
     unsubscribeProject(); const previous = project; project = projects.get(root.path); unsubscribeProject = project.subscribe(projectChanged);
-    if (previous && previous !== project) { documents.clear(); current = null; history = []; at = -1; editor?.dispose(); publish({ file: null, tabs: [], symbols: [], cursor: null }); }
+    if (previous && previous !== project) { documents.clear(); fileTabs.clear(); current = null; history = []; at = -1; editor?.dispose(); publish({ file: null, tabs: [], symbols: [], cursor: null, closingFile: null }); }
     for (const path of documents.keys()) { const doc = project.documents.get(path); if (doc) documents.set(path, doc); else documents.delete(path); }
     project.history.limit(preferences.undoLimit); assistant.bind(project.conversations);
     for (const [path, doc] of documents) if (doc.dirty) autosave.change(path);
@@ -346,7 +385,9 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
     },
     detach() { opening?.abort(); scanning?.abort(); files.activate(false); generation++; clearTimeout(timer); publish({ fileMenu: null }); assistant.switchFile(); analyzer.dispose(); if (current && editor?.view) documents.get(current).state = editor.view.state; editor?.dispose(); editor = null; },
     dispose() { this.detach(); autosave.dispose(); unsubscribeProject(); disposed = true; assistant.dispose(); reading.dispose(); changes.dispose(); files.dispose(); documents.clear(); index.clear(); subscribers.clear(); },
-    visit, move, list, refresh, save, settings, definition, fail, fileOperation, undo, models: api.models, searchProject: api.searchProject,
+    visit, move, list, refresh, save, settings, definition, fail, fileOperation, undo, closeFile, models: api.models, searchProject: api.searchProject,
+    cancelCloseFile() { publish({ closingFile: null }); },
+    moveTab(path, target, after) { fileTabs.move(path, target, after); publish({ tabs: tabs() }); },
     async replaceProject(matches, query, progress, signal) {
       if (!project || operation) throw new Error('WORKBENCH_FILE_BUSY');
       await saving;

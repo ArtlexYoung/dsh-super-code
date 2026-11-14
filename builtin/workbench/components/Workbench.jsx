@@ -14,7 +14,7 @@ import { readLayout, saveLayout } from '../layout.js';
 import { FileList } from '../git/FileList.jsx';
 import { FileChanges } from '../git/Changes.jsx';
 import { Files } from './Files.jsx';
-import { FileIcon } from './FileIcon.jsx';
+import { Tabs } from './Tabs.jsx';
 import { QuickConversations } from './QuickConversations.jsx';
 import { Icon } from './Icon.jsx';
 import { Replace } from './Replace.jsx';
@@ -103,9 +103,7 @@ export function Workbench({ workbench, Button, Select, MarkdownText, Conversatio
       </section>
     </aside><Splitter panel="explorer" label={t('resizeExplorer')} value={layout.explorer} ratio={.3}
       change={value => changeLayout({ explorer: value })} commit={persistLayout} /><main className="sc-wb-code">
-      <nav className="sc-wb-tabs" aria-label={t('files')}>{snapshot.tabs.map(item => <Button key={item.path} aria-current={snapshot.file === item.path ? 'page' : undefined} title={item.path}
-        onContextMenu={event => { event.preventDefault(); workbench.menu({ path: item.path, type: 'file', x: event.clientX, y: event.clientY }); }}
-        onClick={action(() => workbench.visit({ file: item.path }))}><FileIcon path={item.path} />{item.path.split('/').at(-1)}{item.pinned && <span aria-label={t('filePinned')}><FileIcon pinned /></span>}{item.dirty && <i aria-label={t('unsaved')}>•</i>}</Button>)}</nav>
+      <Tabs snapshot={snapshot} workbench={workbench} Button={Button} t={t} />
       <div className="sc-wb-path">{snapshot.file || t('title')}</div><div ref={editor} className="sc-wb-editor" />
       {!snapshot.file && <div className="sc-wb-empty"><strong>{t('title')}</strong><span>{t('empty')}</span></div>}
     </main><Splitter panel="reading" label={t('resizeReading')} value={layout.reading} ratio={.48}

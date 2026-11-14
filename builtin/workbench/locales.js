@@ -2,6 +2,11 @@ import { zh as gitZh, en as gitEn } from './git/locales.js';
 import { zh as readingZh, en as readingEn } from './reading/locales.js';
 export const NS = 'dsh-super-code-workbench';
 export const zh = {
+  tabCloseLabel: '关闭文件 {path}', tabSaveAndClose: '保存并关闭', tabKeepAndClose: '保留修改并关闭',
+  tabCloseQuestion: '「{path}」有未保存的修改。关闭后仍可重新打开恢复；退出应用前请保存。',
+  tabClosedWithEdits: '标签已关闭，未保存修改仍保留，可重新打开继续编辑',
+  WORKBENCH_TAB_CHANGED: '保存期间又有新修改，标签已保留，请保存后重试',
+  WORKBENCH_TAB_WINDOW: '当前不支持将标签拖成独立窗口，文件仍保留在标签栏',
   searchNext: '下一个', searchPrevious: '上一个', searchAll: '全部匹配', searchRegexp: '正则表达式', searchWord: '全词匹配', replaceAll: '全部替换',
   action_replace: '当前文件替换', action_projectReplace: '全局替换', action_save: '保存文件',
   replace: '替换', projectReplace: '全局替换', replaceSearch: '查找文本', replaceWith: '替换为', caseSensitive: '区分大小写',
@@ -67,6 +72,11 @@ export const zh = {
   WORKBENCH_MODEL_INCOMPLETE: '模型未完整结束，本次结果未应用', WORKBENCH_MODEL_EMPTY: '模型没有返回回答', WORKBENCH_OUTPUT_SIZE: '模型输出过长，本次结果未应用',
 };
 export const en = {
+  tabCloseLabel: 'Close file {path}', tabSaveAndClose: 'Save and close', tabKeepAndClose: 'Keep edits and close',
+  tabCloseQuestion: '“{path}” has unsaved changes. Reopen the file to restore them; save before exiting the app.',
+  tabClosedWithEdits: 'Tab closed; unsaved edits are kept and can be reopened',
+  WORKBENCH_TAB_CHANGED: 'New edits arrived while saving. The tab was kept open; save and try again.',
+  WORKBENCH_TAB_WINDOW: 'Detaching tabs into separate windows is not supported; the file remains in the tab bar.',
   searchNext: 'Next', searchPrevious: 'Previous', searchAll: 'Select all', searchRegexp: 'Regular expression', searchWord: 'Whole word', replaceAll: 'Replace all',
   action_replace: 'Replace in file', action_projectReplace: 'Replace in project', action_save: 'Save file',
   replace: 'Replace', projectReplace: 'Replace in project', replaceSearch: 'Find text', replaceWith: 'Replace with', caseSensitive: 'Match case',

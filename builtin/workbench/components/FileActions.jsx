@@ -71,6 +71,7 @@ export function FileActions({ snapshot, workbench, Button, t }) {
   const act = callback => () => { Promise.resolve().then(callback).catch(workbench.fail); };
   const pinned = target && snapshot.tabs.some(tab => tab.path === target.path && tab.pinned);
   const entries = target ? [
+    ...(target.source === 'tab' ? [{ id: 'closeFile', run: act(async () => { closeMenu(); await workbench.closeFile(target.path); }) }] : []),
     { id: 'fileNew', run: () => show('createFile') }, { id: 'fileNewDirectory', run: () => show('createDirectory') },
     { id: 'fileCopy', disabled: !target.path, run: () => { workbench.copyFile(target); closeMenu(); } },
     { id: 'filePaste', disabled: !snapshot.fileClipboard, run: () => show('copy') },

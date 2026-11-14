@@ -178,6 +178,12 @@ Lightweight mode does not support PTC, local terminals, background commands, wor
 
 Full remote mode runs in a remote DSH instance, where Super Code must be installed. Sessions without `remote_bash` retain host PTC. The plugin does not synchronize remote models, plugins, or dependencies. After upgrading, reinstall the Super Code preset and start a new session; existing sessions' old preset compositions are not rewritten.
 
+### dsh-Go / DSH NEXT remote control
+
+When controlling another computer through dsh-Go or DSH NEXT's phone connection, Super Code, presets, models, and projects belong to the controlled host. Install the plugin, reinstall the preset, and create a new session on that host, then select the host and Super Code from the phone. The phone app does not install the plugin on the computer. Remote control does not imply a lightweight remote project; sessions without `remote_bash` retain the controlled host's PTC.
+
+Model tools and phone interfaces have separate compatibility requirements. dsh-Go can expose generic tool results and Skills through conversations. Dedicated native panels require its bridge, while web settings and sidebars depend on the connection and supported slots. In the reviewed dsh-Go 1.0.16, SSH hosts support web plugins, while relay hosts offer neither in-app web pages nor the dedicated native bridge; see its [host capability guide](https://github.com/ccch1mneyyy/dsh-Go/blob/ddaff424b9fa1ed1d0cca389823facc046135dae/docs/plugins/hosts.md). NEXT's phone connection requires checks against its actual bridge and mobile client. Full acceptance on these mobile clients is still pending; a working desktop sidebar does not establish native phone-sidebar support.
+
 ## Runtime budgets
 
 Under the **Context settings** tab. The plugin already uses the better-performing legacy budgets, so you usually don't need to touch this. Values in parentheses are the host's own defaults, for comparison.

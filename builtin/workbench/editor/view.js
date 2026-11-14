@@ -10,7 +10,7 @@ import { signatureTooltip, wordAt } from './code-info.js';
 import { selectionExtension } from '../assistant/selection-extension.js';
 
 export function createEditor({ parent, tooltipParent, index, t, changed, commands, assistant, currentFile }) {
-  const keys = new Compartment(), theme = new Compartment();
+  const keys = new Compartment(), theme = new Compartment(), readonly = new Compartment();
   let view = null;
   const bound = () => ({ ...editingCommands, ...commands });
   async function complete(context) {
@@ -26,7 +26,7 @@ export function createEditor({ parent, tooltipParent, index, t, changed, command
   async function state(file, text, preferences, saved) {
     const language = await loadLanguage(file);
     const extensions = [
-      editorSetup, language, theme.of(editorTheme(preferences.palette)), tooltips({ parent: tooltipParent }), search({ top: true }),
+      editorSetup, language, theme.of(editorTheme(preferences.palette)), readonly.of(EditorState.readOnly.of(false)), tooltips({ parent: tooltipParent }), search({ top: true }),
       EditorState.lineSeparator.of(text.includes('\r\n') ? '\r\n' : text.includes('\r') ? '\r' : '\n'),
       EditorView.contentAttributes.of({ 'aria-label': t('title') }), autocompletion(), EditorState.languageData.of(() => [{ autocomplete: complete }]),
       keys.of(Prec.highest(keymap.of(bindingsOf(preferences, bound())))),
@@ -42,6 +42,7 @@ export function createEditor({ parent, tooltipParent, index, t, changed, command
     get view() { return view; },
     state,
     show(state) { if (view) view.setState(state); else view = new EditorView({ parent, state }); },
+    readonly(value) { view?.dispatch({ effects: readonly.reconfigure(EditorState.readOnly.of(value)) }); },
     preferences(value) { view?.dispatch({ effects: [keys.reconfigure(Prec.highest(keymap.of(bindingsOf(value, bound())))), theme.reconfigure(editorTheme(value.palette))] }); },
     dispose() { view?.destroy(); view = null; },
   };

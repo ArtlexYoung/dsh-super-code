@@ -37,3 +37,13 @@ test('Git 请求使用当前会话的流，空流或中途失败不返回成功�
   await assert.rejects(workspaceApi({ async *git() {} }, 's').git({ action: 'status' }), /WORKBENCH_GIT_INCOMPLETE/)
   await assert.rejects(workspaceApi({ async *git() { yield result; throw new Error('interrupted') } }, 's').git({ action: 'status' }), /interrupted/)
 })
+
+test('文件操作序列化当前会话与取消信号，后端失败不伪装成成功', async () => {
+  const input = { action: 'createFile', path: '中文 文件.ts' }, signal = new AbortController().signal
+  const remote = { async fileOperation(id: string, content: string, received: AbortSignal) {
+    assert.equal(id, 'session'); assert.deepEqual(JSON.parse(content), input); assert.equal(received, signal)
+    return { ok: true, value: { path: input.path } }
+  } }
+  assert.deepEqual(await workspaceApi(remote, 'session').fileOperation(input, signal), { path: input.path })
+  await assert.rejects(workspaceApi({ async fileOperation() { return { ok: false, error: { message: 'WORKBENCH_FILE_EXISTS' } } } }, 's').fileOperation(input), /WORKBENCH_FILE_EXISTS/)
+})

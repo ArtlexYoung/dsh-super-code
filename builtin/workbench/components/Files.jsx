@@ -2,21 +2,31 @@ import React, { useDeferredValue, useEffect, useMemo, useRef, useState, useSyncE
 import { FileList } from '../git/FileList.jsx';
 import { matchFiles } from '../file-search.js';
 import { errorText, message } from '../locales.js';
+import { FileIcon } from './FileIcon.jsx';
+import { FileActions } from './FileActions.jsx';
 
 function File({ path, current, workbench, Button, children }) {
   return <Button className="sc-wb-file" title={path} aria-current={current === path ? 'page' : undefined}
+    onContextMenu={event => { event.preventDefault(); event.stopPropagation(); workbench.menu({ path, type: 'file', x: event.clientX, y: event.clientY }); }}
     onClick={() => { void workbench.visit({ file: path }).catch(workbench.fail); }}>
-    <span className="sc-wb-file-ext" aria-hidden>{path.split('/').at(-1).split('.').at(-1).slice(0, 3)}</span>{children}
+    <FileIcon path={path} />{children}
   </Button>;
 }
 
 function Directory({ path = '', snapshot, workbench, Button, t }) {
   const [open, setOpen] = useState(path === '');
   const list = snapshot.directories.get(path);
+  useEffect(() => {
+    if (path && snapshot.file?.startsWith(`${path}/`)) {
+      setOpen(true);
+      if (!snapshot.directories.has(path)) void workbench.list(path).catch(workbench.fail);
+    }
+  }, [path, snapshot.file, workbench]);
   return <div className="sc-wb-directory">
-    {path && <Button aria-expanded={open} title={path} className="sc-wb-file" onClick={() => {
+    {path && <Button aria-expanded={open} title={path} className="sc-wb-file"
+      onContextMenu={event => { event.preventDefault(); event.stopPropagation(); workbench.menu({ path, type: 'directory', x: event.clientX, y: event.clientY }); }} onClick={() => {
       const next = !open; setOpen(next); if (next) void workbench.list(path).catch(workbench.fail);
-    }}><span aria-hidden>{open ? '⌄' : '›'}</span><span>{path.split('/').at(-1)}</span></Button>}
+    }}><span aria-hidden>{open ? '⌄' : '›'}</span><FileIcon path={path} directory open={open} /><span>{path.split('/').at(-1)}</span></Button>}
     {open && <div role="group">{list?.entries.map(entry => entry.type === 'directory'
       ? <Directory key={entry.path} path={entry.path} snapshot={snapshot} workbench={workbench} Button={Button} t={t} />
       : <File key={entry.path} path={entry.path} current={snapshot.file} workbench={workbench} Button={Button}><span>{entry.name}</span></File>)}
@@ -35,7 +45,10 @@ export function Files({ snapshot, workbench, Button, t, visible }) {
     return () => workbench.files.activate(false);
   }, [workbench, visible, filtering]);
   const clear = () => { setText(''); input.current?.focus(); };
-  return <>
+  return <div className="sc-wb-files" onContextMenu={event => {
+    if (event.target.closest('input')) return;
+    event.preventDefault(); event.stopPropagation(); workbench.menu({ path: '', type: 'directory', x: event.clientX, y: event.clientY });
+  }}>
     <div className="sc-wb-file-search">
       <input ref={input} aria-label={t('fileSearch')} placeholder={t('fileSearchPlaceholder')} autoComplete="off" spellCheck={false}
         value={text} onChange={event => setText(event.target.value)} onKeyDown={event => {
@@ -55,5 +68,6 @@ export function Files({ snapshot, workbench, Button, t, visible }) {
         <span className="sc-wb-file-match"><span>{path.split('/').at(-1)}</span><small>{path}</small></span>
       </File>}</FileList>
     </>}
-  </>;
+    <FileActions snapshot={snapshot} workbench={workbench} Button={Button} t={t} />
+  </div>;
 }

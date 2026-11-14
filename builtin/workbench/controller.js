@@ -18,10 +18,11 @@ export function createWorkbench(api, t) {
   const analyzer = createAnalyzer(), index = new SymbolIndex(analyzer.analyze), documents = new Map(), subscribers = new Set(), directories = new Map();
   let editor, current = null, generation = 0, opening, scanning, timer, preferences = defaults(), disposed = false;
   let history = [], at = -1, moving = false, navigation = Promise.resolve();
-  let snapshot = { file: null, tabs: [], directories, symbols: [], cursor: null, status: t('ready'), error: '', preferences, panel: null, assistant: null, indexing: false, indexed: 0, back: false, forward: false };
+  let saving, operation;
+  let snapshot = { file: null, tabs: [], directories, symbols: [], cursor: null, status: t('ready'), error: '', preferences, panel: null, assistant: null, indexing: false, indexed: 0, back: false, forward: false, fileMenu: null, fileClipboard: null };
   const publish = patch => { if (disposed) return; snapshot = { ...snapshot, ...patch }; for (const listener of subscribers) listener(); };
   const fail = error => { if (error.name !== 'AbortError') publish({ error: errorText(error, t) }); };
-  const tabs = () => [...documents].map(([path, doc]) => ({ path, dirty: doc.dirty }));
+  const tabs = () => [...documents].map(([path, doc]) => ({ path, dirty: doc.dirty, pinned: !!doc.pinned })).sort((a, b) => Number(b.pinned) - Number(a.pinned));
   const assistant = createSelectionAssistant({ editor: { file: () => current, view: () => editor?.view }, api, t, changed: value => publish({ assistant: value }) });
   const reading = createReading({ api, documents, currentFile: () => current, visit, t, locale: () => t('readingLanguage') });
   const changes = createChanges(api.git, error => errorText(error, t));
@@ -56,6 +57,7 @@ export function createWorkbench(api, t) {
     if (update.docChanged || update.selectionSet) cursor();
   }
   async function display(target) {
+    if (operation) throw new Error('WORKBENCH_FILE_BUSY');
     const file = target.file;
     if (!editor) return false;
     const cached = documents.get(file);
@@ -113,6 +115,7 @@ export function createWorkbench(api, t) {
     return result;
   }
   async function refresh() {
+    if (operation) throw new Error('WORKBENCH_FILE_BUSY');
     files.reset();
     scanning?.abort(); const abort = new AbortController(); scanning = abort;
     publish({ indexing: true, indexed: 0, error: '' });
@@ -164,12 +167,17 @@ export function createWorkbench(api, t) {
     finally { if (scanning === abort) publish({ indexing: false }); }
   }
   async function save() {
+    if (operation) throw new Error('WORKBENCH_FILE_BUSY');
+    if (saving) return saving;
     const doc = documents.get(current);
     if (!doc || doc.text === doc.original) return;
-    const result = await api.save({ path: current, text: doc.text, version: doc.version });
-    doc.original = result.text; doc.version = result.version;
-    publish({ tabs: tabs(), status: doc.text === doc.original ? t('saved') : t('unsaved'), error: '' });
-    changes.invalidate();
+    saving = (async () => {
+      const result = await api.save({ path: current, text: doc.text, version: doc.version });
+      doc.original = result.text; doc.version = result.version;
+      publish({ tabs: tabs(), status: doc.text === doc.original ? t('saved') : t('unsaved'), error: '' });
+      changes.invalidate();
+    })();
+    try { await saving; } finally { saving = null; }
   }
   async function definition() {
     if (!current) return;
@@ -184,6 +192,48 @@ export function createWorkbench(api, t) {
     preferences = readPreferences(value); editor?.preferences(preferences); publish({ preferences });
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences)); } catch { publish({ error: t('settingsFailed') }); }
   }
+  function forgetFiles(affected) {
+    opening?.abort(); generation++;
+    for (const path of [...documents.keys()]) if (affected(path)) documents.delete(path);
+    for (const path of [...index.versions.keys()]) if (affected(path)) index.remove(path);
+    for (const path of [...directories.keys()]) if (affected(path)) directories.delete(path);
+    const next = history.slice(0, at + 1).filter(item => !affected(item.file)).length - 1;
+    history = history.filter(item => !affected(item.file)); at = next;
+    if (current && affected(current)) { assistant.switchFile(); current = null; editor?.dispose(); publish({ file: null, cursor: null, symbols: [] }); }
+    if (snapshot.fileClipboard && affected(snapshot.fileClipboard.path)) publish({ fileClipboard: null });
+  }
+  async function fileOperation(input) {
+    if (input.action === 'absolutePath') return api.fileOperation(input);
+    if (operation) throw new Error('WORKBENCH_FILE_BUSY');
+    let finish;
+    const abort = new AbortController(), finished = new Promise(resolve => { finish = resolve; });
+    operation = { abort, finished };
+    const target = input.action === 'copy' ? input.destination : input.path;
+    let attempted = false;
+    try {
+      await navigation; await saving; abort.signal.throwIfAborted();
+      const affected = path => path === input.path || path.startsWith(`${input.path}/`);
+      if (input.action === 'trash' && [...documents].some(([path, doc]) => affected(path) && doc.dirty)) throw new Error('WORKBENCH_FILE_UNSAVED');
+      if (input.action === 'trash') {
+        scanning?.abort(); clearTimeout(timer); publish({ indexing: false });
+        assistant.switchFile(); editor?.readonly(true);
+      }
+      attempted = true;
+      const result = await api.fileOperation(input, abort.signal);
+      abort.signal.throwIfAborted();
+      if (input.action === 'trash') forgetFiles(affected);
+      return result;
+    } finally {
+      if (attempted && !abort.signal.aborted) {
+        try { await list(target.split('/').slice(0, -1).join('/'), abort.signal); } catch (error) { fail(error); }
+        files.reset(); changes.invalidate();
+      }
+      operation = null;
+      if (editor?.view) editor.readonly(false);
+      publish({ tabs: tabs(), back: at > 0, forward: at < history.length - 1 });
+      finish();
+    }
+  }
   return {
     subscribe(listener) { subscribers.add(listener); return () => subscribers.delete(listener); },
     snapshot: () => snapshot, documents, index, assistant, reading, changes, files, t,
@@ -197,12 +247,17 @@ export function createWorkbench(api, t) {
       });
       const attached = editor;
       publish({ preferences });
+      await operation?.finished;
+      if (editor !== attached) return;
       if (current) { const target = history[at] || { file: current }; current = null; await display(target); }
       if (editor === attached) await refresh();
     },
-    detach() { opening?.abort(); scanning?.abort(); files.activate(false); generation++; clearTimeout(timer); assistant.switchFile(); analyzer.dispose(); if (current && editor?.view) documents.get(current).state = editor.view.state; editor?.dispose(); editor = null; },
+    detach() { opening?.abort(); scanning?.abort(); operation?.abort.abort(); files.activate(false); generation++; clearTimeout(timer); publish({ fileMenu: null }); assistant.switchFile(); analyzer.dispose(); if (current && editor?.view) documents.get(current).state = editor.view.state; editor?.dispose(); editor = null; },
     dispose() { this.detach(); disposed = true; assistant.dispose(); reading.dispose(); changes.dispose(); files.dispose(); documents.clear(); index.clear(); subscribers.clear(); },
-    visit, move, list, refresh, save, settings, definition, fail,
+    visit, move, list, refresh, save, settings, definition, fail, fileOperation,
+    menu(value) { publish({ fileMenu: value }); },
+    copyFile({ path, type }) { publish({ fileClipboard: { path, type }, status: t('fileCopied'), error: '' }); },
+    async pinFile(path) { await visit({ file: path }); const doc = documents.get(path); if (doc) { doc.pinned = !doc.pinned; publish({ tabs: tabs() }); } },
     view: () => editor?.view,
     panel(value) { publish({ panel: value }); },
   };

@@ -9,7 +9,7 @@ const MAX_PROJECT_FILES = 2000
 const MAX_PROJECT_DIRECTORIES = 1000
 const skipped = new Set(['.git', '.hg', '.svn', 'node_modules', '.env', '.venv', 'vendor', 'dist', 'build', 'coverage', '__pycache__', 'target'])
 const sourceExtension = /\.(?:[cm]?[jt]sx?|py|pyi|go|rs|c|h|cc|cpp|cxx|hpp|java|cs|kt|kts|swift|rb|php|sh|bash|zsh|json|ya?ml|html?|vue|svelte|css|scss|sql|md|toml)$/i
-const pathSchema = z.string().max(4096).refine(value => !value.includes('\\') && !value.includes('\0') && !value.startsWith('/') && !/^[a-z]:/i.test(value) && !value.split('/').some(part => part === '..' || part === '.'), 'WORKBENCH_PATH')
+export const pathSchema: z.ZodString = z.string().max(4096).refine(value => !value.includes('\\') && !value.includes('\0') && !value.startsWith('/') && !/^[a-z]:/i.test(value) && !value.split('/').some(part => part === '..' || part === '.'), 'WORKBENCH_PATH')
 const saveSchema = z.object({ path: pathSchema.min(1), version: z.string().min(1).max(4096), text: z.string().refine(text => !text.includes('\0'), 'WORKBENCH_NOT_TEXT') }).strict()
 
 export interface WorkbenchRoot { cwd: string; policy?: SandboxExecutionPolicy }

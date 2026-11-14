@@ -17,6 +17,7 @@ import { parseReadingRequest, MAX_READING_REQUEST_CHARS } from '../workbench/rea
 import type { ReadingEvent } from '../workbench/reading/types.js'
 import { WorkbenchDirectory } from './workbench-directory.js'
 import type { DirectoryState } from './workbench-directory.js'
+import { operateFile } from '../workbench/operations.js'
 
 const sessionSchema = z.string().min(1).max(256)
 const requestSchema = z.string().max(2 * 1024 * 1024 + 16000)
@@ -83,6 +84,12 @@ export class SuperCodeWorkbench extends TypertRemoteService {
 
   @Remote
   async project(sessionId: string, signal: AbortSignal): Promise<{ files: string[]; truncated: boolean }> { return this.files.project(sessionId, signal) }
+
+  @Remote
+  async fileOperation(sessionId: string, content: string, signal: AbortSignal): Promise<{ path: string }> {
+    const input: unknown = JSON.parse(z.string().max(32768).parse(content))
+    return operateFile(this.ctx.fs, await this.rootOf(sessionId), input, AbortSignal.any([signal, this.lifetime.signal]))
+  }
 
   @Remote
   async directory(sessionId: string, signal: AbortSignal): Promise<DirectoryState> {

@@ -14,6 +14,7 @@ import { readLayout, saveLayout } from '../layout.js';
 import { FileList } from '../git/FileList.jsx';
 import { FileChanges } from '../git/Changes.jsx';
 import { Files } from './Files.jsx';
+import { FileIcon } from './FileIcon.jsx';
 
 function Locations({ data, query, search, workbench, Button, t }) {
   const [text, setText] = useState(query || '');
@@ -31,6 +32,7 @@ export function Workbench({ workbench, Button, Select, MarkdownText, Conversatio
   const snapshot = useSyncExternalStore(workbench.subscribe, workbench.snapshot), editor = useRef(null), tooltips = useRef(null);
   const [layout, setLayout] = useState(() => readLayout(localStorage)), savedLayout = useRef(layout);
   const [learningOpen, setLearningOpen] = useState(false);
+  const [conversationOpen, setConversationOpen] = useState(true);
   const changeLayout = patch => { savedLayout.current = { ...savedLayout.current, ...patch }; setLayout(savedLayout.current); };
   const persistLayout = () => { try { saveLayout(localStorage, savedLayout.current); } catch { workbench.fail(new Error(t('settingsFailed'))); } };
   useEffect(() => {
@@ -46,7 +48,7 @@ export function Workbench({ workbench, Button, Select, MarkdownText, Conversatio
   return <section className="sc-workbench sc-wb-main" data-conversation-composer-overlay="" data-palette={snapshot.preferences.palette} aria-label={t('title')}
     style={{ '--wb-explorer-width': `${layout.explorer}px`, '--wb-reading-width': `${layout.reading}px`, '--wb-files-height': `${layout.files}px` }}
     onKeyDown={event => {
-      if (event.target.closest('.sc-wb-conversation,.sc-wb-file-search')) return;
+      if (event.target.closest('.sc-wb-conversation,.sc-wb-file-search,.sc-wb-file-menu,.sc-wb-file-dialog')) return;
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') { event.preventDefault(); void workbench.save().catch(workbench.fail); }
       else workbenchKeydown(event, workbench.view());
     }} onPointerDownCapture={event => navigationPointer(event, direction => { void workbench.move(direction).catch(workbench.fail); })}
@@ -66,7 +68,7 @@ export function Workbench({ workbench, Button, Select, MarkdownText, Conversatio
       <Button title={`${t('save')} · Ctrl/⌘ + S`} disabled={!current?.dirty} onClick={action(workbench.save)} className="sc-wb-primary">{t('save')}</Button>
       <span className="sc-wb-toolbar-divider" />
       <Button title={t(learningOpen ? 'readingClose' : 'readingOpen')} aria-pressed={learningOpen} aria-controls="sc-reading-panel"
-        onClick={() => setLearningOpen(!learningOpen)}>{t('readingTitle')}</Button>
+        onClick={() => { setLearningOpen(!learningOpen); setConversationOpen(true); }}>{t('readingTitle')}</Button>
     </div></header>
     <div className="sc-wb-body"><aside className="sc-wb-explorer" data-files-open={layout.filesOpen} data-outline-open={layout.outlineOpen}>
       <section className="sc-wb-explorer-files" data-open={layout.filesOpen}>
@@ -83,14 +85,17 @@ export function Workbench({ workbench, Button, Select, MarkdownText, Conversatio
       </section>
     </aside><Splitter panel="explorer" label={t('resizeExplorer')} value={layout.explorer} ratio={.3}
       change={value => changeLayout({ explorer: value })} commit={persistLayout} /><main className="sc-wb-code">
-      <nav className="sc-wb-tabs" aria-label={t('files')}>{snapshot.tabs.map(item => <Button key={item.path} aria-current={snapshot.file === item.path ? 'page' : undefined} title={item.path} onClick={action(() => workbench.visit({ file: item.path }))}>{item.path.split('/').at(-1)}{item.dirty && <i aria-label={t('unsaved')}>•</i>}</Button>)}</nav>
+      <nav className="sc-wb-tabs" aria-label={t('files')}>{snapshot.tabs.map(item => <Button key={item.path} aria-current={snapshot.file === item.path ? 'page' : undefined} title={item.path}
+        onContextMenu={event => { event.preventDefault(); workbench.menu({ path: item.path, type: 'file', x: event.clientX, y: event.clientY }); }}
+        onClick={action(() => workbench.visit({ file: item.path }))}><FileIcon path={item.path} />{item.path.split('/').at(-1)}{item.pinned && <span aria-label={t('filePinned')}><FileIcon pinned /></span>}{item.dirty && <i aria-label={t('unsaved')}>•</i>}</Button>)}</nav>
       <div className="sc-wb-path">{snapshot.file || t('title')}</div><div ref={editor} className="sc-wb-editor" />
       {!snapshot.file && <div className="sc-wb-empty"><strong>{t('title')}</strong><span>{t('empty')}</span></div>}
     </main><Splitter panel="reading" label={t('resizeReading')} value={layout.reading} ratio={.48}
       change={value => changeLayout({ reading: value })} commit={persistLayout} /><aside className="sc-wb-right">
-      <header className="sc-wb-section"><strong>{t(learningOpen ? 'readingTitle' : 'conversation')}</strong></header>
-      <div className="sc-wb-right-content">{learningOpen ? <ReadingPanel workbench={workbench} file={snapshot.file} Button={Button} MarkdownText={MarkdownText} t={t} />
-        : <Conversation key={sessionId} sessionId={sessionId} useSessions={useSessions} useSessionStatus={useSessionStatus} useInput={useInput} inputActions={inputActions}
+      <Button className="sc-wb-section" aria-expanded={conversationOpen} aria-controls="sc-wb-right-content" title={t(learningOpen ? 'readingTitle' : 'conversation')}
+        onClick={() => setConversationOpen(!conversationOpen)}><span aria-hidden>{conversationOpen ? '⌄' : '›'}</span><strong>{t(learningOpen ? 'readingTitle' : 'conversation')}</strong></Button>
+      <div id="sc-wb-right-content" hidden={!conversationOpen} className="sc-wb-right-content">{learningOpen ? <ReadingPanel workbench={workbench} file={snapshot.file} Button={Button} MarkdownText={MarkdownText} t={t} />
+        : <Conversation key={sessionId} sessionId={sessionId} visible={conversationOpen} useSessions={useSessions} useSessionStatus={useSessionStatus} useInput={useInput} inputActions={inputActions}
           remote={conversationRemote} detailT={conversationT} openView={openView} t={t} />}</div>
       <FileChanges workbench={workbench} Button={Button} Select={Select} t={t} palette={snapshot.preferences.palette} />
     </aside></div>

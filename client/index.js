@@ -161,15 +161,15 @@ function Glyph({ type }) {
   return React.createElement('svg', { className: 'dsh-super-code-glyph', viewBox: type === 'code' ? '0 0 24 20' : '0 0 20 20', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true }, React.createElement('path', { d: paths[type] || paths.code }))
 }
 
-function AgentMessage({ record, saved, t, toolName }) {
+function AgentMessage({ record, saved, t, toolName, compact = false }) {
   const item = record.entry ? detailRecord(record.entry, t) : record
   const eventType = record.entry?.event?.type
   const kind = eventType === 'user/message' ? 'user' : eventType === 'assistant/message' ? 'agent'
     : ['user', 'agent', 'tool', 'context', 'error'].includes(item.kind) ? item.kind : 'context'
   const time = new Date(item.time).toLocaleTimeString(localeCode(t), { hour12: false })
   const label = React.createElement('div', { className: 'dsh-super-code-detail-entry-label' },
-    React.createElement('span', null, item.label, toolName && !item.toolName ? ' · ' + toolName : ''), React.createElement('time', { dateTime: new Date(item.time).toISOString() }, time))
-  return React.createElement('article', { className: 'dsh-super-code-detail-entry ' + kind, 'data-event-type': eventType },
+    React.createElement('span', null, compact && kind === 'user' ? text(t, 'workbench.question') : compact && kind === 'agent' && !record.entry?.event?.data?.interrupted ? text(t, 'workbench.reply') : item.label, toolName && !item.toolName ? ' · ' + toolName : ''), React.createElement('time', { dateTime: new Date(item.time).toISOString() }, time))
+  return React.createElement('article', { className: 'dsh-super-code-detail-entry ' + kind, 'data-event-type': eventType, 'data-message-seq': item.seq },
     React.createElement('span', { className: 'dsh-super-code-detail-avatar', 'aria-hidden': true }, React.createElement(Glyph, { type: kind })),
     React.createElement('div', { className: 'dsh-super-code-detail-message' }, item.collapsed
       ? React.createElement('details', { open: saved.open.has(item.seq), onToggle: event => {
@@ -275,7 +275,8 @@ const zh = {
   'directory.WORKBENCH_DIRECTORY_UNSUPPORTED': '此宿主未提供保留历史所需的会话能力。',
   'feedback.title': '任务',
   'feedback.tools': '工具调用汇总',
-  'feedback.toolCount': '{tool} 成功 {ok} 次，失败 {failed} 次',
+  'feedback.toolSucceeded': '成功 {count} 次', 'feedback.toolFailed': '失败 {count} 次', 'feedback.toolRunning': '运行中',
+  'workbench.question': '问题', 'workbench.reply': '回复', 'workbench.questions': '本页问题', 'workbench.bottom': '回到底部',
   'feedback.refresh': '刷新任务状态',
   'feedback.noGoal': '尚无目标记录',
   'feedback.source.record': '任务记录',
@@ -498,7 +499,8 @@ const en = {
   'directory.WORKBENCH_DIRECTORY_UNSUPPORTED': 'This host cannot continue with preserved history.',
   'feedback.title': 'Tasks',
   'feedback.tools': 'Tool call summary',
-  'feedback.toolCount': '{tool}: {ok} succeeded, {failed} failed',
+  'feedback.toolSucceeded': '{count} succeeded', 'feedback.toolFailed': '{count} failed', 'feedback.toolRunning': 'Running',
+  'workbench.question': 'Question', 'workbench.reply': 'Reply', 'workbench.questions': 'Questions on this page', 'workbench.bottom': 'Back to bottom',
   'feedback.refresh': 'Refresh task status',
   'feedback.noGoal': 'No recorded objective',
   'feedback.source.record': 'Recorded objective',
@@ -1081,14 +1083,14 @@ function feedbackToolSummary(activities = []) {
   }
   return [...tools.values()]
 }
-function FeedbackTools({ tools, t }) {
-  return React.createElement('ul', { className: 'dsh-super-code-feedback-tools', 'aria-label': text(t, 'feedback.tools') },
+function FeedbackTools({ tools, t, inline = false }) {
+  return React.createElement(inline ? 'span' : 'ul', { className: 'dsh-super-code-feedback-tools', 'aria-label': text(t, 'feedback.tools') },
     tools.map(row => {
-      const label = text(t, 'feedback.toolCount', { tool: row.tool, ok: row.succeeded, failed: row.failed })
-      return React.createElement('li', { key: row.tool, title: label, 'aria-label': label, 'data-running': row.running || undefined },
+      const label = [row.tool, row.succeeded > 0 && text(t, 'feedback.toolSucceeded', { count: row.succeeded }), row.failed > 0 && text(t, 'feedback.toolFailed', { count: row.failed }), row.running && text(t, 'feedback.toolRunning')].filter(Boolean).join(' · ')
+      return React.createElement(inline ? 'span' : 'li', { key: row.tool, title: label, 'aria-label': label, 'data-running': row.running || undefined },
         React.createElement('span', { 'aria-hidden': true }, row.tool),
-        React.createElement('b', { className: 'dsh-super-code-tool-badge', 'data-tone': 'success', 'aria-hidden': true }, row.succeeded),
-        React.createElement('b', { className: 'dsh-super-code-tool-badge', 'data-tone': 'warning', 'data-zero': row.failed === 0 || undefined, 'aria-hidden': true }, row.failed))
+        row.succeeded > 0 && React.createElement('b', { className: 'dsh-super-code-tool-badge', 'data-tone': 'success', 'aria-hidden': true }, row.succeeded),
+        row.failed > 0 && React.createElement('b', { className: 'dsh-super-code-tool-badge', 'data-tone': 'warning', 'aria-hidden': true }, row.failed))
     }))
 }
 /** Flatten presentation rows only; tool calls fold into one per-task summary row. */
@@ -1719,6 +1721,34 @@ function detailRecord(entry, t = key => zh[key] || key) {
   return { kind: 'skip' }
 }
 
+// 只归并展示；调用身份包含步骤及 PTC 父调用，返回记录仍完整保留。
+function workbenchConversationRows(records) {
+  const rows = [], calls = new Map()
+  for (const record of records) {
+    const event = record.entry?.event, data = event?.data
+    if (!['tool/call', 'tool/result', 'tool/ptc-dispatch-start', 'tool/ptc-dispatch'].includes(event?.type)) {
+      rows.push({ kind: 'message', key: record.seq, record }); continue
+    }
+    let group = rows.at(-1)
+    if (group?.kind !== 'tools') { group = { kind: 'tools', key: `tools:${record.seq}`, items: [], calls: [] }; rows.push(group) }
+    group.items.push(record)
+    const identity = (id, parent) => JSON.stringify([data.turn, data.step, parent, id])
+    const settle = (id, parent, tool, status) => {
+      const key = identity(id ?? record.seq, parent)
+      let call = calls.get(key)
+      if (!call) { call = { tool: tool || 'tool', status }; calls.set(key, call); group.calls.push(call) }
+      if (tool) call.tool = tool
+      call.status = status
+    }
+    if (event.type === 'tool/call') settle(data.callId, undefined, data.name, 'running')
+    else if (event.type === 'tool/ptc-dispatch-start') settle(data.subCallId, data.parentCallId, data.name, 'running')
+    else if (event.type === 'tool/ptc-dispatch') settle(data.subCallId, data.parentCallId, data.name, data.isError ? 'failed' : 'succeeded')
+    else if (data.message?.role === 'tool') settle(data.message.toolCallId, undefined, undefined, data.message.isError ? 'failed' : 'succeeded')
+    else for (const block of data.message?.content || []) if (block.type === 'tool-result') settle(block.toolCallId, undefined, undefined, block.isError ? 'failed' : 'succeeded')
+  }
+  return rows.map(row => row.kind === 'tools' ? { kind: row.kind, key: row.key, items: row.items, tools: feedbackToolSummary(row.calls) } : row)
+}
+
 // The host journal owns decoding, cursor validation and reconnects. This view
 // keeps a bounded display window and never stages or sends to another session.
 function createAgentInspector(createStream, address, readPage, initial, t = key => zh[key] || key) {
@@ -1732,7 +1762,7 @@ function createAgentInspector(createStream, address, readPage, initial, t = key 
     snapshot = { ...snapshot, cursor, ...patch }
     listeners.forEach(listener => listener())
   }
-  const itemsOf = entries => entries.map(entry => detailRecord(entry, t)).filter(item => item.kind !== 'skip' && item.text)
+  const itemsOf = entries => entries.map(entry => detailRecord(entry, t)).filter(item => item.kind !== 'skip' && (item.text || item.callId))
   stream = createStream(agentDetailTarget(address), {
     publish: change => {
       if (disposed) return
@@ -1754,7 +1784,7 @@ function createAgentInspector(createStream, address, readPage, initial, t = key 
       } else if (change.type === 'append' && !snapshot.earlier) {
         const item = detailRecord(change.entry, t)
         cursor = change.entry.event.seq
-        if (item.kind !== 'skip' && item.text) {
+        if (item.kind !== 'skip' && (item.text || item.callId)) {
           const items = [...snapshot.items, item]
           publish({ items: items.slice(-200), cursor, truncated: snapshot.truncated || items.length > 200,
             firstSeq: items.length > 200 ? items.at(-200).seq : snapshot.firstSeq, hasMore: snapshot.hasMore || items.length > 200 })
@@ -2078,7 +2108,7 @@ function MemoryLibrary({ useTabInfo, useSessions, sessionId: scopeSessionId, api
     editing.confirmation && React.createElement(MemoryDeleteConfirmation, { store: editor, state: editing, t }))
 }
 
-function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, createInspector, detailStates, openMemory, t = key => zh[key] || key }) {
+function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, createInspector, detailStates, openMemory, compact = false, t = key => zh[key] || key }) {
   const { tab } = useTabInfo()
   const catalog = useSessions(s => s)
   const statuses = useSessionStatus ? useSessionStatus(s => s) : undefined
@@ -2093,8 +2123,25 @@ function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, cre
   const [unread, setUnread] = useState(saved.unread || false)
   const markUnread = value => { saved.unread = value; setUnread(value) }
   const [revision, setRevision] = useState(0)
+  const [away, setAway] = useState(!saved.following), [question, setQuestion] = useState('')
   const inspector = useMemo(() => createInspector(tab.contentId, saved.snapshot), [createInspector, tab.contentId, tab.visible, revision])
   const snapshot = useSyncExternalStore(inspector.subscribe, inspector.getSnapshot, inspector.getSnapshot)
+  const rows = useMemo(() => compact ? workbenchConversationRows(snapshot.items) : snapshot.items.map(record => ({ kind: 'message', key: record.seq, record })), [snapshot.items, compact])
+  const questions = useMemo(() => snapshot.items.filter(record => record.entry?.event?.type === 'user/message'), [snapshot.items])
+  function trackPosition() {
+    const element = log.current
+    if (!element) return
+    saved.top = element.scrollTop
+    saved.following = !snapshot.earlier && element.scrollHeight - element.clientHeight - element.scrollTop < 32
+    if (saved.following) markUnread(false)
+    if (compact) {
+      setAway(!saved.following)
+      const top = element.getBoundingClientRect().top
+      let active = questions[0]?.seq
+      for (const item of questions) if ((element.querySelector(`[data-message-seq="${item.seq}"]`)?.getBoundingClientRect().top ?? Infinity) <= top + 32) active = item.seq
+      setQuestion(active === undefined ? '' : String(active))
+    }
+  }
   const latest = () => {
     saved.snapshot = undefined; saved.following = true; saved.top = 0
     restored.current = false; previous.current = undefined; markUnread(false)
@@ -2102,7 +2149,7 @@ function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, cre
   }
   useLayoutEffect(() => {
     const element = log.current
-    if (!element || snapshot.status === 'loading') return
+    if (!element || !tab.visible || snapshot.status === 'loading') return
     if (!restored.current) {
       element.scrollTop = saved.following && !snapshot.earlier ? element.scrollHeight : saved.top
       restored.current = true
@@ -2114,8 +2161,10 @@ function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, cre
     }
     saved.top = element.scrollTop; saved.snapshot = snapshot; previous.current = snapshot
     const visible = new Set(snapshot.items.map(item => item.seq))
+    for (const row of rows) visible.add(row.key)
     for (const key of saved.open) if (key !== 'usage' && !visible.has(key)) saved.open.delete(key)
-  }, [snapshot, saved])
+    if (compact) trackPosition()
+  }, [snapshot, saved, compact, rows, tab.visible])
   useEffect(() => {
     if (tab.visible) inspector.start()
     return () => inspector.dispose()
@@ -2129,6 +2178,15 @@ function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, cre
   const format = value => value === undefined ? text(t, 'detail.unavailable') : value.toLocaleString(localeCode(t))
   const tasks = projections.superCodeTasks
   const toolNames = new Map()
+  for (const record of snapshot.items) {
+    const data = record.entry?.event?.data
+    if (record.toolName && record.callId) toolNames.set(JSON.stringify([data?.turn, data?.step, record.parentCallId, record.callId]), record.toolName)
+  }
+  const renderMessage = record => {
+    const data = record.entry?.event?.data
+    return React.createElement(AgentMessage, { key: record.seq, record, saved, t, compact,
+      toolName: toolNames.get(JSON.stringify([data?.turn, data?.step, record.parentCallId, record.callId])) })
+  }
   const task = tasks?.current?.kind === 'task' ? tasks.current : undefined
   const title = node?.title || node?.displayTitle || text(t, 'detail.title')
   const metrics = [
@@ -2157,31 +2215,34 @@ function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, cre
           id !== view.root && task?.goal && task.goal !== title && React.createElement('p', { className: 'dsh-super-code-detail-task' }, task.goal),
           id === view.root && React.createElement(TaskMemoryPanel, { state: tasks, t }),
           React.createElement(MemoryActivity, { usage: projections.superCodeMemoryUsage, sessionId: id, openMemory, t })))),
-    React.createElement('div', { ref: log, className: 'dsh-super-code-detail-log', 'aria-label': text(t, 'tree.title'), onScroll: event => {
-      const element = event.currentTarget
-      saved.top = element.scrollTop
-      saved.following = !snapshot.earlier && element.scrollHeight - element.clientHeight - element.scrollTop < 32
-      if (saved.following) markUnread(false)
-    } },
+    compact && questions.length > 0 && React.createElement('nav', { className: 'sc-wb-question-nav', 'aria-label': text(t, 'workbench.questions') },
+      React.createElement(SelectControl, { label: text(t, 'workbench.questions'), value: questions.some(item => String(item.seq) === question) ? question : String(questions[0].seq),
+        choices: questions.map((item, index) => [String(item.seq), `${index + 1}. ${item.text.replace(/\s+/g, ' ').slice(0, 72)}`]),
+        onChange: value => {
+          const element = log.current, target = element?.querySelector(`[data-message-seq="${value}"]`)
+          if (target) { saved.following = false; element.scrollTop += target.getBoundingClientRect().top - element.getBoundingClientRect().top - 8; setQuestion(value); setAway(true) }
+        } })),
+    React.createElement('div', { ref: log, className: 'dsh-super-code-detail-log', 'aria-label': text(t, 'tree.title'), onScroll: trackPosition },
       snapshot.error && React.createElement('p', { role: 'alert' }, text(t, snapshot.error)),
       snapshot.status === 'loading' && React.createElement('p', { role: 'status' }, text(t, 'detail.reading')),
       snapshot.hasMore && React.createElement(ActionButton, { type: 'button', disabled: snapshot.status === 'paging', onClick: inspector.older }, snapshot.status === 'paging' ? text(t, 'detail.read') : text(t, 'detail.older')),
       (snapshot.earlier || snapshot.truncated) && React.createElement(ActionButton, { type: 'button', onClick: latest }, text(t, 'detail.latest')),
       snapshot.status === 'ready' && !snapshot.items.length && React.createElement('p', null, text(t, 'detail.empty')),
-      snapshot.items.map(record => {
-        const data = record.entry?.event?.data
-        const key = JSON.stringify([data?.turn, data?.step, record.callId])
-        if (record.toolName && record.callId) toolNames.set(key, record.toolName)
-        return React.createElement(AgentMessage, { key: record.seq, record, saved, t, toolName: toolNames.get(key) })
-      })),
-    unread && React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-new-content', onClick: () => {
-      saved.following = true; log.current.scrollTop = log.current.scrollHeight; markUnread(false)
-    } }, text(t, 'detail.new')))
+      rows.map(row => row.kind === 'message' ? renderMessage(row.record) : React.createElement('details', { key: row.key, className: 'sc-wb-tool-group', open: saved.open.has(row.key), onToggle: event => {
+        if (event.target !== event.currentTarget) return
+        if (event.currentTarget.open) saved.open.add(row.key); else saved.open.delete(row.key)
+      } }, React.createElement('summary', null, React.createElement(Glyph, { type: 'chevron' }),
+        row.tools.length ? React.createElement(FeedbackTools, { tools: row.tools, t, inline: true }) : text(t, 'detail.toolResult')),
+        React.createElement('div', null, row.items.map(renderMessage))))),
+    (unread || compact && (away || snapshot.earlier)) && React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-new-content', onClick: () => {
+      if (compact && snapshot.earlier) { latest(); return }
+      saved.following = true; log.current.scrollTop = log.current.scrollHeight; markUnread(false); setAway(false)
+    } }, text(t, unread ? 'detail.new' : 'workbench.bottom')))
 }
 
-function WorkbenchConversation({ sessionId, useSessions, useSessionStatus, useInput, inputActions, remote, detailT, openView, t }) {
+function WorkbenchConversation({ sessionId, visible = true, useSessions, useSessionStatus, useInput, inputActions, remote, detailT, openView, t }) {
   const [lifetime] = useState(() => new AbortController())
-  const tab = useMemo(() => ({ signal: lifetime.signal, visible: true, contentId: 'dsh-resource://super-agent/' + encodeURIComponent(sessionId) }), [sessionId, lifetime])
+  const tab = useMemo(() => ({ signal: lifetime.signal, visible, contentId: 'dsh-resource://super-agent/' + encodeURIComponent(sessionId) }), [sessionId, lifetime, visible])
   const detailStates = useMemo(() => new WeakMap(), [])
   const createInspector = useMemo(() => (address, initial) => createAgentInspector(
     (target, options) => new SessionEventStream(remote, target, options), address,
@@ -2191,7 +2252,7 @@ function WorkbenchConversation({ sessionId, useSessions, useSessionStatus, useIn
     t('conversationUnavailable'), React.createElement(ActionButton, { onClick: () => openView('chat', '') }, t('openConversation')))
   return React.createElement('div', { className: 'sc-wb-conversation' },
     React.createElement(AgentDetail, { useTabInfo: () => ({ tab }), useSessions, useSessionStatus, sessionId, createInspector, detailStates,
-      openMemory: () => openView('chat', ''), t: detailT }),
+      openMemory: () => openView('chat', ''), compact: true, t: detailT }),
     React.createElement(WorkbenchInput, { useInput, inputActions, openView, t }))
 }
 
@@ -3860,12 +3921,11 @@ function apply(ctx, extraRemoteDescriptors = [], workbenchPreference, workbenchU
 @keyframes sc-feedback-spin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.dsh-super-code-feedback-mark.active:before{animation:none!important}}
 .dsh-super-code-feedback-tools{display:flex;flex-wrap:wrap;gap:4px 10px;list-style:none;margin:4px 0;padding:0 5px}
-.dsh-super-code-feedback-tools>li{display:inline-flex;align-items:center;gap:3px;min-height:22px;font-family:var(--sc-mono);font-size:11px;line-height:18px;color:var(--sc-muted)}
-.dsh-super-code-feedback-tools>li[data-running]>span{color:var(--sc-active)}
+.dsh-super-code-feedback-tools>:is(li,span){display:inline-flex;align-items:center;gap:3px;min-height:22px;font-family:var(--sc-mono);font-size:11px;line-height:18px;color:var(--sc-muted)}
+.dsh-super-code-feedback-tools>:is(li,span)[data-running]>span{color:var(--sc-active)}
 .dsh-super-code-tool-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 4px;border:1px solid currentColor;border-radius:9px;font-family:inherit;font-size:11px;font-weight:600;font-variant-numeric:tabular-nums;line-height:16px}
 .dsh-super-code-tool-badge[data-tone=success]{color:var(--sc-success);background:color-mix(in srgb,var(--sc-success) 10%,transparent)}
 .dsh-super-code-tool-badge[data-tone=warning]{color:var(--sc-warning);background:color-mix(in srgb,var(--sc-warning) 12%,transparent)}
-.dsh-super-code-tool-badge[data-zero]{color:var(--sc-faint);background:transparent;border-color:color-mix(in srgb,var(--sc-faint) 40%,transparent);font-weight:400}
 .dsh-super-code-state{display:flex;align-items:center;gap:6px;margin:6px 0;padding:6px 8px;border-radius:var(--sc-radius);font-size:12px;line-height:18px;color:var(--sc-muted);background:color-mix(in srgb,var(--sc-line) 40%,transparent)}
 .dsh-super-code-state>.dsh-super-code-glyph{flex:none;width:14px;height:14px}
 .dsh-super-code-state[data-tone=error]{color:var(--sc-error);background:color-mix(in srgb,var(--sc-error) 8%,transparent)}
@@ -4227,5 +4287,5 @@ function apply(ctx, extraRemoteDescriptors = [], workbenchPreference, workbenchU
   ctx.effect(() => disposeMemoryType, 'super-code: memory library tab')
 }
 
-return { inject, apply, workbenchControls: { Button: ActionButton, Select: SelectControl, MarkdownText: icons.MarkdownText, Conversation: WorkbenchConversation }, skillPackageSource, synchronizeSkillMenus, refreshNativeSkillMenus, taskFeedbackRows, feedbackStatus, feedbackListItems, feedbackListLayout, feedbackListIndex, feedbackListWindow, feedbackListAnchor, connectionSessions, createConnectionAutosave, createBudgetAutosave, createBudgetEditors, connectionDraft, connectionConfiguration, budgetDraft, budgetConfiguration, synchronizePresetDisplay, agentSessionState, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, createAgentInspector, agentHistoryRange, agentHistoryRows, agentHistoryWindow, memoryLibraryAddress, memoryLibraryTarget, memoryLibraryNavigation, memoryLibraryWindow, createMemoryEditor, MemoryLibrary }
+return { inject, apply, workbenchControls: { Button: ActionButton, Select: SelectControl, MarkdownText: icons.MarkdownText, Conversation: WorkbenchConversation }, skillPackageSource, synchronizeSkillMenus, refreshNativeSkillMenus, taskFeedbackRows, feedbackStatus, feedbackListItems, feedbackListLayout, feedbackListIndex, feedbackListWindow, feedbackListAnchor, connectionSessions, createConnectionAutosave, createBudgetAutosave, createBudgetEditors, connectionDraft, connectionConfiguration, budgetDraft, budgetConfiguration, synchronizePresetDisplay, agentSessionState, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentDetailAddress, agentDetailTarget, agentPath, detailRecord, workbenchConversationRows, createAgentInspector, agentHistoryRange, agentHistoryRows, agentHistoryWindow, memoryLibraryAddress, memoryLibraryTarget, memoryLibraryNavigation, memoryLibraryWindow, createMemoryEditor, MemoryLibrary }
 } })

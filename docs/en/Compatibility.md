@@ -10,6 +10,16 @@ The records below distinguish each code baseline and test layer. Component check
 
 The new PStack workflow adaptation starts at `0.2.1-alpha.1`; earlier hosts are outside its scope. Older-version records below describe historical coverage of other plugin features.
 
+## 2026-11-14 · Offline task recovery and local-model follow-up
+
+This batch continues testing the r3 candidate associated with local commit `ba4e579`, using the same package hash recorded in the task-storage batch below. No runtime code or dependencies changed.
+
+- On Linux ARM64, a local tgz installs without `--offline` under Docker `--network none`, with DSH `0.2.2-rc.1` preinstalled in an independent dependency tree, no plugin directory, and an empty npm cache. Complete DSH uses a local deterministic model endpoint and its original `run_code` executor to save, focus and update a task and project memory. After full process exit and restart, the same session retains revision 2, task focus and project constraints. No user message is inserted between the call and result. This verifies the complete program and tools, not a real model; some install hooks remain unexecuted.
+- Complete macOS ARM64 DSH `0.2.2-rc.2`, restricted to loopback connections, calls the same 379.38 MiB model on the local CPU. Both `minimal` and `super-code` presets answer capital, addition and greeting questions correctly across three consecutive turns in one session each: six correct turns. The actual candidate and complete prompts are used without shortening product instructions.
+- Replaying the earlier Windows request that answered addition with “Paris” directly to the same model, outside DSH, returns “Paris” twice. A short request retaining the same question-and-answer history returns “4” twice. The Windows failure is retained; endpoint availability and this macOS success do not establish general model reliability. This diagnostic changes only test requests, not product prompts or outputs.
+
+Evidence is in the outer workspace at `source/validation/dsh-super-code/offline-followup-20261114-U4BGRe/Report.md`. Windows, phones and the complete baseline suite were not rerun in this batch. These results do not replace earlier records; real small-model answers inside the network-disabled Linux container remain unverified.
+
 ## 2026-11-14 · Independent task-storage fix (unreleased)
 
 This batch fixes task saves separating model tool calls from their results on main `96476cdb`. The tested candidate still carries version `0.4.1`, SHA-256 `a11beee3e1adf7a9cd293dbc9d8684ad909c88ee566ee8043c06f9cb766c3320`; it is distinct from the published 0.4.1 package.

@@ -52,6 +52,15 @@ test('编辑器默认 IDEA，支持独立配色、VS Code 绑定及无冲突的�
   assert.throws(() => readPreferences({ ...preferences, shortcuts: { invalid: 'Mod-k' } }))
 })
 
+test('新增多光标与扩词动作可配置，Ctrl+/ 保留单行注释绑定', () => {
+  const preferences = readPreferences(defaults()), bindings = bindingsOf(preferences, {})
+  for (const key of ['Ctrl-/', 'Ctrl-Alt-ArrowUp', 'Ctrl-Alt-ArrowDown', 'Alt-j', 'Ctrl-Alt-Shift-j', 'Ctrl-ArrowLeft', 'Ctrl-ArrowRight']) assert.ok(bindings.some(binding => binding.key === key), key)
+  const model = { provider: 'demo', model: 'translation' }
+  assert.deepEqual(readPreferences({ ...preferences, translationModel: model }).translationModel, model)
+  assert.equal(readPreferences(preferences).translationModel, undefined)
+  assert.throws(() => readPreferences({ ...preferences, translationModel: { provider: '', model: 'x' } }))
+})
+
 test('Esc 关闭弹框可配置且不会抢占编辑器补全和搜索的 Esc', () => {
   const preferences = defaults()
   assert.equal(keyOf(preferences, 'close'), 'Escape')

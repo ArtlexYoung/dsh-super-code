@@ -18,6 +18,8 @@ import type { ReadingEvent } from '../workbench/reading/types.js'
 import { WorkbenchDirectory } from './workbench-directory.js'
 import type { DirectoryState } from './workbench-directory.js'
 import { operateFile } from '../workbench/operations.js'
+import { parseTranslation, translationModel, translationRequest } from '../workbench/translation.js'
+import type { TranslationModelOption } from '../workbench/translation.js'
 
 const sessionSchema = z.string().min(1).max(256)
 const requestSchema = z.string().max(2 * 1024 * 1024 + 16000)
@@ -131,6 +133,26 @@ export class SuperCodeWorkbench extends TypertRemoteService {
     const model = this.modelOf(session)
     const combined = AbortSignal.any([signal, this.lifetime.signal, AbortSignal.timeout(ASSISTANT_TIMEOUT_MS)])
     yield await assistantResponse(this.ctx.llm.stream(assistantRequest(input, model, combined)), input.mode, combined)
+  }
+
+  @Remote
+  async models(sessionId: string, signal: AbortSignal): Promise<TranslationModelOption[]> {
+    await this.sessionOf(sessionId)
+    const combined = AbortSignal.any([signal, this.lifetime.signal])
+    combined.throwIfAborted()
+    const models = await Promise.all(this.ctx.llm.listProviders().map(async provider =>
+      (await this.ctx.llm.listModels(provider.id)).map(model => ({ provider: provider.id, model: model.id, name: `${provider.name} · ${model.name}` }))))
+    combined.throwIfAborted()
+    return models.flat()
+  }
+
+  @Remote({ mode: 'stream' })
+  async *translate(sessionId: string, content: string, signal: AbortSignal): AsyncGenerator<AssistantResult> {
+    const input = parseTranslation(JSON.parse(z.string().max(12 * 1024 * 1024).parse(content)))
+    const session = await this.sessionOf(sessionId)
+    const combined = AbortSignal.any([signal, this.lifetime.signal, AbortSignal.timeout(ASSISTANT_TIMEOUT_MS)])
+    const model = await translationModel(this.ctx.llm, input.model ?? this.modelOf(session), combined)
+    yield await assistantResponse(this.ctx.llm.stream(translationRequest(input, model, combined)), 'ask', combined)
   }
 }
 

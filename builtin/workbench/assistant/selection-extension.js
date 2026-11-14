@@ -34,8 +34,11 @@ export function selectionExtension(threads, open, select, t) {
     const range=state.selection.main;
     if(range.empty)return null;
     return {pos:range.to,above:true,arrow:false,create(){
-      const dom=document.createElement('button'); dom.type='button'; dom.className='selection-action'; dom.textContent=t('selectionAction');
-      dom.title=t('selectionAction'); dom.onpointerdown=event=>event.preventDefault(); dom.onclick=select;
+      const dom=document.createElement('div'); dom.className='selection-actions';
+      for (const [mode, label] of [['ask', 'selectionAction'], ['translate', 'translate']]) {
+        const button=document.createElement('button'); button.type='button'; button.className='selection-action'; button.textContent=t(label);
+        button.title=t(label); button.onpointerdown=event=>event.preventDefault(); button.onclick=()=>{ void select(mode); }; dom.append(button);
+      }
       return {dom};
     }};
   });

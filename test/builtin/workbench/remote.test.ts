@@ -47,3 +47,15 @@ test('文件操作序列化当前会话与取消信号，后端失败不伪装�
   assert.deepEqual(await workspaceApi(remote, 'session').fileOperation(input, signal), { path: input.path })
   await assert.rejects(workspaceApi({ async fileOperation() { return { ok: false, error: { message: 'WORKBENCH_FILE_EXISTS' } } } }, 's').fileOperation(input), /WORKBENCH_FILE_EXISTS/)
 })
+
+test('翻译复用可取消的逻辑流，只有完整结束后才返回；模型目录使用当前会话', async () => {
+  const input = { instruction: '翻译“hello”为中文', history: [] }, signal = new AbortController().signal
+  const remote = { async *translate(id: string, content: string, received: AbortSignal) {
+    assert.equal(id, 'session'); assert.deepEqual(JSON.parse(content), input); assert.equal(received, signal)
+    yield { kind: 'ask', text: '你好' }
+  }, async models(id: string, received: AbortSignal) { assert.equal(id, 'session'); assert.equal(received, signal); return { ok: true, value: [] } } }
+  assert.deepEqual(await workspaceApi(remote, 'session').translate(input, signal), { kind: 'ask', text: '你好' })
+  assert.deepEqual(await workspaceApi(remote, 'session').models(signal), [])
+  await assert.rejects(workspaceApi({ async *translate() {} }, 'session').translate(input), /WORKBENCH_MODEL_INCOMPLETE/)
+  await assert.rejects(workspaceApi({ async *translate() { yield { kind: 'ask', text: 'partial' }; throw new Error('interrupted') } }, 'session').translate(input), /interrupted/)
+})

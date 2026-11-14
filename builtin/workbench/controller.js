@@ -10,11 +10,12 @@ import { createAnalyzer } from './analysis/background.js';
 import { createBuffer } from './buffer.js';
 import { createChanges } from './git/changes.js';
 import { createFileSearch } from './file-search.js';
+import { createConversationStore } from './assistant/conversations.js';
 
 const INDEX_BYTES = 16 * 1024 * 1024;
 const STORAGE_KEY = 'dsh-super-code-workbench';
 
-export function createWorkbench(api, t) {
+export function createWorkbench(api, t, { projects = new Map(), translationLanguage } = {}) {
   const analyzer = createAnalyzer(), index = new SymbolIndex(analyzer.analyze), documents = new Map(), subscribers = new Set(), directories = new Map();
   let editor, current = null, generation = 0, opening, scanning, timer, preferences = defaults(), disposed = false;
   let history = [], at = -1, moving = false, navigation = Promise.resolve();
@@ -23,7 +24,7 @@ export function createWorkbench(api, t) {
   const publish = patch => { if (disposed) return; snapshot = { ...snapshot, ...patch }; for (const listener of subscribers) listener(); };
   const fail = error => { if (error.name !== 'AbortError') publish({ error: errorText(error, t) }); };
   const tabs = () => [...documents].map(([path, doc]) => ({ path, dirty: doc.dirty, pinned: !!doc.pinned })).sort((a, b) => Number(b.pinned) - Number(a.pinned));
-  const assistant = createSelectionAssistant({ editor: { file: () => current, view: () => editor?.view }, api, t, changed: value => publish({ assistant: value }) });
+  const assistant = createSelectionAssistant({ editor: { file: () => current, view: () => editor?.view }, api, t, changed: value => publish({ assistant: value }), translationModel: () => preferences.translationModel, translationLanguage });
   const reading = createReading({ api, documents, currentFile: () => current, visit, t, locale: () => t('readingLanguage') });
   const changes = createChanges(api.git, error => errorText(error, t));
   const files = createFileSearch(api.list);
@@ -249,12 +250,20 @@ export function createWorkbench(api, t) {
       publish({ preferences });
       await operation?.finished;
       if (editor !== attached) return;
+      const root = await api.fileOperation({ action: 'absolutePath', path: '' });
+      if (editor !== attached) return;
+      if (!projects.has(root.path)) projects.set(root.path, createConversationStore());
+      assistant.bind(projects.get(root.path));
       if (current) { const target = history[at] || { file: current }; current = null; await display(target); }
       if (editor === attached) await refresh();
     },
     detach() { opening?.abort(); scanning?.abort(); operation?.abort.abort(); files.activate(false); generation++; clearTimeout(timer); publish({ fileMenu: null }); assistant.switchFile(); analyzer.dispose(); if (current && editor?.view) documents.get(current).state = editor.view.state; editor?.dispose(); editor = null; },
     dispose() { this.detach(); disposed = true; assistant.dispose(); reading.dispose(); changes.dispose(); files.dispose(); documents.clear(); index.clear(); subscribers.clear(); },
-    visit, move, list, refresh, save, settings, definition, fail, fileOperation,
+    visit, move, list, refresh, save, settings, definition, fail, fileOperation, models: api.models,
+    async openConversation(row) {
+      try { await visit({ file: row.file, line: row.line, character: row.character, length: row.to - row.from }); }
+      finally { assistant.open(row.id); }
+    },
     menu(value) { publish({ fileMenu: value }); },
     copyFile({ path, type }) { publish({ fileClipboard: { path, type }, status: t('fileCopied'), error: '' }); },
     async pinFile(path) { await visit({ file: path }); const doc = documents.get(path); if (doc) { doc.pinned = !doc.pinned; publish({ tabs: tabs() }); } },

@@ -7,7 +7,8 @@ export function Selection({ value, workbench, Button, t, palette, preferences })
   const thread = value?.thread, visible = value?.visible, assistant = workbench.assistant;
   useLayoutEffect(() => {
     if (!visible || !thread) return;
-    anchor.current = workbench.view()?.coordsAtPos(Math.min(thread.to, workbench.view().state.doc.length));
+    const view = workbench.view();
+    anchor.current = thread.file === workbench.snapshot().file && view ? view.coordsAtPos(Math.min(thread.to, view.state.doc.length)) : { top: window.innerHeight / 2, right: window.innerWidth / 2 };
     input.current?.focus();
   }, [visible, thread?.id]);
   useLayoutEffect(() => { if (messages.current) messages.current.scrollTop = messages.current.scrollHeight; }, [thread?.messages.length]);
@@ -26,11 +27,11 @@ export function Selection({ value, workbench, Button, t, palette, preferences })
     return () => { observer.disconnect(); window.removeEventListener('resize', place); document.removeEventListener('pointerdown', outside); };
   }, [visible, thread?.id, thread?.pinned]);
   if (!visible || !thread) return null;
-  const busy = thread.status === 'running';
+  const busy = thread.status === 'running', translation = thread.kind === 'translation', placeholder = t(translation ? 'translationQuestion' : 'question');
   return createPortal(<section ref={panel} className="sc-workbench sc-wb-assistant" data-palette={palette} data-workbench-dialog
-    role="dialog" aria-label={t('selection')} aria-busy={busy}
+    role="dialog" aria-label={t(translation ? 'translate' : 'selection')} aria-busy={busy}
     onKeyDown={event => { if (matchesShortcut(event, keyOf(preferences, 'close'))) { event.preventDefault(); event.stopPropagation(); assistant.close(); } }}>
-    <header><strong>{t('selection')}</strong><nav>
+    <header><strong>{t(translation ? 'translate' : 'selection')}</strong><nav>
       <Button title={t(thread.pinned ? 'selectionUnpin' : 'selectionPin')} aria-pressed={thread.pinned} onClick={assistant.pin}>{t(thread.pinned ? 'selectionUnpin' : 'selectionPin')}</Button>
       <Button title={t('remove')} onClick={assistant.remove}>{t('remove')}</Button>
       <Button title={t('close')} onClick={assistant.close}>×</Button>
@@ -39,11 +40,11 @@ export function Selection({ value, workbench, Button, t, palette, preferences })
       <strong>{t(item.role === 'assistant' ? 'assistant' : item.mode === 'edit' ? 'editRequest' : 'user')}</strong><pre>{item.text}</pre>
     </article>)}</div>
     <form onSubmit={event => { event.preventDefault(); void assistant.send(); }}>
-      <div className="sc-wb-mode" role="group" aria-label={t('selectionAction')}>{['ask', 'edit'].map(mode => <Button key={mode} aria-pressed={value.mode === mode} onClick={() => assistant.mode(mode)} type="button">{t(mode)}</Button>)}</div>
-      <textarea ref={input} aria-label={t('question')} placeholder={t('question')} value={thread.draft} disabled={busy} onChange={event => assistant.draft(event.target.value)}
+      {!translation && <div className="sc-wb-mode" role="group" aria-label={t('selectionAction')}>{['ask', 'edit'].map(mode => <Button key={mode} aria-pressed={value.mode === mode} onClick={() => assistant.mode(mode)} type="button">{t(mode)}</Button>)}</div>}
+      <textarea ref={input} aria-label={placeholder} placeholder={placeholder} value={thread.draft} disabled={busy} onChange={event => assistant.draft(event.target.value)}
         onKeyDown={event => { if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) { event.preventDefault(); void assistant.send(); } }} />
-      <footer><span role="status">{thread.stale ? t('stale') : thread.note || (busy ? t('working') : '')}</span>
-        {busy ? <Button type="button" onClick={assistant.stop}>{t('stop')}</Button> : <Button type="submit" disabled={thread.stale || !thread.draft.trim()} className="sc-wb-primary">{t('send')}</Button>}
+      <footer><span role="status">{thread.stale && !translation ? t('stale') : thread.note || (busy ? t('working') : '')}</span>
+        {busy ? <Button type="button" onClick={assistant.stop}>{t('stop')}</Button> : <Button type="submit" disabled={!translation && thread.stale || !thread.draft.trim()} className="sc-wb-primary">{t('send')}</Button>}
       </footer>
     </form>
   </section>, document.body);

@@ -1,9 +1,10 @@
 import { isolateHistory } from '@codemirror/commands';
 
-export function selectionThread(file, state, id) {
+export function selectionThread(file, state, id, kind = 'code') {
   const range = state.selection.main;
   if (range.empty) throw new Error('请先选择代码');
-  return { id,file,from:range.from,to:range.to,original:state.sliceDoc(range.from,range.to),revision:0,stale:false,messages:[],draft:'',status:'idle',pinned:false };
+  const line = state.doc.lineAt(range.from);
+  return { id,file,kind,line:line.number-1,character:range.from-line.from,from:range.from,to:range.to,original:state.sliceDoc(range.from,range.to),revision:0,stale:false,messages:[],draft:'',status:'idle',pinned:false };
 }
 
 export function hasMark(thread) { return thread.pinned || thread.messages.length > 0; }

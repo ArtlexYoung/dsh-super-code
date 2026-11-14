@@ -11,6 +11,12 @@ export const actions = [
   { id: 'undo', idea: 'Mod-z', vscode: 'Mod-z' },
   { id: 'redo', idea: 'Mod-Shift-z', vscode: 'Mod-y' },
   { id: 'comment', idea: 'Mod-/', vscode: 'Mod-/' },
+  { id: 'caretAbove', idea: 'Ctrl-Alt-ArrowUp', vscode: 'Mod-Alt-ArrowUp' },
+  { id: 'caretBelow', idea: 'Ctrl-Alt-ArrowDown', vscode: 'Mod-Alt-ArrowDown' },
+  { id: 'nextOccurrence', idea: 'Alt-j', vscode: 'Mod-d' },
+  { id: 'allOccurrences', idea: 'Ctrl-Alt-Shift-j', vscode: 'Mod-Shift-l' },
+  { id: 'wordLeft', idea: 'Ctrl-ArrowLeft', vscode: 'Ctrl-ArrowLeft' },
+  { id: 'wordRight', idea: 'Ctrl-ArrowRight', vscode: 'Ctrl-ArrowRight' },
   { id: 'deleteLine', idea: 'Mod-y', vscode: 'Mod-Shift-k' },
 ];
 export const defaults = () => ({ keymap: 'idea', palette: 'idea', shortcuts: {} });
@@ -40,6 +46,11 @@ export function readPreferences(value) {
     return [id, normalize(key)];
   });
   const result = { keymap: value.keymap, palette: value.palette, shortcuts: Object.fromEntries(shortcuts) };
+  if (value.translationModel !== undefined) {
+    const model = value.translationModel;
+    if (!model || typeof model !== 'object' || Object.keys(model).length !== 2 || !['provider', 'model'].every(key => typeof model[key] === 'string' && model[key].trim().length > 0 && model[key].length <= 256)) throw new Error('WORKBENCH_TRANSLATION_MODEL');
+    result.translationModel = { provider: model.provider, model: model.model };
+  }
   for (const action of actions) if (conflict(result, action.id, keyOf(result, action.id))) throw new Error('WORKBENCH_SHORTCUT_CONFLICT');
   return result;
 }

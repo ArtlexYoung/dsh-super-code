@@ -10,13 +10,17 @@ import { FileChanges } from './git/Changes.jsx';
 export { createWorkbenchPreference } from './preference.js';
 
 export function apply(ctx, { Button, Select, MarkdownText, Conversation, preference = createWorkbenchPreference(localStorage) }) {
-  const workspaces = new Map();
+  const workspaces = new Map(), projects = new Map();
   function WorkbenchButton({ title, ...props }) { return React.createElement(Button, { ...props, title, 'aria-label': props['aria-label'] || title }); }
   ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'super-code: workbench locale');
   const t = ctx.locale.bind(NS);
+  const translationLanguage = () => {
+    const locale = ctx.locale.getLocale();
+    return locale.locales.find(item => item.id === locale.active).label;
+  };
   function workspace(remote, sessionId) {
     let workbench = workspaces.get(sessionId);
-    if (!workbench) { workbench = createWorkbench(workspaceApi(remote, sessionId), t); workspaces.set(sessionId, workbench); }
+    if (!workbench) { workbench = createWorkbench(workspaceApi(remote, sessionId), t, { projects, translationLanguage }); workspaces.set(sessionId, workbench); }
     return workbench;
   }
   function Changes({ remote, sessionId, revision }) {
@@ -25,7 +29,7 @@ export function apply(ctx, { Button, Select, MarkdownText, Conversation, prefere
   }
   ctx.effect(() => {
     const style = document.createElement('style'); style.textContent = stylesheet; style.dataset.superCodeWorkbench = 'true'; document.head.append(style);
-    return () => { style.remove(); for (const workspace of workspaces.values()) workspace.dispose(); workspaces.clear(); };
+    return () => { style.remove(); for (const workspace of workspaces.values()) workspace.dispose(); workspaces.clear(); projects.clear(); };
   }, 'super-code: workbench lifecycle');
   ctx.inject(['remote.superCodeWorkbench'], ready => {
     const contribution = {

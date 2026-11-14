@@ -15,6 +15,7 @@ import { FileList } from '../git/FileList.jsx';
 import { FileChanges } from '../git/Changes.jsx';
 import { Files } from './Files.jsx';
 import { FileIcon } from './FileIcon.jsx';
+import { QuickConversations } from './QuickConversations.jsx';
 
 function Locations({ data, query, search, workbench, Button, t }) {
   const [text, setText] = useState(query || '');
@@ -97,6 +98,7 @@ export function Workbench({ workbench, Button, Select, MarkdownText, Conversatio
       <div id="sc-wb-right-content" hidden={!conversationOpen} className="sc-wb-right-content">{learningOpen ? <ReadingPanel workbench={workbench} file={snapshot.file} Button={Button} MarkdownText={MarkdownText} t={t} />
         : <Conversation key={sessionId} sessionId={sessionId} visible={conversationOpen} useSessions={useSessions} useSessionStatus={useSessionStatus} useInput={useInput} inputActions={inputActions}
           remote={conversationRemote} detailT={conversationT} openView={openView} t={t} />}</div>
+      <QuickConversations key={sessionId} items={snapshot.assistant?.conversations} workbench={workbench} Button={Button} t={t} />
       <FileChanges workbench={workbench} Button={Button} Select={Select} t={t} palette={snapshot.preferences.palette} />
     </aside></div>
     <footer className="sc-wb-status" role="status"><span className={snapshot.error ? 'sc-wb-error' : ''}>{snapshot.error || snapshot.status}</span>

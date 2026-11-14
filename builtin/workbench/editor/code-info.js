@@ -2,6 +2,12 @@ import { message } from '../locales.js';
 import { hoverTooltip } from '@codemirror/view';
 import { classHighlighter, highlightCode } from '@lezer/highlight';
 import { loadLanguage } from './languages.js';
+import { syntaxTree } from '@codemirror/language';
+
+export function commentAt(state, pos, side = 1) {
+  for (let node = syntaxTree(state).resolveInner(pos, side); node; node = node.parent) if (/comment/i.test(node.name)) return true;
+  return false;
+}
 
 export function wordAt(source, pos) {
   const slice = (from, to) => typeof source === 'string' ? source.slice(from, to) : source.sliceString(from, to);
@@ -65,6 +71,7 @@ export function symbolCard(item, language, t) {
 export function signatureTooltip(request, getFile, t) {
   return hoverTooltip(async (view, pos, side) => {
     const state = view.state, file = getFile();
+    if (commentAt(state, pos, side)) return null;
     const word = wordAt(state.doc, pos);
     if (!word.word || pos === word.from && side < 0 || pos === word.to && side > 0) return null;
     if (state.selection.ranges.some(range => !range.empty && range.from < word.to && range.to > word.from)) return null;

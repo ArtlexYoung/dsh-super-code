@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { errorText } from '../locales.js';
 import { actions, keyOf, keyLabel, shortcutOf, conflict } from '../editor/preferences.js';
+import { TranslationModel } from './TranslationModel.jsx';
 
 export function Settings({ workbench, preferences, Button, Select, t }) {
   const [recording, record] = useState(null), [error, setError] = useState('');
@@ -14,6 +15,7 @@ export function Settings({ workbench, preferences, Button, Select, t }) {
     apply({ ...preferences, shortcuts: { ...preferences.shortcuts, [recording]: key } }); record(null);
   }}>
     {[['palette', t('palette')], ['keymap', t('keymap')]].map(([key, label]) => <label key={key}>{label}<Select label={label} value={preferences[key]} choices={[["idea", 'IntelliJ IDEA'], ['vscode', 'VS Code']]} onChange={value => apply({ ...preferences, [key]: value })} /></label>)}
+    <TranslationModel workbench={workbench} preferences={preferences} apply={apply} Select={Select} Button={Button} t={t} />
     <div className="sc-wb-section"><strong>{t('shortcut')}</strong><Button onClick={() => apply({ ...preferences, shortcuts: {} })}>{t('reset')}</Button></div>
     {actions.map(action => <div key={action.id} className="sc-wb-shortcut"><span>{t(`action_${action.id}`)}</span>
       <Button title={t(`action_${action.id}`)} onClick={() => record(action.id)} aria-pressed={recording === action.id}>{recording === action.id ? t('record') : keyLabel(keyOf(preferences, action.id), t('space'))}</Button>

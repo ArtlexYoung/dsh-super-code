@@ -182,7 +182,9 @@ Agent 执行树，显示每个 Agent 的状态、用量和缓存率。用量只�
 
 手机通过 dsh-Go 或 DSH NEXT 的手机连接功能使用另一台电脑上的 DSH 时，Super Code、预设、模型和项目都在远程机器上。请先在远程机器安装插件、重装预设并新建会话，再从手机选择那台机器和 Super Code。手机上的 App 不会自动把插件安装到电脑。远程控制本身不代表轻量远程项目；没有 `remote_bash` 的会话继续使用 DSH 的 PTC。
 
-模型工具与手机界面分别适配。dsh-Go 的通用工具结果和 Skill 可通过会话使用；专属原生面板需要 dsh-Go 桥接，网页设置和侧栏则取决于连接通道及插槽支持。在已核对的 dsh-Go `1.0.16` 中，SSH 通道可使用网页插件，中转通道不提供 App 内网页，也不放行专属原生桥接；详见其[连接能力说明](https://github.com/ccch1mneyyy/dsh-Go/blob/ddaff424b9fa1ed1d0cca389823facc046135dae/docs/plugins/hosts.md)。DSH NEXT `2.0.23-next` 的[手机连接](https://github.com/anywhere-labs/dsh-desktop/blob/59dce7d3289bb875415430082e75ee3b23326a54/dsh-plugin-desktop/src/remote-control-offer.ts)需按实际桥接和手机端验证。当前尚未完成这些手机连接方式的完整验收，不能把桌面侧栏可用视为手机原生侧栏可用。
+模型工具与手机界面分别适配。dsh-Go 的通用工具结果和 Skill 可通过会话使用；专属原生面板需要 dsh-Go 桥接，网页设置和侧栏则取决于连接通道及插槽支持。在已核对的 dsh-Go `1.0.16` 中，SSH 通道可使用网页插件，中转通道不提供 App 内网页，也不放行专属原生桥接；详见其[连接能力说明](https://github.com/ccch1mneyyy/dsh-Go/blob/ddaff424b9fa1ed1d0cca389823facc046135dae/docs/plugins/hosts.md)。DSH NEXT `2.0.23-next` 的[手机连接](https://github.com/anywhere-labs/dsh-desktop/blob/59dce7d3289bb875415430082e75ee3b23326a54/dsh-plugin-desktop/src/remote-control-offer.ts)需按实际桥接和手机端验证，不能把桌面侧栏可用视为手机原生侧栏可用。
+
+当前 main 的 Android 模拟器验证已覆盖 dsh-Go `1.0.16` 的 SSH、中转，以及 NEXT `2.0.23-next` 原装桥接配合 Agents Anywhere `2.2.0` 的真实模型读写、审批、取消和全局记忆。任务保存后继续请求腾讯云 Responses 仍会出现 HTTP 400，任务与项目记忆的完整工作流尚未通过；手机实体设备和 NEXT 桌面启用入口也未验证。具体组合、恢复限制与离线安装条件见[兼容性记录](Compatibility.md#2026-11-14--main-远程模拟器验收部分通过)。这些远程改动尚未发布，不属于已发布的 0.4.1 包。
 
 ## 运行预算
 

@@ -10,6 +10,26 @@ The records below distinguish each code baseline and test layer. Component check
 
 The new PStack workflow adaptation starts at `0.2.1-alpha.1`; earlier hosts are outside its scope. Older-version records below describe historical coverage of other plugin features.
 
+## 2026-11-14 · main remote emulator acceptance (partial)
+
+The candidate was exported from main `684fa85`, still carries package version `0.4.1`, and has SHA-256 `fccb0d6e5a83c57e39081bdf8638c07b7b9efa06275b4c2dc4f1b85d7807fd46`. Remote adaptation is unreleased and is recorded separately from the published 0.4.1 package.
+
+The client was an Android 15 / API 35 ARM64 emulator. DSH ran in isolated Linux ARM64 containers with real model calls and local self-hosted relay services. No physical phones or production accounts were used.
+
+| Client and connection | DSH version | Checks passed in this batch |
+|---|---|---|
+| dsh-Go `1.0.16`, SSH | `0.2.2-rc.1` | Super Code selection, real-model file write/readback, actual SSH connection interruption and same-session continuation; idle reconnect did not replay tools or duplicate the appended line |
+| dsh-Go `1.0.16`, DSH Remote `0.6.4` relay | `0.2.2-rc.1` | Real-model file operations, phone allow-once and deny approvals, foreground-command cancellation, method tool, global-memory write/readback, App restart and history reopening, relay-service restart recovery |
+| Agents Anywhere `2.2.0`, NEXT `2.0.23-next` original `2.2.0` bridge | `0.2.2-rc.3` | Real-model file operations, phone allow-once and deny approvals, cancellation, method tool, global-memory write/readback, original-session continuation after DSH cold restart and App restart |
+
+- **Unfixed defect:** saving a task appends a model message between a tool call and its result. Tencent Responses returns HTTP 400 / `400001`, including on the next turn. Real-API controls pass with adjacent calls/results and fail with an intervening message; changing that message's role also fails. The full task and dependent project-memory workflow has not passed. Global-memory success does not establish project-memory success.
+- **Client and recovery limits:** Agents Anywhere `2.1.0` could view history but could not send with this server/bridge combination; the website's `2.2.0` download could send. After a DSH cold restart, reopening the session from the list was needed once to restore input. A background return also retained a cancelled request's running bubble until an App restart; the server did not rerun the command. Ownership of these display symptoms has not been established. With dsh-Go compact history enabled, history and new requests worked, but wire-level compaction was not inspected, so this is partial coverage.
+- **Offline check:** the same candidate installed from a local tgz with an empty npm cache and Docker `--network none`, using an independent dependency copy with DSH `0.2.2-rc.1` preinstalled. Full DSH cold startup passed. Not all install hooks ran. Windows and offline inference were not rerun with this candidate; historical results retain their original scope.
+- **Third-party inventory:** runtime dependencies are unchanged from published 0.4.1; no dependencies were upgraded. Upstream npm, Bash/MSYS/BusyBox, PortableGit sources, oil-ui, Matt, PStack, OpenSpec, and remote bridges were checked. Available updates do not imply candidate changes. Main contains neither workbench Git nor CodeMirror, and PortableGit provenance does not establish that a Git executable is bundled.
+- **Unverified:** physical Android/iOS devices, the NEXT desktop remote-activation entry point, current-candidate channels with macOS/Windows remote machines, SSHFS, all Skill menus/workflows, interruption during execution, and cross-machine late messages with identical session IDs. Idle SSH/service interruption does not establish physical-network outage coverage.
+
+Evidence is in the outer workspace at `source/validation/dsh-super-code/remote-acceptance-20261114-OGn6pT/Report.md`. All 1165 tests, type checks, build, and actual-package dependency-closure checks passed; these do not override the real-model failure above.
+
 ## Verified hosts
 
 The 26 targets below were each checked as a full set for 0.3.6, 0.3.7, and 0.3.8.

@@ -1,22 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="320" viewBox="0 0 960 320" role="img" aria-labelledby="title description">
 <title id="title">dsh-super-code npm downloads</title>
-<desc id="description">dsh-super-code · weekly · last 13 weeks. 1,225 last 7 days. Through 2026-11-11. Source: npm.</desc>
+<desc id="description">dsh-super-code · weekly · last 13 weeks. 1,427 last 7 days. Through 2026-11-12. Source: npm.</desc>
 <style>text{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:12px;fill:#59636e;font-variant-numeric:tabular-nums}</style>
 <rect x=".5" y=".5" width="959" height="319" rx="12" fill="#ffffff" stroke="#d8dee4"/>
 <text x="28" y="35" style="font-size:19px;font-weight:600;fill:#1f2328">npm downloads</text>
 <text x="28" y="58">dsh-super-code · weekly · last 13 weeks</text>
-<text x="932" y="35" text-anchor="end" style="font-size:19px;font-weight:600;fill:#1f2328">1,225 last 7 days</text>
-<text x="932" y="58" text-anchor="end">Through 2026-11-11</text>
+<text x="932" y="35" text-anchor="end" style="font-size:19px;font-weight:600;fill:#1f2328">1,427 last 7 days</text>
+<text x="932" y="58" text-anchor="end">Through 2026-11-12</text>
 <path d="M68 260H926" stroke="#e8ecf0"/><text x="56" y="264" text-anchor="end">0</text>
 <path d="M68 201.67H926" stroke="#e8ecf0"/><text x="56" y="205.67" text-anchor="end">500</text>
 <path d="M68 143.33H926" stroke="#e8ecf0"/><text x="56" y="147.33" text-anchor="end">1,000</text>
 <path d="M68 85H926" stroke="#e8ecf0"/><text x="56" y="89" text-anchor="end">1,500</text>
-<polyline points="68,260 139.5,260 211,260 282.5,260 354,260 425.5,168.07 497,187.08 568.5,209.83 640,119.53 711.5,195.37 783,118.48 854.5,116.15 926,117.08" fill="none" stroke="#e05d58" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
-<circle cx="926" cy="117.08" r="3.5" fill="#e05d58"/>
-<text x="68" y="285" text-anchor="middle">08/19</text>
-<text x="282.5" y="285" text-anchor="middle">09/09</text>
-<text x="497" y="285" text-anchor="middle">09/30</text>
-<text x="711.5" y="285" text-anchor="middle">10/21</text>
-<text x="926" y="285" text-anchor="middle">11/11</text>
+<polyline points="68,260 139.5,260 211,260 282.5,260 354,260 425.5,158.03 497,187.43 568.5,193.03 640,146.02 711.5,181.6 783,119.42 854.5,109.73 926,93.52" fill="none" stroke="#e05d58" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="926" cy="93.52" r="3.5" fill="#e05d58"/>
+<text x="68" y="285" text-anchor="middle">08/20</text>
+<text x="282.5" y="285" text-anchor="middle">09/10</text>
+<text x="497" y="285" text-anchor="middle">10/01</text>
+<text x="711.5" y="285" text-anchor="middle">10/22</text>
+<text x="926" y="285" text-anchor="middle">11/12</text>
 <text x="28" y="307">Source: npm</text>
 </svg>

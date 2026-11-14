@@ -61,7 +61,7 @@ Switching tabs keeps unsaved input.
 - The identifier selects the preset; the display name can be changed separately. Chinese characters and spaces are fine, up to 120 characters.
 - Default names and descriptions follow Harness's Chinese/English setting. Fields you've edited are left alone.
 - Changing the language only updates display fields, not preset content or version.
-- Older Harness versions cache the preset list, so the page reloads once when the wording changes.
+- When Harness caches the preset list, the page reloads once when the wording changes.
 - Preset files on one host share one language; different clients can't show different languages at the same time.
 - A read-only install directory or YAML the plugin can't safely parse may block syncing. Refresh and retry from Settings.
 
@@ -146,7 +146,7 @@ Memory has three layers:
 - To keep an agreement long-term, just tell the Agent. It's saved when the tool reports success and it shows up in the library.
 - Project memory saved by an Agent must link to a real tool result; global preferences need your own words and a clear cross-project intent.
 - Projects at different paths, including Git worktrees, don't share project memory.
-- Memory lives in local host storage, not in project files, and the whole library is never sent to the model. At most 4 summaries from the current topic (≤2 KiB) and 4 from global preferences (≤1 KiB) are included automatically; details require an explicit read.
+- Memory lives on the machine running DSH, not in project files, and the whole library is never sent to the model. At most 4 summaries from the current topic (≤2 KiB) and 4 from global preferences (≤1 KiB) are included automatically; details require an explicit read.
 - Memory can't override the current request, grant permissions, or prove code is unchanged since it was recorded.
 - You can browse memory from past sessions without resuming an Agent or calling the model.
 
@@ -174,15 +174,15 @@ Batching cuts round trips between the model and tools. It doesn't make every ope
 
 Keep Super Code selected when using lightweight remote mode in `dsh-ssh-workspaces`. Once the session provides `remote_bash`, Super Code automatically uses native tool calls: commands go through `remote_bash`, file tools use the mounted directory or relative paths, and task, method, and memory tools remain available. Selection follows the session's tools, not its directory name.
 
-Lightweight mode does not support PTC, local terminals, background commands, worktrees, or subagent execution. Related tools and local command-environment guidance are hidden. The host and remote plugin retain approval, cancellation, and disconnection checks; a disconnected session never falls back to local execution. Bundled local CLI programs and Skill scripts are not automatically installed on the server.
+Lightweight mode does not support PTC, local terminals, background commands, worktrees, or subagent execution. Related tools and local command-environment guidance are hidden. DSH and the remote plugin retain approval, cancellation, and disconnection checks; a disconnected session never falls back to local execution. Bundled local CLI programs and Skill scripts are not automatically installed on the server.
 
-Full remote mode runs in a remote DSH instance, where Super Code must be installed. Sessions without `remote_bash` retain host PTC. The plugin does not synchronize remote models, plugins, or dependencies. After upgrading, reinstall the Super Code preset and start a new session; existing sessions' old preset compositions are not rewritten.
+Full remote mode runs in a remote DSH instance, where Super Code must be installed. Sessions without `remote_bash` retain DSH PTC. The plugin does not synchronize remote models, plugins, or dependencies. After upgrading, reinstall the Super Code preset and start a new session; existing sessions' old preset compositions are not rewritten.
 
 ### dsh-Go / DSH NEXT remote control
 
-When controlling another computer through dsh-Go or DSH NEXT's phone connection, Super Code, presets, models, and projects belong to the controlled host. Install the plugin, reinstall the preset, and create a new session on that host, then select the host and Super Code from the phone. The phone app does not install the plugin on the computer. Remote control does not imply a lightweight remote project; sessions without `remote_bash` retain the controlled host's PTC.
+When a phone connects to DSH on another computer through dsh-Go or DSH NEXT's phone connection, Super Code, presets, models, and projects are on the remote machine. Install the plugin, reinstall the preset, and create a new session there, then select that machine and Super Code from the phone. The phone app does not install the plugin on the computer. Remote control does not imply a lightweight remote project; sessions without `remote_bash` retain DSH PTC.
 
-Model tools and phone interfaces have separate compatibility requirements. dsh-Go can expose generic tool results and Skills through conversations. Dedicated native panels require its bridge, while web settings and sidebars depend on the connection and supported slots. In the reviewed dsh-Go 1.0.16, SSH hosts support web plugins, while relay hosts offer neither in-app web pages nor the dedicated native bridge; see its [host capability guide](https://github.com/ccch1mneyyy/dsh-Go/blob/ddaff424b9fa1ed1d0cca389823facc046135dae/docs/plugins/hosts.md). NEXT's phone connection requires checks against its actual bridge and mobile client. Full acceptance on these mobile clients is still pending; a working desktop sidebar does not establish native phone-sidebar support.
+Model tools and phone interfaces have separate compatibility requirements. dsh-Go can expose generic tool results and Skills through conversations. Dedicated native panels require its bridge, while web settings and sidebars depend on the connection and supported slots. In the reviewed dsh-Go `1.0.16`, SSH connections support web plugins, while relay connections offer neither in-app web pages nor the dedicated native bridge; see its [connection capability guide](https://github.com/ccch1mneyyy/dsh-Go/blob/ddaff424b9fa1ed1d0cca389823facc046135dae/docs/plugins/hosts.md). DSH NEXT `2.0.23-next`'s [phone connection](https://github.com/anywhere-labs/dsh-desktop/blob/59dce7d3289bb875415430082e75ee3b23326a54/dsh-plugin-desktop/src/remote-control-offer.ts) requires checks against its actual bridge and mobile client. Full acceptance of these phone connection methods is still pending; a working desktop sidebar does not establish native phone-sidebar support.
 
 ## Runtime budgets
 
@@ -197,7 +197,7 @@ Under the **Context settings** tab. The plugin already uses the better-performin
 - Saved changes apply to new Agents. Running Agents keep their settings and aren't restarted.
 - Leave a field blank to use the plugin default; **Reset to defaults** clears UI overrides.
 - A failed save keeps your input. If it says budgets were changed elsewhere, reload first.
-- On older hosts without `ptcRuntime`, PTC deadline fields are disabled; other budgets still work.
+- On Harness versions without `ptcRuntime`, PTC deadline fields are disabled; other budgets still work.
 
 Plugin defaults (no need to add them to your config; only write the fields you want to change):
 
@@ -218,7 +218,7 @@ maxContextBytes: 32768       # Super Code: task-memory context bytes
 
 - A shorter deadline set explicitly on a call still applies.
 - After disabling or uninstalling the plugin, PTC calls whose execution inputs have not yet been resolved use the host deadline. Already-started calls keep their original deadline and are not restarted to restore settings.
-- Older hosts time PTC by busy CPU time; newer hosts by elapsed time. The two aren't comparable.
+- Record whether the tested Harness version measures PTC deadlines using busy CPU time or elapsed time. These measurements are not directly comparable.
 - Raising `maxTasks` or `maxContextBytes` uses more context. The defaults are usually fine.
 
 ## Windows command environment

@@ -19,6 +19,7 @@ import harnessPlugin from '../src/index.js'
 import agentPlugin from '../src/dsh/super-code.js'
 import { LongMemoryStore, longMemoryContext, memoryWorkspace, memoryGlobalNamespace, memoryEntryToken, GLOBAL_PREFERENCES_TOPIC } from '../src/long-memory.js'
 import type { LongMemoryTopic } from '../src/long-memory.js'
+import type { TaskMemoryStore } from '../src/task-memory-store.js'
 
 async function fixture(existingRoot?: string) {
   const root = existingRoot ?? await mkdtemp(join(tmpdir(), 'super-code-memory-'))
@@ -32,10 +33,12 @@ async function fixture(existingRoot?: string) {
   new SessionStore(ctx); new SessionProjectionRegistry(ctx); new SystemPrompt(ctx, {}); new ToolRuntime(ctx)
   await ctx.plugin(harnessPlugin)
   await ctx.inject(['superCodeLongMemory'], () => {})
+  await ctx.inject(['superCodeTaskMemory'], () => {})
   const store = ctx.get('superCodeLongMemory') as LongMemoryStore | undefined
   assert.ok(store, 'host plugin must publish the long-memory service')
   const close = async () => { await ctx.fiber.dispose() }
-  return { ctx, store, root, workA, workB, close }
+  const taskMemory = ctx.get('superCodeTaskMemory') as TaskMemoryStore
+  return { ctx, store, taskMemory, root, workA, workB, close }
 }
 
 test('topic records are shared across sessions in one project and isolated from another', async t => {
@@ -193,8 +196,9 @@ test('agent tool validates sources and injects only a bound topic into another s
     record: { next: 'Checkpoint pending' } })
   assert.equal(failedTaskUpdate.isError, true)
   const pendingContext = renderContextSnapshot(await f.ctx.systemPrompt.assemble({ agent: two.agent, scope: scopeOf(two.scope.ctx) }))
-  assert.match(pendingContext, /checkpoint is unconfirmed/)
-  assert.doesNotMatch(pendingContext, /Preserve user edits/)
+  assert.doesNotMatch(pendingContext, /Checkpoint pending|checkpoint is unconfirmed/)
+  assert.match(pendingContext, /preset-install/)
+  assert.equal(f.taskMemory.current(two.session).tasks['install-next']!.revision, 1)
   failTaskFlush = false
   assert.equal((await two.call('super_code_task', { action: 'read', taskId: 'install-next' })).isError, false)
 })
@@ -368,7 +372,7 @@ test('explicit topic reads are independent, isolated and keep continuation bound
   assert.equal(overview.entries[0].id, 'build-fact')
   assert.match(overview.basis, /historical/)
   assert.equal(a.session.seq, before)
-  assert.deepEqual(f.ctx.sessionProjections.stateOf(a.session, 'superCodeTasks')!.focus, { kind: 'none' })
+  assert.deepEqual(f.taskMemory.current(a.session).focus, { kind: 'none' })
   const detail = await a.call({ ...overview.details, id: 'build-fact' })
   assert.equal(detail.isError, false, JSON.stringify(detail))
   assert.equal(JSON.parse(detail.value as string).entry.sourceVersion, 'code-b')
@@ -386,7 +390,7 @@ test('explicit topic reads are independent, isolated and keep continuation bound
   assert.equal(again.isError, false)
   assert.equal(JSON.parse(again.value as string).entries[0].id, 'build-fact')
   assert.equal(flushes, 1, 'independent topic read must not checkpoint unrelated task state')
-  assert.deepEqual(f.ctx.sessionProjections.stateOf(a.session, 'superCodeTasks')!.focus, { kind: 'task', id: 'focused' })
+  assert.deepEqual(f.taskMemory.current(a.session).focus, { kind: 'none' }, 'A source checkpoint failure must not create a task')
   for (const args of [
     { action: 'read', topic: '' }, { action: 'read', topic: '../build' }, { action: 'read', scope: 'global', topic: 'build' },
     { action: 'read', topic: 'build', record: {} }, { action: 'topics', topic: 'build' },
@@ -417,5 +421,5 @@ test('context continuation links preserve global scope and project topic without
     assert.equal(JSON.parse(result.value as string).scope, scope)
     assert.equal(JSON.parse(result.value as string).topic, topic.topic)
   }
-  assert.deepEqual(f.ctx.sessionProjections.stateOf(reader.session, 'superCodeTasks')!.focus, { kind: 'none' })
+  assert.deepEqual(f.taskMemory.current(reader.session).focus, { kind: 'none' })
 })

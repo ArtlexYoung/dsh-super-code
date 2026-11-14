@@ -3,6 +3,7 @@ import type { SessionEvent } from '@deepseek-ai/dsh-session'
 import { emptyTaskMemory, foldTaskMemory, taskMemoryStateSchema, taskMemoryEventSchema } from './core/task-memory.js'
 import type { TaskMemoryState, TaskMemoryEvent } from './core/task-memory.js'
 import { z } from 'zod'
+import { recordedToolResult } from './core/host-messages.js'
 
 export interface TaskMemoryView {
   tasks: { id: string; title: string; status: string }[]
@@ -43,25 +44,57 @@ export function taskMemoryEventOf(event: SessionEvent): { kind: 'record'; record
   if (content.length !== 1 || content[0]?.type !== 'text') throw new Error('Malformed task-memory record')
   return { kind: 'record', record: taskMemoryEventSchema.parse(JSON.parse(content[0].text)) }
 }
+export interface TaskProjectionState { legacy: TaskMemoryState; view: TaskMemoryView; calls: string[] }
+const projectionSchema: z.ZodType<TaskProjectionState> = z.object({
+  legacy: taskMemoryStateSchema, view: viewSchema, calls: z.array(z.string()),
+}).strict()
+
+/** 只读取真实任务工具的回执；用户文字和其他工具输出不能成为任务状态。 */
+export function taskMemoryToolResultOf(event: SessionEvent, calls: ReadonlySet<string> = new Set()): {
+  callId: string; recordId?: string; view: TaskMemoryView
+} | undefined {
+  let callId: string, texts: string[]
+  if (event.type === 'tool/ptc-dispatch' && event.data.name === 'super_code_task' && !event.data.isError) {
+    callId = event.data.subCallId; texts = event.data.content.filter(block => block.type === 'text').map(block => block.text)
+  } else if (event.type === 'tool/result') {
+    const result = recordedToolResult(event.data.message)
+    if (result.kind !== 'record' || result.isError || !calls.has(result.callId)) return undefined
+    callId = result.callId; texts = result.texts
+  } else return undefined
+  if (texts.length !== 1) return undefined
+  let value: unknown
+  try { value = JSON.parse(texts[0]!) } catch { return undefined }
+  const parsed = z.object({ taskView: viewSchema, recordId: z.string().optional(), action: z.string().optional() }).passthrough().safeParse(value)
+  if (!parsed.success) return undefined
+  const write = ['create', 'update', 'focus', 'archive', 'restore'].includes(parsed.data.action ?? '')
+  return { callId, view: parsed.data.taskView, ...(write && parsed.data.recordId ? { recordId: z.uuid().parse(parsed.data.recordId) } : {}) }
+}
+
 declare module '@deepseek-ai/dsh-session-projection/types' {
-  interface SessionProjectionStateMap { superCodeTasks: TaskMemoryState }
+  interface SessionProjectionStateMap { superCodeTasks: TaskProjectionState }
   interface SessionProjectionMap { superCodeTasks: TaskMemoryView }
 }
 
 /** Host checkpoints restore the bounded working set without summarizing summaries. */
-export const taskMemoryProjection: ProjectionDefinition<'superCodeTasks', TaskMemoryState> & {
-  wire: NonNullable<ProjectionDefinition<'superCodeTasks', TaskMemoryState>['wire']>
+export const taskMemoryProjection: ProjectionDefinition<'superCodeTasks', TaskProjectionState> & {
+  wire: NonNullable<ProjectionDefinition<'superCodeTasks', TaskProjectionState>['wire']>
 } = {
-  // Rebuild checkpoints that previously skipped v4 migrated plugin sources.
-  key: 'superCodeTasks', stateVersion: 2, stateSchema: taskMemoryStateSchema,
-  init: () => emptyTaskMemory(),
+  // 任务完整数据由独立存储负责，投影只保留历史读取和界面摘要。
+  key: 'superCodeTasks', stateVersion: 3, stateSchema: projectionSchema,
+  init: () => ({ legacy: emptyTaskMemory(), view: taskMemoryView(emptyTaskMemory()), calls: [] }),
   apply: (state, event) => {
     const record = taskMemoryEventOf(event)
-    if (record.kind === 'record') return foldTaskMemory(state, record.record)
-    if (event.type === 'user/message' && event.data.source.kind === 'user') {
-      return { ...state, recentSources: [...state.recentSources.slice(-7), event.seq] }
+    if (record.kind === 'record') {
+      const legacy = foldTaskMemory(state.legacy, record.record)
+      return { ...state, legacy, view: taskMemoryView(legacy) }
     }
+    if (event.type === 'tool/call' && event.data.name === 'super_code_task') return { ...state, calls: [...state.calls, event.data.callId] }
+    const receipt = taskMemoryToolResultOf(event, new Set(state.calls))
+    const result = event.type === 'tool/result' ? recordedToolResult(event.data.message) : undefined
+    const calls = result?.kind === 'record' && state.calls.includes(result.callId)
+      ? state.calls.filter(id => id !== result.callId) : state.calls
+    if (receipt || calls !== state.calls) return { ...state, calls, view: receipt?.view ?? state.view }
     return state
   },
-  wire: { viewSchema, view: taskMemoryView },
+  wire: { viewSchema, view: state => state.view },
 }

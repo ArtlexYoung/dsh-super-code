@@ -9,7 +9,7 @@ import { PERSONA_PREFIX_SECTION } from '@deepseek-ai/dsh-system-prompt'
 import { TEAM_NAMES, METHODS, SUPER_CODE_INSTRUCTIONS, readTeamMethod } from '../core/teams.js'
 import type { MethodName } from '../core/teams.js'
 import { EXPERIMENT_RECIPES, readExperimentRecipe } from '../core/experiment-recipes.js'
-import { taskMemoryProjection, taskMemoryEventOf } from '../task-memory-projection.js'
+import { taskMemoryProjection, taskMemoryView } from '../task-memory-projection.js'
 import { requireTaskMemory, reviseTaskMemory, taskMemoryContext, taskMemoryRead, taskMemorySchema } from '../core/task-memory.js'
 import type { TaskMemoryEvent, TaskSource } from '../core/task-memory.js'
 import { createMemberBrief, validateMemberResult } from '../core/delegation.js'
@@ -17,7 +17,6 @@ import { z as json } from 'zod'
 import { createGuidanceSelector, GUIDED_INSTRUCTIONS } from '../core/guidance.js'
 import type { GuidedRoute } from '../core/guidance.js'
 import { listToolEvidence, readToolEvidence, toolEvidenceRef } from '../core/tool-evidence.js'
-import { scanSessionPage } from '../core/session-scan.js'
 import { TaskMemoryStore } from '../task-memory-store.js'
 import { LongMemoryStore, longMemoryContext, memoryWorkspace, memoryGlobalNamespace, GLOBAL_PREFERENCES_TOPIC } from '../long-memory.js'
 import { batchSafety, classifyMemoryAction, classifyTaskAction } from '../core/batch-policy.js'
@@ -48,15 +47,17 @@ export function apply(ctx: Context, config: Config = {}): void {
   validateConfiguration({ maxTasks: config.maxTasks, maxContextBytes: config.maxContextBytes })
   const resources = new WeakMap<Agent, { memory: TaskMemoryStore; maxTasks: number; maxContextBytes: number }>()
   const resourcesFor = (agent: Agent) => {
+    const memory = ctx.get('superCodeTaskMemory') as TaskMemoryStore | undefined
+    if (!memory) throw new Error('Super Code task storage is unavailable')
     let value = resources.get(agent)
     if (!value) {
       const inherited = configurationOf(ctx, agent)
       const maxTasks = config.maxTasks ?? inherited.maxTasks ?? 32
       const maxContextBytes = config.maxContextBytes ?? inherited.maxContextBytes ?? 32768
-      value = { memory: new TaskMemoryStore(ctx, maxContextBytes), maxTasks, maxContextBytes }
+      value = { memory, maxTasks, maxContextBytes }
       resources.set(agent, value)
     }
-    return value
+    return { ...value, memory }
   }
   applyPtcBudget(ctx, agent => configurationOf(ctx, agent).budgets ?? {})
   const selectGuidance = createGuidanceSelector(config.guidedRoutes)
@@ -71,12 +72,14 @@ export function apply(ctx: Context, config: Config = {}): void {
   }, { prepend: true })
   ctx.systemPrompt.context({ name: 'super-code:tasks', order: 80, text: ({ agent }) => {
     if (agent === undefined) return ''
+    if (!ctx.get('superCodeTaskMemory')) return 'Task storage is unavailable. Task changes cannot be saved; ordinary conversation and other tools remain available.'
     const { memory, maxContextBytes } = resourcesFor(agent)
     if (memory.isPending(agent.session)) return 'The last task-memory checkpoint is unconfirmed. Use super_code_task read to retry persistence before relying on it.'
     return taskMemoryContext(memory.current(agent.session), maxContextBytes)
   } })
   ctx.systemPrompt.context({ name: 'super-code:project-memory', order: 81, text: ({ agent }) => {
     if (!agent) return ''
+    if (!ctx.get('superCodeTaskMemory')) return ''
     const { memory } = resourcesFor(agent)
     if (memory.isPending(agent.session)) return ''
     const state = memory.current(agent.session)
@@ -92,8 +95,8 @@ export function apply(ctx: Context, config: Config = {}): void {
   } })
   ctx.systemPrompt.context({ name: 'super-code:global-memory', order: 82, text: ({ agent }) => {
     if (!agent) return ''
-    const { memory } = resourcesFor(agent)
-    if (memory.isPending(agent.session)) return ''
+    const memory = ctx.get('superCodeTaskMemory') as TaskMemoryStore | undefined
+    if (memory?.isPending(agent.session)) return ''
     const longMemory = ctx.get('superCodeLongMemory') as LongMemoryStore | undefined
     if (!longMemory) return ''
     const found = longMemory.read(memoryGlobalNamespace(), GLOBAL_PREFERENCES_TOPIC)
@@ -117,9 +120,11 @@ export function apply(ctx: Context, config: Config = {}): void {
     // Pagination never scans or returns an unbounded archive in one tool call.
     parameters: {
       action: { type: 'string', enum: ['help', 'list', 'read', 'source', 'create', 'update', 'focus', 'archive', 'archives', 'restore', 'history', 'delegate', 'validate_member', 'evidence'], required: true,
-        description: 'Use help with forAction for one complete action contract. history/source use visible eventSeq only.' },
+        description: 'Use help with forAction for one complete action contract. history/restore use returned recordId; source/evidence use conversation eventSeq.' },
       forAction: { type: 'string', description: 'help only: the action to explain.' },
-      taskId: { type: 'string' }, expectedRevision: { type: 'integer' }, eventSeq: { type: 'integer', description: 'Visible source/event identity; list exposes recentUserEventSeqs.' }, record: { type: 'json' },
+      taskId: { type: 'string' }, expectedRevision: { type: 'integer' },
+      eventSeq: { type: 'integer', description: 'Conversation source/event identity; list exposes recentUserEventSeqs. Legacy task history accepts its original eventSeq.' },
+      recordId: { type: 'string', description: 'Task history identity returned by a write or archives. Separate from conversation eventSeq; archives uses it as an exclusive cursor.' }, record: { type: 'json' },
       view: { type: 'string', enum: ['resume', 'full'], description: 'read only: resume is bounded current state; full adds omitted sources, evidence and versions. Stale evidence is historical.' },
     },
     output: { schema: { type: 'string' }, render: (_args, value) => [{ type: 'text', text: value }] },
@@ -133,6 +138,8 @@ export function apply(ctx: Context, config: Config = {}): void {
         if (exec.agent === undefined) throw new Error('super-code requires an agent-owned session')
         const { memory, maxTasks, maxContextBytes } = resourcesFor(exec.agent)
         const session = exec.agent.session
+        const finish = (value: object): string => JSON.stringify({ ...value, taskView: taskMemoryView(memory.current(session)) })
+        const recordId = args.recordId ?? (args.eventSeq === undefined ? undefined : `event:${args.eventSeq}`)
         if (args.action === 'evidence') {
           exec.signal.throwIfAborted()
           if (args.record === undefined) return JSON.stringify(await listToolEvidence(session.seq, args.eventSeq ?? session.seq, seq => session.eventAt(SessionSeq(seq)), exec.signal))
@@ -143,54 +150,40 @@ export function apply(ctx: Context, config: Config = {}): void {
         const mutating = ['create', 'update', 'focus', 'archive', 'restore'].includes(args.action)
         if (!mutating) {
           if (args.action === 'archives') {
-            const { end } = await memory.read(session, exec.signal)
-            const records: { eventSeq: number; id: string; title: string; status: string }[] = []
-            const page = await scanSessionPage(end, args.eventSeq ?? end, seq => session.eventAt(SessionSeq(seq)), event => {
-              const item = taskMemoryEventOf(event)
-              if (item.kind === 'record' && item.record.kind === 'archive' && (args.taskId === undefined || item.record.task.id === args.taskId)) {
-                const { id, title, status } = item.record.task
-                records.push({ eventSeq: event.seq, id, title, status })
-              }
-              return records.length >= 10
-            }, exec.signal)
-            return JSON.stringify({ records, ...page })
+            return finish(await memory.archives(session, exec.signal, args.taskId, args.recordId))
           }
           if (args.action === 'source' || args.action === 'history') {
             await memory.read(session, exec.signal)
-            if (args.eventSeq === undefined) throw new Error('eventSeq is required')
-            const event = session.eventAt(SessionSeq(args.eventSeq))
-            if (args.action === 'source' && event?.type === 'user/message' && event.data.source.kind === 'user') return JSON.stringify(event)
-            if (args.action === 'history' && event !== undefined && taskMemoryEventOf(event).kind === 'record') return JSON.stringify(event)
+            if (args.action === 'history') return finish(memory.history(session, recordId!))
+            const event = session.eventAt(SessionSeq(args.eventSeq!))
+            if (event?.type === 'user/message' && event.data.source.kind === 'user') return finish(event)
             throw new Error('The event is not a matching source or task record')
           }
           const { state } = await memory.read(session, exec.signal)
-          if (args.action === 'list') return JSON.stringify({ tasks: Object.values(state.tasks).map(({ id, title, status, revision }) => ({ id, title, status, revision })), focus: state.focus, recentUserEventSeqs: state.recentSources })
+          if (args.action === 'list') return finish({ tasks: Object.values(state.tasks).map(({ id, title, status, revision }) => ({ id, title, status, revision })), focus: state.focus, recentUserEventSeqs: state.recentSources })
           if (args.action === 'read') {
             const taskId = args.taskId ?? (state.focus.kind === 'task' ? state.focus.id : undefined)
             if (taskId === undefined) throw new Error('No focused task. Use super_code_task {"action":"list"}, then read with taskId.')
             const task = requireTaskMemory(state, taskId)
-            return args.view === 'full' ? JSON.stringify(task) : taskMemoryRead(task, maxContextBytes)
+            return finish(args.view === 'full' ? task : JSON.parse(taskMemoryRead(task, maxContextBytes)))
           }
           if (args.action === 'delegate' || args.action === 'validate_member') {
             const task = requireTaskMemory(state, args.taskId ?? '')
-            if (args.action === 'delegate') return JSON.stringify(createMemberBrief(task, session.id, prepared.assignment!))
+            if (args.action === 'delegate') return finish(createMemberBrief(task, session.id, prepared.assignment!))
             const envelope = prepared.member!
-            return JSON.stringify(validateMemberResult(task, session.id, envelope.assignment, envelope.result))
+            return finish(validateMemberResult(task, session.id, envelope.assignment, envelope.result))
           }
           throw new Error('Unsupported task action')
         }
         const receipt = await memory.write(session, exec.signal, state => {
           let change: TaskMemoryEvent
           if (args.action === 'restore') {
-            if (!Number.isSafeInteger(args.eventSeq) || args.eventSeq! < 0) throw new Error('An archived eventSeq is required')
-            const event = session.eventAt(SessionSeq(args.eventSeq!))
-            if (event === undefined) throw new Error('Unknown archive event')
-            const archived = taskMemoryEventOf(event)
-            if (archived.kind !== 'record' || archived.record.kind !== 'archive') throw new Error('Only archived tasks can be restored')
+            const archived = memory.history(session, recordId!)
+            if (archived.change.kind !== 'archive') throw new Error('Only archived tasks can be restored')
             const record = prepared.restore!
             assertSource(session, record.source)
-            if (record.source.seq <= event.seq) throw new Error('Restoration requires a user message after the archive')
-            const task = archived.record.task
+            if (record.source.seq < archived.sourceEnd) throw new Error('Restoration requires a user message after the archive')
+            const task = archived.change.task
             if (Object.hasOwn(state.tasks, task.id)) throw new Error(`Task ${task.id} already exists`)
             if (Object.keys(state.tasks).length >= maxTasks) throw new Error('Working set is full; archive a completed task first')
             change = { kind: 'save', task: taskMemorySchema.parse({ ...task, ...record, createdAtSeq: session.seq, revision: 1, requirementsRevision: task.requirementsRevision + 1, delegationRevision: 1, status: 'active', decisions: [], keyPoints: [], next: '' }) }
@@ -225,8 +218,8 @@ export function apply(ctx: Context, config: Config = {}): void {
             }
           }
           return change
-        })
-        return JSON.stringify({ action: args.action, ...receipt })
+        }, { maxContextBytes, callId: exec.callId })
+        return finish({ action: args.action, ...receipt })
       } catch (error) {
         if (error instanceof json.ZodError) throw invalidInput('super_code_task', args.action, error)
         throw error
@@ -250,7 +243,6 @@ export function apply(ctx: Context, config: Config = {}): void {
         if (args.action === 'help') return actionHelp('super_code_memory', args.forAction!)
         if (!exec.agent) throw new Error('Long memory requires an agent-owned session')
         const prepared = prepareMemoryRecord(args, exec.agent.session.id)
-        const { memory } = resourcesFor(exec.agent)
         const session = exec.agent.session
         const longMemory = ctx.get('superCodeLongMemory') as LongMemoryStore | undefined
         if (!longMemory) throw new Error('Long memory storage is unavailable')
@@ -265,7 +257,8 @@ export function apply(ctx: Context, config: Config = {}): void {
           const nextOffset = offset + page.length
           return JSON.stringify({ topics: page, total: topics.length, nextOffset: nextOffset < topics.length ? nextOffset : undefined })
         }
-        const state = args.action === 'read' && args.topic !== undefined ? undefined : (await memory.read(session, exec.signal)).state
+        const needsFocus = scope === 'project' && !(args.action === 'read' && args.topic !== undefined)
+        const state = needsFocus ? (await resourcesFor(exec.agent).memory.read(session, exec.signal)).state : undefined
         const task = state?.focus.kind === 'task' ? requireTaskMemory(state, state.focus.id) : undefined
         const topic = scope === 'global' ? GLOBAL_PREFERENCES_TOPIC : args.topic ?? task?.topic
         if (topic === undefined) throw new Error(args.action === 'read'

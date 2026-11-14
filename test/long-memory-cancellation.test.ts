@@ -16,6 +16,38 @@ import type { KvTable } from '@deepseek-ai/dsh-storage-domain'
 import plugin from '../src/dsh/super-code.js'
 import { LongMemoryStore, memoryWorkspace } from '../src/long-memory.js'
 import type { LongMemoryTopic } from '../src/long-memory.js'
+import { installTaskMemory } from './task-memory-fixture.js'
+
+test('unavailable task storage does not block global memory or explicit project reads', async t => {
+  const records = new Map<string, LongMemoryTopic>()
+  const store = new LongMemoryStore({ get: (key: string) => records.get(key), entries: () => records.entries(),
+    put: async (key: string, value: LongMemoryTopic) => { records.set(key, value) },
+  } as unknown as KvTable<string, LongMemoryTopic>)
+  const ctx = new Context(); new SystemPrompt(ctx, {}); new ToolRuntime(ctx); new SessionStore(ctx); new SessionProjectionRegistry(ctx)
+  ctx.provide('superCodeLongMemory', store)
+  const agent = {} as Agent, scope = createScope(ctx, agent)
+  t.after(async () => { await scope.dispose(); await ctx.fiber.dispose() })
+  await scope.ctx.plugin(plugin)
+  const session = ctx.sessions.create(SessionId('task-storage-unavailable'), { meta: { cwd: tmpdir() } })
+  Object.assign(agent, { id: session.id, session, ctx: scope.ctx })
+  ctx.on('session/flush', () => {})
+  const user = session.append('user/message', createUserMessage({ source: { kind: 'user' }, content: [{ type: 'text', text: 'Use concise answers' }] }), { surfaceOp: 'append' })
+  const call = (args: object) => ctx.tools.execute({ name: 'super_code_memory', arguments: args, agent,
+    signal: new AbortController().signal, callId: ToolCallId(`memory-${Math.random()}`) })
+  const saved = await call({ action: 'remember', scope: 'global', record: { expectedRevision: 0, globalConfirmed: true,
+    entries: [{ id: 'concise', kind: 'constraint', summary: 'Concise answers', detail: 'Use concise answers',
+      source: { kind: 'user', eventSeq: user.seq, quote: 'Use concise answers' } }],
+  } })
+  assert.equal(saved.isError, false, JSON.stringify(saved))
+  const read = await call({ action: 'read', scope: 'global', id: 'concise' })
+  assert.equal(read.isError, false, JSON.stringify(read))
+  assert.equal(JSON.parse(read.value as string).entry.id, 'concise')
+  for (const args of [{ action: 'topics' }, { action: 'read', topic: 'explicit' }]) {
+    const result = await call(args)
+    assert.equal(result.isError, false, JSON.stringify(result))
+  }
+  assert.equal((await call({ action: 'read' })).isError, true, 'Implicit project reads still require task focus')
+})
 
 for (const action of ['remember', 'forget'] as const) {
   test(`cancelling ${action} while another memory write is pending preserves the original entry`, async t => {
@@ -29,6 +61,7 @@ for (const action of ['remember', 'forget'] as const) {
       },
     } as unknown as KvTable<string, LongMemoryTopic>)
     const ctx = new Context(); new SystemPrompt(ctx, {}); new ToolRuntime(ctx); new SessionStore(ctx); new SessionProjectionRegistry(ctx)
+    await installTaskMemory(ctx)
     ctx.provide('superCodeLongMemory', store)
     const agent = {} as Agent, scope = createScope(ctx, agent)
     t.after(async () => { released.resolve(); await scope.dispose(); await ctx.fiber.dispose(); await rm(root, { recursive: true, force: true }) })

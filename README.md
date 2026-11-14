@@ -96,6 +96,9 @@ dsh plugin --profile web add ./dsh-super-code-0.4.1.tgz
 | MCP 连接 | 允许外部 MCP 客户端将任务委派给 DSH 执行，默认关闭 |
 | 预设 Skill | grill-me、OpenSpec、oil-ui 与 Matt Pocock Skills、PStack 分组控制，开启后同步到 DSH Skill 目录、实时生效，支持快捷打开目录 |
 
+- **远程项目支持（待发布）**：配合 `dsh-ssh-workspaces`，在轻量远程会话中执行服务器命令，继续使用任务与记忆工具，沿用原有审批、取消和断连保护。[使用说明](docs/UsageGuide.md#远程项目)。
+- **dsh-Go / NEXT 远程控制（待发布）**：在远程电脑上使用 Super Code，通过远程会话调用工具、管理任务和记忆；手机原生与网页界面的支持范围见[使用说明](docs/UsageGuide.md#dsh-go--dsh-next-远程控制)。
+
 详见[使用说明](docs/UsageGuide.md)。
 
 内置及适配后的 Skill 源码统一公开在 [builtin/skills](builtin/skills)，保留各自的来源、许可证和配套资源；[目录与维护说明](builtin/README.md)。

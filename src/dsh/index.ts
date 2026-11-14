@@ -4,6 +4,7 @@ import type { Context } from '@deepseek-ai/cordis'
 import { superAgentUsageProjectionDefinition } from '../super-agent-usage.js'
 import { taskFeedbackProjection } from '../task-feedback-projection.js'
 import { taskMemoryProjection } from '../task-memory-projection.js'
+import { TaskMemoryStore, taskMemoryDomainSpec } from '../task-memory-store.js'
 import { LongMemoryStore, longMemoryDomainSpec } from '../long-memory.js'
 import type { DomainFacility } from '@deepseek-ai/dsh-storage-domain'
 import { memoryUsageProjection } from '../memory-usage-projection.js'
@@ -36,6 +37,20 @@ async function installLongMemory(ctx: Context): Promise<void> {
   })
 }
 
+async function installTaskMemory(ctx: Context): Promise<void> {
+  await ctx.inject(['storageDomain', 'sessions'], async owner => {
+    try {
+      const facility = owner.get('storageDomain') as DomainFacility
+      const domain = await facility.open(taskMemoryDomainSpec)
+      owner.effect(() => () => domain.close())
+      const remove = ctx.provide('superCodeTaskMemory', new TaskMemoryStore(owner, domain.table('records')))
+      owner.effect(() => remove)
+    } catch {
+      owner.logger.warn('Super Code task storage is unavailable; task tools cannot save changes.')
+    }
+  })
+}
+
 export async function apply(ctx: Context, config: Configuration = {}): Promise<void> {
   applyBudgetSettings(ctx, config)
   applySkillDirectory(ctx)
@@ -56,6 +71,7 @@ export async function apply(ctx: Context, config: Configuration = {}): Promise<v
     projectionCtx.sessionProjections.register(memoryUsageProjection)
   })
   await installLongMemory(ctx)
+  await installTaskMemory(ctx)
 }
 
 export default apply

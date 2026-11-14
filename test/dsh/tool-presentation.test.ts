@@ -13,6 +13,7 @@ import { ToolCallId } from '@deepseek-ai/dsh-llm'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import * as presentation from '../../src/dsh/tool-presentation.js'
 import superCode from '../../src/dsh/super-code.js'
+import { installTaskMemory } from '../task-memory-fixture.js'
 
 interface CapturedExecutor {
   describe(tools: { name: string }[]): { schemas: { name: string }[] }
@@ -25,6 +26,7 @@ async function fixture(t: test.TestContext, existing = false, modern = false) {
   t.after(async () => { await ctx.fiber.dispose(); await rm(root, { recursive: true, force: true }) })
   await ctx.plugin(SystemPrompt); await ctx.plugin(Tools)
   new SessionStore(ctx); await ctx.plugin(Projections)
+  await installTaskMemory(ctx)
   // 运行真实旧版工具注册表；宿主展示插件的唯一行为是 presentAs。
   const directory = join(root, 'node_modules/@deepseek-ai/dsh-agent-tool-presentation')
   await mkdir(directory, { recursive: true })

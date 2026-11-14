@@ -26,17 +26,17 @@ const taskContracts: Contracts = {
   list: { required: [], example: { action: 'list' }, notes: 'Lists live task identities and recent direct user event IDs. Does not change focus.', returns: 'tasks[{id,title,status,revision}], focus, recentUserEventSeqs' },
   read: { required: [], optional: ['taskId', 'view'], example: { action: 'read' }, notes: 'Omit taskId only for the focused task. view defaults to resume; full includes sources and all recorded evidence. Use the returned revision for updates.', returns: 'resume: {current:{id,revision,requirements,acceptance,next,details,...}}; full: task record' },
   source: { required: ['eventSeq'], example: { action: 'source', eventSeq: 0 }, notes: 'Use a visible direct user event ID; returns its original message, never grants additional authority.', returns: 'one direct user event' },
-  history: { required: ['eventSeq'], example: { action: 'history', eventSeq: 1 }, notes: 'Use a visible task event ID. Historical evidence does not establish current correctness.', returns: 'one recorded task event' },
+  history: { required: [], optional: ['recordId', 'eventSeq'], example: { action: 'history', recordId: 'record-id-from-write' }, notes: 'Use a returned task recordId. Legacy records also accept their original eventSeq. Historical evidence does not establish current correctness.', returns: 'one task record: recordId, sourceEnd, change' },
   create: { required: ['record'], record: taskMemoryCreateSchema,
     example: { action: 'create', record: { id: 't1', title: 'Change', team: 'develop', depth: 'complex', workspace: '/repo', sourceVersion: 'observed-version', goal: 'Requested change', source, requirements: [], acceptance: ['Relevant check passes'] } },
-    notes: 'All sources must be exact quotes from visible direct user events. Use actual workspace/version; examples are placeholders. Optional topic and keyPoints (summary at most 30 characters). Does not execute work.', returns: 'action, id, revision, eventSeq' },
+    notes: 'All sources must be exact quotes from visible direct user events. Use actual workspace/version; examples are placeholders. Optional topic and keyPoints (summary at most 30 characters). Does not execute work.', returns: 'action, id, revision, recordId' },
   update: { required: ['taskId', 'expectedRevision', 'record'], record: taskMemoryPatchSchema,
     example: { action: 'update', taskId: 't1', expectedRevision: 1, record: { next: 'Run the relevant check' } },
-    notes: 'Patch only changed fields; omitted fields remain. requirements replace by id; removeRequirements deletes. Goal/requirements/workspace/acceptance/topic changes require a direct user correction source and invalidate stale decisions/evidence. Use an observed revision, never automatically replace it with the newest revision.', returns: 'action, id, revision, eventSeq; unchanged:true for identical state' },
-  focus: { required: ['taskId'], example: { action: 'focus', taskId: 't1' }, notes: 'Changes the focused task and its injected memory topic; does not start or stop work.', returns: 'action, id, eventSeq or unchanged:true' },
-  archive: { required: ['taskId', 'expectedRevision'], example: { action: 'archive', taskId: 't1', expectedRevision: 2 }, notes: 'Only completed/cancelled tasks may be archived. Stop workers separately. Use a revision already observed.', returns: 'action, id, revision, eventSeq' },
-  archives: { required: [], optional: ['taskId', 'eventSeq'], example: { action: 'archives' }, notes: 'Pages backward; eventSeq is an exclusive cursor. Continue with nextBeforeSeq while done=false. taskId filters.', returns: 'records, nextBeforeSeq, done, scanned' },
-  restore: { required: ['eventSeq', 'record'], record: restoreSchema, example: { action: 'restore', eventSeq: 2, record: { source, sourceVersion: 'new-observed-worktree-version' } }, notes: 'Inspect an archive first, then use a newer direct user source and inspected workspace version. Clears decisions and current evidence validity. Does not restore worker processes.', returns: 'action, id, revision, eventSeq' },
+    notes: 'Patch only changed fields; omitted fields remain. requirements replace by id; removeRequirements deletes. Goal/requirements/workspace/acceptance/topic changes require a direct user correction source and invalidate stale decisions/evidence. Use an observed revision, never automatically replace it with the newest revision.', returns: 'action, id, revision, recordId; unchanged:true for identical state' },
+  focus: { required: ['taskId'], example: { action: 'focus', taskId: 't1' }, notes: 'Changes the focused task and its injected memory topic; does not start or stop work.', returns: 'action, id, recordId or unchanged:true' },
+  archive: { required: ['taskId', 'expectedRevision'], example: { action: 'archive', taskId: 't1', expectedRevision: 2 }, notes: 'Only completed/cancelled tasks may be archived. Stop workers separately. Use a revision already observed.', returns: 'action, id, revision, recordId' },
+  archives: { required: [], optional: ['taskId', 'recordId'], example: { action: 'archives' }, notes: 'Pages backward; recordId is an exclusive task cursor. Continue with nextBeforeRecordId while done=false. taskId filters.', returns: 'records[{recordId,id,title,status}], nextBeforeRecordId, done, scanned' },
+  restore: { required: ['record'], optional: ['recordId', 'eventSeq'], record: restoreSchema, example: { action: 'restore', recordId: 'record-id-from-archives', record: { source, sourceVersion: 'new-observed-worktree-version' } }, notes: 'Inspect an archive first, then use its recordId and a newer direct user source with inspected workspace version. Legacy records also accept their original eventSeq. Clears decisions and current evidence validity. Does not restore worker processes.', returns: 'action, id, revision, recordId' },
   delegate: { required: ['taskId', 'record'], record: assignmentSchema, example: { action: 'delegate', taskId: 't1', record: assignment }, notes: 'Returns a version-bound brief for an active task; does not spawn an agent. maxTokens is a stated budget, not verified accounting.', returns: 'binding, taskId, sessionId, assignment, constraints, taskGoal, taskAcceptance and revision identities' },
   validate_member: { required: ['taskId', 'record'], record: memberSchema, example: { action: 'validate_member', taskId: 't1', record: { assignment, result: { binding: 'binding-from-delegate', owner: 'worker', attemptId: '1', outcome: 'completed', summary: 'Observed result', artifacts: [], checks: ['relevant check'], unknowns: [] } } }, notes: 'Checks binding, owner/attempt and stop status against current task. Does not prove acceptance; inspect artifacts/checks. Cost is optional self-report.', returns: 'reviewable, reasons, accounting, result' },
   evidence: { required: [], optional: ['eventSeq', 'record'], record: evidenceSchema, example: { action: 'evidence' }, notes: 'Without record, page identities using eventSeq/nextBeforeSeq. With record, read {ref,offset?} or {callSeq,resultSeq,offset?}; eventSeq and record are mutually exclusive. Follow readMore for omitted output. Recorded results never prove current code.', returns: 'directory records/cursor, recorded output with provenance/readMore, or explicit unavailable reason' },
@@ -47,7 +47,7 @@ const rememberSchema = z.object({ expectedRevision: count, globalConfirmed: z.bo
 }).strict()).min(1).max(8) }).strict()
 const forgetSchema = z.object({ expectedRevision: count.positive(), source: sourceSchema }).strict()
 const topicsSchema = z.object({ offset: count.default(0) }).strict()
-const cursorsSchema = z.object({ expectedRevision: count.optional(), eventSeq: count.optional() })
+const cursorsSchema = z.object({ expectedRevision: count.optional(), eventSeq: count.optional(), recordId: z.string().min(1).max(256).optional() })
 const topicInputSchema = z.object({ topic: z.string().regex(/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,95}$/) })
 const memoryContracts: Contracts = {
   topics: { required: [], optional: ['scope', 'record'], record: topicsSchema, example: { action: 'topics' }, notes: 'Project scope defaults to the session workspace; global lists its preference topic. Optional record:{offset:20} continues pages.', returns: 'topics[{topic,revision,count}], total, nextOffset when incomplete' },
@@ -67,7 +67,7 @@ export function actionHelp(tool: 'super_code_task' | 'super_code_memory', action
   return JSON.stringify({ tool, action, required: contract.required, optional: contract.optional ?? [],
     ...(contract.record ? { recordSchema: z.toJSONSchema(contract.record, { unrepresentable: 'any' }) } : {}),
     example: contract.example, notes: contract.notes, returns: contract.returns,
-    recovery: 'Examples use placeholder identities/sources: replace them with observed values. Invalid input appends no business change. On stale revision, read before deciding again. Unconfirmed persistence may follow an appended event: confirm with list/read, never replay a write automatically.' })
+    recovery: 'Examples use placeholder identities/sources: replace them with observed values. Invalid input saves no business change. On stale revision, read before deciding again. Unconfirmed persistence may follow a saved record: confirm with list/read, never replay a write automatically.' })
 }
 
 /** Validate top-level combinations before any checkpoint can be retried. */
@@ -85,6 +85,9 @@ export function assertActionInput(tool: 'super_code_task' | 'super_code_memory',
   }
   if (help) { contractFor(tool === 'super_code_task' ? taskContracts : memoryContracts, args.forAction as string); return }
   cursorsSchema.parse(args)
+  if (tool === 'super_code_task' && (args.action === 'history' || args.action === 'restore') && (args.recordId === undefined) === (args.eventSeq === undefined)) {
+    throw new Error(`${args.action} requires exactly one recordId or legacy eventSeq.${hint}`)
+  }
   if (args.action === 'evidence' && args.record !== undefined && args.eventSeq !== undefined) throw new Error(`evidence accepts either record or eventSeq.${hint}`)
   if (tool === 'super_code_memory' && args.topic !== undefined) {
     if (args.scope === 'global') throw new Error('Global memory does not accept topic; use {"action":"read","scope":"global"}.')

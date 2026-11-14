@@ -96,6 +96,9 @@ Screenshots use the current UI with sample data to illustrate the plugin.
 | MCP connection | Allows external MCP clients to delegate tasks to DSH. Off by default |
 | Preset Skills | Separate Skills and workflow groups for grill-me, OpenSpec, oil-ui, Matt Pocock Skills and PStack; enabled packages sync live to the DSH Skill directory, with a shortcut to open it |
 
+- **Remote project support (unreleased)**: Use lightweight remote sessions with `dsh-ssh-workspaces` to run commands on the server, retain task and memory tools, and keep existing approval, cancellation, and disconnection checks. [Usage guide](docs/en/UsageGuide.md#remote-projects).
+- **dsh-Go / NEXT remote control (unreleased)**: Use Super Code on the remote computer and call tools, manage tasks, and access memory through remote conversations. See the [usage guide](docs/en/UsageGuide.md#dsh-go--dsh-next-remote-control) for native and web interface coverage.
+
 See the [usage guide](docs/en/UsageGuide.md).
 
 Bundled and adapted Skill sources are published under [builtin/skills](builtin/skills), including provenance, licenses, and companion resources. See the [layout and maintenance guide](builtin/README.md).

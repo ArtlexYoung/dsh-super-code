@@ -16,6 +16,7 @@ import plugin, { apply } from '../../src/dsh/super-code.js'
 import { createMemberBrief, validateMemberResult } from '../../src/core/delegation.js'
 import { taskMemoryProjection, taskMemoryView } from '../../src/task-memory-projection.js'
 import { emptyTaskMemory, foldTaskMemory, reviseTaskMemory, taskMemoryContext, taskMemorySchema } from '../../src/core/task-memory.js'
+import { installTaskMemory } from '../task-memory-fixture.js'
 
 const source = { seq: 0, quote: 'Build A in TypeScript; do not publish.' }
 const record = (id = 'a') => ({ id, title: `Task ${id}`, team: 'develop', depth: 'complex', workspace: '/workspace', sourceVersion: 'abc123', goal: `Build ${id}`,
@@ -28,6 +29,7 @@ async function host(config = {}) {
   new ToolRuntime(ctx)
   new SessionStore(ctx)
   new SessionProjectionRegistry(ctx)
+  const taskStorage = await installTaskMemory(ctx)
   const agent = {} as Agent
   const scope = createScope(ctx, agent)
   const fiber = scope.ctx.plugin(plugin, config)
@@ -37,7 +39,7 @@ async function host(config = {}) {
   const user = (text: string) => session.append('user/message', createUserMessage({ content: [{ type: 'text', text }], source: { kind: 'user' } }), { surfaceOp: 'append' })
   user(source.quote)
   const call = (args: object, name = 'super_code_task', signal = new AbortController().signal) => ctx.tools.execute({ name, arguments: args, agent, signal, callId: ToolCallId(`call-${Math.random()}`) })
-  return { ctx, scope, session, agent, call, user }
+  return { ctx, scope, session, agent, call, user, ...taskStorage }
 }
 
 test('guidance follows the assembled model snapshot across switches without leaking scopes', async t => {
@@ -146,13 +148,17 @@ test('installed host scopes tools, logs memory, checkpoints and reconstructs A/B
   const global = await h.ctx.systemPrompt.assemble()
   assert.ok(!global.tools.some(tool => tool.name === 'super_code_task'))
   const replay = Session.create(SessionId('restored'), JSON.parse(JSON.stringify(h.session.snapshotEvents())))
-  const state = h.ctx.sessionProjections.stateOf(replay, 'superCodeTasks')!
+  const state = h.memory.current(h.session)
   assert.equal(state.tasks.a?.requirementsRevision, 2)
   assert.equal(state.tasks.b?.requirementsRevision, 1)
   assert.deepEqual(state.focus, { kind: 'task', id: 'a' })
-  const checkpoint = h.ctx.sessionProjections.checkpoint(h.session)
-  const restored = h.ctx.sessionProjections.restore(checkpoint, [], h.session.seq, h.session.header, h.session.inheritedEventCount)
-  assert.deepEqual(restored.snapshot.values.superCodeTasks, taskMemoryView(state))
+  assert.deepEqual(h.memory.current(replay).tasks, {}, 'A different session ID does not own the original task ledger')
+  const events = JSON.parse(JSON.stringify(h.session.snapshotEvents())), id = h.session.id
+  await h.scope.dispose(); await h.ctx.fiber.dispose()
+  const cold = new Context(); new SessionStore(cold)
+  t.after(() => cold.fiber.dispose())
+  const restored = await installTaskMemory(cold, h.root)
+  assert.deepEqual(restored.memory.current(Session.create(id, events)), state)
 })
 
 test('host rejects invented sources, stale writes, active archives and cancellation', async t => {
@@ -169,14 +175,14 @@ test('host rejects invented sources, stale writes, active archives and cancellat
   assert.equal((await h.call({ action: 'update', taskId: 'a', expectedRevision: 2, record: { status: 'completed' } }, 'super_code_task', controller.signal)).isError, true)
 })
 
-test('failed persistence is visible, retry does not append twice', async t => {
+test('failed task persistence is visible, retry does not append twice', async t => {
   const h = await host()
   t.after(async () => { await h.scope.dispose(); await h.ctx.fiber.dispose() })
-  let fail = true
-  h.ctx.on('session/flush', () => { if (fail) throw new Error('disk unavailable') })
+  h.ctx.on('session/flush', () => {})
+  h.failTaskWrite('before')
   assert.equal((await h.call({ action: 'create', record: record() })).isError, true)
   const count = h.session.seq
-  fail = false
+  h.failTaskWrite()
   const read = await h.call({ action: 'read', taskId: 'a' })
   assert.equal(read.isError, false, JSON.stringify(read))
   assert.equal(h.session.seq, count)
@@ -215,7 +221,7 @@ test('read defaults to recovery, full preserves sources, and neither changes foc
   h.ctx.on('session/flush', () => {})
   await h.call({ action: 'create', record: record() })
   await h.call({ action: 'create', record: record('b') })
-  const before = h.ctx.sessionProjections.stateOf(h.session, 'superCodeTasks')!
+  const before = h.memory.current(h.session)
   const seq = h.session.seq
   const read = await h.call({ action: 'read', taskId: 'b' })
   assert.equal(read.isError, false)
@@ -229,14 +235,16 @@ test('read defaults to recovery, full preserves sources, and neither changes foc
   assert.deepEqual(explicit.value, read.value)
   const full = await h.call(current.details)
   assert.equal(full.isError, false)
-  assert.deepEqual(JSON.parse(full.value as string), before.tasks.b)
+  const { taskView, ...fullTask } = JSON.parse(full.value as string)
+  assert.deepEqual(fullTask, before.tasks.b)
+  assert.deepEqual(taskView, taskMemoryView(before))
   assert.equal((await h.call({ action: 'read', taskId: 'b', view: 'invented' })).isError, true)
   assert.equal((await h.call({ action: 'focus', taskId: 'b', view: 'full' })).isError, true)
   assert.equal((await h.call({ action: 'read', taskId: 'missing' })).isError, true)
   const controller = new AbortController(); controller.abort()
   assert.equal((await h.call({ action: 'read', taskId: 'b' }, 'super_code_task', controller.signal)).isError, true)
   assert.equal(h.session.seq, seq)
-  assert.deepEqual(h.ctx.sessionProjections.stateOf(h.session, 'superCodeTasks'), before)
+  assert.deepEqual(h.memory.current(h.session), before)
 })
 
 test('working-set and context limits reject before appending records', async t => {
@@ -258,31 +266,32 @@ test('archives page through unrelated history and restore a new incarnation with
   t.after(async () => { await h.scope.dispose(); await h.ctx.fiber.dispose() })
   h.ctx.on('session/flush', () => {})
   await h.call({ action: 'create', record: record() })
-  const original = h.ctx.sessionProjections.stateOf(h.session, 'superCodeTasks')!.tasks.a!
+  const original = h.memory.current(h.session).tasks.a!
   const assignment = { owner: 'worker', attemptId: 'old', objective: 'Implement', ownedPaths: ['a.ts'], acceptance: ['pass'], maxTokens: 100 }
   const brief = createMemberBrief(original, h.session.id, assignment)
   await h.call({ action: 'update', taskId: 'a', expectedRevision: 1, record: { status: 'completed' } })
-  const archivedAt = h.session.seq
-  assert.equal((await h.call({ action: 'archive', taskId: 'a', expectedRevision: 2 })).isError, false)
+  const archived = await h.call({ action: 'archive', taskId: 'a', expectedRevision: 2 })
+  assert.equal(archived.isError, false)
+  const archivedAt = JSON.parse(archived.value as string).recordId
   for (let i = 0; i < 260; i++) h.user(`Other task ${i}`)
   const page1 = await h.call({ action: 'archives' })
   assert.equal(page1.isError, false)
   const first = JSON.parse(page1.value as string)
-  assert.equal(first.records[0].eventSeq, archivedAt)
+  assert.equal(first.records[0].recordId, archivedAt)
   assert.equal(first.done, true)
-  const page2 = await h.call({ action: 'archives', eventSeq: first.nextBeforeSeq })
+  const page2 = await h.call({ action: 'archives', recordId: archivedAt })
   assert.equal(page2.isError, false)
   assert.deepEqual(JSON.parse(page2.value as string).records, [])
   const correction = h.user('Resume A, keeping its constraints.')
-  assert.equal((await h.call({ action: 'restore', eventSeq: archivedAt, record: { source, sourceVersion: 'new-code' } })).isError, true)
-  const restored = await h.call({ action: 'restore', eventSeq: archivedAt, record: { source: { seq: correction.seq, quote: 'Resume A' }, sourceVersion: 'new-code' } })
+  assert.equal((await h.call({ action: 'restore', recordId: archivedAt, record: { source, sourceVersion: 'new-code' } })).isError, true)
+  const restored = await h.call({ action: 'restore', recordId: archivedAt, record: { source: { seq: correction.seq, quote: 'Resume A' }, sourceVersion: 'new-code' } })
   assert.equal(restored.isError, false, JSON.stringify(restored))
-  const current = h.ctx.sessionProjections.stateOf(h.session, 'superCodeTasks')!.tasks.a!
+  const current = h.memory.current(h.session).tasks.a!
   assert.deepEqual(current.requirements, original.requirements)
   assert.ok(current.createdAtSeq > original.createdAtSeq)
   assert.equal(current.requirementsRevision, 2)
   assert.equal(validateMemberResult(current, h.session.id, assignment, { binding: brief.binding, owner: 'worker', attemptId: 'old', outcome: 'completed', summary: 'old', artifacts: [], checks: [], unknowns: [], cost: { inputTokens: 1, outputTokens: 1, cachedTokens: 0, toolCalls: 0, complete: true } }).reviewable, false)
-  assert.equal((await h.call({ action: 'restore', eventSeq: archivedAt, record: { source: { seq: correction.seq, quote: 'Resume A' }, sourceVersion: 'new-code' } })).isError, true)
+  assert.equal((await h.call({ action: 'restore', recordId: archivedAt, record: { source: { seq: correction.seq, quote: 'Resume A' }, sourceVersion: 'new-code' } })).isError, true)
 })
 
 test('unchanged updates preserve revisions and still validate sources, concurrency and durability', async t => {
@@ -308,12 +317,12 @@ test('unchanged updates preserve revisions and still validate sources, concurren
   assert.equal((await h.call({ action: 'update', taskId: 'a', expectedRevision: 1, record: { source: { seq: 0, quote: 'invented' } } })).isError, true)
   const correction = h.user(source.quote)
   await h.call({ action: 'update', taskId: 'a', expectedRevision: 1, record: { goal: 'Build a', source: { ...source, seq: correction.seq } } })
-  assert.equal(h.ctx.sessionProjections.stateOf(h.session, 'superCodeTasks')!.tasks.a!.requirementsRevision, 2)
-  fail = true
+  assert.equal(h.memory.current(h.session).tasks.a!.requirementsRevision, 2)
+  fail = false; h.failTaskWrite('before')
   assert.equal((await h.call({ action: 'update', taskId: 'a', expectedRevision: 2, record: { next: 'Check' } })).isError, true)
   const pendingSeq = h.session.seq
   assert.equal((await h.call({ action: 'focus', taskId: 'a' })).isError, true)
-  fail = false
+  fail = false; h.failTaskWrite()
   const retried = await h.call({ action: 'update', taskId: 'a', expectedRevision: 3, record: { next: 'Check' } })
   assert.equal(JSON.parse(retried.value as string).unchanged, true)
   assert.equal(h.session.seq, pendingSeq)
@@ -339,7 +348,7 @@ test('invalid task input returns bounded field diagnostics and never applies a c
   await h.call({ action: 'create', record: record() })
   const missing = await h.call({ action: 'update', taskId: 'a', record: { next: 'should not apply' } })
   assert.match(JSON.stringify(missing), /requires expectedRevision/)
-  assert.equal(h.ctx.sessionProjections.stateOf(h.session, 'superCodeTasks')!.tasks.a!.next, '')
+  assert.equal(h.memory.current(h.session).tasks.a!.next, '')
 })
 
 test('task enum diagnostics expose schema choices so a caller can correct depth without guessing', async t => {
@@ -354,17 +363,18 @@ test('task enum diagnostics expose schema choices so a caller can correct depth 
   assert.equal(h.session.seq, 1)
   const corrected = await h.call({ action: 'create', record: { ...record(), depth: 'simple' } })
   assert.equal(corrected.isError, false, JSON.stringify(corrected))
-  assert.equal(h.ctx.sessionProjections.stateOf(h.session, 'superCodeTasks')!.tasks.a!.depth, 'simple')
+  assert.equal(h.memory.current(h.session).tasks.a!.depth, 'simple')
 })
 
 test('action help stays available without storage and never retries an unconfirmed checkpoint', async t => {
   const h = await host()
   t.after(async () => { await h.scope.dispose(); await h.ctx.fiber.dispose() })
   let flushes = 0
-  h.ctx.on('session/flush', () => { flushes++; throw new Error('disk unavailable') })
+  h.ctx.on('session/flush', () => { flushes++ })
+  h.failTaskWrite('before')
   const failed = await h.call({ action: 'create', record: record() })
   assert.equal(failed.isError, true)
-  assert.match(JSON.stringify(failed), /was appended but persistence is unconfirmed/)
+  assert.match(JSON.stringify(failed), /persistence is unconfirmed/)
   const before = h.session.seq
   for (const [tool, actions] of [
     ['super_code_task', ['list', 'read', 'source', 'history', 'create', 'update', 'focus', 'archive', 'archives', 'restore', 'delegate', 'validate_member', 'evidence']],

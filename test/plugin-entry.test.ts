@@ -10,6 +10,8 @@ import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import harnessPlugin from '../src/index.js'
+import type { TaskMemoryStore } from '../src/task-memory-store.js'
+import { taskMemorySchema } from '../src/core/task-memory.js'
 
 test('package-root mounts durable projections without an alternative executor', async () => {
   const ctx = new Context()
@@ -24,9 +26,17 @@ test('package-root mounts durable projections without an alternative executor', 
     await ctx.inject(['superCodeLongMemory'], () => {})
     assert.ok(ctx.get('superCodeLongMemory'))
     const session = ctx.sessions.create(SessionId('plugin-entry'))
-    assert.deepEqual(ctx.sessionProjections.stateOf(session, 'superCodeTasks')?.tasks, {})
+    assert.deepEqual(ctx.sessionProjections.stateOf(session, 'superCodeTasks')?.legacy.tasks, {})
     assert.deepEqual(ctx.sessionProjections.stateOf(session, 'superAgentUsage')?.totals, {})
     assert.equal(Reflect.has(ctx, 'superAgent'), false)
+    ctx.on('session/flush', () => {})
+    const memory = ctx.get('superCodeTaskMemory') as TaskMemoryStore
+    const task = taskMemorySchema.parse({ id: 'entry', title: 'Entry', team: 'verify', depth: 'simple', workspace: root,
+      sourceVersion: 'test', goal: 'Save task', source: { seq: 0, quote: 'Save task' }, requirements: [], acceptance: ['Saved'],
+      createdAtSeq: 0, revision: 1, requirementsRevision: 1, delegationRevision: 1, status: 'active', decisions: [], evidence: [], next: '' })
+    const receipt = await memory.write(session, new AbortController().signal, () => ({ kind: 'save', task }), { maxContextBytes: 32768, callId: 'entry-save' })
+    assert.ok(receipt.recordId)
+    assert.equal(memory.current(session).tasks.entry?.revision, 1)
   } finally { await ctx.fiber.dispose(); await rm(root, { recursive: true, force: true }) }
 })
 
@@ -38,7 +48,7 @@ test('package-root keeps task projections without storage and mounts long memory
     new SessionProjectionRegistry(ctx)
     await ctx.plugin(harnessPlugin)
     const session = ctx.sessions.create(SessionId('before-storage'))
-    assert.deepEqual(ctx.sessionProjections.stateOf(session, 'superCodeTasks')?.tasks, {})
+    assert.deepEqual(ctx.sessionProjections.stateOf(session, 'superCodeTasks')?.legacy.tasks, {})
     assert.equal(ctx.get('superCodeLongMemory'), undefined)
     let ready!: () => void
     const mounted = new Promise<void>(resolve => { ready = resolve })
@@ -50,7 +60,7 @@ test('package-root keeps task projections without storage and mounts long memory
     assert.ok(ctx.get('superCodeLongMemory'))
     await domainFiber.dispose()
     assert.equal(ctx.get('superCodeLongMemory'), undefined)
-    assert.deepEqual(ctx.sessionProjections.stateOf(session, 'superCodeTasks')?.tasks, {})
+    assert.deepEqual(ctx.sessionProjections.stateOf(session, 'superCodeTasks')?.legacy.tasks, {})
   } finally { await ctx.fiber.dispose(); await rm(root, { recursive: true, force: true }) }
 })
 
@@ -65,7 +75,7 @@ test('failed long-memory domain open leaves task projections available', async (
     await ctx.plugin(harnessPlugin)
     await attempted
     const session = ctx.sessions.create(SessionId('failed-storage'))
-    assert.deepEqual(ctx.sessionProjections.stateOf(session, 'superCodeTasks')?.tasks, {})
+    assert.deepEqual(ctx.sessionProjections.stateOf(session, 'superCodeTasks')?.legacy.tasks, {})
     assert.equal(ctx.get('superCodeLongMemory'), undefined)
   } finally { await ctx.fiber.dispose() }
 })

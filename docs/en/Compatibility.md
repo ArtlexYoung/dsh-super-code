@@ -10,6 +10,21 @@ The records below distinguish each code baseline and test layer. Component check
 
 The new PStack workflow adaptation starts at `0.2.1-alpha.1`; earlier hosts are outside its scope. Older-version records below describe historical coverage of other plugin features.
 
+## 2026-11-14 · Independent task-storage fix (unreleased)
+
+This batch fixes task saves separating model tool calls from their results on main `96476cdb`. The tested candidate still carries version `0.4.1`, SHA-256 `a11beee3e1adf7a9cd293dbc9d8684ad909c88ee566ee8043c06f9cb766c3320`; it is distinct from the published 0.4.1 package.
+
+- Tasks use the independent `super_code_tasks` domain after source messages are durable. History uses `recordId`; source and tool evidence retain `eventSeq`. Existing task records remain readable. Damaged model history is not automatically rewritten.
+- All 1173 tests, type checks, build and actual-package dependency-closure checks pass. Real interfaces and package-root entry tests pass on all 28 DSH versions from `0.1.5-alpha.1` through `0.2.2-rc.3`, covering history, archives, restore, fork isolation and durable cold recovery. These are not 28 complete DSH model runs.
+- Complete Linux DSH `0.2.2-rc.1` / `0.2.2-rc.3` pass real-model task and project-memory workflows. An Android 15 ARM64 emulator passes phone-initiated updates, project-memory reads and answers through dsh-Go `1.0.16` SSH, DSH Remote `0.6.4` relay, and Agents Anywhere `2.2.0` with NEXT's original `2.2.0` bridge. The NEXT desktop remote-activation entry point remains unverified.
+- Windows 11 ARM64 VM runs official x64 Desktop `0.2.2-rc.2` through Windows emulation. Both normal and `--offline` current-package installs pass with empty caches and external networking blocked. Real cloud-model task save, next turn, cold restart, and same-session recovery after cloud disconnection pass through a temporary Mac relay. Bundled Bash `5.3.15` and OpenSpec `1.17.0` after enabling it in isolated settings execute successfully.
+- With external networking blocked, Qwen2.5-0.5B Q4_K_M (379.38 MiB, Mac CPU, LAN service, 32K context, temperature=0) answers capital, addition and greeting questions correctly in three fresh Windows Super Code sessions. A second-turn addition question in one earlier session returned “Paris”; this failure is retained. Multi-turn reliability and coding/tool ability are not established.
+- Current-package Linux `--offline` install and full cold startup pass under Docker `--network none` with an independent preinstalled DSH dependency tree and empty cache. Not all install hooks ran; local-model answers were not tested inside that container.
+
+Emulator/self-hosted results do not establish physical-phone, iOS or every remote-machine combination. No third-party components were upgraded; upstream inventory and upgrade handling retain the prior batch's scope and the test skill. Evidence is in the outer workspace at `source/validation/dsh-super-code/task-records-20261114-JgLoKw/Report.md`.
+
+In this batch, dsh-Go relay displayed interrupted synchronization after a DSH cold restart. Reopening the session did not immediately recover; restarting the App reconnected it. Automatic recovery is not counted as passed.
+
 ## 2026-11-14 · main remote emulator acceptance (partial)
 
 The candidate was exported from main `684fa85`, still carries package version `0.4.1`, and has SHA-256 `fccb0d6e5a83c57e39081bdf8638c07b7b9efa06275b4c2dc4f1b85d7807fd46`. Remote adaptation is unreleased and is recorded separately from the published 0.4.1 package.

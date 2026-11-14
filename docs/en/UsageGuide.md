@@ -409,6 +409,12 @@ Both state tools support `{"action":"help","forAction":"read"}`. One help respon
 
 `super_code_task {"action":"read"}` reads the focused task; no focus is an explicit error, never a guess. Updates still require an observed expectedRevision. Shape validation precedes task barriers; errors include repair examples. No automatic alias/type/source/revision correction is performed.
 
+The unreleased task-storage fix stores task changes in the `super_code_tasks` domain under DSH's configured storage directory. It no longer inserts task messages into the conversation or separates model tool calls from their results. Task functionality continues to support DSH `0.1.5-alpha.1` and later without relying on experimental plugin records.
+
+Task writes, history and archives use the returned `recordId`; archive pages use `nextBeforeRecordId`. Requirement sources and tool evidence still use conversation `eventSeq` values. These identities are separate. Existing conversation-based task records remain readable as `event:<original sequence>`; `history` and `restore` also accept their original `eventSeq`. Backups and migrations must include both conversations and the `super_code_tasks` domain. A conversation file alone does not contain newly saved full tasks.
+
+This fix does not rewrite existing conversation messages. If a conversation already keeps failing with HTTP 400 because a task message separated a tool call from its result, continue in a new conversation. Existing task data remains readable; damaged model history is not automatically repaired.
+
 `super_code_memory {"action":"read","topic":"build"}` reads a project topic without creating a task or changing focus/context injection. Omitted topic retains the focused-topic default. Explicit reads do not borrow another task's code version. details retains scope/topic; add id to read the selected entry. topic is accepted only for project read. Writes retain their existing focus, provenance and concurrency rules. All memory is historical.
 
-Input rejection appends no new business change; checkpoint failure may follow an appended event. Confirm using list/read instead of replaying writes. Event contracts and tool names are unchanged. Local verification does not establish model quality or token savings.
+Input rejection saves no business change; a failed persistence acknowledgement may follow a saved independent record. Confirm using list/read instead of replaying writes. Existing records remain readable and tool names are unchanged. Local verification does not establish model quality or token savings.

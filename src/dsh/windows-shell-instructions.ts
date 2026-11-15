@@ -1,0 +1,10 @@
+/** Windows文件操作与随包命令行程序的路径能力不同。 */
+export const windowsShellInstructions: string = 'Command environment: Windows with GNU Bash and BusyBox utilities. Native programs still run on Windows. '
+  + 'BusyBox can fail when the full file path reaches 260 characters; cd and relative paths do not bypass this limit. '
+  + 'For long paths, prefer available native file tools (read, write, edit). '
+  + 'Native glob and grep can also fail when a long project workdir prevents their helper process from starting. '
+  + 'Keep a short workdir when starting external programs; a long working directory can prevent them from starting. '
+  + 'When available, use working_directory to select a short directory before calling the external tool, then address the original files by their full paths. A cd inside the shell command runs too late if the shell itself cannot start. '
+  + 'If a needed file operation has no native tool, use Node filesystem APIs only when Node is already available, from a short workdir with full paths passed as data. '
+  + 'Do not change system settings or automatically retry a failed write; first check its actual result. '
+  + 'Report unsupported external commands as a limitation.'

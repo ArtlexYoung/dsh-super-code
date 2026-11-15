@@ -33,9 +33,15 @@ async function fixture(t: test.TestContext, existing = false, modern = false) {
   await writeFile(join(directory, 'package.json'), JSON.stringify({ type: 'module', main: 'index.js' }))
   await writeFile(join(directory, 'index.js'), 'export const inject = ["tools"]; export function apply(ctx, config) { ctx.tools.presentAs(config.mode) }')
   let executor: CapturedExecutor
+  const scopedExecutors = new Map<object | undefined, CapturedExecutor>()
   if (modern) {
     Object.defineProperty(ctx.get('tools'), 'setExecutor', { configurable: true,
-      value: (value: CapturedExecutor) => { executor = value; return () => {} } })
+      value: function (this: { ctx: Context }, value: CapturedExecutor) {
+        const scope = scopeOf(this.ctx)
+        scopedExecutors.set(scope, value)
+        if (scope === scopeOf(preset.ctx)) executor = value
+        return () => { scopedExecutors.delete(scope) }
+      } })
     for (const [suffix, constructor] of [['native', 'NativeToolExecutor'], ['ptc', 'PtcExecutor']]) {
       const directory = join(root, 'node_modules/@deepseek-ai/dsh-tool-executor-' + suffix)
       await mkdir(directory, { recursive: true })
@@ -62,8 +68,8 @@ async function fixture(t: test.TestContext, existing = false, modern = false) {
   }
   preset.ctx.get('systemPrompt')!.section({ name: 'tool:bash', order: 50, text: 'Local Bash guidance' })
   preset.ctx.get('systemPrompt')!.section({ name: 'super-code:windows-shell', order: 94, text: 'Windows local environment' })
-  const make = (id: string, context = preset.ctx) => {
-    const agent = { id, session: ctx.get('sessions')!.create(SessionId(id)) } as Agent
+  const make = (id: string, context = preset.ctx, cwd?: string) => {
+    const agent = { id, session: ctx.get('sessions')!.create(SessionId(id), cwd === undefined ? {} : { meta: { cwd } }) } as Agent
     const scope = createScope(context, agent)
     bindScopeParent(agent, scopeOf(context))
     Object.assign(agent, { ctx: scope.ctx }); agents.push(agent)
@@ -92,7 +98,7 @@ async function fixture(t: test.TestContext, existing = false, modern = false) {
     if (['run_code', 'bash', 'subagent'].includes(exec.name)) return 'use remote_bash'
   })
   return { ctx, preset, initial, make, bind, names, call, guard, mounted,
-    executor: () => executor,
+    executor: (agent?: Agent) => agent && scopedExecutors.get(agent) || executor,
     counts: () => ({ local: localCalls, remote: remoteCalls }),
     disconnect: (value: boolean) => { disconnected = value }, deny: (value: boolean) => { denied = value } }
 }
@@ -113,6 +119,50 @@ test('late remote tool registration switches only that session and removal resto
   assert.deepEqual(await f.names(remote), ['run_code'])
   f.bind(remote)
   assert.ok((await f.names(remote)).includes('remote_bash'))
+})
+
+test('Windows long working directories use native tools without changing other sessions or guards', async t => {
+  const platform = process.platform
+  Object.defineProperty(process, 'platform', { value: 'win32' })
+  t.after(() => Object.defineProperty(process, 'platform', { value: platform }))
+  const f = await fixture(t)
+  for (const length of [258, 259, 260, 303, 510]) {
+    const agent = f.make('path-' + length, f.preset.ctx, '/' + 'd'.repeat(length - 1))
+    await f.ctx.serial(scopeTarget(agent, agent), 'agent/created', { agent, source: 'fresh' as never })
+    if (length < 259) assert.deepEqual(await f.names(agent), ['run_code'])
+    else {
+      assert.ok((await f.names(agent)).includes('read_file'))
+      assert.ok(!(await f.names(agent)).includes('run_code'))
+      agent.ctx.get('tools')!.guard(exec => exec.name === 'read_file' ? 'read denied' : undefined)
+      assert.equal((await f.call(agent, 'read_file')).isError, true)
+      assert.equal((await f.call(agent, 'super_code_task', { action: 'list' })).isError, false)
+    }
+  }
+  const other = f.make('other-preset', f.ctx, '/' + 'd'.repeat(300))
+  await f.ctx.serial(scopeTarget(other, other), 'agent/created', { agent: other, source: 'fresh' as never })
+  assert.ok((await f.names(other)).every(name => name !== 'run_code'))
+  Object.defineProperty(process, 'platform', { value: 'linux' })
+  const linux = f.make('linux', f.preset.ctx, '/' + 'd'.repeat(300))
+  await f.ctx.serial(scopeTarget(linux, linux), 'agent/created', { agent: linux, source: 'fresh' as never })
+  assert.deepEqual(await f.names(linux), ['run_code'])
+})
+
+test('scoped host executors select native for Windows long cwd and still filter remote tools', async t => {
+  const platform = process.platform
+  Object.defineProperty(process, 'platform', { value: 'win32' })
+  t.after(() => Object.defineProperty(process, 'platform', { value: platform }))
+  const f = await fixture(t, false, true)
+  const short = f.make('short-cwd', f.preset.ctx, '/short')
+  const long = f.make('long-cwd', f.preset.ctx, '/' + 'd'.repeat(258))
+  await f.ctx.serial(scopeTarget(long, long), 'agent/created', { agent: long, source: 'fresh' as never })
+  assert.deepEqual(f.executor(short).describe([{ name: 'read_file' }]).schemas.map(x => x.name), ['run_code'])
+  assert.deepEqual(f.executor(long).describe([{ name: 'read_file' }]).schemas.map(x => x.name), ['read_file'])
+  f.bind(long)
+  assert.deepEqual(f.executor(long).describe([{ name: 'read_file' }, { name: 'remote_bash' }, { name: 'bash' }]).schemas.map(x => x.name), ['read_file', 'remote_bash'])
+  const input = { agent: long, calls: [], signal: new AbortController().signal }
+  const result = await f.executor(long).execute(input)
+  assert.equal(result.provider, 'native')
+  assert.equal(result.input, input)
 })
 
 test('separate host executors keep programs and native batches unchanged and select from visible tools', async t => {

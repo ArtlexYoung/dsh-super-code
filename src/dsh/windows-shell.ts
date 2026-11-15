@@ -1,3 +1,4 @@
+import { windowsShellInstructions } from './windows-shell-instructions.js'
 /** Select the host's standard shell tool; Windows can use the bundled Bash executable. */
 import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
@@ -180,8 +181,8 @@ export async function apply(ctx: Context): Promise<void> {
   }
   await ctx.plugin(await hostTool(ctx, '@deepseek-ai/dsh-tool-pwsh'))
   ctx.systemPrompt.section({ name: 'super-code:windows-shell', order: 94,
-    text: ({ agent }) => agent && choice(agent)
-      ? 'Command environment: Windows with GNU Bash and BusyBox utilities. Native programs still run on Windows.' : '' })
+    text: ({ agent }) => agent && !ctx.tools.get('remote_bash', agent) && choice(agent)
+      ? windowsShellInstructions : '' })
   ctx.on('system-prompt/assemble', async (_assembly, { agent }, next) => {
     const assembled = await next()
     const hidden = choice(agent) ? 'tool:pwsh' : 'tool:bash'

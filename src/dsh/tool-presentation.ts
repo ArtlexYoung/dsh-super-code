@@ -22,6 +22,12 @@ function remoteTools(tools: readonly ToolDefinition[]): boolean {
   return tools.some(tool => tool.name === 'remote_bash')
 }
 
+// Windows 创建进程还需要目录末尾的分隔符和终止字符。
+const windowsWorkingDirectoryLimit = 259
+function windowsLongDirectory(agent: Agent): boolean {
+  return process.platform === 'win32' && (agent.session.header.cwd?.length ?? 0) >= windowsWorkingDirectoryLimit
+}
+
 // rc.3 将执行器从工具注册表中拆出；旧版仍使用 presentAs。
 interface Batch { readonly agent?: Agent }
 interface HostExecutor {
@@ -44,14 +50,27 @@ async function applyExecutors(ctx: Context, tools: ExecutorTools): Promise<void>
   const { NativeToolExecutor } = nativeModule as unknown as { NativeToolExecutor: new(ctx: Context) => HostExecutor }
   const { PtcExecutor } = ptcModule as unknown as { PtcExecutor: new(ctx: Context) => HostExecutor }
   const native = new NativeToolExecutor(ctx), ptc = new PtcExecutor(ctx)
-  tools.setExecutor({
-    sections: ptc.sections?.map(section => ({ ...section, text: definitions => remoteTools(definitions) ? ''
+  const executor = (nativeOnly: boolean): HostExecutor => ({
+    sections: nativeOnly ? [] : ptc.sections?.map(section => ({ ...section, text: definitions => remoteTools(definitions) ? ''
       : typeof section.text === 'function' ? section.text(definitions) : section.text })),
     describe: definitions => remoteTools(definitions)
       ? { ...native.describe(definitions.filter(tool => !remoteUnsupported(tool.name))), knownNames: definitions.map(tool => tool.name) }
-      : ptc.describe(definitions),
-    execute: input => (ctx.tools.get('remote_bash', input.agent) ? native : ptc).execute(input),
+      : (nativeOnly ? native : ptc).describe(definitions),
+    execute: input => (nativeOnly || ctx.tools.get('remote_bash', input.agent) ? native : ptc).execute(input),
   })
+  tools.setExecutor(executor(false))
+  const selected = new WeakSet<Agent>(), scope = scopeOf(ctx)
+  const install = (agent: Agent): void => {
+    if (selected.has(agent) || !windowsLongDirectory(agent) || !scopeChainOf(agent).includes(scope!)) return
+    selected.add(agent)
+    // 长目录只替换展示与调度，工具权限、参数和日志仍由 DSH 负责。
+    const release = (agent.ctx.get('tools') as unknown as ExecutorTools).setExecutor(executor(true))
+    const cleanup = ctx.effect(() => release)
+    agent.ctx.effect(() => cleanup)
+  }
+  ctx.on('agent/created', ({ agent }) => { install(agent); return undefined })
+  ctx.on('agent/pre-step', ({ agent }, next) => { install(agent); return next() })
+  for (const agent of ctx.agents.list()) install(agent)
 }
 
 async function applyLegacy(ctx: Context): Promise<void> {
@@ -65,7 +84,7 @@ async function applyLegacy(ctx: Context): Promise<void> {
     try {
       for (const agent of ctx.agents.list()) {
         if (disposed.has(agent) || !scopeChainOf(agent).includes(scope!)) continue
-        if (ctx.tools.get('remote_bash', agent)) {
+        if (ctx.tools.get('remote_bash', agent) || windowsLongDirectory(agent)) {
           if (selected.has(agent)) continue
           // 先占位，避免注册通知重入同一会话。
           selected.set(agent, () => {})
@@ -82,6 +101,7 @@ async function applyLegacy(ctx: Context): Promise<void> {
   }
   ctx.on('tools/change', refresh)
   ctx.on('agent/created', () => { refresh(); return undefined })
+  ctx.on('agent/pre-step', (_event, next) => { refresh(); return next() })
   ctx.effect(() => () => { active = false; for (const release of selected.values()) release(); selected.clear() })
   refresh()
 }

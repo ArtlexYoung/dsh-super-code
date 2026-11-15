@@ -171,6 +171,28 @@ async function fixture(t: test.TestContext, options: { platform?: NodeJS.Platfor
     preparations: () => preparations, broken(value: boolean) { broken = value } }
 }
 
+test('Windows Bash explains full-path limits and keeps native long-path operations available', async t => {
+  for (const options of [{}, { official: 'standard' }]) {
+    const f = await fixture(t, options)
+    f.policy.windowsBashForOfficialPresets = true
+    const local = f.make('long-path-local')
+    await local.ready()
+    const text = await f.prompt(local.agent)
+    assert.match(text, /260 characters/)
+    assert.match(text, /cd.*relative paths.*do not bypass/)
+    assert.match(text, /native file tools.*read.*write.*edit/)
+    assert.match(text, /glob and grep.*long project workdir.*helper process/)
+    assert.match(text, /short workdir/)
+    assert.match(text, /working_directory.*before calling the external tool/)
+    assert.match(text, /not.*automatically retry.*write/)
+    assert.equal((await f.call(local.agent, 'bash')).isError, false)
+    f.policy.windowsBash = false
+    const disabled = f.make('long-path-disabled')
+    await disabled.ready()
+    assert.doesNotMatch(await f.prompt(disabled.agent), /260 characters/)
+  }
+})
+
 test('rc.2 ownership keeps root and child shells usable without the removed agent registry API', async t => {
   for (const options of [{}, { customProvider: true }, { official: 'standard' }]) {
     const f = await fixture(t, { ...options, sharedGeneration: true, modernOwnership: true })
@@ -199,6 +221,7 @@ test('lightweight remote sessions do not prepare or validate a local Windows Bas
     }))
     await remote.ready(); await remote.step()
     assert.equal(f.preparations(), 0)
+    assert.doesNotMatch(await f.prompt(remote.agent), /Windows with GNU Bash|260 characters/)
   }
 })
 

@@ -1,3 +1,4 @@
+import { windowsShellInstructions } from './windows-shell-instructions.js'
 /** Opt official one-shot shell presets into Bash without editing their composition. */
 import type { Context } from '@deepseek-ai/cordis'
 import type { Agent } from '@deepseek-ai/dsh-agent'
@@ -116,7 +117,7 @@ export function applyOfficialWindowsShell(ctx: Context): void {
     applyShellLifecycle(owner, install, true)
     owner.systemPrompt.section({ name: 'super-code:official-windows-shell', order: 94,
       text: ({ agent }) => agent && selected.get(agent)?.enabled
-        ? 'Command environment: Windows with GNU Bash and BusyBox utilities. Native programs still run on Windows.' : '' })
+        ? windowsShellInstructions : '' })
     owner.on('system-prompt/assemble', async (_assembly, { agent }, next) => {
       const assembled = await next(), state = agent && selected.get(agent)
       if (!state || state.disposed) return assembled

@@ -10,6 +10,18 @@ The records below distinguish each code baseline and test layer. Component check
 
 The new PStack workflow adaptation starts at `0.2.1-alpha.1`; earlier hosts are outside its scope. Older-version records below describe historical coverage of other plugin features.
 
+## 2026-11-15 · Default peer offline-install fix (unreleased)
+
+The root manifest and lockfile now mark the 15 existing DSH-provided peers as optional while retaining every version range. This prevents automatic downloads when the installer cannot find them; running the plugin still requires DSH to provide the modules. DSH is not bundled and dependencies are not upgraded. The candidate remains version `0.4.1`; the published package has not been replaced.
+
+- A new real npm regression installs a tgz offline into an empty directory with an empty cache, default peer resolution and install scripts enabled. Before the fix it fails with `ENOTCACHED` for a DSH peer; afterward it passes. All 1,174 tests, type checks, build and distribution checks pass.
+- The tgz is built from a clean `fec1199` export with only this root-configuration change applied: SHA-256 `8419dbfeca57495e368d8dd401a47d15bebd7a008452d5d9508e5c16c86df22c`. Comparing both actual packages finds unchanged runtime code, DSH version ranges and third-party versions. Documentation and two dependency CHANGELOG packaging differences are recorded separately.
+- On macOS ARM64, pnpm `11.28.5` passes normal and `--offline` installs with system-level external-network denial for the test Node process, separate empty stores/caches, and automatic peer handling left enabled. Official NEXT `2.0.23-next` also installs and activates through its actual manager with pnpm offline mode, an empty plugin directory and empty store/cache, reporting zero downloads. NEXT itself is not network-blocked in this manager test.
+- In an isolated Windows 11 ARM64 VM with external networking blocked at system level, official x64 Desktop `0.2.2-rc.2`'s plugin CLI and pnpm `11.28.5` install the same tgz normally and with `--offline`, both exiting 0 and enabling the plugin. Each uses a new profile/store/cache, reports zero downloads, leaves automatic peer handling enabled and installs no DSH modules. This verifies installation, not x64 physical hardware or a new Windows desktop-model/local-inference run.
+- A real model in NEXT's bundled DSH `0.2.2-rc.3` creates a task and project memory. After a full application restart, two actual tool calls read them back in the same session and the model answers 42. The first turn incorrectly supplied `expectedRevision` to focus; validation rejected it and the model corrected the call. That turn is not reported as error-free. The cold-recovery turn has no tool errors.
+
+Evidence is in the outer `source/validation/dsh-super-code/optional-peers-20261115-7sIrfj/Report.md`. This batch fixes the default installation path; it does not complete every earlier platform, phone or small-model gap. Earlier failed evidence is preserved.
+
 ## 2026-11-15 · Full test-skill coverage follow-up (partial)
 
 This batch uses the same r3 candidate associated with `ba4e579`, without runtime or dependency changes. The 98-item checklist records 48 passes at their stated source/component or integration level, 41 partial passes, two failures caused by one default offline-install defect, and seven inapplicable items. Partial items still contain untested scenarios; this is not complete acceptance of every platform and workflow.

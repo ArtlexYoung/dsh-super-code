@@ -18,6 +18,6 @@
 npm test
 ```
 
-发布前执行 `npm run build && npm run pack:check`。分发检查验证实际 npm 文件清单，确保全部运行依赖及其传递依赖随包携带，并排除 DSH 宿主和开发工具。新增依赖会自动纳入检查；本地 tgz 的空缓存断网安装需另外在已安装 DSH 的隔离环境中验收。
+发布前执行 `npm run build && npm run pack:check`。分发检查验证实际 npm 文件清单，确保全部运行依赖及其传递依赖随包携带，并排除 DSH 模块和开发工具。新增依赖会自动纳入检查；`offline-install.test.ts` 另用真实 tgz、空安装目录和空 npm 缓存执行离线安装，保留默认 peer 解析和安装脚本，防止 DSH peer 被自动补装。实际 DSH 管理器安装、加载和工具运行仍需在已安装 DSH 的隔离环境中验收。
 
 测试命令中的 glob 保留引号，由测试工具递归发现，避免 shell 提前展开而遗漏根目录或更深层的测试。

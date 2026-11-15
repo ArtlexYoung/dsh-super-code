@@ -1,6 +1,6 @@
 /** Windows文件操作与随包命令行程序的路径能力不同。 */
 export const windowsShellInstructions: string = 'Command environment: Windows with GNU Bash and BusyBox utilities. Native programs still run on Windows. '
-  + 'BusyBox can fail when the full file path reaches 260 characters; cd and relative paths do not bypass this limit. '
+  + 'Bundled BusyBox file commands support long absolute and relative file paths with Unicode, but this does not remove Windows limits on process working directories or guarantee every applet. UNC paths also remain subject to Windows network-share limits. '
   + 'For long paths, prefer available native file tools (read, write, edit). '
   + 'After a BusyBox path-related error, retry a read-only operation with an available native file tool using the same intended path instead of repeating the failing command. '
   + 'An error such as "No such file or directory" alone does not prove a long-path limitation; verify the path with the native tool and report a missing file if it is also absent there. '

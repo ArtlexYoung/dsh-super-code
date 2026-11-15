@@ -1,5 +1,5 @@
 {
-  "id": "bash-busybox-1fad851f5b0f",
+  "id": "bash-busybox-786f7403da79",
   "files": [
     {
       "name": "bash.exe",
@@ -19,15 +19,15 @@
       "name": "busybox.exe",
       "asset": "arm64-busybox.exe.gz",
       "arch": "arm64",
-      "bytes": 655872,
-      "sha256": "ef426a4967f0a4657343242e85c290a8fb3272c6145c230439c587a0a97f9969"
+      "bytes": 653312,
+      "sha256": "11010d35adc349cd84f575748e5d01213ca48bac38d6a8b0ce06ca089e5920ab"
     },
     {
       "name": "busybox.exe",
       "asset": "x64-busybox.exe.gz",
       "arch": "x64",
-      "bytes": 683520,
-      "sha256": "36b266923fc5765b42f5f981319f39568498fba60b53ccf26e8fc1e575e2a9a9"
+      "bytes": 708096,
+      "sha256": "c4fb2f1d8d7191645cfef0059c97a0bd94fce5c67515bb046f9938269d41c079"
     },
     {
       "name": "grep.exe",

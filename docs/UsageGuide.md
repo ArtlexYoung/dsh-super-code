@@ -243,6 +243,8 @@ Windows DSH 默认在 Super Code 预设中使用内置 GNU Bash、BusyBox 和 GN
 
 这仍是 Windows 环境：BusyBox 不包含所有 GNU 选项，`.cmd` 的引号及原生程序的 `/` 参数也不等同于 Linux。MSYS 会自动转换部分路径；确需传递原样参数时，可仅对该次调用设置 `MSYS2_ARG_CONV_EXCL`，不要全局关闭转换。内置工具不包含 `trash`，也不会把永久删除伪装成回收站操作。ARM64 Windows 上的 Bash、grep 和 MSYS DLL 使用 x64 兼容执行。验证范围见[兼容性](Compatibility.md)，组件来源与许可证见[运行时说明](../runtime/windows/README.md)。
 
+随包 BusyBox 的本地文件命令已支持长绝对路径、相对路径和 Unicode 文件名，不需要修改注册表。UNC 的读取、复制与重命名分别受 Windows 共享服务约束；共享服务拒绝操作时会保留错误。该修复不代表所有命令或长工作目录中的进程都能正常启动。
+
 Windows 初始工作目录达到 259 字符时，Super Code 使用 DSH 原生工具，避免 PTC 进程启动失败；普通本机会话继续使用 PTC。原生读取、写入已在长路径验证，BusyBox、ripgrep 和其他外部程序仍有各自的路径限制。BusyBox 读取因路径失败时，模型可核对路径后改用可用的原生文件工具；真实缺失、权限拒绝和断连不能当成长路径错误。写入、删除、重定向或复合命令可能已经部分执行，必须先只读核对结果，不自动重放。
 
 ## 删除保护

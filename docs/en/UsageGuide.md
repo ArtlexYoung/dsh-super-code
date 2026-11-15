@@ -243,6 +243,8 @@ The official Windows sandbox blocks the internal named pipes MSYS requires. Bash
 
 Programs still run on Windows. BusyBox does not implement every GNU option; `.cmd` quoting and native `/` arguments differ from Linux. MSYS converts some paths automatically. Use `MSYS2_ARG_CONV_EXCL` for an individual invocation that needs literal arguments rather than disabling conversion globally. The bundle does not include `trash`, and permanent deletion is never presented as a recycle-bin operation. On ARM64 Windows, Bash, grep and the MSYS DLLs run through x64 emulation. See [Compatibility](Compatibility.md) for tested scope and the [runtime notes](../../runtime/windows/README.md) for sources and licenses.
 
+Bundled BusyBox file commands support long local absolute and relative paths and Unicode filenames without registry changes. Reads, copies and renames over UNC remain subject to Windows share constraints, with system errors preserved. This does not guarantee every applet or process startup in a long working directory.
+
 When a Windows session starts in a working directory of 259 characters or more, Super Code uses DSH native tools to avoid PTC process-start failures. Other local sessions retain PTC. Native reads and writes have been checked with long paths; BusyBox, ripgrep, and other external programs retain their own path limits. After a path-related BusyBox read failure, the model can verify the path and use an available native file tool. A missing file, permission denial, or disconnection is not evidence of a long-path failure. Writes, deletions, redirections, and compound commands may have partially executed; inspect their effects before acting, without automatically replaying them.
 
 ## Deletion protection

@@ -1,6 +1,8 @@
 # Bundled Windows shell
 
-This directory contains separately licensed, unmodified command-line programs.
+This directory contains separately licensed command-line programs. BusyBox is
+built from the pinned upstream source with the bundled long-path changes; Bash,
+GNU grep and the MSYS libraries retain their original upstream binaries.
 The plugin's Apache-2.0 license does not replace their licenses. The programs run
 as child processes; they are not linked into the plugin.
 
@@ -18,7 +20,7 @@ No Git executable, development language, compiler or package manager is included
 | GNU libiconv | `1.19-1`, same PortableGit | LGPL-3.0-or-later (the upstream LGPL-2.1-or-later option is exercised at version 3); [complete source package](https://repo.msys2.org/msys/sources/libiconv-1.19-1.src.tar.zst) |
 | GNU libintl / gettext | `0.22.5-1`, same PortableGit | LGPL-3.0-or-later (the upstream LGPL-2.1-or-later option is exercised at version 3); [complete source package](https://repo.msys2.org/msys/sources/gettext-0.22.5-1.src.tar.zst) |
 | PCRE | `8.45-5`, same PortableGit | [PCRE license](licenses/PCRE-LICENCE.txt); [complete source package](https://repo.msys2.org/msys/sources/pcre-8.45-5.src.tar.zst) |
-| BusyBox for Windows | `FRP-6354-g5f09fb446`, Unicode x64 / ARM64 | [GPL-2.0-only](licenses/BusyBox-LICENSE.txt); [complete corresponding source and build configurations included in this package](sources/busybox-w32-FRP-6354-g5f09fb446.tgz) |
+| BusyBox for Windows | `FRP-6354-sc-longpaths1`, based on `5f09fb446`, Unicode x64 / ARM64 | [GPL-2.0-only](licenses/BusyBox-LICENSE.txt); [complete modified source, build recipe and exact configurations](sources/busybox-w32-FRP-6354-sc-longpaths1.tgz) |
 
 Bash also statically uses Readline (`8.3.006-1`, GPL-3.0-or-later) and ncurses
 (`6.6-2`, MIT-style license). Their complete source packages and build recipes
@@ -31,8 +33,9 @@ The GNU GPL and LGPL texts are included in `licenses/`. Corresponding source is
 available without charge at the URLs above, independently of installing or
 running this plugin. The BusyBox source tarball is distributed alongside its
 binary assets. It includes `configs/mingw64u_defconfig`,
-`configs/mingw64a_defconfig` and the original build scripts; see its `win32/`
-documentation. The library DLLs remain separate files and may be replaced with
+`configs/mingw64a_defconfig`, `examples/mswin-build/build-longpaths` and the exact
+generated configurations in `dsh-build/`; see `README.long-paths.md` in the
+source archive. The library DLLs remain separate files and may be replaced with
 compatible builds. The plugin's cache checks integrity rather than accepting
 silently modified programs; a developer build can update `manifest.json` and
 its matching compressed assets. These checks do not restrict rights granted by
@@ -43,3 +46,7 @@ Binary provenance, source hashes and assembly instructions are in
 files with redistributed copies. Before changing a payload, update its matching
 sources and notices as well as the manifest; do not relabel an upstream binary
 as a newer version.
+
+本地修复仅针对 BusyBox 的 Windows Unicode 文件接口，不要求修改注册表，安装时不下载或编译。固定 MSVCRT 工具链、源码提交、两种架构的配置与产物哈希记录在 `sources.json`，完整修改源码随包提供。原版源码仍保留在 Git 中作为基线，npm 包携带与当前二进制匹配的修复源码。
+
+本地文件的长绝对路径、相对路径和中文文件名已补充回归。UNC 仍受 Windows 共享服务限制：即使读取、创建和复制成功，长路径重命名或替换也可能被系统拒绝；失败不能改为自动重试或忽略权限。长工作目录中的进程启动、BusyBox Shell 的 `cd`、Bash 和其他外部程序不属于这次文件接口修复。

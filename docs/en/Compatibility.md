@@ -10,6 +10,15 @@ The records below distinguish each code baseline and test layer. Component check
 
 The new PStack workflow adaptation starts at `0.2.1-alpha.1`; earlier hosts are outside its scope. Older-version records below describe historical coverage of other plugin features.
 
+## 2026-11-16 · BusyBox long paths (unreleased)
+
+The candidate remains `0.4.1`, unpublished. Only BusyBox changes to the local `FRP-6354-sc-longpaths1` build based on `FRP-6354-g5f09fb446`. DSH, Bash, MSYS, grep and npm dependencies are unchanged. Complete modified source, pinned MSVCRT toolchain instructions and both actual configurations ship with the binaries; installation does not download or compile them.
+
+- In an isolated Windows 11 ARM64 VM, x64 under Windows emulation and native ARM64 each pass 132 actual-file checks: lengths 100, 259, 260, 261, 520, 1024 and 4096, Unicode, spaces, long Unicode filenames, relative paths, exact bytes and denied reads. No physical x64 machine was tested.
+- With matching toolchain, configurations and data, the 14 affected upstream command groups produce 217 passes/9 failures per baseline architecture and 218 passes/8 failures per candidate. The new regression changes from failure to success, with no added failures. Eight baseline failures remain.
+- Each architecture passes 90 real-UNC checks against native Windows behavior, with 10 native rename/replacement limitations recorded separately. Successful reads, creation and copying do not guarantee that a share permits renaming. Failure preserves the source without bypassing permissions or replaying writes. Long process-working-directory and shell `cd` limits remain, as does the authorized native-tool strategy.
+- All 1,185 plugin tests, type checks, build and PE DLL checks pass. Both architecture build/regression workflows are prepared; GitHub Actions has not run. Installation and DSH model checks are in the [batch report](../testing/BusyBox-long-paths-20261116.md). This does not revalidate every DSH version, phone or remote scenario.
+
 ## 2026-11-15 · Default peer offline-install fix (unreleased)
 
 The root manifest and lockfile now mark the 15 existing DSH-provided peers as optional while retaining every version range. This prevents automatic downloads when the installer cannot find them; running the plugin still requires DSH to provide the modules. DSH is not bundled and dependencies are not upgraded. The candidate remains version `0.4.1`; the published package has not been replaced.

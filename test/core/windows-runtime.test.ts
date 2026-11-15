@@ -47,6 +47,22 @@ test('both packaged architectures contain verified PE files and every non-system
   }
 })
 
+test('BusyBox source archive and build provenance match both packaged binaries', async () => {
+  const root = new URL('../../runtime/windows/', import.meta.url)
+  const { busybox } = JSON.parse(await readFile(new URL('sources.json', root), 'utf8'))
+  const manifest = JSON.parse(await readFile(new URL('manifest.json', root), 'utf8'))
+  const source = await readFile(new URL(busybox.source.bundled, root))
+  assert.equal(source.length, busybox.source.bytes)
+  assert.equal(createHash('sha256').update(source).digest('hex'), busybox.source.sha256)
+  assert.match(busybox.source.commit, /^[a-f0-9]{40}$/)
+  for (const arch of ['x64', 'arm64']) {
+    const file = manifest.files.find((file: { name: string; arch: string }) => file.name === 'busybox.exe' && file.arch === arch)
+    assert.equal(busybox.builds[arch].bytes, file.bytes)
+    assert.equal(busybox.builds[arch].sha256, file.sha256)
+    assert.ok(busybox.builds[arch].config.startsWith('dsh-build/'))
+  }
+})
+
 async function fixture(t: test.TestContext) {
   const root = await mkdtemp(join(tmpdir(), 'super-code-runtime-')), source = join(root, 'payload'), cacheRoot = join(root, '中文 缓存')
   t.after(() => rm(root, { recursive: true, force: true }))

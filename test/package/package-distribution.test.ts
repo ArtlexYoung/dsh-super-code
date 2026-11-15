@@ -62,6 +62,7 @@ test('npm ships every runtime resource once and retains public exports and third
   assert.equal(pkg.dependencies['@fission-ai/openspec'], '1.17.0', 'the CLI matches the pinned Skill distribution')
   const windows = JSON.parse(await readFile(new URL('../../runtime/windows/manifest.json', import.meta.url), 'utf8'))
   for (const file of windows.files) assert.ok(files.has('runtime/windows/' + file.asset), file.asset)
-  assert.ok([...files].some(path => path.startsWith('runtime/windows/sources/')))
+  const sources = JSON.parse(await readFile(new URL('../../runtime/windows/sources.json', import.meta.url), 'utf8'))
+  assert.ok(files.has('runtime/windows/' + sources.busybox.source.bundled), 'the exact corresponding BusyBox source ships with its binaries')
   assert.ok(files.has('runtime/windows/licenses/BusyBox-LICENSE.txt'))
 })

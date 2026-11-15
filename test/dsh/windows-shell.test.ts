@@ -171,15 +171,16 @@ async function fixture(t: test.TestContext, options: { platform?: NodeJS.Platfor
     preparations: () => preparations, broken(value: boolean) { broken = value } }
 }
 
-test('Windows Bash explains full-path limits and keeps native long-path operations available', async t => {
+test('Windows Bash explains BusyBox file support and process limits while keeping native tools available', async t => {
   for (const options of [{}, { official: 'standard' }]) {
     const f = await fixture(t, options)
     f.policy.windowsBashForOfficialPresets = true
     const local = f.make('long-path-local')
     await local.ready()
     const text = await f.prompt(local.agent)
-    assert.match(text, /260 characters/)
-    assert.match(text, /cd.*relative paths.*do not bypass/)
+    assert.match(text, /BusyBox file commands support long absolute and relative file paths/)
+    assert.match(text, /does not remove Windows limits on process working directories or guarantee every applet/)
+    assert.match(text, /cd inside the shell command runs too late/)
     assert.match(text, /native file tools.*read.*write.*edit/)
     assert.match(text, /glob and grep.*long project workdir.*helper process/)
     assert.match(text, /short workdir/)
@@ -189,7 +190,7 @@ test('Windows Bash explains full-path limits and keeps native long-path operatio
     f.policy.windowsBash = false
     const disabled = f.make('long-path-disabled')
     await disabled.ready()
-    assert.doesNotMatch(await f.prompt(disabled.agent), /260 characters/)
+    assert.doesNotMatch(await f.prompt(disabled.agent), /BusyBox file commands support/)
   }
 })
 
@@ -247,7 +248,7 @@ test('lightweight remote sessions do not prepare or validate a local Windows Bas
     }))
     await remote.ready(); await remote.step()
     assert.equal(f.preparations(), 0)
-    assert.doesNotMatch(await f.prompt(remote.agent), /Windows with GNU Bash|260 characters/)
+    assert.doesNotMatch(await f.prompt(remote.agent), /Windows with GNU Bash|BusyBox file commands support/)
   }
 })
 

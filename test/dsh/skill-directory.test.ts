@@ -17,13 +17,30 @@ import { applyBudgetSettings } from '../../src/dsh/budget-settings.js'
 import { applySkillDirectory } from '../../src/dsh/skill-directory.js'
 
 const resources = fileURLToPath(new URL('../../builtin/skills/', import.meta.url))
-test('native directory commands preserve spaces, Chinese, quotes and shell-looking text as one literal path', () => {
+test('native directory commands preserve spaces, Chinese, quotes and shell-looking text as one literal path', t => {
+  const previous = process.env.SystemRoot
+  process.env.SystemRoot = 'C:\\Windows'
+  t.after(() => { if (previous === undefined) delete process.env.SystemRoot; else process.env.SystemRoot = previous })
   const path = "/temporary/中文 目录/O'Reilly/$(inert)`text`"
   for (const platform of ['darwin', 'linux'] as const) assert.deepEqual(skillDirectoryCommand(path, platform).args, [path])
   const windows = skillDirectoryCommand(path, 'win32')
-  assert.equal(windows.command, 'powershell.exe')
+  assert.equal(windows.command, 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe')
   assert.equal(windows.args.at(-1), "Invoke-Item -LiteralPath '/temporary/中文 目录/O''Reilly/$(inert)`text`'")
   assert.throws(() => skillDirectoryCommand(path, 'freebsd'))
+})
+test('Windows directory opening finds system PowerShell without its directory on PATH', t => {
+  const previous = { SystemRoot: process.env.SystemRoot, WINDIR: process.env.WINDIR, PATH: process.env.PATH }
+  t.after(() => { for (const [key, value] of Object.entries(previous)) { if (value === undefined) delete process.env[key]; else process.env[key] = value } })
+  process.env.SystemRoot = 'D:\\Windows 系统'
+  process.env.PATH = 'C:\\Node;C:\\PowerShell7'
+  assert.equal(skillDirectoryCommand('D:\\测试 目录', 'win32').command,
+    'D:\\Windows 系统\\System32\\WindowsPowerShell\\v1.0\\powershell.exe')
+  delete process.env.SystemRoot
+  process.env.WINDIR = 'E:\\Windows'
+  assert.equal(skillDirectoryCommand('D:\\测试 目录', 'win32').command,
+    'E:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe')
+  delete process.env.WINDIR
+  assert.throws(() => skillDirectoryCommand('D:\\测试 目录', 'win32'), /Windows system directory unavailable/)
 })
 async function fixture(t: test.TestContext) {
   await mkdir(validationRoot, { recursive: true })

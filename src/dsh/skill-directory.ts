@@ -1,7 +1,7 @@
 /** One global writer; preset scopes reuse the installed library. */
 import type { Context } from '@deepseek-ai/cordis'
 import { homedir } from 'node:os'
-import { join, resolve } from 'node:path'
+import { join, resolve, win32 } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFile } from 'node:child_process'
 import { configurationOf } from './budgets.js'
@@ -18,7 +18,12 @@ export interface SkillDirectoryStatus {
 const packages = ['oil-ui', 'openspec', 'mattpocock', 'pstack'] as const
 export function skillDirectoryCommand(directory: string, platform: NodeJS.Platform): { command: string; args: string[] } {
   if (platform === 'darwin') return { command: 'open', args: [directory] }
-  if (platform === 'win32') return { command: 'powershell.exe', args: ['-NoProfile', '-NonInteractive', '-Command', `Invoke-Item -LiteralPath '${directory.replaceAll("'", "''")}'`] }
+  if (platform === 'win32') {
+    const systemRoot = process.env.SystemRoot || process.env.WINDIR
+    if (!systemRoot) throw new Error('Windows system directory unavailable')
+    const command = win32.join(systemRoot, 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe')
+    return { command, args: ['-NoProfile', '-NonInteractive', '-Command', `Invoke-Item -LiteralPath '${directory.replaceAll("'", "''")}'`] }
+  }
   if (platform === 'linux') return { command: 'xdg-open', args: [directory] }
   throw new Error('Skill directory opener unavailable')
 }

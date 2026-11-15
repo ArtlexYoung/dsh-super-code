@@ -60,7 +60,7 @@ async function fixture(t: test.TestContext, existing = false, modern = false) {
   const preset = createScope(ctx, {})
   await preset.ctx.plugin(superCode)
   let localCalls = 0, remoteCalls = 0, disconnected = false, denied = false
-  for (const name of ['bash', 'subagent', 'subagent_fork', 'terminal', 'job_list', 'read_file']) {
+  for (const name of ['bash', 'subagent', 'subagent_fork', 'terminal', 'job_list', 'read_file', 'write', 'edit', 'str_replace_editor']) {
     preset.ctx.get('tools')!.register(defineTool({ name, description: name, parameters: {},
       output: { schema: { type: 'string' }, render: (_args, value) => [{ type: 'text', text: value }] },
       execute: async () => { if (name === 'bash') localCalls++; return name },
@@ -68,6 +68,8 @@ async function fixture(t: test.TestContext, existing = false, modern = false) {
   }
   preset.ctx.get('systemPrompt')!.section({ name: 'tool:bash', order: 50, text: 'Local Bash guidance' })
   preset.ctx.get('systemPrompt')!.section({ name: 'super-code:windows-shell', order: 94, text: 'Windows local environment' })
+  preset.ctx.get('systemPrompt')!.section({ name: 'tool:write', order: 95, text: 'Native write guidance' })
+  preset.ctx.get('systemPrompt')!.section({ name: 'tool:edit', order: 96, text: 'Native edit guidance' })
   const make = (id: string, context = preset.ctx, cwd?: string) => {
     const agent = { id, session: ctx.get('sessions')!.create(SessionId(id), cwd === undefined ? {} : { meta: { cwd } }) } as Agent
     const scope = createScope(context, agent)
@@ -145,6 +147,49 @@ test('Windows long working directories use native tools without changing other s
   const linux = f.make('linux', f.preset.ctx, '/' + 'd'.repeat(300))
   await f.ctx.serial(scopeTarget(linux, linux), 'agent/created', { agent: linux, source: 'fresh' as never })
   assert.deepEqual(await f.names(linux), ['run_code'])
+})
+
+test('Windows remote file changes use guarded remote commands while reads and local writes remain available', async t => {
+  const platform = process.platform
+  Object.defineProperty(process, 'platform', { value: 'win32' })
+  t.after(() => Object.defineProperty(process, 'platform', { value: platform }))
+  for (const modern of [false, true]) {
+    const f = await fixture(t, false, modern), remote = f.make('remote-write-' + modern)
+    const local = f.make('local-write-' + modern, f.preset.ctx, '/' + 'd'.repeat(258))
+    await f.ctx.serial(scopeTarget(local, local), 'agent/created', { agent: local, source: 'fresh' as never })
+    const unbind = f.bind(remote)
+    f.guard(remote)
+    const assembly = await f.ctx.get('systemPrompt')!.assemble({ agent: remote, scope: remote })
+    const definitions = ['read_file', 'write', 'edit', 'str_replace_editor', 'remote_bash'].map(name => ({ name }))
+    const names = modern ? f.executor().describe(definitions).schemas.map(tool => tool.name) : assembly.tools.map(tool => tool.name)
+    assert.ok(names.includes('read_file'))
+    assert.ok(names.includes('remote_bash'))
+    assert.ok(!assembly.sections.some(section => /Native (write|edit) guidance/.test(section.text)))
+    assert.ok(assembly.sections.some(section => /file changes.*remote_bash/i.test(section.text)))
+    for (const name of ['write', 'edit', 'str_replace_editor']) {
+      assert.ok(!names.includes(name), name)
+      const denied = await f.call(remote, name)
+      assert.equal(denied.isError, true, '旧对话的原生写入调用也必须拒绝')
+      assert.match(JSON.stringify(denied), /remote_bash/)
+      assert.equal((await f.call(local, name)).isError, false)
+    }
+    assert.equal((await f.call(remote, 'read_file')).isError, false)
+    assert.equal((await f.call(remote, 'remote_bash')).isError, false)
+    f.deny(true)
+    assert.equal((await f.call(remote, 'remote_bash')).isError, true)
+    assert.deepEqual(f.counts(), { local: 0, remote: 1 })
+    f.deny(false)
+    f.disconnect(true)
+    assert.equal((await f.call(remote, 'remote_bash')).isError, true)
+    assert.deepEqual(f.counts(), { local: 0, remote: 1 })
+    f.disconnect(false)
+    Object.defineProperty(process, 'platform', { value: 'linux' })
+    for (const name of ['write', 'edit', 'str_replace_editor']) assert.equal((await f.call(remote, name)).isError, false)
+    Object.defineProperty(process, 'platform', { value: 'win32' })
+    unbind()
+    assert.deepEqual(modern ? f.executor().describe(definitions.filter(tool => tool.name !== 'remote_bash')).schemas.map(tool => tool.name) : await f.names(remote), ['run_code'])
+    for (const name of ['write', 'edit', 'str_replace_editor']) assert.ok(f.ctx.get('tools')!.get(name, remote))
+  }
 })
 
 test('scoped host executors select native for Windows long cwd and still filter remote tools', async t => {

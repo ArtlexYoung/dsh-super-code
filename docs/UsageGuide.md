@@ -178,13 +178,17 @@ Agent 执行树，显示每个 Agent 的状态、用量和缓存率。用量只�
 
 全量远程模式在远端 DSH 中运行，需在远端安装 Super Code；没有 `remote_bash` 的会话继续使用 DSH PTC。插件不负责同步远端模型、插件或依赖。升级后请重新安装 Super Code 预设并新建会话，已有会话使用的旧预设不会自动改写。
 
+Windows 轻量远程项目保留原生读取；文件修改使用 `remote_bash`，不提供原生 `write`、`edit` 和 `str_replace_editor`，旧对话调用这些工具会收到明确提示。该选择避免 SFTP 挂载缺少句柄权限修改、硬链接等能力导致写入失败，不自动执行或重试命令。修改前应读取原内容，修改后回读；失败或中断时先检查实际结果，再决定剩余操作。`remote_bash` 仍使用原有审批、取消及断连检查。
+
+Windows 挂载须支持 DSH 创建会话时对已有目录执行递归创建。SSHFS-Win `3.5.20357` 在本轮实测会误报 `EPERM`，DSH `0.2.2-rc.2` 因而无法创建会话；不能由模型换工具补救。真实挂载验收使用 Rclone `1.76.0` 与 WinFsp `2.1.25156`；应使用远程插件登记返回的项目路径，盘符别名不一定能匹配项目。
+
 ### dsh-Go / DSH NEXT 远程控制
 
 手机通过 dsh-Go 或 DSH NEXT 的手机连接功能使用另一台电脑上的 DSH 时，Super Code、预设、模型和项目都在远程机器上。请先在远程机器安装插件、重装预设并新建会话，再从手机选择那台机器和 Super Code。手机上的 App 不会自动把插件安装到电脑。远程控制本身不代表轻量远程项目；没有 `remote_bash` 的会话继续使用 DSH 的 PTC。
 
 模型工具与手机界面分别适配。dsh-Go 的通用工具结果和 Skill 可通过会话使用；专属原生面板需要 dsh-Go 桥接，网页设置和侧栏则取决于连接通道及插槽支持。在已核对的 dsh-Go `1.0.16` 中，SSH 通道可使用网页插件，中转通道不提供 App 内网页，也不放行专属原生桥接；详见其[连接能力说明](https://github.com/ccch1mneyyy/dsh-Go/blob/ddaff424b9fa1ed1d0cca389823facc046135dae/docs/plugins/hosts.md)。DSH NEXT `2.0.23-next` 的[手机连接](https://github.com/anywhere-labs/dsh-desktop/blob/59dce7d3289bb875415430082e75ee3b23326a54/dsh-plugin-desktop/src/remote-control-offer.ts)需按实际桥接和手机端验证，不能把桌面侧栏可用视为手机原生侧栏可用。
 
-当前 main 的 Android 模拟器验证已覆盖 dsh-Go `1.0.16` 的 SSH、中转，以及 NEXT `2.0.23-next` 原装桥接配合 Agents Anywhere `2.2.0` 的真实模型读写、审批、取消和全局记忆。任务保存后继续请求腾讯云 Responses 仍会出现 HTTP 400，任务与项目记忆的完整工作流尚未通过；手机实体设备和 NEXT 桌面启用入口也未验证。具体组合、恢复限制与离线安装条件见[兼容性记录](Compatibility.md#2026-11-14--main-远程模拟器验收部分通过)。这些远程改动尚未发布，不属于已发布的 0.4.1 包。
+当前修复集已在 Android 模拟器覆盖 dsh-Go `1.0.16` 的 SSH、中转，以及 NEXT `2.0.23-next` 原装桥接配合 Agents Anywhere `2.2.0` 的真实模型对话、文件读写、任务、项目与全局记忆、方法、审批、取消和冷恢复。任务记录已独立保存，修复此前保存任务后继续请求出现 HTTP 400 的问题。手机实体设备未验证；各批候选、实际组合和限制见[兼容性记录](Compatibility.md)与[全面验收补充](testing/Acceptance-followup-20261115.md)。这些改动尚未发布，不属于已发布的 0.4.1 包。
 
 ## 运行预算
 
@@ -238,6 +242,8 @@ Windows DSH 默认在 Super Code 预设中使用内置 GNU Bash、BusyBox 和 GN
 官方 Windows 限权沙箱会阻止 MSYS 创建内部命名管道，因此 `read-only`、`workspace-write` 下的 Bash 调用会在命令执行前明确报错。确需运行时，Agent 可为**同一条命令**请求 DSH 的 `sandbox_permissions="danger-full-access"` 单次审批，并说明原因。只有批准的这次调用可以执行；拒绝、取消或禁用审批时不执行，也不会自动修改会话权限或切换 Shell。PTC 的 `run_code` 本身若需更大权限，仍须经过 DSH 对该程序的独立审批，Bash 的批准不授予外层程序权限。
 
 这仍是 Windows 环境：BusyBox 不包含所有 GNU 选项，`.cmd` 的引号及原生程序的 `/` 参数也不等同于 Linux。MSYS 会自动转换部分路径；确需传递原样参数时，可仅对该次调用设置 `MSYS2_ARG_CONV_EXCL`，不要全局关闭转换。内置工具不包含 `trash`，也不会把永久删除伪装成回收站操作。ARM64 Windows 上的 Bash、grep 和 MSYS DLL 使用 x64 兼容执行。验证范围见[兼容性](Compatibility.md)，组件来源与许可证见[运行时说明](../runtime/windows/README.md)。
+
+Windows 初始工作目录达到 259 字符时，Super Code 使用 DSH 原生工具，避免 PTC 进程启动失败；普通本机会话继续使用 PTC。原生读取、写入已在长路径验证，BusyBox、ripgrep 和其他外部程序仍有各自的路径限制。BusyBox 读取因路径失败时，模型可核对路径后改用可用的原生文件工具；真实缺失、权限拒绝和断连不能当成长路径错误。写入、删除、重定向或复合命令可能已经部分执行，必须先只读核对结果，不自动重放。
 
 ## 删除保护
 

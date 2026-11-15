@@ -14,8 +14,12 @@ const localTools = new Set([
   'team', 'worktree', 'create_worktree', 'job_output', 'job_list', 'job_kill',
 ])
 
+// Windows SFTP 挂载不保证支持 DSH 原生写入需要的句柄权限和硬链接操作。
+const mountedWriteTools = new Set(['write', 'edit', 'str_replace_editor'])
+
 function remoteUnsupported(name: string): boolean {
   return localTools.has(name) || /(?:^|_)(?:subagent|worktree)(?:_|$)/.test(name)
+    || (process.platform === 'win32' && mountedWriteTools.has(name))
 }
 
 function remoteTools(tools: readonly ToolDefinition[]): boolean {
@@ -111,16 +115,21 @@ export async function apply(ctx: Context): Promise<void> {
   const legacy = !('setExecutor' in ctx.tools)
   if (!legacy) await applyExecutors(ctx, ctx.tools as unknown as ExecutorTools)
   else await applyLegacy(ctx)
+  ctx.tools.guard(execution => process.platform === 'win32' && execution.agent
+    && ctx.tools.get('remote_bash', execution.agent) && mountedWriteTools.has(execution.name)
+    ? 'Native mounted file writes are unavailable in this Windows remote project. Use remote_bash for file changes, with its normal DSH approval. No command was run or retried.' : undefined)
   ctx.systemPrompt.section({ name: 'super-code:remote-tools', order: 94, text: ({ agent }) =>
     agent && ctx.tools.get('remote_bash', agent)
-      ? 'This is a lightweight remote project. Call remote_bash directly for commands; use file tools with relative paths or the mounted project directory. Super Code task and memory tools remain available. Local shells, background jobs, interactive terminals, worktrees and subagent execution are unavailable. CLI programs and Skill scripts must exist on the remote machine; bundled local executables are not installed there. Never fall back to local execution when disconnected.' : '' })
+      ? 'This is a lightweight remote project. Call remote_bash directly for commands; use file tools with relative paths or the mounted project directory. Super Code task and memory tools remain available. Local shells, background jobs, interactive terminals, worktrees and subagent execution are unavailable. CLI programs and Skill scripts must exist on the remote machine; bundled local executables are not installed there. Never fall back to local execution when disconnected.'
+        + (process.platform === 'win32' ? ' On Windows, use native file tools for reads, and perform file changes through remote_bash on the remote machine. Native write, edit and str_replace_editor are unavailable on the mount. Inspect existing content before changing it; verify the result afterward. If a command fails or is interrupted, inspect its effects before deciding what remains; never replay a write automatically. Remote command approval, cancellation and disconnection checks still apply.' : '') : '' })
   ctx.on('system-prompt/assemble', async (_assembly, { agent }, next) => {
     const assembled = await next()
     if (!agent || !ctx.tools.get('remote_bash', agent)) return assembled
     return { ...assembled,
       ...legacy ? { tools: assembled.tools.filter(tool => !remoteUnsupported(tool.name)) } : {},
       sections: assembled.sections.filter(section => !/^tool:(?:bash|pwsh|powershell|terminal|jobs|subagent)(?:$|:)/.test(section.name)
-        && section.name !== 'super-code:windows-shell'),
+        && section.name !== 'super-code:windows-shell'
+        && !(process.platform === 'win32' && /^tool:(?:write|edit|str_replace_editor|str-replace-editor)(?:$|:)/.test(section.name))),
     }
   })
 }

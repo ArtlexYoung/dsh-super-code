@@ -14,6 +14,40 @@ function client() {
 }
 const editor = (api: object, section: string) => client().createBudgetAutosave(api, section)
 
+for (const [section, key, initial, changed] of [
+  ['skills', 'grillMeSkill', false, true],
+  ['shell', 'windowsBash', true, false],
+  ['protection', 'deletionProtection', 'relaxed', 'strict'],
+  ['context', 'maxTasks', '32', '48'],
+] as const) test(`${section} keeps a return to the original value while its first save is pending`, async () => {
+  let stored = { revision: 1, writable: true, configuration: { maxTasks: 32 } as Record<string, unknown> }
+  let release!: () => void
+  const writes: Record<string, unknown>[] = []
+  const settings = client().createBudgetEditors({
+    readConfig: async () => ({ ok: true, value: structuredClone(stored) }),
+    saveConfig: async (content: string, expected: string) => {
+      const configuration = JSON.parse(content)
+      writes.push(configuration)
+      if (writes.length === 1) await new Promise<void>(resolve => { release = resolve })
+      assert.equal(expected, String(stored.revision))
+      stored = { ...stored, revision: stored.revision + 1, configuration }
+      return { ok: true, value: { ok: true, snapshot: structuredClone(stored) } }
+    },
+  })
+  const active = settings.editors[section]
+  active.receive((await settings.readConfig()).value)
+  assert.equal(active.getSnapshot().draft[key], initial)
+  active.change({ [key]: changed })
+  active.change({ [key]: initial })
+  assert.equal(writes.length, 1)
+  release(); await active.flush()
+  assert.equal(writes.length, 2)
+  assert.equal(stored.configuration[key], section === 'context' ? Number(initial) : initial)
+  assert.equal(active.getSnapshot().draft[key], initial)
+  assert.equal(active.getSnapshot().error, '')
+  assert.equal(active.hasChanges(), false)
+})
+
 for (const localWrites of [1, 2]) test(`a restarted settings service cannot rebase or save an old draft after ${localWrites} new Skill saves`, async () => {
   let stored = { revision: 1, generation: 'first-service', writable: true,
     configuration: { maxTasks: 32 } as Record<string, unknown> }

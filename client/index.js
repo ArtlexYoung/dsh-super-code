@@ -2411,12 +2411,13 @@ function settingsRevision(snapshot) {
 }
 function createSettingsEditors(api, factories) {
   let writing = Promise.resolve(), saved, saveCount = 0, readCount = 0, latestRead
-  const saveConfig = (content, expected) => {
+  const saveConfig = (content, expected, origin) => {
     const result = api.saveConfig(content, expected).then(response => {
       if (response.ok && response.value.ok) {
         saved = response.value.snapshot; saveCount++
-        // Carry local, disjoint edits forward without rebasing an external conflict.
-        for (const editor of Object.values(editors)) {
+        // 发起保存的编辑器自行处理回执，避免覆盖保存期间的新输入。
+        for (const [section, editor] of Object.entries(editors)) {
+          if (section === origin) continue
           const previous = editor.getSnapshot().snapshot
           if (previous && settingsRevision(previous) === expected) editor.revision(saved)
         }
@@ -2427,7 +2428,7 @@ function createSettingsEditors(api, factories) {
     return result
   }
   const editors = Object.fromEntries(Object.entries(factories)
-    .map(([section, create]) => [section, create({ saveConfig })]))
+    .map(([section, create]) => [section, create({ saveConfig: (content, expected) => saveConfig(content, expected, section) })]))
   const flush = async () => {
     await Promise.all(Object.values(editors).map(editor => editor.flush()))
     await writing

@@ -193,6 +193,32 @@ test('Windows Bash explains full-path limits and keeps native long-path operatio
   }
 })
 
+test('Windows BusyBox recovery distinguishes read failures from partial writes and permission denial', async t => {
+  for (const options of [{}, { official: 'standard' }]) {
+    const f = await fixture(t, options)
+    f.policy.windowsBashForOfficialPresets = true
+    const local = f.make('busybox-error-recovery')
+    await local.ready()
+    const text = await f.prompt(local.agent)
+    assert.match(text, /After a BusyBox path-related error.*read-only operation.*native file tool/)
+    assert.match(text, /No such file or directory.*alone does not prove.*long-path/)
+    assert.match(text, /permission denial.*normal permission checks.*do not bypass/)
+    assert.match(text, /write, delete, redirect.*inspect.*read-only tools/)
+    assert.match(text, /redirection can truncate.*before.*fails/)
+    assert.match(text, /Do not automatically replay.*compound command/)
+    assert.match(text, /cannot determine.*already changed.*report/)
+    assert.equal((await f.call(local.agent, 'bash')).isError, false)
+    f.policy.windowsBash = false
+    const disabled = f.make('busybox-error-recovery-disabled')
+    await disabled.ready()
+    assert.doesNotMatch(await f.prompt(disabled.agent), /After a BusyBox path-related error/)
+  }
+  const f = await fixture(t, { platform: 'linux' })
+  const local = f.make('busybox-error-recovery-linux')
+  await local.ready()
+  assert.doesNotMatch(await f.prompt(local.agent), /After a BusyBox path-related error/)
+})
+
 test('rc.2 ownership keeps root and child shells usable without the removed agent registry API', async t => {
   for (const options of [{}, { customProvider: true }, { official: 'standard' }]) {
     const f = await fixture(t, { ...options, sharedGeneration: true, modernOwnership: true })

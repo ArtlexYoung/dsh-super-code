@@ -58,6 +58,7 @@ function agentSessionState(state, sessionId, statuses) {
 
 /** Join host catalogs without leaking agents from unrelated conversations. */
 function buildAgentView(state) {
+  if (!state.current) return { root: '', nodes: new Map(), children: new Map(), ancestors: new Set() }
   const nodes = new Map(Object.values(state.byId || {}).map(node => [node.id, { ...node }]))
   for (const [parentId, catalog] of Object.entries(state.subagentsByParent || {})) {
     // Navigation rows omit timestamps; the parent's public projection retains them.
@@ -72,7 +73,6 @@ function buildAgentView(state) {
       })
     }
   }
-  if (!state.current) return { root: '', nodes: new Map(), children: new Map(), ancestors: new Set() }
   if (state.currentAddress && !nodes.get(state.current)?.parentId) {
     nodes.set(state.current, { ...nodes.get(state.current), id: state.current,
       parentId: state.currentAddress.parentSessionId, mode: state.currentAddress.mode })

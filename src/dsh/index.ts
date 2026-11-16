@@ -38,17 +38,16 @@ export async function apply(ctx: Context, config: Configuration = {}): Promise<v
       })
     }],
   ]
-  const pending = features.map(([feature, inject, apply]) => ctx.plugin({ name: 'super-code:' + feature, inject, apply }).await())
+  // 父入口只负责注册；可选功能的就绪、失败和清理由各自生命周期管理。
+  for (const [feature, inject, apply] of features) ctx.plugin({ name: 'super-code:' + feature, inject, apply })
   for (const register of [
     async (owner: Context) => owner.sessionProjections.register((await import('../super-agent-usage.js')).superAgentUsageProjectionDefinition),
     async (owner: Context) => owner.sessionProjections.register((await import('../task-memory-projection.js')).taskMemoryProjection),
     async (owner: Context) => owner.sessionProjections.register((await import('../task-feedback-projection.js')).taskFeedbackProjection),
     async (owner: Context) => owner.sessionProjections.register((await import('../memory-usage-projection.js')).memoryUsageProjection),
   ]) {
-    pending.push(ctx.inject(['sessionProjections'], async owner => { await register(owner) }).await())
+    ctx.inject(['sessionProjections'], async owner => { await register(owner) })
   }
-  // Cordis 已记录失败子插件的原因并清理其副作用；不把可选模块异常带回父插件。
-  await Promise.allSettled(pending)
 }
 
 export default apply

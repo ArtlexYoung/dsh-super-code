@@ -20,6 +20,7 @@ import agentPlugin from '../src/dsh/super-code.js'
 import { LongMemoryStore, longMemoryContext, memoryWorkspace, memoryGlobalNamespace, memoryEntryToken, GLOBAL_PREFERENCES_TOPIC } from '../src/long-memory.js'
 import type { LongMemoryTopic } from '../src/long-memory.js'
 import type { TaskMemoryStore } from '../src/task-memory-store.js'
+import { waitFor } from './wait-for.js'
 
 async function fixture(existingRoot?: string) {
   const root = existingRoot ?? await mkdtemp(join(tmpdir(), 'super-code-memory-'))
@@ -32,8 +33,7 @@ async function fixture(existingRoot?: string) {
   assert.ok(ctx.get('storageDomain'), 'storage domain must be ready before the host plugin')
   new SessionStore(ctx); new SessionProjectionRegistry(ctx); new SystemPrompt(ctx, {}); new ToolRuntime(ctx)
   await ctx.plugin(harnessPlugin)
-  await ctx.inject(['superCodeLongMemory'], () => {})
-  await ctx.inject(['superCodeTaskMemory'], () => {})
+  await waitFor(() => !!ctx.get('superCodeLongMemory') && !!ctx.get('superCodeTaskMemory'))
   const store = ctx.get('superCodeLongMemory') as LongMemoryStore | undefined
   assert.ok(store, 'host plugin must publish the long-memory service')
   const close = async () => { await ctx.fiber.dispose() }

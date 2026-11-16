@@ -12,6 +12,7 @@ import { join } from 'node:path'
 import harnessPlugin from '../src/index.js'
 import type { TaskMemoryStore } from '../src/task-memory-store.js'
 import { taskMemorySchema } from '../src/core/task-memory.js'
+import { waitFor } from './wait-for.js'
 
 test('package-root mounts durable projections without an alternative executor', async () => {
   const ctx = new Context()
@@ -23,9 +24,10 @@ test('package-root mounts durable projections without an alternative executor', 
     new SessionStore(ctx)
     new SessionProjectionRegistry(ctx)
     await ctx.plugin(harnessPlugin)
-    await ctx.inject(['superCodeLongMemory'], () => {})
-    assert.ok(ctx.get('superCodeLongMemory'))
     const session = ctx.sessions.create(SessionId('plugin-entry'))
+    await waitFor(() => !!ctx.get('superCodeLongMemory') && !!ctx.get('superCodeTaskMemory')
+      && !!ctx.sessionProjections.stateOf(session, 'superCodeTasks') && !!ctx.sessionProjections.stateOf(session, 'superAgentUsage'))
+    assert.ok(ctx.get('superCodeLongMemory'))
     assert.deepEqual(ctx.sessionProjections.stateOf(session, 'superCodeTasks')?.legacy.tasks, {})
     assert.deepEqual(ctx.sessionProjections.stateOf(session, 'superAgentUsage')?.totals, {})
     assert.equal(Reflect.has(ctx, 'superAgent'), false)
@@ -48,6 +50,7 @@ test('package-root keeps task projections without storage and mounts long memory
     new SessionProjectionRegistry(ctx)
     await ctx.plugin(harnessPlugin)
     const session = ctx.sessions.create(SessionId('before-storage'))
+    await waitFor(() => !!ctx.sessionProjections.stateOf(session, 'superCodeTasks'))
     assert.deepEqual(ctx.sessionProjections.stateOf(session, 'superCodeTasks')?.legacy.tasks, {})
     assert.equal(ctx.get('superCodeLongMemory'), undefined)
     let ready!: () => void
@@ -75,6 +78,7 @@ test('failed long-memory domain open leaves task projections available', async (
     await ctx.plugin(harnessPlugin)
     await attempted
     const session = ctx.sessions.create(SessionId('failed-storage'))
+    await waitFor(() => !!ctx.sessionProjections.stateOf(session, 'superCodeTasks'))
     assert.deepEqual(ctx.sessionProjections.stateOf(session, 'superCodeTasks')?.legacy.tasks, {})
     assert.equal(ctx.get('superCodeLongMemory'), undefined)
   } finally { await ctx.fiber.dispose() }

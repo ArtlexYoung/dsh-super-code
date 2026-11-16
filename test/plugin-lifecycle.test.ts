@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { Context } from '@deepseek-ai/cordis'
 import harnessPlugin from '../src/index.js'
+import { waitFor } from './wait-for.js'
 
 test('unloading while the memory domain opens closes the late result without publishing a stale store', async t => {
   const ctx = new Context(), entered = Promise.withResolvers<void>(), gate = Promise.withResolvers<void>()
@@ -45,7 +46,7 @@ for (const failed of [false, true]) test(`replacing a memory facility during a $
   } })
   gate.resolve()
   await stopping; await replacement; await feature
-  await ctx.inject(['superCodeLongMemory'], () => {})
+  await waitFor(() => !!ctx.get('superCodeLongMemory'))
   assert.equal(currentOpened, 1)
   assert.equal(oldClosed, failed ? 0 : 1)
   assert.equal(currentClosed, 0)

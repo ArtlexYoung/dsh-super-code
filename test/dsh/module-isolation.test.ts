@@ -8,6 +8,7 @@ import { ToolRuntime, defineTool } from '@deepseek-ai/dsh-tools'
 import { createScope } from '@deepseek-ai/dsh-scope'
 import { ToolCallId } from '@deepseek-ai/dsh-llm'
 import type { Agent } from '@deepseek-ai/dsh-agent'
+import { waitFor } from '../wait-for.js'
 
 test('a failed usage projection does not remove task and feedback projections or configuration', async t => {
   const ctx = new Context()
@@ -21,6 +22,8 @@ test('a failed usage projection does not remove task and feedback projections or
   }) as typeof projections.register
   await ctx.plugin(harnessPlugin)
   const session = ctx.sessions.create(SessionId('isolated-projection'))
+  const keys = ['superCodeTasks', 'superCodeFeedback', 'superCodeMemoryUsage'] as const
+  await waitFor(() => keys.every(key => !!projections.stateOf(session, key)))
   assert.ok(ctx.get('superCodeConfiguration'))
   assert.ok(projections.stateOf(session, 'superCodeTasks'))
   assert.ok(projections.stateOf(session, 'superCodeFeedback'))
@@ -42,7 +45,34 @@ test('task storage becomes available while the independent long-memory domain is
     timer.unref()
   })])
   gate.resolve(); await plugin
+  await waitFor(() => !!ctx.get('superCodeTaskMemory') && !!ctx.get('superCodeLongMemory'))
   assert.ok(ctx.get('superCodeTaskMemory'))
+  assert.ok(ctx.get('superCodeLongMemory'))
+})
+
+test('pending optional memory initialization does not block parent readiness or configuration', async t => {
+  const ctx = new Context(), gate = Promise.withResolvers<void>(), opening = Promise.withResolvers<void>()
+  const taskReady = Promise.withResolvers<void>(), longReady = Promise.withResolvers<void>()
+  t.after(async () => { gate.resolve(); await ctx.fiber.dispose() })
+  new SessionStore(ctx)
+  ctx.inject(['superCodeTaskMemory'], () => { taskReady.resolve() })
+  ctx.inject(['superCodeLongMemory'], () => { longReady.resolve() })
+  ctx.provide('storageDomain', { open: async (spec: { name: string }) => {
+    if (spec.name !== 'super_code_tasks') { opening.resolve(); await gate.promise }
+    return { table: () => new Map(), close: async () => {} }
+  } } as never)
+  const plugin = ctx.plugin(harnessPlugin)
+  let timer: ReturnType<typeof setTimeout> | undefined
+  try {
+    await Promise.race([
+      (async () => { await opening.promise; await plugin; await taskReady.promise })(),
+      new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('optional memory blocked parent readiness')), 2000) }),
+    ])
+  } finally { clearTimeout(timer) }
+  assert.ok(ctx.get('superCodeConfiguration'))
+  assert.ok(ctx.get('superCodeTaskMemory'))
+  assert.equal(ctx.get('superCodeLongMemory'), undefined)
+  gate.resolve(); await longReady.promise
   assert.ok(ctx.get('superCodeLongMemory'))
 })
 
@@ -102,6 +132,7 @@ test('thirty plugin load and unload cycles release domains, projections and even
   for (let cycle = 1; cycle <= 30; cycle++) {
     const plugin = ctx.plugin(harnessPlugin)
     await plugin
+    await waitFor(() => !!ctx.get('superCodeTaskMemory') && !!ctx.get('superCodeLongMemory') && !!projections.snapshot(session).values.superCodeFeedback)
     assert.equal(live, 2)
     assert.ok(projections.snapshot(session).values.superCodeFeedback)
     assert.ok(ctx.get('superCodeConfiguration'))

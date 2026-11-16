@@ -594,3 +594,33 @@ test('official budgets work when the host loads a separate instance of the same 
   assert.ok(await f.engine.compactIfNeeded(agent, 'pressure', new AbortController().signal))
   assert.equal(f.adapter.calls.at(-1), 2048)
 })
+
+test('budget engine initialization falls back once before any compression transaction', async t => {
+  const ctx = new Context()
+  t.after(() => ctx.fiber.dispose())
+  await ctx.plugin(LlmRuntime)
+  await ctx.plugin(Projection)
+  ctx.provide('sessions', { flush: async () => true })
+  new TokenMeter(ctx)
+  let failedStarts = 0
+  const provide = ctx.reflect.provide
+  ctx.reflect.provide = function (name, value, ...args) {
+    if (name === 'compaction' && value instanceof BudgetCompactionEngine) {
+      failedStarts++
+      throw new Error('Budget engine registration unavailable')
+    }
+    return Reflect.apply(provide, this, [name, value, ...args])
+  }
+  const router = new AgentBudgetCompaction(ctx.isolate('compaction'))
+  const agent = { session: conversation(100) } as Agent
+  const engine = await router.forAgent(agent)
+  assert.equal(failedStarts, 1)
+  assert.ok(engine instanceof BasicCompactionEngine)
+  assert.ok(!(engine instanceof BudgetCompactionEngine))
+  let transactions = 0
+  engine.compactIfNeeded = async () => { transactions++; throw new Error('Unconfirmed compaction transaction') }
+  await assert.rejects(router.compactIfNeeded(agent, 'pressure', new AbortController().signal), /Unconfirmed/)
+  assert.equal(transactions, 1)
+  assert.equal(await router.forAgent(agent), engine)
+  assert.equal(failedStarts, 1, 'a transaction error must not start another engine or replay it')
+})

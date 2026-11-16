@@ -220,7 +220,7 @@ test('preset-scoped legacy loaders reuse the global library rather than register
   assert.equal((await f.registry.list()).length, before)
 })
 
-test('the real settings Remote waits for persisted switches and disk synchronization before returning', async t => {
+test('the real settings Remote confirms persistence and reports disk synchronization separately', async t => {
   await mkdir(validationRoot, { recursive: true })
   const home = await mkdtemp(join(validationRoot, 'skill-settings-'))
   const previous = process.env.DSH_HOME
@@ -248,11 +248,11 @@ test('the real settings Remote waits for persisted switches and disk synchroniza
   const initial = remote.readConfig()
   const saved = await remote.saveConfig('{"oilUiSkill":false,"openspecSkills":true}', `${initial.revision}:${initial.generation}`)
   assert.equal(saved.ok, true)
-  assert.equal(saved.snapshot.skills.state, 'ready')
-  assert.equal((await registry.list()).length, 12)
-  assert.ok(await readFile(join(home, 'skills/dsh-super-code/openspec/skills/openspec-propose/SKILL.md')))
+  assert.equal(saved.snapshot.configuration.openspecSkills, true)
   const updated = await remote.syncSkills()
   assert.equal(updated.skills.state, 'ready')
+  assert.equal((await registry.list()).length, 12)
+  assert.ok(await readFile(join(home, 'skills/dsh-super-code/openspec/skills/openspec-propose/SKILL.md')))
 })
 
 for (const name of ['.DS_Store', 'Thumbs.db', 'desktop.ini', 'THUMBS.DB', 'Desktop.INI']) {

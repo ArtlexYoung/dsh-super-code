@@ -8,7 +8,7 @@ import { configurationOf } from './budgets.js'
 import { prepareWindowsRuntime, windowsRuntimeEnvironment } from '../core/windows-runtime.js'
 import type { WindowsRuntime } from '../core/windows-runtime.js'
 import { openspecProvider } from './openspec-shell.js'
-import { creatorOf, applyShellLifecycle } from './windows-shell-lifecycle.js'
+import { creatorOf, applyShellLifecycle, ShellPreparationError, shellPreparationFailure } from './windows-shell-lifecycle.js'
 
 export { creatorOf } from './windows-shell-lifecycle.js'
 
@@ -165,7 +165,7 @@ export async function apply(ctx: Context): Promise<void> {
       choices.set(agent, enabled)
       if (enabled) {
         restrict(agent, ['pwsh'])
-        throw new Error('Unsupported host shell provider; disable bundled Bash to use the host shell')
+        throw new ShellPreparationError('Unsupported host shell provider; disable bundled Bash to use the host shell')
       }
     }
     applyShellLifecycle(ctx, check)
@@ -210,7 +210,7 @@ export async function apply(ctx: Context): Promise<void> {
           if (disposed) return
           // Sibling recovery must not activate a conversation that failed preparation.
           restrict(agent, ['bash'])
-          throw error
+          throw shellPreparationFailure('Bundled Bash could not be prepared', error)
         }
       }
     })()

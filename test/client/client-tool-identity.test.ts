@@ -13,7 +13,7 @@ function render(records: object[]) {
     useSyncExternalStore: (_subscribe: Function, read: Function) => read(),
   }
   let subject: any
-  runInNewContext(readFileSync(new URL('../../client/index.js', import.meta.url), 'utf8'), {
+  runInNewContext(readFileSync(new URL('../../dist/client.js', import.meta.url), 'utf8'), {
     URL, __ModuleLoader__: { load: ({ factory }: any) => { subject = factory((id: string) => id === 'react' ? react : {}) } },
   })
   const context = {

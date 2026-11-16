@@ -3,7 +3,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { mkdir, mkdtemp, readFile, rename, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { openSubmissions } from '../../../../runtime/skills/pstack/overrides/skills/make-bot-ui/scripts/submissions.mjs'
+import { openSubmissions } from '../../../../scripts/skills/pstack/overrides/skills/make-bot-ui/scripts/submissions.mjs'
 
 async function fixture(t: { after: (callback: () => Promise<void>) => void }) {
   await mkdir(scratch, { recursive: true })

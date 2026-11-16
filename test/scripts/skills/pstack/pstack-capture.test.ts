@@ -5,7 +5,7 @@ import { mkdir, mkdtemp, readFile, writeFile, symlink, readdir } from 'node:fs/p
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFileSync, spawnSync } from 'node:child_process'
-import { captureCommand, verifyCapture } from '../../../../runtime/skills/pstack/overrides/scripts/capture.mjs'
+import { captureCommand, verifyCapture } from '../../../../scripts/skills/pstack/overrides/scripts/capture.mjs'
 
 async function workspace() { await mkdir(scratch, { recursive: true }); return mkdtemp(join(scratch, '中文 空格-')) }
 
@@ -69,7 +69,7 @@ test('rejects malformed argv without creating evidence and gives commands EOF on
 
 test('CLI preserves a nonzero exit and prints paths to retained evidence', async () => {
   const cwd = await workspace()
-  const helper = fileURLToPath(new URL('../../../../runtime/skills/pstack/overrides/scripts/capture.mjs', import.meta.url))
+  const helper = fileURLToPath(new URL('../../../../scripts/skills/pstack/overrides/scripts/capture.mjs', import.meta.url))
   const result = spawnSync(process.execPath, [helper, process.execPath, '-e', 'process.exitCode=9'], { cwd, encoding: 'utf8' })
   assert.equal(result.status, 9, result.stderr)
   const captured = JSON.parse(result.stdout)

@@ -1,77 +1,54 @@
-/** Host projections and preset installation; execution belongs to Harness. */
-import { applyPresetInstallation } from './preset-installation.js'
+/** 各功能使用独立的宿主生命周期，加载失败只卸载所属功能。 */
 import type { Context } from '@deepseek-ai/cordis'
-import { superAgentUsageProjectionDefinition } from '../super-agent-usage.js'
-import { taskFeedbackProjection } from '../task-feedback-projection.js'
-import { taskMemoryProjection } from '../task-memory-projection.js'
-import { TaskMemoryStore, taskMemoryDomainSpec } from '../task-memory-store.js'
-import { LongMemoryStore, longMemoryDomainSpec } from '../long-memory.js'
-import type { DomainFacility } from '@deepseek-ai/dsh-storage-domain'
-import { memoryUsageProjection } from '../memory-usage-projection.js'
-import { SuperCodeMemory } from './memory-library.js'
 import { configurationSchema } from './budgets.js'
 import type { Configuration } from './budgets.js'
-import { applyBudgetSettings } from './budget-settings.js'
-import { applyOfficialBudgets } from './official-budgets.js'
-import { applyConnection } from './connection.js'
-import { applyDeletionProtection } from './deletion-protection.js'
-import { applyWindowsShell } from './windows-shell.js'
-import { applyOfficialWindowsShell } from './official-windows-shell.js'
-import { applyPresetRecovery } from './preset-recovery.js'
-import { applySkillDirectory } from './skill-directory.js'
+import { applyConfiguration } from './configuration.js'
+import { deletionModeFor } from './deletion-policy.js'
 
 export const name = 'super-code'
 export const Config: typeof configurationSchema = configurationSchema
 
-async function installLongMemory(ctx: Context): Promise<void> {
-  await ctx.inject(['storageDomain'], async owner => {
-    try {
-      const facility = owner.get('storageDomain') as DomainFacility
-      const domain = await facility.open(longMemoryDomainSpec)
-      owner.effect(() => () => domain.close())
-      const remove = ctx.provide('superCodeLongMemory', new LongMemoryStore(domain.table('topics')))
-      owner.effect(() => remove)
-    } catch {
-      owner.logger.warn('Super Code long memory storage is unavailable; task memory remains available.')
-    }
-  })
-}
-
-async function installTaskMemory(ctx: Context): Promise<void> {
-  await ctx.inject(['storageDomain', 'sessions'], async owner => {
-    try {
-      const facility = owner.get('storageDomain') as DomainFacility
-      const domain = await facility.open(taskMemoryDomainSpec)
-      owner.effect(() => () => domain.close())
-      const remove = ctx.provide('superCodeTaskMemory', new TaskMemoryStore(owner, domain.table('records')))
-      owner.effect(() => remove)
-    } catch {
-      owner.logger.warn('Super Code task storage is unavailable; task tools cannot save changes.')
-    }
-  })
-}
-
 export async function apply(ctx: Context, config: Configuration = {}): Promise<void> {
-  applyBudgetSettings(ctx, config)
-  applySkillDirectory(ctx)
-  applyWindowsShell(ctx)
-  applyOfficialWindowsShell(ctx)
-  applyOfficialBudgets(ctx)
-  applyDeletionProtection(ctx)
-  applyPresetInstallation(ctx)
-  applyPresetRecovery(ctx)
-  applyConnection(ctx)
-  ctx.inject(['superCodeLongMemory', 'sessions'], owner => {
-    new SuperCodeMemory(owner, owner.get('superCodeLongMemory') as LongMemoryStore)
+  applyConfiguration(ctx, config)
+  let deletionReady = false
+  ctx.inject(['tools'], owner => {
+    owner.tools.guard(exec => !deletionReady && ['bash', 'pwsh'].includes(exec.name) && deletionModeFor(owner, exec.agent) === 'strict'
+      ? 'Deletion protection is unavailable. Command tools are disabled; restore protection before retrying.' : undefined)
   })
-  ctx.inject(['sessionProjections'], projectionCtx => {
-    projectionCtx.sessionProjections.register(superAgentUsageProjectionDefinition)
-    projectionCtx.sessionProjections.register(taskMemoryProjection)
-    projectionCtx.sessionProjections.register(taskFeedbackProjection)
-    projectionCtx.sessionProjections.register(memoryUsageProjection)
-  })
-  await installLongMemory(ctx)
-  await installTaskMemory(ctx)
+  const features: readonly [string, readonly string[], (owner: Context) => Promise<void>][] = [
+    ['settings', ['settings'], async owner => { await (await import('./budget-settings.js')).applyBudgetRemote(owner) }],
+    ['skills', [], async owner => { (await import('./skill-directory.js')).applySkillDirectory(owner) }],
+    ['shell', [], async owner => { (await import('./windows-shell.js')).applyWindowsShell(owner) }],
+    ['official-shell', ['agentPresets'], async owner => { (await import('./official-windows-shell.js')).applyOfficialWindowsShell(owner) }],
+    ['official-budgets', ['agentPresets'], async owner => { (await import('./official-budgets.js')).applyOfficialBudgets(owner) }],
+    ['deletion-protection', ['tools', 'systemPrompt'], async owner => {
+      let disposed = false
+      owner.effect(() => () => { disposed = true; deletionReady = false })
+      await (await import('./deletion-protection.js')).applyDeletionProtection(owner)
+      if (!disposed) deletionReady = true
+    }],
+    ['presets', ['agentPresets', 'settings'], async owner => { (await import('./preset-installation.js')).applyPresetInstallation(owner) }],
+    ['recovery', ['agentPresets', 'sessionProjections', 'tools'], async owner => { (await import('./preset-recovery.js')).applyPresetRecovery(owner) }],
+    ['connection', [], async owner => { (await import('./connection.js')).applyConnection(owner) }],
+    ['storage', [], async owner => { await (await import('./memory-domains.js')).apply(owner) }],
+    ['memory-library', [], async owner => {
+      await owner.inject(['superCodeLongMemory', 'sessions'], async ready => {
+        const { SuperCodeMemory } = await import('./memory-library.js')
+        new SuperCodeMemory(ready, ready.get('superCodeLongMemory'))
+      })
+    }],
+  ]
+  const pending = features.map(([feature, inject, apply]) => ctx.plugin({ name: 'super-code:' + feature, inject, apply }).await())
+  for (const register of [
+    async (owner: Context) => owner.sessionProjections.register((await import('../super-agent-usage.js')).superAgentUsageProjectionDefinition),
+    async (owner: Context) => owner.sessionProjections.register((await import('../task-memory-projection.js')).taskMemoryProjection),
+    async (owner: Context) => owner.sessionProjections.register((await import('../task-feedback-projection.js')).taskFeedbackProjection),
+    async (owner: Context) => owner.sessionProjections.register((await import('../memory-usage-projection.js')).memoryUsageProjection),
+  ]) {
+    pending.push(ctx.inject(['sessionProjections'], async owner => { await register(owner) }).await())
+  }
+  // Cordis 已记录失败子插件的原因并清理其副作用；不把可选模块异常带回父插件。
+  await Promise.allSettled(pending)
 }
 
 export default apply

@@ -47,13 +47,15 @@ interface HostExecutor {
 interface ExecutorTools { setExecutor(executor: HostExecutor): () => void }
 
 async function applyExecutors(ctx: Context, tools: ExecutorTools): Promise<void> {
-  const [nativeModule, ptcModule] = await Promise.all([
-    hostModule(ctx, '@deepseek-ai/dsh-tool-executor-native'),
-    hostModule(ctx, '@deepseek-ai/dsh-tool-executor-ptc'),
-  ])
+  const nativeModule = await hostModule(ctx, '@deepseek-ai/dsh-tool-executor-native')
   const { NativeToolExecutor } = nativeModule as unknown as { NativeToolExecutor: new(ctx: Context) => HostExecutor }
-  const { PtcExecutor } = ptcModule as unknown as { PtcExecutor: new(ctx: Context) => HostExecutor }
-  const native = new NativeToolExecutor(ctx), ptc = new PtcExecutor(ctx)
+  const native = new NativeToolExecutor(ctx)
+  let ptc = native
+  try {
+    const ptcModule = await hostModule(ctx, '@deepseek-ai/dsh-tool-executor-ptc')
+    const { PtcExecutor } = ptcModule as unknown as { PtcExecutor: new(ctx: Context) => HostExecutor }
+    ptc = new PtcExecutor(ctx)
+  } catch (error) { ctx.logger.warn('PTC is unavailable; using the native tool executor.', error) }
   const executor = (nativeOnly: boolean): HostExecutor => ({
     sections: nativeOnly ? [] : ptc.sections?.map(section => ({ ...section, text: definitions => remoteTools(definitions) ? ''
       : typeof section.text === 'function' ? section.text(definitions) : section.text })),
@@ -113,8 +115,10 @@ async function applyLegacy(ctx: Context): Promise<void> {
 /** 仅选择宿主执行器，执行和权限检查仍由宿主及远程插件负责。 */
 export async function apply(ctx: Context): Promise<void> {
   const legacy = !('setExecutor' in ctx.tools)
-  if (!legacy) await applyExecutors(ctx, ctx.tools as unknown as ExecutorTools)
-  else await applyLegacy(ctx)
+  let unavailable = false
+  ctx.tools.guard(execution => unavailable && execution.agent
+    && (ctx.tools.get('remote_bash', execution.agent) || windowsLongDirectory(execution.agent))
+    ? 'The required native tool executor is unavailable. No tool was executed; restore the host executor before retrying.' : undefined)
   ctx.tools.guard(execution => process.platform === 'win32' && execution.agent
     && ctx.tools.get('remote_bash', execution.agent) && mountedWriteTools.has(execution.name)
     ? 'Native mounted file writes are unavailable in this Windows remote project. Use remote_bash for file changes, with its normal DSH approval. No command was run or retried.' : undefined)
@@ -126,10 +130,17 @@ export async function apply(ctx: Context): Promise<void> {
     const assembled = await next()
     if (!agent || !ctx.tools.get('remote_bash', agent)) return assembled
     return { ...assembled,
-      ...legacy ? { tools: assembled.tools.filter(tool => !remoteUnsupported(tool.name)) } : {},
+      ...legacy ? { tools: unavailable ? [] : assembled.tools.filter(tool => !remoteUnsupported(tool.name)) } : {},
       sections: assembled.sections.filter(section => !/^tool:(?:bash|pwsh|powershell|terminal|jobs|subagent)(?:$|:)/.test(section.name)
         && section.name !== 'super-code:windows-shell'
         && !(process.platform === 'win32' && /^tool:(?:write|edit|str_replace_editor|str-replace-editor)(?:$|:)/.test(section.name))),
     }
   })
+  try {
+    if (!legacy) await applyExecutors(ctx, ctx.tools as unknown as ExecutorTools)
+    else await applyLegacy(ctx)
+  } catch (error) {
+    unavailable = true
+    ctx.logger.warn('Tool presentation is unavailable; required remote and long-directory execution is disabled.', error)
+  }
 }

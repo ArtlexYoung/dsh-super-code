@@ -3,6 +3,15 @@ import type { Agent } from '@deepseek-ai/dsh-agent'
 
 class ShellOwnershipPending extends Error {}
 
+/** 仅在受影响命令已经禁用后使用，归属或权限安装失败不能转换为此错误。 */
+export class ShellPreparationError extends Error {}
+
+export function shellPreparationFailure(message: string, cause: unknown): Error {
+  if (cause instanceof Error && cause.name === 'AbortError') return cause
+  if (cause instanceof Error && 'code' in cause && ['UNAUTHORIZED', 'EACCES', 'EPERM'].includes(String(cause.code))) return cause
+  return new ShellPreparationError(message, { cause })
+}
+
 interface RuntimeOwnership {
   rootOf(agent: Agent): Agent
   namesOf(agent: Agent): { self: string; parent?: string }
@@ -48,12 +57,23 @@ export function creatorOf(ctx: Context, agent: Agent): Agent | false {
 
 /** 创建阶段只暂缓尚未登记的归属，首次执行前必须完成初始化。 */
 export function applyShellLifecycle(ctx: Context, install: (agent: Agent) => void | Promise<void>, prepend = false): void {
-  ctx.on('agent/created', async ({ agent }) => {
+  const reported = new WeakSet<Agent>()
+  const prepare = async (agent: Agent): Promise<void> => {
     try { await install(agent) }
+    catch (error) {
+      if (!(error instanceof ShellPreparationError)) throw error
+      if (!reported.has(agent)) {
+        reported.add(agent)
+        ctx.logger.warn('Shell preparation failed; command tools are disabled for this conversation.', error)
+      }
+    }
+  }
+  ctx.on('agent/created', async ({ agent }) => {
+    try { await prepare(agent) }
     catch (error) { if (!(error instanceof ShellOwnershipPending)) throw error }
   })
   ctx.on('agent/pre-step', async ({ agent }, next) => {
-    await install(agent)
+    await prepare(agent)
     return next()
   }, prepend)
 }

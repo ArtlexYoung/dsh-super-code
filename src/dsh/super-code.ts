@@ -6,6 +6,7 @@ import { SessionId, SessionSeq } from '@deepseek-ai/dsh-session'
 import type { Session } from '@deepseek-ai/dsh-session'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import { PERSONA_PREFIX_SECTION } from '@deepseek-ai/dsh-system-prompt'
+import type { PromptContext } from '@deepseek-ai/dsh-system-prompt'
 import { TEAM_NAMES, METHODS, SUPER_CODE_INSTRUCTIONS, readTeamMethod } from '../core/teams.js'
 import type { MethodName } from '../core/teams.js'
 import { EXPERIMENT_RECIPES, readExperimentRecipe } from '../core/experiment-recipes.js'
@@ -61,6 +62,20 @@ export function apply(ctx: Context, config: Config = {}): void {
   }
   applyPtcBudget(ctx, agent => configurationOf(ctx, agent).budgets ?? {})
   const selectGuidance = createGuidanceSelector(config.guidedRoutes)
+  const failedContexts = new Set<string>()
+  const memoryContext = (contribution: PromptContext): void => {
+    ctx.systemPrompt.context({ ...contribution, text: context => {
+      try {
+        const value = typeof contribution.text === 'function' ? contribution.text(context) : contribution.text
+        failedContexts.delete(contribution.name)
+        return value
+      } catch (error) {
+        if (!failedContexts.has(contribution.name)) ctx.logger.warn('Memory context is unavailable: ' + contribution.name, error)
+        failedContexts.add(contribution.name)
+        return 'Super Code memory could not be read. Do not rely on missing memory or repeat unconfirmed writes; ordinary conversation and other tools remain available.'
+      }
+    } })
+  }
   ctx.sessionProjections.register(taskMemoryProjection)
   ctx.systemPrompt.section({ name: PERSONA_PREFIX_SECTION, order: ctx.systemPrompt.getSectionOrder('DEPLOYMENT_PERSONA_PREFIX'), text: SUPER_CODE_INSTRUCTIONS })
   // Wrap the host selection waterfall: providers run before its model snapshot is resolved.
@@ -70,14 +85,14 @@ export function apply(ctx: Context, config: Config = {}): void {
     return { ...assembled, sections: assembled.sections.map(section => section.name === PERSONA_PREFIX_SECTION && section.text === SUPER_CODE_INSTRUCTIONS
       ? { ...section, text: `${section.text}\n${GUIDED_INSTRUCTIONS}` } : section) }
   }, { prepend: true })
-  ctx.systemPrompt.context({ name: 'super-code:tasks', order: 80, text: ({ agent }) => {
+  memoryContext({ name: 'super-code:tasks', order: 80, text: ({ agent }) => {
     if (agent === undefined) return ''
     if (!ctx.get('superCodeTaskMemory')) return 'Task storage is unavailable. Task changes cannot be saved; ordinary conversation and other tools remain available.'
     const { memory, maxContextBytes } = resourcesFor(agent)
     if (memory.isPending(agent.session)) return 'The last task-memory checkpoint is unconfirmed. Use super_code_task read to retry persistence before relying on it.'
     return taskMemoryContext(memory.current(agent.session), maxContextBytes)
   } })
-  ctx.systemPrompt.context({ name: 'super-code:project-memory', order: 81, text: ({ agent }) => {
+  memoryContext({ name: 'super-code:project-memory', order: 81, text: ({ agent }) => {
     if (!agent) return ''
     if (!ctx.get('superCodeTaskMemory')) return ''
     const { memory } = resourcesFor(agent)
@@ -93,7 +108,7 @@ export function apply(ctx: Context, config: Config = {}): void {
     const found = longMemory.read(workspace, task.topic)
     return found.kind === 'found' ? longMemoryContext(found.value, 2048, task.sourceVersion) : ''
   } })
-  ctx.systemPrompt.context({ name: 'super-code:global-memory', order: 82, text: ({ agent }) => {
+  memoryContext({ name: 'super-code:global-memory', order: 82, text: ({ agent }) => {
     if (!agent) return ''
     const memory = ctx.get('superCodeTaskMemory') as TaskMemoryStore | undefined
     if (memory?.isPending(agent.session)) return ''

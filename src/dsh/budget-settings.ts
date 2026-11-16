@@ -2,9 +2,9 @@
 import type { Context } from '@deepseek-ai/cordis'
 import type { SettingsScope } from '@deepseek-ai/dsh-settings'
 import { Remote, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
-import { settingsConfigurationSchema, configurationValues, validateConfiguration } from './budgets.js'
+import { validateConfiguration } from './budgets.js'
+import { applyConfiguration } from './configuration.js'
 import type { Configuration } from './budgets.js'
-import { BasicCompactionEngine } from '@deepseek-ai/dsh-compaction-basic'
 import type { ShellStatus } from './windows-shell.js'
 import { randomUUID } from 'node:crypto'
 import { skillPackages } from './skill-packages.js'
@@ -33,20 +33,6 @@ export interface BudgetSettingsSnapshot {
 }
 export type BudgetSettingsResult = { readonly ok: true; readonly snapshot: BudgetSettingsSnapshot }
   | { readonly ok: false; readonly error: 'invalid' | 'conflict' | 'read-only' | 'ptc-unavailable' | 'ptc-ceiling' | 'save-failed' }
-
-/** Keep the evaluated budgets independent of changes to the host's defaults. */
-function withLegacyBudgets(config: Configuration, ptcCeiling: number | false): Configuration {
-  const maxTimeout = ptcCeiling === false ? false : Math.min(ptcCeiling,
-    config.budgets?.ptcMaxTimeoutMs ?? Math.max(600000, config.budgets?.ptcTimeoutMs ?? 0))
-  return {
-    applyToOfficialPresets: false, maxTasks: 32, maxContextBytes: 32768, ...config,
-    budgets: { pressureBasis: 'window', thresholdRatio: 0.8, retainRatio: 0.16,
-      summaryMaxTokens: 8192, compactionRetries: 1, maxOverflowRetries: 1,
-      ...(maxTimeout === false ? {} : { ptcTimeoutMs: Math.min(600000, maxTimeout), ptcMaxTimeoutMs: maxTimeout }),
-      ...config.budgets,
-    },
-  }
-}
 
 export class BudgetSettings {
   private readonly generation = randomUUID()
@@ -104,7 +90,7 @@ export class BudgetSettings {
 export class SuperCodeBudgets extends TypertRemoteService {
   constructor(ctx: Context, private readonly settings: BudgetSettings) { super(ctx, 'superCodeBudgets') }
   @Remote
-  readConfig(): BudgetSettingsSnapshot { return { ...this.settings.read(), skillPackages, skills: this.ctx.get('superCodeSkills')?.status(), shell: this.ctx.get('superCodeShell')?.status() } }
+  readConfig(): BudgetSettingsSnapshot { return { ...this.settings.read(), ...this.featureStatus() } }
   @Remote
   async openSkillsDirectory(): Promise<{ opened: true }> {
     const skills = this.ctx.get('superCodeSkills')
@@ -119,61 +105,57 @@ export class SuperCodeBudgets extends TypertRemoteService {
   @Remote
   async saveConfig(content: string, expected: string): Promise<BudgetSettingsResult> {
     const result = await this.settings.save(content, expected)
-    if (result.ok) await this.ctx.get('superCodeSkills')?.synchronize()
-    return result.ok ? { ...result, snapshot: { ...result.snapshot, skillPackages, skills: this.ctx.get('superCodeSkills')?.status(), shell: this.ctx.get('superCodeShell')?.status() } } : result
+    if (result.ok) void this.synchronizeSkills()
+    return result.ok ? { ...result, snapshot: { ...result.snapshot, ...this.featureStatus() } } : result
   }
   @Remote
   async resetConfig(expected: string): Promise<BudgetSettingsResult> {
     const result = await this.settings.reset(expected)
-    if (result.ok) await this.ctx.get('superCodeSkills')?.synchronize()
-    return result.ok ? { ...result, snapshot: { ...result.snapshot, skillPackages, skills: this.ctx.get('superCodeSkills')?.status(), shell: this.ctx.get('superCodeShell')?.status() } } : result
+    if (result.ok) void this.synchronizeSkills()
+    return result.ok ? { ...result, snapshot: { ...result.snapshot, ...this.featureStatus() } } : result
+  }
+
+  private featureStatus(): Pick<BudgetSettingsSnapshot, 'skillPackages' | 'skills' | 'shell'> {
+    let skills: SkillDirectoryStatus | undefined, shell: ShellStatus | undefined
+    try { skills = this.ctx.get('superCodeSkills')?.status() }
+    catch (error) { this.ctx.logger.warn('Skill status is unavailable.', error) }
+    try { shell = this.ctx.get('superCodeShell')?.status() }
+    catch (error) { this.ctx.logger.warn('Shell status is unavailable.', error) }
+    return { skillPackages, skills, shell }
+  }
+
+  private async synchronizeSkills(): Promise<void> {
+    try { await this.ctx.get('superCodeSkills')?.synchronize() }
+    catch (error) { this.ctx.logger.warn('Settings were saved, but Skill synchronization failed.', error) }
   }
 }
 
-export function applyBudgetSettings(ctx: Context, config: Configuration): void {
-  const base = configurationValues(config)
-  const hostDefaults = new BasicCompactionEngine(ctx.isolate('compaction'), { auto: false }).config
-  const snapshots = new WeakMap<object, Configuration>()
-  let timeout: { defaultMs: number; maxMs: number } | false = false
-  let read = (): Configuration => configurationValues(config)
-  const source = {
-    get: (): Configuration => withLegacyBudgets(read(), timeout ? timeout.maxMs : false),
-    forAgent(agent: object): Configuration {
-      let snapshot = snapshots.get(agent)
-      if (!snapshot) { snapshot = structuredClone(source.get()); snapshots.set(agent, snapshot) }
-      return structuredClone(snapshot)
-    },
-  }
-  ctx.provide('superCodeConfiguration', source)
-  ctx.inject(['ptcRuntime'], ready => {
-    const runtime = ready.get('ptcRuntime') as { timeout?: { defaultMs: number; maxMs: number } }
-    timeout = runtime.timeout ?? false
-    ready.effect(() => () => { timeout = false })
-  })
-  // Recent hosts retain a preset generation across Agents; plugin apply is not an Agent boundary.
-  ctx.on('agent/created', ({ agent }) => { source.forAgent(agent) })
-  ctx.inject(['settings'], owner => {
-    const settings = owner.settings
-    let key = namespace
-    if (typeof settings.register === 'function') {
-      const scope = settings.register(namespace, settingsConfigurationSchema, { base, validate: validateConfiguration })
-      read = () => structuredClone(scope.get())
-      owner.effect(() => () => { read = () => structuredClone(base) })
-    } else {
-      // SettingsForms edits this Loader entry's volatile values without remounting Agents.
-      const forms = settings as unknown as { configure(options: { auto: boolean }, owner: typeof ctx.fiber): () => void }
-      const entryId = ctx.fiber.entry?.options.id
-      if (!entryId) throw new Error('Super Code budgets require a profile plugin entry')
-      key = entryId
-      owner.effect(() => forms.configure({ auto: false }, ctx.fiber))
-    }
-    new SuperCodeBudgets(owner, new BudgetSettings(settings, source, () => timeout ? timeout.maxMs : false, key, () => ({
-      applyToOfficialPresets: false, maxTasks: 32, maxContextBytes: 32768,
-      budgets: { pressureBasis: 'host', thresholdRatio: hostDefaults.thresholdRatio, retainRatio: hostDefaults.retainRatio,
-        summaryMaxTokens: hostDefaults.maxTokens, compactionRetries: hostDefaults.compactionRetries,
-        maxOverflowRetries: hostDefaults.maxOverflowRetries,
-        ...(timeout ? { ptcTimeoutMs: timeout.defaultMs, ptcMaxTimeoutMs: timeout.maxMs } : {}),
-      },
-    })))
+export async function applyBudgetSettings(ctx: Context, config: Configuration): Promise<void> {
+  applyConfiguration(ctx, config)
+  await applyBudgetRemote(ctx)
+}
+
+export async function applyBudgetRemote(ctx: Context): Promise<void> {
+  await ctx.inject(['settings', 'superCodeConfiguration'], async owner => {
+    let disposed = false
+    owner.effect(() => () => { disposed = true })
+    const source = owner.superCodeConfiguration
+    let hostDefaults: Configuration['budgets'] = {}
+    try {
+      const { BasicCompactionEngine } = await import('@deepseek-ai/dsh-compaction-basic')
+      if (disposed) return
+      const defaults = new BasicCompactionEngine(owner.isolate('compaction'), { auto: false }).config
+      hostDefaults = { thresholdRatio: defaults.thresholdRatio, retainRatio: defaults.retainRatio,
+        summaryMaxTokens: defaults.maxTokens, compactionRetries: defaults.compactionRetries,
+        maxOverflowRetries: defaults.maxOverflowRetries }
+    } catch (error) { owner.logger.warn('Host compression defaults are unavailable; saved overrides remain available.', error) }
+    if (disposed) return
+    new SuperCodeBudgets(owner, new BudgetSettings(owner.settings, source,
+      () => { const timeout = source.timeout(); return timeout ? timeout.maxMs : false }, source.namespace(), () => {
+        const timeout = source.timeout()
+        return { applyToOfficialPresets: false, maxTasks: 32, maxContextBytes: 32768,
+          budgets: { pressureBasis: 'host', ...hostDefaults,
+            ...(timeout ? { ptcTimeoutMs: timeout.defaultMs, ptcMaxTimeoutMs: timeout.maxMs } : {}) } }
+      }))
   })
 }

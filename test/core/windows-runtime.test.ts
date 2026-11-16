@@ -30,7 +30,7 @@ function importedLibraries(bytes: Buffer): string[] {
 }
 
 test('both packaged architectures contain verified PE files and every non-system DLL dependency', async () => {
-  const root = new URL('../../runtime/windows/', import.meta.url)
+  const root = new URL('../../builtin/windows/', import.meta.url)
   const manifest = JSON.parse(await readFile(new URL('manifest.json', root), 'utf8'))
   const windowsLibraries = new Set(['kernel32.dll', 'ntdll.dll', 'user32.dll', 'advapi32.dll', 'msvcrt.dll', 'ws2_32.dll', 'bcrypt.dll', 'secur32.dll'])
   for (const arch of ['x64', 'arm64']) {
@@ -48,7 +48,7 @@ test('both packaged architectures contain verified PE files and every non-system
 })
 
 test('BusyBox source archive and build provenance match both packaged binaries', async () => {
-  const root = new URL('../../runtime/windows/', import.meta.url)
+  const root = new URL('../../builtin/windows/', import.meta.url)
   const { busybox } = JSON.parse(await readFile(new URL('sources.json', root), 'utf8'))
   const manifest = JSON.parse(await readFile(new URL('manifest.json', root), 'utf8'))
   const source = await readFile(new URL(busybox.source.bundled, root))

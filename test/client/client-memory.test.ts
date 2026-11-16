@@ -31,7 +31,7 @@ function fixture() {
     useLayoutEffect: (effect: Function, deps: any[]) => react.useEffect(effect, deps),
     useSyncExternalStore: (_subscribe: Function, snapshot: Function) => snapshot(),
   }
-  runInNewContext(readFileSync(new URL('../../client/index.js', import.meta.url), 'utf8'), {
+  runInNewContext(readFileSync(new URL('../../dist/client.js', import.meta.url), 'utf8'), {
     URL, ResizeObserver: class { observe() {} disconnect() {} }, window: { crypto: { randomUUID: () => '12345678-abcd-abcd-abcd-123456789abc' },
       __ModuleLoader__: { load: ({ factory }: any) => { plugin = factory((id: string) => id === 'react' ? react : {}) } } },
   })

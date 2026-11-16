@@ -35,7 +35,7 @@ interface Client {
 
 function client(modules: Record<string, object> = {}): Client {
   let loaded: Client | undefined
-  runInNewContext(readFileSync(new URL('../../client/index.js', import.meta.url), 'utf8'), {
+  runInNewContext(readFileSync(new URL('../../dist/client.js', import.meta.url), 'utf8'), {
     URL,
     __ModuleLoader__: { load: ({ id, factory }: { id: string; factory: (require: (id: string) => object) => Client }) => {
       assert.equal(id, 'dsh-super-code')
@@ -944,7 +944,7 @@ test('workspace restores legacy collapsed and invalid states with the tasks sect
     const layout = render().children[0]
     assert.equal(layout.props['data-active-section'], 'tasks')
     assert.equal(props.workspaceStates.get(tab.signal).active, 'tasks')
-    assert.equal(layout.children.filter((node: any) => node.props.onToggle).length, 1)
+    assert.equal(layout.children.filter((node: any) => node.props.onToggle || typeof node.type === 'function' && node.children?.[0]?.props.onToggle).length, 1)
   }
 })
 
@@ -972,7 +972,7 @@ test('memory links expand their section once and repeated explicit navigation re
 test('hidden workspace remount after memory navigation keeps the editor attached to its current tab state', async () => {
   const { props, tab, render } = workspaceFixture()
   render().children[0].children[2].children[0].props.onToggle()
-  const memory = render().children[0].children[2]
+  const memory = render().children[0].children[2].children[0]
   tab.navigation = { revision: 1, params: { memory: 'dsh-resource://super-code-memory/root?topic=notes&id=first' } }
   memory.type(memory.props)
   const original = props.memoryStates.get(tab.signal)
@@ -996,7 +996,7 @@ test('memory always opens the existing library without experimental type selecto
   props.memoryStates.set(tab.signal, { library: 'skills' })
   for (const library of ['users', 'skills', 'legacy']) {
     tab.navigation = { revision: tab.navigation.revision + 1, params: { memory: `dsh-resource://super-code-memory/root?library=${library}` } }
-    const component = render().children[0].children[2]
+    const component = render().children[0].children[2].children[0]
     const page = component.type(component.props)
     const nodes: any[] = []
     const visit = (node: any) => { if (!node || typeof node !== 'object') return; nodes.push(node); node.children?.forEach(visit) }

@@ -80,7 +80,7 @@ export async function compactByWindow(engine: BasicCompactionEngine, budgets: Bu
 
 /** Retained preset generations share this router, while each Agent owns its host engine. */
 export class AgentBudgetCompaction extends CompactionEngine {
-  private readonly engines = new WeakMap<Agent, { ready: boolean; engine: Promise<BudgetCompactionEngine>; dispose(): Promise<void> }>()
+  private readonly engines = new WeakMap<Agent, { ready: boolean; engine: Promise<BasicCompactionEngine>; dispose(): Promise<void> }>()
 
   constructor(ctx: Context, private readonly overrides: Budgets = {}) {
     super(ctx)
@@ -106,20 +106,36 @@ export class AgentBudgetCompaction extends CompactionEngine {
     })
   }
 
-  forAgent(agent: Agent): Promise<BudgetCompactionEngine> {
+  forAgent(agent: Agent): Promise<BasicCompactionEngine> {
     let entry = this.engines.get(agent)
     if (!entry) {
-      const scope = createScope(this.ctx, agent)
       const budgets = { ...configurationOf(this.ctx, agent).budgets, ...this.overrides }
-      const fiber = scope.ctx.isolate('compaction').plugin({ inject, apply(owner: Context) { new BudgetCompactionEngine(owner, budgets) } })
-      const created: { ready: boolean; engine: Promise<BudgetCompactionEngine>; dispose(): Promise<void> } = {
-        ready: false, dispose: scope.dispose,
-        engine: fiber.await().then(() => {
-          const engine = fiber.ctx.get('compaction') as BudgetCompactionEngine | undefined
-          if (!engine) throw new Error('Agent compression engine did not become available')
-          created.ready = true
-          return engine
-        }).catch(async error => { await scope.dispose(); throw error }),
+      validateConfiguration({ budgets })
+      let scope = createScope(this.ctx, agent), disposed = false
+      const load = async (native: boolean): Promise<BasicCompactionEngine> => {
+        const fiber = scope.ctx.isolate('compaction').plugin({ inject, apply(owner: Context) {
+          if (native) new BasicCompactionEngine(owner)
+          else new BudgetCompactionEngine(owner, budgets)
+        } })
+        await fiber.await()
+        const engine = fiber.ctx.get('compaction') as BasicCompactionEngine | undefined
+        if (!engine || disposed) throw new Error('Agent compression engine did not become available')
+        return engine
+      }
+      const created = {
+        ready: false,
+        dispose: async (): Promise<void> => { disposed = true; await scope.dispose() },
+        engine: load(false).catch(async error => {
+          await scope.dispose()
+          if (disposed) throw error
+          if (error instanceof Error && (error.name === 'AbortError'
+            || 'code' in error && ['UNAUTHORIZED', 'EACCES', 'EPERM'].includes(String(error.code)))) throw error
+          // 只在初始化阶段回退；压缩事务一旦开始，任何失败都由原事务处理。
+          this.ctx.logger.warn('Budget compression initialization failed; using the host compression policy.', error)
+          scope = createScope(this.ctx, agent)
+          try { return await load(true) }
+          catch (failure) { await scope.dispose(); throw failure }
+        }).then(engine => { created.ready = true; return engine }),
       }
       entry = created
       this.engines.set(agent, entry)

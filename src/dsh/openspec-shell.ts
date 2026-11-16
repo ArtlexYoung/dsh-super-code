@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 import type { ShellConstructor, ShellSpec } from './windows-shell.js'
 
 const require = createRequire(import.meta.url)
-const bin = fileURLToPath(new URL('../../runtime/skills/openspec/bin/', import.meta.url))
+const bin = fileURLToPath(new URL('../../builtin/openspec/bin/', import.meta.url))
 
 export function openspecProvider(Base: ShellConstructor, enabled: () => boolean): ShellConstructor {
   return class extends Base {

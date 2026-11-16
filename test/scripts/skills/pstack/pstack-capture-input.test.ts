@@ -3,7 +3,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { mkdir, mkdtemp, readFile, readdir } from 'node:fs/promises'
 import { join } from 'node:path'
-import { captureCommand, verifyCapture } from '../../../../runtime/skills/pstack/overrides/scripts/capture.mjs'
+import { captureCommand, verifyCapture } from '../../../../scripts/skills/pstack/overrides/scripts/capture.mjs'
 
 async function workspace() {
   await mkdir(scratch, { recursive: true })

@@ -48,7 +48,7 @@ function fixture(api: any, options: { home?: boolean; budgetApi?: any; budgetSec
     useSyncExternalStore: (_subscribe: Function, read: Function) => read(),
   }
   Object.assign(react, { useLayoutEffect: react.useEffect })
-  runInNewContext(readFileSync(new URL('../../client/index.js', import.meta.url), 'utf8'), {
+  runInNewContext(readFileSync(new URL('../../dist/client.js', import.meta.url), 'utf8'), {
     URL, setTimeout, clearTimeout, setInterval: (callback: Function) => { options.timers?.push(callback); return 1 }, clearInterval() {},
     window: { addEventListener() {}, removeEventListener() {}, location: { reload: () => options.reload?.() },
       __ModuleLoader__: { load: ({ factory }: any) => { plugin = factory((id: string) => id === 'react' ? react : {}) } } },
@@ -56,7 +56,7 @@ function fixture(api: any, options: { home?: boolean; budgetApi?: any; budgetSec
   const ctx: any = {
     effect() {}, locale: { bind: () => (key: string) => key }, remote: { $mount: async () => {}, superCodeConnection: api, superCodeBudgets: options.budgetApi, superCodePresets: options.presetApi },
     settingsScope: { bind: () => ({}) },
-    inject: (dependencies: string[], callback: Function) => { if (dependencies[0] === 'remote.superCodePresets') callback(ctx) },
+    inject: (dependencies: string[], callback: Function) => { if (dependencies.every(name => name === 'settingsScope' || name.startsWith('remote.superCode'))) callback(ctx) },
     slots: { inject: (_: string, callback: Function) => callback(), register: (config: any, component: any) => {
       if (config.name === 'settings.section') { Settings = component; settingsProps = config.inject }
     } },
@@ -74,8 +74,8 @@ function fixture(api: any, options: { home?: boolean; budgetApi?: any; budgetSec
     if (options.preset) return { type: Settings, props: { ...settingsProps(), t: (key: string) => key } }
     const parent = render(Settings, { ...settingsProps(), t: (key: string) => key }, false)
     return nodes(parent).find(row => typeof row.type === 'function'
-      && (options.home ? row.props.connectionApi === api : options.budgetSection
-        ? row.props.api?.editors && (row.props.section ?? 'context') === options.budgetSection : row.props.api === api))!
+      && (options.home ? row.props.connectionApi === settingsProps().connectionApi : options.budgetSection
+        ? row.props.api?.editors && (row.props.section ?? 'context') === options.budgetSection : row.props.api === settingsProps().connectionApi))!
   }
   let element = mount()
   const show = (active = true) => render(element.type, { ...element.props, active })
@@ -116,7 +116,7 @@ for (const outcome of ['success', 'response-error', 'transport-error']) test(`di
     },
   }
   const render = fixture(api, { timers })
-  const activity = () => render.child(nodes(render()).find(row => typeof row.type === 'function' && row.props.api === api && row.props.openSession))
+  const activity = () => render.child(nodes(render()).find(row => typeof row.type === 'function' && row.props.api === render.props.api && row.props.openSession))
   const disconnect = () => nodes(activity()).find(row => row.children.includes('home.disconnect') && row.props.onClick)
   try {
     activity(); await tick()
@@ -166,7 +166,7 @@ for (const scenario of ['poll-error', 'unmount', 'delayed-disconnect', 'no-poll'
     },
   }
   const render = fixture(api, { timers })
-  const activity = () => render.child(nodes(render()).find(row => typeof row.type === 'function' && row.props.api === api && row.props.openSession))
+  const activity = () => render.child(nodes(render()).find(row => typeof row.type === 'function' && row.props.api === render.props.api && row.props.openSession))
   const action = () => nodes(activity()).find(row => row.children.includes('home.disconnect') && row.props.onClick)
   try {
     activity(); await tick()
@@ -1031,4 +1031,39 @@ test('the Skill directory button calls the Remote, reports opener errors and dis
   assert.equal(button().props.disabled, true)
   assert.equal(button().props.title, 'skills.directoryUnavailable')
   render.unmount()
+})
+
+test('a hanging MCP read cannot delay budget display, a confirmed save or subsequent budget polling', async () => {
+  let stored = { revision: 1, writable: true, configuration: { deletionProtection: 'relaxed' } }, reads = 0, writes = 0
+  const pending = Promise.withResolvers<any>(), timers: Function[] = []
+  const render = fixture({ readConfig: () => pending.promise, overview: () => pending.promise }, {
+    home: true, timers, budgetApi: {
+      readConfig: async () => { reads++; return { ok: true, value: structuredClone(stored) } },
+      saveConfig: async (content: string) => {
+        writes++; stored = { ...stored, revision: stored.revision + 1, configuration: JSON.parse(content) }
+        return { ok: true, value: { ok: true, snapshot: structuredClone(stored) } }
+      },
+    },
+  })
+  const control = () => nodes(render()).find(row => row.props.label === 'delete.mode')!
+  try {
+    render(); await tick()
+    assert.equal(control().props.value, 'relaxed')
+    assert.equal(control().props.disabled, false)
+    let completed = false
+    const saving = control().props.onChange('strict').then(() => { completed = true })
+    await tick()
+    assert.equal(completed, true, 'an acknowledged save must not wait for optional MCP reads')
+    await saving
+    assert.equal(writes, 1)
+    assert.equal(control().props.value, 'strict')
+    assert.equal(control().props.disabled, false)
+    const before = reads
+    timers[0](); await tick()
+    assert.ok(reads > before, 'the independent budget poll keeps running')
+  } finally {
+    render.unmount()
+    pending.resolve({ ok: false })
+    await tick()
+  }
 })

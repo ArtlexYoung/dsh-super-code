@@ -29,7 +29,7 @@
     "./locale/*": "./locales/*",
     "./dsh/locale/*": "./locales/*",
     "./super-code/locale/*": "./locales/*",
-    "./client": "./client/index.js",
+    "./client": "./dist/client.js",
     "./evaluation": {
       "types": "./lib/core/evaluation.d.ts",
       "default": "./lib/core/evaluation.js"
@@ -54,9 +54,10 @@
   "files": [
     "lib",
     "presets",
-    "builtin",
-    "runtime/windows",
-    "runtime/skills/openspec",
+    "builtin/README.md",
+    "builtin/skills",
+    "builtin/windows",
+    "builtin/openspec",
     "cordis.patch.yml",
     "README.md",
     "README.en.md",
@@ -79,7 +80,7 @@
     "docs/images/npm-downloads.svg",
     "docs/images/npm-downloads-dark.svg",
     "LICENSE",
-    "client",
+    "dist",
     "locales"
   ],
   "dependencies": {
@@ -88,7 +89,12 @@
     "js-yaml": "^4.1.0",
     "zod": "^4.6.7"
   },
-  "bundleDependencies": true,
+  "bundleDependencies": [
+    "@fission-ai/openspec",
+    "@modelcontextprotocol/sdk",
+    "js-yaml",
+    "zod"
+  ],
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.2 || ^4.0.5-alpha.1 || ^4.0.6-alpha.1",
     "@deepseek-ai/dsh-agent": "^0.1.5-alpha.1 || ^0.1.6-alpha.1 || ^0.1.7-alpha.1 || ^0.2.0-rc.1 || ^0.2.1-alpha.1 || ^0.2.2-alpha.2",
@@ -173,18 +179,20 @@
     "@deepseek-ai/dsh-token-meter": "0.1.5-rc.2",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.0.0",
+    "esbuild": "^0.28.2",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0"
   },
   "scripts": {
-    "skills:build": "node runtime/skills/pstack/convert.mjs",
-    "skills:check": "node runtime/skills/pstack/convert.mjs --check",
-    "build": "npm run skills:build && tsc -p tsconfig.json",
+    "skills:build": "node scripts/skills/pstack/convert.mjs",
+    "skills:check": "node scripts/skills/pstack/convert.mjs --check",
+    "build": "npm run skills:build && tsc -p tsconfig.json && npm run build:client",
     "prepare": "npm run build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "npm run skills:check && tsx --test \"test/**/*.test.ts\"",
     "pack:check": "tsx --test \"test/package/*.test.ts\"",
-    "eval:super-code": "node lib/evaluate.js"
+    "eval:super-code": "node lib/evaluate.js",
+    "build:client": "node scripts/build-client.mjs"
   },
   "engines": {
     "node": ">=22"
@@ -220,9 +228,7 @@
         "@deepseek-ai/dsh-client-ui-renderer",
         "@deepseek-ai/dsh-client-ui-session",
         "@deepseek-ai/dsh-client-locale",
-        "@deepseek-ai/dsh-client-ui-sidebar-right",
-        "@deepseek-ai/dsh-api-session-controller",
-        "@deepseek-ai/dsh-client-ui-skill"
+        "@deepseek-ai/dsh-client-ui-sidebar-right"
       ]
     }
   }

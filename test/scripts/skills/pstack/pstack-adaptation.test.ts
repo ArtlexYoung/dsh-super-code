@@ -9,8 +9,8 @@ import { load as yaml } from 'js-yaml'
 import { Context } from '@deepseek-ai/cordis'
 import { SkillRegistry } from '@deepseek-ai/dsh-skill'
 import { apply } from '../../../../src/dsh/bundled-skills.js'
-import { convertedFiles, build, generatedPath } from '../../../../runtime/skills/pstack/convert.mjs'
-import { auditWorktrees } from '../../../../runtime/skills/pstack/overrides/skills/poteto-mode/scripts/worktree-audit.mjs'
+import { convertedFiles, build, generatedPath } from '../../../../scripts/skills/pstack/convert.mjs'
+import { auditWorktrees } from '../../../../scripts/skills/pstack/overrides/skills/poteto-mode/scripts/worktree-audit.mjs'
 
 const root = fileURLToPath(new URL('../../../../builtin/skills/', import.meta.url))
 
@@ -163,7 +163,7 @@ test('MCP discovery translation preserves the separate code-anchor procedure and
 })
 
 test('a decision-log snapshot remains verifiable after appends and detects earlier edits without claiming semantic proof', async () => {
-  const { auditLog } = await import('../../../../runtime/skills/pstack/overrides/skills/show-me-your-work/scripts/audit-log.mjs')
+  const { auditLog } = await import('../../../../scripts/skills/pstack/overrides/skills/show-me-your-work/scripts/audit-log.mjs')
   const header = 'ts\tphase\tdecision\twhy\tevidence\tresult\n'
   const first = '2026-11-11T12:00:00Z\tstart\tinspect\tbaseline\tbaseline.txt\tobserved\n'
   const second = '2026-11-11T12:01:00Z\taudit\tchecked first row\treview\taudit.json\t1 row checked\n'

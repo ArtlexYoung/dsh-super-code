@@ -241,7 +241,7 @@ Windows DSH 默认在 Super Code 预设中使用内置 GNU Bash、BusyBox 和 GN
 
 官方 Windows 限权沙箱会阻止 MSYS 创建内部命名管道，因此 `read-only`、`workspace-write` 下的 Bash 调用会在命令执行前明确报错。确需运行时，Agent 可为**同一条命令**请求 DSH 的 `sandbox_permissions="danger-full-access"` 单次审批，并说明原因。只有批准的这次调用可以执行；拒绝、取消或禁用审批时不执行，也不会自动修改会话权限或切换 Shell。PTC 的 `run_code` 本身若需更大权限，仍须经过 DSH 对该程序的独立审批，Bash 的批准不授予外层程序权限。
 
-这仍是 Windows 环境：BusyBox 不包含所有 GNU 选项，`.cmd` 的引号及原生程序的 `/` 参数也不等同于 Linux。MSYS 会自动转换部分路径；确需传递原样参数时，可仅对该次调用设置 `MSYS2_ARG_CONV_EXCL`，不要全局关闭转换。内置工具不包含 `trash`，也不会把永久删除伪装成回收站操作。ARM64 Windows 上的 Bash、grep 和 MSYS DLL 使用 x64 兼容执行。验证范围见[兼容性](Compatibility.md)，组件来源与许可证见[运行时说明](../runtime/windows/README.md)。
+这仍是 Windows 环境：BusyBox 不包含所有 GNU 选项，`.cmd` 的引号及原生程序的 `/` 参数也不等同于 Linux。MSYS 会自动转换部分路径；确需传递原样参数时，可仅对该次调用设置 `MSYS2_ARG_CONV_EXCL`，不要全局关闭转换。内置工具不包含 `trash`，也不会把永久删除伪装成回收站操作。ARM64 Windows 上的 Bash、grep 和 MSYS DLL 使用 x64 兼容执行。验证范围见[兼容性](Compatibility.md)，组件来源与许可证见[运行时说明](../builtin/windows/README.md)。
 
 随包 BusyBox 的本地文件命令已支持长绝对路径、相对路径和 Unicode 文件名，不需要修改注册表。UNC 的读取、复制与重命名分别受 Windows 共享服务约束；共享服务拒绝操作时会保留错误。该修复不代表所有命令或长工作目录中的进程都能正常启动。
 

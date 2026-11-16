@@ -21,7 +21,7 @@ interface CapturedExecutor {
   execute(input: object): Promise<{ provider: string; input: object }>
 }
 
-async function fixture(t: test.TestContext, existing = false, modern = false) {
+async function fixture(t: test.TestContext, existing = false, modern = false, broken?: 'native' | 'ptc') {
   const ctx = new Context(), root = await mkdtemp(join(tmpdir(), 'super-code-remote-'))
   t.after(async () => { await ctx.fiber.dispose(); await rm(root, { recursive: true, force: true }) })
   await ctx.plugin(SystemPrompt); await ctx.plugin(Tools)
@@ -47,6 +47,7 @@ async function fixture(t: test.TestContext, existing = false, modern = false) {
       await mkdir(directory, { recursive: true })
       await writeFile(join(directory, 'package.json'), JSON.stringify({ type: 'module', main: 'index.js' }))
       await writeFile(join(directory, 'index.js'), `export class ${constructor} {
+        constructor() { if (${JSON.stringify(broken === suffix)}) throw new Error('Fixture executor initialization failed') }
         sections = ${suffix === 'ptc' ? '[{ name: "tools:sdk", order: 10, text: tools => tools.map(t => t.name).join(",") }]' : '[]'};
         describe(tools) { return { schemas: ${suffix === 'ptc' ? '[{ name: "run_code" }]' : 'tools'} } }
         async execute(input) { return { provider: ${JSON.stringify(suffix)}, input } }
@@ -274,4 +275,22 @@ test('cancellation reaches the remote body and unloading releases native overrid
   assert.ok(!(await f.ctx.get('systemPrompt')!.assemble({ agent, scope: agent })).sections.some(section => section.name === 'super-code:remote-tools'))
   assert.ok((await f.names(agent)).includes('remote_bash'))
   assert.ok((await f.names(agent)).includes('bash'), '卸载恢复宿主默认展示')
+})
+
+test('PTC initialization failure selects native before execution and keeps scoped guards', async t => {
+  const f = await fixture(t, false, true, 'ptc'), agent = f.make('ptc-unavailable')
+  assert.ok(f.executor().describe([{ name: 'read_file' }]).schemas.some(row => row.name === 'read_file'))
+  assert.equal((await f.executor().execute({ agent })).provider, 'native')
+  f.bind(agent); f.guard(agent); f.deny(true)
+  assert.equal((await f.call(agent, 'remote_bash')).isError, true)
+  assert.deepEqual(f.counts(), { local: 0, remote: 0 })
+})
+
+test('native initialization failure leaves remote execution disabled without falling back locally', async t => {
+  const f = await fixture(t, false, true, 'native'), agent = f.make('native-unavailable')
+  f.bind(agent)
+  assert.equal((await f.call(agent, 'remote_bash')).isError, true)
+  assert.equal((await f.call(agent, 'write')).isError, true)
+  assert.deepEqual(f.counts(), { local: 0, remote: 0 })
+  assert.ok(f.ctx.get('superCodeTaskMemory'))
 })

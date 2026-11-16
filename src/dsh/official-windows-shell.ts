@@ -5,7 +5,7 @@ import type { Agent } from '@deepseek-ai/dsh-agent'
 import type { Scope } from '@deepseek-ai/dsh-scope'
 import { configurationOf } from './budgets.js'
 import { hostModule, mountBundledBash, creatorOf } from './windows-shell.js'
-import { applyShellLifecycle } from './windows-shell-lifecycle.js'
+import { applyShellLifecycle, ShellPreparationError, shellPreparationFailure } from './windows-shell-lifecycle.js'
 
 interface Registry { composedPreset(ctx: Context): string | undefined }
 interface ScopeApi {
@@ -90,7 +90,7 @@ export function applyOfficialWindowsShell(ctx: Context): void {
             const deny = (enabled ? ['pwsh', 'bash'] : ['bash']).filter(name => tools.get(name, key))
             if (deny.length) cleanups.push(tools.restrict({ deny }))
           }
-          if (enabled) throw error
+          if (enabled) throw shellPreparationFailure('Bundled Bash could not be registered', error)
           return
         }
         if (state.disposed) return
@@ -98,7 +98,7 @@ export function applyOfficialWindowsShell(ctx: Context): void {
         if (!prepare) {
           if (!enabled) return
           cleanups.push(tools.restrict({ deny: ['pwsh'] }))
-          throw new Error('Unsupported host shell provider; disable bundled Bash to use the host shell')
+          throw new ShellPreparationError('Unsupported host shell provider; disable bundled Bash to use the host shell')
         }
         cleanups.push(tools.restrict({ deny: [enabled ? 'pwsh' : 'bash'] }))
         if (!enabled) return
@@ -108,7 +108,7 @@ export function applyOfficialWindowsShell(ctx: Context): void {
         }
         catch (error) {
           if (!state.disposed) cleanups.push(tools.restrict({ deny: ['bash'] }))
-          throw error
+          throw shellPreparationFailure('Bundled Bash could not be prepared', error)
         }
       })()
       return state.ready

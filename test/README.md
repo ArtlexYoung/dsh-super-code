@@ -4,8 +4,8 @@
 
 其他入口按实现位置归类：
 
-- `client/`：前端交互、设置自动保存与渲染。
-- `runtime/skills/pstack/`：PStack 转换及配套脚本。
+- `client/`：通过实际构建的 `dist/client.js` 验证前端交互、模块故障、设置自动保存与渲染；修改客户端源码后先运行 `npm run build:client`。
+- `scripts/skills/pstack/`：PStack 转换及配套脚本。
 - `package/`：npm 分发资源与公开入口。
 
 `validation-root.ts` 是共用的临时资源路径助手，验证产物统一放在 `source/validation/dsh-super-code`；隔离环境可通过 `SUPER_CODE_TEST_ROOT` 指定目录。

@@ -16,7 +16,7 @@ export interface WindowsRuntime {
   readonly arch: string
 }
 
-const packagedRoot = fileURLToPath(new URL('../../runtime/windows/', import.meta.url))
+const packagedRoot = fileURLToPath(new URL('../../builtin/windows/', import.meta.url))
 const digest = (bytes: Uint8Array): string => createHash('sha256').update(bytes).digest('hex')
 
 async function manifestAt(source: string): Promise<Manifest> {

@@ -444,3 +444,19 @@ test('shape errors are rejected before pending-checkpoint recovery and include a
   assert.equal(flushes, 1)
   assert.equal(h.session.seq, before)
 })
+
+test('a failed memory reader reports unavailable context without blocking ordinary prompt assembly', async t => {
+  const h = await host()
+  t.after(async () => { await h.scope.dispose(); await h.ctx.fiber.dispose() })
+  const memory = h.ctx.get('superCodeTaskMemory')!
+  const current = memory.current.bind(memory)
+  memory.current = () => { throw new Error('Task storage unavailable') }
+  const assemble = () => h.ctx.systemPrompt.assemble({ agent: h.agent, scope: h.agent })
+  const failed = await assemble()
+  assert.ok(failed.sections.some(section => section.name === PERSONA_PREFIX_SECTION))
+  assert.match(renderContextSnapshot(failed), /memory could not be read/)
+  assert.equal((await h.call({ action: 'list' })).isError, true)
+  memory.current = current
+  assert.doesNotMatch(renderContextSnapshot(await assemble()), /memory could not be read/)
+  assert.equal((await h.call({ action: 'list' })).isError, false)
+})

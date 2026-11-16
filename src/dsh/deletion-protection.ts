@@ -4,7 +4,7 @@ import type { Agent } from '@deepseek-ai/dsh-agent'
 import type { ToolExecution } from '@deepseek-ai/dsh-tools'
 import { createUserMessage } from '@deepseek-ai/dsh-llm'
 import type {} from '@deepseek-ai/dsh-system-prompt'
-import { configurationOf, deletionProtectionMode } from './budgets.js'
+import { deletionModeFor } from './deletion-policy.js'
 import type { DeletionProtectionMode } from './budgets.js'
 import { deletionCommand } from '../core/deletion-command.js'
 import { deletionNoticeMatches, revokeDeletionNotices } from './preset-recovery-runtime.js'
@@ -22,22 +22,14 @@ function instruction(mode: DeletionProtectionMode): string {
 }
 
 const corrective = 'SUPER_CODE_DELETE_PROTECTED: 已拦截永久删除命令。请使用 trash <path> 等可恢复的回收站命令，脚本也不得绕过。仅清理临时文件或构建产物且用户对当前命令二次确认后才可执行。\nPermanent deletion blocked. Use trash <path> or another recoverable trash command, including in scripts. Only temporary/build cleanup with a separate one-time user confirmation may proceed.'
-const official = new Set(['standard', 'ptc', 'minimal', 'cordis'])
 interface Presets { composedPreset(ctx: Context): string | undefined }
 interface Approver {
   request(request: { agent: Agent; toolName: string; callId: ToolExecution['callId']; reason: string; signal: AbortSignal }): Promise<string>
 }
 
-export function applyDeletionProtection(ctx: Context): void {
-  ctx.inject(['tools', 'systemPrompt'], owner => {
-    const modeFor = (agent?: Agent): DeletionProtectionMode => {
-      const config = configurationOf(owner)
-      const mode = deletionProtectionMode(config)
-      if (mode === 'off' || !agent) return 'off'
-      if (owner.tools.get('super_code_task', agent)) return mode
-      const presets = owner.get('agentPresets') as Presets | undefined
-      return config.deletionProtectionForOfficialPresets === true && !!presets && official.has(presets.composedPreset(agent.ctx) ?? '') ? mode : 'off'
-    }
+export async function applyDeletionProtection(ctx: Context): Promise<void> {
+  await ctx.inject(['tools', 'systemPrompt'], owner => {
+    const modeFor = (agent?: Agent): DeletionProtectionMode => deletionModeFor(owner, agent)
     owner.systemPrompt.section({ name: 'super-code:deletion-protection', order: 95,
       text: ({ agent }) => instruction(modeFor(agent)) })
     // Minimal owns a complete system prompt and suppresses global context.

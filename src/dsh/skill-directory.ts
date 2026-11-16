@@ -6,7 +6,6 @@ import { fileURLToPath } from 'node:url'
 import { execFile } from 'node:child_process'
 import { configurationOf } from './budgets.js'
 import type { Configuration } from './budgets.js'
-import { registerBundledSkills } from './bundled-skills.js'
 import { prepareSkillDirectory, synchronizeSkillCopy } from './skill-installation.js'
 import type { SkillCopyError } from './skill-installation.js'
 
@@ -104,6 +103,8 @@ export function applySkillDirectory(ctx: Context): void {
     owner.on('settings/document-updated', refresh)
     refresh()
   })
-  ctx.inject(['skills'], owner => registerBundledSkills(owner,
-    { bundledSkillDir: service.directory, layout: 'builtin' }, service))
+  ctx.inject(['skills'], async owner => {
+    const { registerBundledSkills } = await import('./bundled-skills.js')
+    registerBundledSkills(owner, { bundledSkillDir: service.directory, layout: 'builtin' }, service)
+  })
 }

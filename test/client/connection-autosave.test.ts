@@ -5,7 +5,7 @@ import { runInNewContext } from 'node:vm'
 
 function editor(api: object) {
   let plugin: any
-  runInNewContext(readFileSync(new URL('../../client/index.js', import.meta.url), 'utf8'), {
+  runInNewContext(readFileSync(new URL('../../dist/client.js', import.meta.url), 'utf8'), {
     setTimeout, clearTimeout,
     __ModuleLoader__: { load: ({ factory }: any) => { plugin = factory((id: string) => id === 'react' ? { forwardRef: () => 'button' } : {}) } },
   })

@@ -135,7 +135,7 @@ Under npm rules, a range like `>=0.1.5-alpha.1 <0.3.0` excludes prereleases such
 
 The original 0.4.0 release omitted npm runtime dependencies, so installing even a local tgz with an empty cache required network access. The current fix bundles OpenSpec, the MCP SDK, `js-yaml`, `zod`, and their transitive dependencies from `dependencies`. DSH itself must already be installed. Use a local tgz for offline installation; installation by package name still requires cached npm metadata and the plugin tarball. Remote models and network tools still require connectivity.
 
-The Windows shell also packages separately licensed programs that run as subprocesses; see [runtime notes](../../runtime/windows/README.md) for sources, licenses, and corresponding source.
+The Windows shell also packages separately licensed programs that run as subprocesses; see [runtime notes](../../builtin/windows/README.md) for sources, licenses, and corresponding source.
 
 ## November 14, 2026 · 0.4.1 fix validation
 

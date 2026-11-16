@@ -7,7 +7,7 @@ function fixture() {
   let plugin: any
   const dictionaries: Record<string, Record<string, string>> = {}
   const slots: any[] = []
-  runInNewContext(readFileSync(new URL('../../client/index.js', import.meta.url), 'utf8'), {
+  runInNewContext(readFileSync(new URL('../../dist/client.js', import.meta.url), 'utf8'), {
     URL,
     __ModuleLoader__: { load: ({ factory }: any) => { plugin = factory((id: string) => id === 'react' ? { forwardRef: () => 'button' } : {}) } },
   })
@@ -40,7 +40,7 @@ test('all bundled Skill choices default off and preserve explicit saved values',
 
 test('preset settings registration does not wait on the Remote mount lifecycle', () => {
   let plugin: any
-  runInNewContext(readFileSync(new URL('../../client/index.js', import.meta.url), 'utf8'), {
+  runInNewContext(readFileSync(new URL('../../dist/client.js', import.meta.url), 'utf8'), {
     URL,
     __ModuleLoader__: { load: ({ factory }: any) => { plugin = factory((id: string) => id === 'react' ? { forwardRef: () => 'button' } : {}) } },
   })
@@ -400,7 +400,7 @@ test('preset settings declare the available host preference service before readi
     const ready = new Proxy({
       [service]: preference,
       remote: { superCodePresets: {} }, effect: () => {},
-      slots: { inject: (_: string, callback: Function) => callback(), register: (config: any) => { registered.push(config.id); return () => {} } },
+      slots: { inject: (_: string, callback: Function) => callback(), register: (config: any) => { if (config.name === 'settings.section') registered.push(config.id); return () => {} } },
     }, { get: (target, key) => {
       if (key === 'configForms' || key === 'settingsScope') assert.ok(dependencies.at(-1)?.includes(String(key)), 'Cordis services require injection')
       return Reflect.get(target, key)
@@ -413,9 +413,9 @@ test('preset settings declare the available host preference service before readi
         if (names[0] !== 'remote.superCodePresets') return
         dependencies.push(names); callback(ready)
       },
-      slots: { inject: () => {} }, sidebarRightTabs: { register: () => () => {} }, sessions: {}, sidebarRight: {},
+      slots: { inject: (_: string, callback: Function) => callback(), register: (config: any) => { if (config.name === 'settings.section') registered.push(config.id); return () => {} } }, sidebarRightTabs: { register: () => () => {} }, sessions: {}, sidebarRight: {},
     })
-    assert.deepEqual([...dependencies[0]!], ['remote.superCodePresets', 'remote.superCodeBudgets', 'remote.superCodeConnection', service])
+    assert.deepEqual([...dependencies[0]!], ['remote.superCodePresets', service])
     assert.deepEqual(registered, ['super-code'])
   }
 })

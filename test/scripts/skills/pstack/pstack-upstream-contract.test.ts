@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
-import { adaptMarkdown } from '../../../../runtime/skills/pstack/adapt.mjs'
+import { adaptMarkdown } from '../../../../scripts/skills/pstack/adapt.mjs'
 
 const root = new URL('../../../../builtin/skills/pstack/', import.meta.url)
 

@@ -5,10 +5,17 @@ import { SettingsProvider } from '@deepseek-ai/dsh-settings'
 import type { SettingsNamespace } from '@deepseek-ai/dsh-settings'
 import { configurationSchema, settingsConfigurationSchema, configurationOf, configurationValues, validateConfiguration, deletionProtectionMode } from '../../src/dsh/budgets.js'
 import type { Configuration } from '../../src/dsh/budgets.js'
-import { BudgetSettings, applyBudgetSettings } from '../../src/dsh/budget-settings.js'
+import { BudgetSettings, SuperCodeBudgets, applyBudgetSettings } from '../../src/dsh/budget-settings.js'
 import { scopeTarget } from '@deepseek-ai/dsh-scope'
 import { BasicCompactionEngine } from '@deepseek-ai/dsh-compaction-basic'
 import { applyWindowsShell } from '../../src/dsh/windows-shell.js'
+
+async function remoteReady(ctx: Context): Promise<void> {
+  await new Promise<void>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('Budget Remote did not become available')), 2000)
+    ctx.inject(['superCodeBudgets'], () => { clearTimeout(timer); resolve() })
+  })
+}
 
 class MemorySettings extends SettingsProvider {
   writable = true
@@ -20,6 +27,43 @@ class MemorySettings extends SettingsProvider {
     this.stored[ns] = structuredClone(section)
   }
 }
+
+test('a failed optional Skill synchronization does not turn a confirmed settings save into failure', async t => {
+  const { ctx, api, scope } = await fixture(t)
+  ctx.provide('superCodeSkills', { synchronize: async () => { throw new Error('Skill provider unavailable') },
+    status: () => ({ state: 'error', canOpen: false, issues: [] }) } as never)
+  const remote = new SuperCodeBudgets(ctx, api)
+  const saved = await remote.saveConfig('{"maxTasks":48}', String(api.read().revision))
+  assert.equal(saved.ok, true)
+  assert.equal(scope.get().maxTasks, 48)
+  const reset = await remote.resetConfig(String(api.read().revision))
+  assert.equal(reset.ok, true)
+  assert.equal(scope.get().maxTasks, undefined)
+})
+
+test('a hanging optional Skill synchronization cannot delay confirmed saves or resets', async t => {
+  const { ctx, api, scope } = await fixture(t)
+  const gate = Promise.withResolvers<void>()
+  t.after(() => gate.resolve())
+  let synchronizations = 0
+  ctx.provide('superCodeSkills', { synchronize: () => { synchronizations++; return gate.promise },
+    status: () => ({ state: 'syncing', canOpen: false, issues: [] }) } as never)
+  const remote = new SuperCodeBudgets(ctx, api)
+  let saved: Awaited<ReturnType<typeof remote.saveConfig>> | undefined
+  const saving = remote.saveConfig('{"maxTasks":48}', String(api.read().revision)).then(value => { saved = value })
+  await new Promise(resolve => setImmediate(resolve))
+  assert.equal(saved?.ok, true, 'persistence acknowledgement does not wait for the Skill copy')
+  assert.equal(scope.get().maxTasks, 48)
+  assert.equal(remote.readConfig().skills?.state, 'syncing')
+  let reset: Awaited<ReturnType<typeof remote.resetConfig>> | undefined
+  const resetting = remote.resetConfig(String(api.read().revision)).then(value => { reset = value })
+  await new Promise(resolve => setImmediate(resolve))
+  assert.equal(reset?.ok, true)
+  assert.equal(scope.get().maxTasks, undefined)
+  assert.equal(synchronizations, 2)
+  gate.resolve()
+  await Promise.all([saving, resetting])
+})
 
 async function fixture(t: test.TestContext, base: Configuration = {}) {
   const ctx = new Context()
@@ -169,8 +213,8 @@ test('settings responses retain host shell status after saving and resetting', a
   t.after(() => ctx.fiber.dispose())
   new MemorySettings(ctx)
   applyWindowsShell(ctx)
-  await ctx.plugin({ apply(owner: Context) { applyBudgetSettings(owner, {}) } })
-  await ctx.inject(['superCodeBudgets'], () => {})
+  await ctx.plugin({ apply(owner: Context) { return applyBudgetSettings(owner, {}) } })
+  await remoteReady(ctx)
   const api = ctx.get('superCodeBudgets') as { readConfig(): any; saveConfig(content: string, revision: string): Promise<any>; resetConfig(revision: string): Promise<any> }
   const first = api.readConfig()
   assert.equal(first.shell.platform, process.platform)
@@ -226,8 +270,8 @@ test('configuration readers provide detached creation-time snapshots without cha
   const settings = new MemorySettings(ctx)
   await ctx.inject(['settings'], () => {})
   const other = settings.register('unrelated-preset', settingsConfigurationSchema, { base: { maxTasks: 11 } })
-  await ctx.plugin({ apply(owner: Context) { applyBudgetSettings(owner, { maxTasks: 32 }) } })
-  await ctx.inject(['superCodeBudgets'], () => {})
+  await ctx.plugin({ apply(owner: Context) { return applyBudgetSettings(owner, { maxTasks: 32 }) } })
+  await remoteReady(ctx)
   const oldAgent = configurationOf(ctx)
   await settings.replace('super-code-budgets', { maxTasks: 64, budgets: { summaryMaxTokens: 2048 } })
   const newAgent = configurationOf(ctx)
@@ -256,8 +300,8 @@ test('retained presets read a separate creation-time snapshot for each Agent', a
   t.after(() => ctx.fiber.dispose())
   const settings = new MemorySettings(ctx)
   await ctx.inject(['settings'], () => {})
-  await ctx.plugin({ apply(owner: Context) { applyBudgetSettings(owner, {}) } })
-  await ctx.inject(['superCodeBudgets'], () => {})
+  await ctx.plugin({ apply(owner: Context) { return applyBudgetSettings(owner, {}) } })
+  await remoteReady(ctx)
   const first = {} as any, second = {} as any
   await settings.replace('super-code-budgets', { windowsBash: false, applyToOfficialPresets: true, maxTasks: 1, budgets: { summaryMaxTokens: 2048 } })
   ctx.emit(scopeTarget(first, first), 'agent/created', { agent: first })
@@ -281,8 +325,8 @@ test('settings show actual host defaults separately from saved overrides', async
   new MemorySettings(ctx)
   const runtime = { timeout: { defaultMs: 150, maxMs: 600 } }
   ctx.provide('ptcRuntime', runtime)
-  await ctx.plugin({ apply(owner: Context) { applyBudgetSettings(owner, { budgets: { summaryMaxTokens: 1024 } }) } })
-  await ctx.inject(['superCodeBudgets'], () => {})
+  await ctx.plugin({ apply(owner: Context) { return applyBudgetSettings(owner, { budgets: { summaryMaxTokens: 1024 } }) } })
+  await remoteReady(ctx)
   const api = ctx.get('superCodeBudgets') as { readConfig(): any }
   const native = new BasicCompactionEngine(ctx.isolate('compaction'), { auto: false }).config
   const first = api.readConfig()
@@ -309,8 +353,8 @@ test('zero configuration uses the Pro legacy budgets before any write and reset 
   t.after(() => ctx.fiber.dispose())
   const settings = new MemorySettings(ctx)
   ctx.provide('ptcRuntime', { timeout: { defaultMs: 120000, maxMs: 1800000 } })
-  await ctx.plugin({ apply(owner: Context) { applyBudgetSettings(owner, {}) } })
-  await ctx.inject(['superCodeBudgets'], () => {})
+  await ctx.plugin({ apply(owner: Context) { return applyBudgetSettings(owner, {}) } })
+  await remoteReady(ctx)
   const api = ctx.get('superCodeBudgets') as { readConfig(): any; saveConfig(content: string, revision: string): Promise<any>; resetConfig(revision: string): Promise<any> }
   const initial = api.readConfig()
   assert.deepEqual(initial.configuration, { applyToOfficialPresets: false, maxTasks: 32, maxContextBytes: 32768,
@@ -340,8 +384,8 @@ test('legacy hosts without a PTC provider can save and reset the automatic compr
   const ctx = new Context()
   t.after(() => ctx.fiber.dispose())
   new MemorySettings(ctx)
-  await ctx.plugin({ apply(owner: Context) { applyBudgetSettings(owner, { budgets: { retainRatio: 0.12 }, maxTasks: 24 }) } })
-  await ctx.inject(['superCodeBudgets'], () => {})
+  await ctx.plugin({ apply(owner: Context) { return applyBudgetSettings(owner, { budgets: { retainRatio: 0.12 }, maxTasks: 24 }) } })
+  await remoteReady(ctx)
   const api = ctx.get('superCodeBudgets') as { readConfig(): any; saveConfig(content: string, revision: string): Promise<any>; resetConfig(revision: string): Promise<any> }
   const initial = api.readConfig()
   assert.equal(initial.ptcMaxTimeoutMs, false)
@@ -356,4 +400,18 @@ test('legacy hosts without a PTC provider can save and reset the automatic compr
   assert.equal(api.readConfig().configuration.budgets.summaryMaxTokens, 8192)
   assert.equal(api.readConfig().configuration.budgets.retainRatio, 0.12)
   assert.equal(api.readConfig().configuration.maxTasks, 24)
+})
+
+test('optional status readers cannot replace a confirmed settings receipt with an exception', async t => {
+  const { ctx, api, scope } = await fixture(t)
+  ctx.provide('superCodeSkills', { status: () => { throw new Error('Broken Skill status') }, synchronize: async () => {} } as never)
+  ctx.provide('superCodeShell', { status: () => { throw new Error('Broken shell status') } } as never)
+  const remote = new SuperCodeBudgets(ctx, api), first = remote.readConfig()
+  const saved = await remote.saveConfig('{"maxTasks":48}', String(first.revision))
+  assert.equal(saved.ok, true)
+  assert.equal(scope.get().maxTasks, 48)
+  if (!saved.ok) throw new Error('Save failed')
+  const reset = await remote.resetConfig(String(saved.snapshot.revision))
+  assert.equal(reset.ok, true)
+  assert.deepEqual(scope.get(), first.configuration)
 })

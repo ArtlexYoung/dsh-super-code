@@ -135,7 +135,7 @@ Windows 的历史完整进程验证包括官方 Desktop `0.2.1-rc.5`、NEXT `2.0
 
 原发布的 0.4.0 包没有携带 npm 运行依赖，空缓存时即使使用本地 tgz 也需要联网下载。当前修复将 `dependencies` 中的 OpenSpec、MCP SDK、`js-yaml`、`zod` 及其传递依赖随包携带，DSH 宿主仍须预先安装。离线安装应使用本地 tgz；按包名安装仍需要 npm 元数据及插件包缓存。远程模型和联网工具仍需要网络。
 
-Windows Shell 另随包携带独立进程运行的第三方程序，其来源、许可证和对应源码见[运行时说明](../runtime/windows/README.md)。
+Windows Shell 另随包携带独立进程运行的第三方程序，其来源、许可证和对应源码见[运行时说明](../builtin/windows/README.md)。
 
 ## 2026-11-14 · 0.4.1 修复验证
 

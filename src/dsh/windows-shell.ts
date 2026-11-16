@@ -155,6 +155,7 @@ export async function apply(ctx: Context): Promise<void> {
     const choices = new WeakMap<object, boolean>()
     const check = (agent: Agent): void => {
       if (disposed) return
+      if (choices.has(agent)) return
       if (ctx.tools.get('remote_bash', agent)) return
       const creator = creatorOf(ctx, agent)
       let enabled = creator ? choices.get(creator) : undefined
@@ -162,9 +163,9 @@ export async function apply(ctx: Context): Promise<void> {
         if (choices.has(current)) { enabled = choices.get(current); break }
       }
       enabled ??= configurationOf(ctx, agent).windowsBash !== false
+      if (enabled) restrict(agent, ['pwsh'])
       choices.set(agent, enabled)
       if (enabled) {
-        restrict(agent, ['pwsh'])
         throw new ShellPreparationError('Unsupported host shell provider; disable bundled Bash to use the host shell')
       }
     }

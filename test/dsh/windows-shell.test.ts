@@ -672,6 +672,31 @@ test('unsupported providers fail explicitly when enabled and preserve a disabled
   assert.equal(f.preparations(), 0)
 })
 
+test('an unsupported Windows shell registers its command restriction once across continued steps', async t => {
+  const restriction = t.mock.method(Tools.prototype, 'restrict')
+  const f = await fixture(t, { customProvider: true }), agent = f.make('unsupported-continued')
+  f.ctx.tools.register(defineTool({ name: 'pwsh', description: 'Host shell retained after unloading', parameters: {},
+    output: { schema: { type: 'string' }, render: (_args, value) => [{ type: 'text', text: value }] },
+    execute: async () => 'host-shell',
+  }))
+  await agent.ready()
+  assert.equal(restriction.mock.callCount(), 1)
+  for (let step = 0; step < 30; step++) assert.equal((await agent.step()).kind, 'enter')
+  assert.equal(restriction.mock.callCount(), 1, 'continued non-command steps must not accumulate identical restrictions')
+  assert.equal((await f.call(agent.agent, 'pwsh')).isError, true)
+  await f.stopShell()
+  assert.equal((await f.call(agent.agent, 'pwsh')).isError, false, 'unloading releases the owned restriction')
+})
+
+test('an unsupported Windows shell never caches a failed permission restriction as prepared', async t => {
+  const denied = Object.assign(new Error('Permission policy unavailable'), { code: 'UNAUTHORIZED' })
+  const restriction = t.mock.method(Tools.prototype, 'restrict', () => { throw denied })
+  const f = await fixture(t, { customProvider: true }), agent = f.make('unsupported-permission')
+  await assert.rejects(agent.ready(), error => error === denied)
+  await assert.rejects(agent.step(), error => error === denied)
+  assert.equal(restriction.mock.callCount(), 2)
+})
+
 test('directory presets without profileContext resolve shell modules from their owning profile', async t => {
   for (const platform of ['win32', 'darwin'] as const) {
     const f = await fixture(t, { platform, profileContext: false })

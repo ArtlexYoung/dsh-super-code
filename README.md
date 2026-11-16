@@ -104,7 +104,7 @@ dsh plugin --profile web add dsh-super-code
 
 桌面版：在「包名或地址」中填写安装包的完整路径，然后点击「安装」。
 
-<a href="docs/images/install-tgz.png"><img alt="填写安装包路径" src="docs/images/install-tgz.png" width="960"></a>
+[![填写安装包路径](docs/images/install-tgz.png)](docs/images/install-tgz.png)
 
 Web 版：运行以下命令（文件名以实际下载的为准）：
 
@@ -135,7 +135,7 @@ dsh plugin --profile web add ./dsh-super-code-0.4.1.tgz --offline
 
 若未找到预设，可在「设置 → Super Code 模式」中查看状态，或参阅[排查方法](docs/UsageGuide.md#找不到预设)。
 
-<a href="docs/images/preset-settings.png"><img alt="Super Code 设置页" src="docs/images/preset-settings.png" width="800"></a>
+[![Super Code 设置页](docs/images/preset-settings.png)](docs/images/preset-settings.png)
 
 在右侧边栏选择「Super Code」，包含三个部分：
 
@@ -145,9 +145,9 @@ dsh plugin --profile web add ./dsh-super-code-0.4.1.tgz --offline
 
 三个部分始终只展开一项，默认显示任务；再次点击当前标题会保持展开。
 
-<a href="docs/images/task-status.png"><img alt="任务侧边栏" src="docs/images/task-status.png" width="420"></a>
+[![任务侧边栏](docs/images/task-status.png)](docs/images/task-status.png)
 
-<a href="docs/images/agent-tree.png"><img alt="Agent 执行树" src="docs/images/agent-tree.png" width="600"></a>
+[![Agent 执行树](docs/images/agent-tree.png)](docs/images/agent-tree.png)
 
 截图使用当前界面与演示数据，仅展示插件外观。
 

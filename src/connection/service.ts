@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto'
 import { realpath, stat } from 'node:fs/promises'
 import { isAbsolute } from 'node:path'
-import { ConnectionError, connectionConfigSchema } from './types.js'
+import { activeTask, ConnectionError, connectionConfigSchema } from './types.js'
 import type { CallerApproval, ConnectionConfig, DelegationHost } from './types.js'
 import type { ApprovalAnswer, ApprovalRoot } from './approvals.js'
 import { ConnectionStore } from './store.js'
@@ -16,6 +16,7 @@ export interface ConnectionSnapshot { configuration: ConnectionConfig; revision:
   state: 'disabled' | 'listening' | 'error'; error: string; url: string }
 export interface ConnectionOverview { connections: ConnectedClient[]; sessions: ReturnType<DelegatedTasks['overview']> }
 export type ConnectionSaveResult = { ok: true; snapshot: ConnectionSnapshot } | { ok: false; error: string }
+const observationIntervalMs = 1000
 
 async function canonicalKnownDirectories(paths: readonly string[]): Promise<string[]> {
   // Known entries are not grants: keep missing/inaccessible paths visible for removal.
@@ -49,16 +50,27 @@ export class ConnectionService {
         return this.directoryRequests.request(input, client)
       }))
       await this.listen()
-      this.timer = setInterval(() => {
-        if (this.closing || this.observing) return
-        this.observing = true
-        void this.tasks.tick().then(
-          () => { if (!this.closing) this.observationError = false },
-          () => { if (!this.closing) this.observationError = true },
-        ).finally(() => { this.observing = false })
-      }, 1000)
-      this.timer.unref()
+      this.updateObservation()
     } catch (error) { await this.store.close(); throw error }
+  }
+  private updateObservation(): void {
+    // 关闭入口不取消已派发的任务；仍有任务需要核对时保留观察，空闲后释放。
+    const needed = !this.closing && (this.settings.config.enabled
+      || this.tasks.overview().some(task => activeTask(task.status) || task.status === 'interrupted'))
+    if (!needed) {
+      if (this.timer) { clearInterval(this.timer); this.timer = false }
+      return
+    }
+    if (this.timer) return
+    this.timer = setInterval(() => {
+      if (this.closing || this.observing) return
+      this.observing = true
+      void this.tasks.tick().then(
+        () => { if (!this.closing) this.observationError = false },
+        () => { if (!this.closing) this.observationError = true },
+      ).finally(() => { this.observing = false; this.updateObservation() })
+    }, observationIntervalMs)
+    this.timer.unref()
   }
   read(): ConnectionSnapshot {
     return { configuration: structuredClone(this.settings.config), revision: this.settings.revision, writable: !this.closing,
@@ -141,6 +153,7 @@ export class ConnectionService {
     this.state = 'disabled'; this.error = ''
     try { await this.http.close() }
     catch { this.state = 'error'; this.error = 'cleanup-failed'; return }
+    finally { this.updateObservation() }
     if (!this.closing) await this.listen()
   }
   private async listen(): Promise<void> {
@@ -153,7 +166,7 @@ export class ConnectionService {
     if (this.closing && !this.cleanupFailed) return this.closing
     this.cleanupFailed = false
     this.closing = this.exclusive(async () => {
-      if (this.timer) { clearInterval(this.timer); this.timer = false }
+      this.updateObservation()
       this.state = 'disabled'
       this.directoryRequests.rejectPending()
       const failures: unknown[] = []

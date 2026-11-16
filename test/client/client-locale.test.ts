@@ -11,17 +11,20 @@ function fixture() {
     URL,
     __ModuleLoader__: { load: ({ factory }: any) => { plugin = factory((id: string) => id === 'react' ? { forwardRef: () => 'button' } : {}) } },
   })
-  plugin.apply({
+  const ctx = {
     effect: (callback: Function, label: string) => { if (label === 'dsh-super-code: dictionaries') callback() },
     locale: { register: (_ns: string, values: any) => Object.assign(dictionaries, values), bind: () => (key: string) => key },
     remote: { $mount: async () => () => {} },
-    inject: () => {},
+    inject: (names: string[], ready: Function) => {
+      if (names.every(name => ['slots', 'remote', 'remote.session', 'sessions', 'locale', 'sidebarRightTabs', 'sidebarRight'].includes(name))) ready(ctx)
+    },
     slots: { inject: (_: string, callback: Function) => {
       const result = callback()
       if (result?.[Symbol.iterator]) for (const _dispose of result) { /* Consume slot registration effects. */ }
     }, register: (config: any, component: any) => { slots.push({ config, component }); return () => {} } },
     sidebarRightTabs: { register: () => () => {} }, sessions: {}, sidebarRight: {},
-  })
+  }
+  plugin.apply(ctx)
   return { plugin, dictionaries, slots }
 }
 
@@ -51,7 +54,7 @@ test('preset settings registration does not wait on the Remote mount lifecycle',
     locale: { register: () => () => {}, bind: () => (key: string) => key },
     remote: { $mount: (contribution: any) => { mounts.push(contribution); return new Promise(() => {}) } },
     inject: (dependencies: string[]) => {
-      assert.ok(['remote.superCodePresets', 'remote.superCodeMemory', 'remote.superCodeConnection', 'remote.superCodeBudgets', 'remote.skills', 'uiWorkspace'].includes(dependencies[0]!))
+      assert.ok(['remote.superCodePresets', 'remote.superCodeMemory', 'remote.superCodeConnection', 'remote.superCodeBudgets', 'remote.skills', 'uiWorkspace', 'remote.session'].includes(dependencies[0]!))
       if (dependencies[0] === 'remote.superCodePresets') injected = true
     },
     slots: { inject: () => {} }, sidebarRightTabs: { register: () => () => {} }, sessions: {}, sidebarRight: {},

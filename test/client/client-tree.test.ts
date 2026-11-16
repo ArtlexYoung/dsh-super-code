@@ -162,11 +162,11 @@ test('history keeps its requested boundary when live events arrive during pagina
   inspector.dispose()
 })
 
-test('browser loader resolves a plugin that retains its dependency declarations', () => {
+test('browser loader keeps sidebar dependencies out of the shared client entry', () => {
   const resolved = plugin.default ?? plugin
   assert.ok('inject' in resolved)
   assert.ok(resolved.inject?.includes('slots'))
-  assert.ok(resolved.inject?.includes('sidebarRightTabs'))
+  for (const name of ['remote.session', 'sessions', 'sidebarRightTabs', 'sidebarRight']) assert.equal(resolved.inject?.includes(name), false)
 })
 
 test('plugin settings open on home, separate protection and retain version and reinstallation details', async () => {

@@ -18,7 +18,10 @@ function fixture() {
   })
   const ctx = {
     effect() {}, locale: { bind: () => (key: string) => key }, remote: { $mount: async () => {} },
-    inject: (names: string[], run: Function) => { callbacks.push({ names, run }) },
+    inject: (names: string[], run: Function) => {
+      callbacks.push({ names, run })
+      if (names.every(name => ['slots', 'remote', 'remote.session', 'sessions', 'locale', 'sidebarRightTabs', 'sidebarRight'].includes(name))) run(ctx)
+    },
     slots: { inject: (_: string, run: Function) => {
       const result = run()
       if (result?.[Symbol.iterator]) for (const _ of result) { /* Register keyed sidebar views. */ }

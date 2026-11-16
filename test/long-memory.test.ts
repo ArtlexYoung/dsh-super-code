@@ -423,3 +423,25 @@ test('context continuation links preserve global scope and project topic without
   }
   assert.deepEqual(f.taskMemory.current(reader.session).focus, { kind: 'none' })
 })
+
+test('topic capacity uses current records after a public read changes their contents', async t => {
+  const f = await fixture()
+  t.after(async () => { await f.close(); await rm(f.root, { recursive: true, force: true }) })
+  const workspace = memoryGlobalNamespace()
+  const entry = { id: 'constraint', kind: 'constraint' as const, summary: '保留修改', detail: '当前内容决定主题容量。',
+    source: { sessionId: 'capacity-reader', kind: 'manual' as const } }
+  for (let index = 0; index < 200; index++) await f.store.remember(workspace, `topic-${index}`, 0, [entry])
+  await assert.rejects(f.store.remember(workspace, 'new-topic', 0, [entry]), /Workspace memory is full/)
+  const found = f.store.read(workspace, 'topic-0')
+  assert.equal(found.kind, 'found')
+  if (found.kind !== 'found') throw new Error('Expected stored topic')
+  found.value.entries.length = 0
+  assert.equal((await f.store.edit(workspace, 'new-topic', entry.id, '', { kind: 'save', entry })).kind, 'saved')
+  assert.equal((await f.store.edit(workspace, 'topic-0', entry.id, '', { kind: 'save', entry })).kind, 'full')
+  found.value.workspace = '0'.repeat(64)
+  await assert.rejects(f.store.remember(workspace, 'another-topic', 0, [entry]), /Workspace memory is full/)
+  const second = f.store.read(workspace, 'topic-1')
+  if (second.kind !== 'found') throw new Error('Expected stored topic')
+  second.value.workspace = '0'.repeat(64)
+  assert.equal((await f.store.remember(workspace, 'another-topic', 0, [entry])).revision, 1)
+})

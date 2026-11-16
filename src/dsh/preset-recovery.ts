@@ -2,6 +2,7 @@ import { isDirectoryMetadata } from './directory-metadata.js'
 /** Install a profile-owned continuation shim without modifying the host or old conversation logs. */
 import { lstat, mkdir, mkdtemp, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
+import { createRequire } from 'node:module'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import type { Context, Plugin } from '@deepseek-ai/cordis'
 import yaml from 'js-yaml'
@@ -132,7 +133,7 @@ export async function registerRecoverySessions(ctx: Context): Promise<void> {
 
 export function applyPresetRecovery(ctx: Context): void {
   ctx.inject(['agentPresets', 'sessionProjections', 'tools'], async owner => {
-    const profile = owner.get('profileContext') as { patchPath?: string } | undefined
+    const profile = owner.get('profileContext') as { patchPath?: string; installAnchor?: string } | undefined
     let patchPath = profile?.patchPath
     if (!patchPath) {
       // Early directory-preset releases expose the profile only through root.baseUrl.
@@ -149,8 +150,27 @@ export function applyPresetRecovery(ctx: Context): void {
       const prepare = () => prepareRecovery(patchPath!, join(dirname(patchPath!), 'node_modules/dsh-super-code/package.json'), source)
       const hmr = owner.get('hmr') as { runExclusive<T>(run: () => Promise<T>): Promise<T> } | undefined
       const prepared = await (hmr ? hmr.runExclusive(prepare) : prepare())
-      // Owned by the host root, so removing the main plugin does not dispose recovery.
-      await owner.root.plugin(await import(pathToFileURL(prepared.modulePath).href) as Plugin.Object, prepared.config)
+      const appReady = owner.get('appReady') as { onReady(listener: () => void): () => void } | undefined
+      const require = createRequire(profile?.installAnchor ?? new URL('package.json', owner.root.baseUrl))
+      const boot = appReady && profile?.patchPath
+        ? await import(pathToFileURL(require.resolve('@deepseek-ai/dsh-app-boot')).href) : undefined
+      if (boot && typeof boot.readProfilePatches === 'function' && typeof boot.reconcileProfilePatches === 'function') {
+        let disposed = false
+        owner.effect(() => () => { disposed = true })
+        // 由持久化的 Loader 条目持有恢复模块，避免首次生成时留下无法热更新的根插件。
+        // 启动时 HMR 可能尚未就绪；在整个应用就绪后取用，不等待自己的 Loader 生命周期。
+        owner.effect(() => appReady!.onReady(() => {
+          const activate = async () => {
+            if (!disposed) await boot.reconcileProfilePatches(owner.root, boot.readProfilePatches('dsh', profile), 'dsh')
+          }
+          const readyHmr = owner.get('hmr') as typeof hmr
+          void (readyHmr ? readyHmr.runExclusive(activate) : activate())
+            .catch(() => owner.logger.warn('Super Code uninstall recovery could not be activated; check the profile recovery entry.'))
+        }))
+      } else {
+        // 旧的启动宿主没有实时 profile 重组，恢复模块仍需独立于主插件存活。
+        await owner.root.plugin(await import(pathToFileURL(prepared.modulePath).href) as Plugin.Object, prepared.config)
+      }
       owner.inject(['superCodeSessionRecovery', 'sessionQuery'], async ready => {
         try {
           await registerRecoverySessions(ready)

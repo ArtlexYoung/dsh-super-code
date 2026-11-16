@@ -59,7 +59,8 @@ function agentSessionState(state, sessionId, statuses) {
 /** Join host catalogs without leaking agents from unrelated conversations. */
 function buildAgentView(state) {
   if (!state.current) return { root: '', nodes: new Map(), children: new Map(), ancestors: new Set() }
-  const nodes = new Map(Object.values(state.byId || {}).map(node => [node.id, { ...node }]))
+  const materialized = new Set()
+  const nodes = new Map(Object.values(state.byId || {}).map(node => [node.id, node]))
   for (const [parentId, catalog] of Object.entries(state.subagentsByParent || {})) {
     // Navigation rows omit timestamps; the parent's public projection retains them.
     const created = new Map((nodes.get(parentId)?.projectionValues?.subagentCatalog || []).map(entry => [entry.id, entry.createdAt]))
@@ -71,17 +72,19 @@ function buildAgentView(state) {
         running: summary?.running ?? (entry.activity === undefined ? undefined : entry.activity === 'running'),
         unavailable: entry.kind === 'diagnostic',
       })
+      materialized.add(entry.id)
     }
   }
   if (state.currentAddress && !nodes.get(state.current)?.parentId) {
     nodes.set(state.current, { ...nodes.get(state.current), id: state.current,
       parentId: state.currentAddress.parentSessionId, mode: state.currentAddress.mode })
+    materialized.add(state.current)
   }
   let root = state.current
   const ancestors = new Set()
   while (!ancestors.has(root)) {
     ancestors.add(root)
-    if (!nodes.has(root)) nodes.set(root, { id: root, title: root })
+    if (!nodes.has(root)) { nodes.set(root, { id: root, title: root }); materialized.add(root) }
     const parent = nodes.get(root).parentId
     if (!parent || ancestors.has(parent)) break
     root = parent
@@ -100,7 +103,7 @@ function buildAgentView(state) {
   while (pending.length) {
     const id = pending.pop()
     if (reachable.has(id)) continue
-    reachable.set(id, nodes.get(id))
+    reachable.set(id, materialized.has(id) ? nodes.get(id) : { ...nodes.get(id) })
     for (const child of children.get(id) || []) pending.push(child)
   }
   return { root, nodes: reachable, children, ancestors }

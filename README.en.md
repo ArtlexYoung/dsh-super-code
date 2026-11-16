@@ -4,11 +4,11 @@
 
 [![npm total downloads](https://img.shields.io/npm/dt/dsh-super-code?label=npm%20downloads)](https://npmtrends.com/dsh-super-code) [![Latest npm release](https://img.shields.io/npm/v/dsh-super-code)](https://www.npmjs.com/package/dsh-super-code) [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
-A smarter, leaner, faster, and easier-to-use coding plugin for DeepSeek Harness.
+A coding tool for DeepSeek Harness worth trying: smarter, leaner, and easier to use.
 
-**Evaluation results may vary slightly with model variability; refer to the latest tests.**
+**Model outputs vary between runs. Read the results alongside the test configuration and methodology.**
 
-On SWE-bench Pro hard-100, compared with the official Standard preset (same host DSH `0.2.1-rc.2`, same model, all on high reasoning effort):
+On SWE-bench Pro hard-100, compared with the official Standard preset (same DSH version `0.2.1-rc.2`, same model, all on high reasoning effort):
 
 | | Official Standard + high | Super Code 0.3.11 | Super Code 0.4.0 |
 |---|---:|---:|---:|
@@ -17,7 +17,68 @@ On SWE-bench Pro hard-100, compared with the official Standard preset (same host
 | Tokens per task | 7.718 M | 6.673 M (-13.5%) | 6.895 M (-10.7%) |
 | Model calls per task | 89.54 | 76.44 (-14.6%) | 79.42 (-11.3%) |
 
-Tested on 2026-11-11; `0.4.0` is the frozen candidate used in this evaluation. All metrics use 100 tasks as the denominator and include original failed attempts and supplemental answers. Percentages are relative to Official Standard. Time includes tools and in-session waits, excluding grading; model calls count raw requests, including failed and auxiliary calls. Usage records are incomplete for **17, 10, and 13 tasks**, respectively; token values and percentage changes compare captured records only. [Historical results and methodology](docs/en/EvaluationResults.md)
+Tested on 2026-11-11, with `0.4.0` as the frozen candidate. All figures are aggregated over 100 tasks, including original failed attempts and reruns; percentages are relative to official Standard. Time includes tool and session waits but excludes grading; model calls include failed and auxiliary requests. Usage records are incomplete for **17, 10, and 13 tasks**, respectively, so token totals and changes compare only the collected records. [Historical results and methodology](docs/en/EvaluationResults.md)
+
+## Features
+
+### A smarter preset
+
+The **Super Code preset** brings coding-focused prompts and workflows together with task planning, tool collaboration, and project memory. Select the preset to get started.
+
+- **Batched tool calls**: Read multiple files in parallel within one model call, with fewer round trips and less waiting while exploring code.
+- **Layered memory**: Keep current tasks, project lessons, and global preferences separate. Reuse lessons across tasks, with a source for every record.
+- **Runtime budgets**: Retain more context with compression budgets selected from historical evaluations, with adjustments available in Settings.
+- **Deletion protection**: Guide Agents toward recoverable `trash` to reduce accidental deletion, with strict confirmation available when needed.
+- **Windows command compatibility**: Bundled Bash and common utilities, without installing Git just to run Bash commands. Also available for official presets.
+- **Remote project support (unreleased)**: Use lightweight remote sessions with `dsh-ssh-workspaces` to run commands on the server, retain task and memory tools, and keep existing approval, cancellation, and disconnection checks. [Usage guide](docs/en/UsageGuide.md#remote-projects).
+- **dsh-Go / NEXT remote control (unreleased)**: Enable Super Code on the machine running DSH, then call tools, manage tasks, and access memory through dsh-Go / NEXT remote conversations. See the [usage guide](docs/en/UsageGuide.md#dsh-go--dsh-next-remote-control) for native and web interface coverage.
+
+### A smoother development experience
+
+- **Lightweight editor (in development)**: Read and edit project files directly in Harness, with less window switching.
+- **Git (in development)**: Review repository status and code changes, and handle common version-control operations in one place.
+- **Preset Skills (manual opt-in)**: Bundled grill-me, OpenSpec, oil-ui, Matt Pocock Skills, and PStack cover requirements, specifications, UI, and engineering workflows. All are off by default and take effect in existing conversations when enabled.
+
+### And more
+
+- **MCP connection**: Let MCP-compatible AI coding tools delegate tasks to DSH and fit Super Code into your development workflow. Off by default.
+- **Learning mode (in development)**: Explore code and implementation decisions in the context of your project, learning as you build.
+- **Lightweight package**: Reuse the Harness runtime, models, and session capabilities through a plugin that fits into your existing development environment.
+
+See the [usage guide](docs/en/UsageGuide.md).
+
+Bundled and adapted Skill sources are published under [builtin/skills](builtin/skills), including provenance, licenses, and companion resources. See the [layout and maintenance guide](builtin/README.md).
+
+## Recent releases
+
+- **Unreleased**: Improved remote projects and dsh-Go / NEXT remote control, with fixes for task recovery after restart, offline dependency resolution in some installers, and Windows BusyBox file operations on long paths. See [compatibility](docs/en/Compatibility.md) for tested coverage and limits.
+- **0.4.1**: Fixed Windows sessions failing to load on Harness `0.2.2-rc.2` ([#2](https://github.com/ArtlexYoung/dsh-super-code/issues/2)) and bundled runtime dependencies for local offline installation, while keeping Harness `0.1.5-alpha.1` as the minimum supported version.
+- **0.4.0**: Simplified task and memory tools, added five opt-in Skill and workflow packages, and improved Settings, the task sidebar, and Harness compatibility.
+- **0.3.11**: Fixed numerous bugs.
+
+[Full changelog](docs/en/Changelog.md)
+
+Versions follow `major.performance.maintenance`: a change in the second number indicates improved coding results or efficiency; the third covers fixes, UI, and compatibility. Every release requires extensive regression testing, so the release cycle may be long.
+
+## Trends
+
+### npm download trends
+
+<a href="https://npmtrends.com/dsh-super-code">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/npm-downloads-dark.svg">
+    <img alt="dsh-super-code npm downloads over the last 13 weeks" src="docs/images/npm-downloads.svg" width="800">
+  </picture>
+</a>
+
+### Star history
+
+<a href="https://star-history.com/#ArtlexYoung/dsh-super-code&amp;Date">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/star-history-dark.svg">
+    <img alt="dsh-super-code Star history" src="docs/images/star-history.svg" width="800">
+  </picture>
+</a>
 
 ## Install
 
@@ -33,7 +94,7 @@ dsh plugin --profile web add dsh-super-code
 ```
 
 <details>
-<summary>Install from a Release package</summary>
+<summary>Install from a Release package (including offline installation)</summary>
 
 Download the `.tgz` file from [GitHub Releases](https://github.com/ArtlexYoung/dsh-super-code/releases).
 
@@ -47,15 +108,23 @@ Web: run the following command (use the actual file name):
 dsh plugin --profile web add ./dsh-super-code-0.4.1.tgz
 ```
 
-Starting with 0.4.1, the package includes the plugin runtime dependencies. Download the `.tgz` and install Harness beforehand, then install the plugin without internet access; Web users can also append `--offline` to the command above. Cloud models still require network access. Local or LAN models require a reachable model service.
+Starting with 0.4.1, the package includes the plugin runtime dependencies. Download the `.tgz` and install Harness before going offline. For Web, explicitly add `--offline` to prevent the installer from attempting network requests:
+
+```bash
+dsh plugin --profile web add ./dsh-super-code-0.4.1.tgz --offline
+```
+
+Some installers, including `pnpm 11.28.5`, try to install dependencies provided by Harness, causing the published `0.4.1` package to fail offline installation with an empty cache. The fix is on main but has not been released; see [compatibility](docs/en/Compatibility.md).
+
+Cloud models still require network access. Local or LAN models require a reachable model service.
 
 </details>
 
 ### Windows commands
 
-Bundles GNU Bash, the required MSYS DLLs, BusyBox, and GNU grep, so Git does not need to be installed just to run Bash commands. Developer tools such as Git, Node, and Python still need separate installation. macOS and Linux keep the host environment.
+Bundles GNU Bash, the required MSYS DLLs, BusyBox, and GNU grep, so Git does not need to be installed just to run Bash commands. Developer tools such as Git, Node, and Python still need separate installation. macOS and Linux keep the existing DSH environment.
 
-Under **Settings → Super Code → Preset configuration → Command environment**, bundled Bash defaults on and **Also apply to official presets** defaults off. Enabling the latter covers Standard, PTC, and Create; Minimal retains its persistent terminal. Switches are editable only on Windows hosts, and are gray with a hover tooltip on other platforms.
+Under **Settings → Super Code → Preset configuration → Command environment**, bundled Bash defaults on and **Also apply to official presets** defaults off. Enabling the latter covers Standard, PTC, and Create; Minimal retains its persistent terminal. Switches are editable only when the machine running DSH uses Windows, and are gray with a hover tooltip on other platforms.
 
 In confined environments, Bash commands require DSH approval for that command. See the [usage guide](docs/en/UsageGuide.md#windows-command-environment) for configuration and compatibility limits.
 
@@ -84,35 +153,6 @@ Exactly one of the three sections stays open. Tasks opens by default; clicking i
 
 Screenshots use the current UI with sample data to illustrate the plugin.
 
-## Features
-
-| Feature | Description |
-|---|---|
-| Batched tool calls | Reads multiple files in parallel within one model call, reducing round trips |
-| Layered memory | Current task, project lessons, and global preferences are stored separately, each with its source |
-| Runtime budgets | Uses the better-performing legacy compression budgets by default; adjustable in Settings |
-| Deletion protection | Directs Agents to use recoverable `trash` by default; can switch to strict confirmation |
-| Windows commands | Bundled Bash and common utilities, optionally applied to official presets |
-| MCP connection | Allows external MCP clients to delegate tasks to DSH. Off by default |
-| Preset Skills | Separate Skills and workflow groups for grill-me, OpenSpec, oil-ui, Matt Pocock Skills and PStack; enabled packages sync live to the DSH Skill directory, with a shortcut to open it |
-
-- **Remote project support (unreleased)**: Use lightweight remote sessions with `dsh-ssh-workspaces` to run commands on the server, retain task and memory tools, and keep existing approval, cancellation, and disconnection checks. [Usage guide](docs/en/UsageGuide.md#remote-projects).
-- **dsh-Go / NEXT remote control (unreleased)**: Use Super Code on the remote computer and call tools, manage tasks, and access memory through remote conversations. See the [usage guide](docs/en/UsageGuide.md#dsh-go--dsh-next-remote-control) for native and web interface coverage.
-
-See the [usage guide](docs/en/UsageGuide.md).
-
-Bundled and adapted Skill sources are published under [builtin/skills](builtin/skills), including provenance, licenses, and companion resources. See the [layout and maintenance guide](builtin/README.md).
-
-## Recent releases
-
-- **0.4.1**: Fixed Windows sessions failing to load after the runtime ownership API changed in Harness `0.2.2-rc.2` ([#2](https://github.com/ArtlexYoung/dsh-super-code/issues/2)), and bundled runtime dependencies so a local `.tgz` installs offline with an empty cache.
-- **0.4.0**: Simplified task and memory tools, added five preset Skill and workflow packs, and improved Settings, the task sidebar, and compatibility with newer Harness versions.
-- **0.3.11**: Fixed preset recovery, sidebar, memory, MCP, and Windows command-environment issues.
-
-[Full changelog](docs/en/Changelog.md)
-
-Versions follow `major.performance.maintenance`: a change in the second number indicates improved coding results or efficiency; the third covers fixes, UI, and compatibility. Every release requires extensive regression testing, so the release cycle may be long.
-
 ## Evaluation
 
 ### Plugin comparison
@@ -132,14 +172,14 @@ M means one million tokens, including reasoning tokens. Time includes some in-ru
 ### Method
 
 - **Task set**: SWE-bench Pro hard-100, graded with the official grader. Tuning uses only 33 hard tasks selected from the SWE-bench dev split; hard-100 is used only to evaluate frozen candidates and investigate issues, never for tuning, to avoid overfitting to the evaluation tasks.
-- **Baselines**: the official Standard preset and third-party plugin configurations. In the historical official-preset comparison on the old host, Standard + high passed 51 tasks and Minimal + high passed 46, with Standard using 23.5% fewer tokens per task, so Standard was selected as the baseline.
-- **Controlled variables**: comparisons on the same host keep model, reasoning effort, and budgets fixed while comparing preset and plugin combinations. Cross-host and cross-model experiments are identified separately.
+- **Baselines**: the official Standard preset and third-party plugin configurations. In the historical official-preset comparison on DSH `0.1.5-rc.2`, Standard + high passed 51 tasks and Minimal + high passed 46, with Standard using 23.5% fewer tokens per task, so Standard was selected as the baseline.
+- **Controlled variables**: comparisons on the same DSH version keep model, reasoning effort, and budgets fixed while comparing preset and plugin combinations. Experiments across DSH versions and models are identified separately.
 - **Metrics**: tasks passed, mean total tokens, time, model and tool calls, and cache rate. The plugin comparison table above includes some in-run service waits; the historical budget experiments below use net time, excluding failed requests and retry waits.
 
 ### Historical process
 
-1. **Old-host baseline** (DSH `0.1.5-rc.2`, `Evaluation model B`, high): the Super Code `0.3.0` candidate passed 56 tasks, the official Standard preset 51, and Minimal 46. Relative to Minimal, time fell by 47.6% and tokens by 44.9%.
-2. **Regression after the host upgrade**: after upgrading to DSH `0.2.1-rc.2` and `Evaluation model B`, under default budgets Standard dropped to 46 and Super Code `0.3.4` to 41, below Standard. Investigation found the new host had tightened context budgets: the compression threshold fell from 800,000 to 550,464 tokens, and retained verbatim context from 160,000 to 98,560 tokens.
+1. **DSH `0.1.5-rc.2` baseline** (`Evaluation model B`, high): the Super Code `0.3.0` candidate passed 56 tasks, the official Standard preset 51, and Minimal 46. Relative to Minimal, time fell by 47.6% and tokens by 44.9%.
+2. **Regression after upgrading to DSH `0.2.1-rc.2`**: after upgrading to DSH `0.2.1-rc.2` and `Evaluation model B`, under default budgets Standard dropped to 46 and Super Code `0.3.4` to 41, below Standard. Investigation found DSH `0.2.1-rc.2` had tightened context budgets: the compression threshold fell from 800,000 to 550,464 tokens, and retained verbatim context from 160,000 to 98,560 tokens.
 3. **Retest with legacy budgets**: both sides used legacy budgets. Standard stayed at 46 with 14.2% more tokens; Super Code `0.3.5` rose to 49 with only 0.4% more tokens and 19.4% less net time. Based on this, the plugin uses legacy budgets by default from `0.3.6`.
 4. **Cross-model check** (`glm-5.3-flash`, max): Super Code `0.3.4` passed 45 tasks and native ZCode 29. Super Code used less net time per task (32.9 vs 52.3 min) and more tokens (5.50 M vs 3.61 M).
 
@@ -149,10 +189,10 @@ These are earlier evaluation runs and are not pooled with the plugin comparison 
 
 | Comparison | Passed | Efficiency |
 |---|---|---|
-| New host, legacy budgets: Super Code `0.3.5` vs Standard + high | 49 vs 46 | Net time -21.3%, tokens -34.6%, model calls -25.5% |
-| New host, default budgets: Super Code `0.3.4` vs Standard + high | 41 vs 46 | Tokens -25.5%, net time +13.9% |
-| Old host: Super Code `0.3.0` candidate vs Standard + high | 56 vs 51 | Raw time -34.9%, tokens -27.9% |
-| Old host: Super Code `0.3.0` candidate vs Minimal + high | 56 vs 46 | Time -47.6%, tokens -44.9% |
+| DSH `0.2.1-rc.2`, legacy budgets: Super Code `0.3.5` vs Standard + high | 49 vs 46 | Net time -21.3%, tokens -34.6%, model calls -25.5% |
+| DSH `0.2.1-rc.2`, default budgets: Super Code `0.3.4` vs Standard + high | 41 vs 46 | Tokens -25.5%, net time +13.9% |
+| DSH `0.1.5-rc.2`: Super Code `0.3.0` candidate vs Standard + high | 56 vs 51 | Raw time -34.9%, tokens -27.9% |
+| DSH `0.1.5-rc.2`: Super Code `0.3.0` candidate vs Minimal + high | 56 vs 46 | Time -47.6%, tokens -44.9% |
 | GLM-5.3-flash: Super Code `0.3.4` vs native ZCode | 45 vs 29 | Time -37.1%, tokens +52.4% |
 
 ### Limitations
@@ -164,31 +204,13 @@ These are earlier evaluation runs and are not pooled with the plugin comparison 
 
 [Results and methodology](docs/en/EvaluationResults.md) · [All result tables](eval/results/swebench-pro-final-100/ResultsTables.md)
 
-## Star history
-
-<a href="https://star-history.com/#ArtlexYoung/dsh-super-code&amp;Date">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/images/star-history-dark.svg">
-    <img alt="dsh-super-code Star history" src="docs/images/star-history.svg" width="800">
-  </picture>
-</a>
-
-## npm download trends
-
-<a href="https://npmtrends.com/dsh-super-code">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/images/npm-downloads-dark.svg">
-    <img alt="dsh-super-code npm downloads over the last 13 weeks" src="docs/images/npm-downloads.svg" width="800">
-  </picture>
-</a>
-
 ## Acknowledgements
 
 This project recognizes the [LINUX DO](https://linux.do) community.
 
 | Project | Reference |
 |---|---|
-| [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (MIT) | Host runtime: Agents, sessions, tools, PTC, Skills, UI extensions |
+| [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (MIT) | Provides Agents, sessions, tools, PTC, Skills, UI extensions |
 | [ZCode](https://github.com/zai-org/ZCode) (Apache-2.0) | UI design |
 | [Agent Skills](https://agentskills.io/specification) | File format of the frontend Skill |
 | [oil-ui](https://github.com/oil-oil/oil-ui) (MIT) | Bundled frontend design Skill: design workflow, style comparisons, and rendered UI review |

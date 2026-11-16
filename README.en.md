@@ -42,8 +42,8 @@ The **Code Workbench** brings your workflow from an IDE into DSH, combining codi
 
 ## 1.3 Remote support
 
-- **Remote project support (unreleased)**: Use lightweight remote sessions with `dsh-ssh-workspaces` to run commands on the server, retain task and memory tools, and keep existing approval, cancellation, and disconnection checks. [Usage guide](docs/en/UsageGuide.md#remote-projects).
-- **dsh-Go / NEXT remote control (unreleased)**: Enable Super Code on the machine running DSH, then call tools, manage tasks, and access memory through dsh-Go / NEXT remote conversations. See the [usage guide](docs/en/UsageGuide.md#dsh-go--dsh-next-remote-control) for native and web interface coverage.
+- **Remote project support**: Use lightweight remote sessions with `dsh-ssh-workspaces` to run commands on the server, retain task and memory tools, and keep existing approval, cancellation, and disconnection checks. [Usage guide](docs/en/UsageGuide.md#remote-projects).
+- **dsh-Go / NEXT remote control**: Enable Super Code on the machine running DSH, then call tools, manage tasks, and access memory through dsh-Go / NEXT remote conversations. See the [usage guide](docs/en/UsageGuide.md#dsh-go--dsh-next-remote-control) for native and web interface coverage.
 - **MCP connection**: Let MCP-compatible AI coding tools delegate tasks to DSH and fit Super Code into your development workflow. Off by default.
 
 ## 1.4 And more
@@ -55,10 +55,9 @@ The **Code Workbench** brings your workflow from an IDE into DSH, combining codi
 
 # 2 Recent releases
 
-- **Unreleased**: Improved remote projects and dsh-Go / NEXT remote control, with fixes for task recovery after restart, offline dependency resolution in some installers, and Windows BusyBox file operations on long paths. See [compatibility](docs/en/Compatibility.md) for tested coverage and limits.
+- **0.4.2**: Added remote projects and dsh-Go / NEXT remote control, with fixes for task recovery after restart, offline dependency resolution in some installers, Windows BusyBox file operations on long paths, and README image rendering. See [compatibility](docs/en/Compatibility.md) for tested coverage and limits.
 - **0.4.1**: Fixed Windows sessions failing to load on Harness `0.2.2-rc.2` ([#2](https://github.com/ArtlexYoung/dsh-super-code/issues/2)) and bundled runtime dependencies for local offline installation, while keeping Harness `0.1.5-alpha.1` as the minimum supported version.
 - **0.4.0**: Simplified task and memory tools, added five opt-in Skill and workflow packages, and improved Settings, the task sidebar, and Harness compatibility.
-- **0.3.11**: Fixed numerous bugs.
 
 [Full changelog](docs/en/Changelog.md)
 
@@ -104,21 +103,21 @@ Download the `.tgz` file from [GitHub Releases](https://github.com/ArtlexYoung/d
 
 Desktop: enter the full path of the package in "Package name or address", then click **Install**.
 
-<a href="docs/images/install-tgz.png"><img alt="Enter the package path" src="docs/images/install-tgz.png" width="432"></a>
+[![Enter the package path](docs/images/install-tgz-display.svg)](docs/images/install-tgz.png)
 
 Web: run the following command (use the actual file name):
 
 ```bash
-dsh plugin --profile web add ./dsh-super-code-0.4.1.tgz
+dsh plugin --profile web add ./dsh-super-code-0.4.2.tgz
 ```
 
 Starting with 0.4.1, the package includes the plugin runtime dependencies. Download the `.tgz` and install Harness before going offline. For Web, explicitly add `--offline` to prevent the installer from attempting network requests:
 
 ```bash
-dsh plugin --profile web add ./dsh-super-code-0.4.1.tgz --offline
+dsh plugin --profile web add ./dsh-super-code-0.4.2.tgz --offline
 ```
 
-Some installers, including `pnpm 11.28.5`, try to install dependencies provided by Harness, causing the published `0.4.1` package to fail offline installation with an empty cache. The fix is on main but has not been released; see [compatibility](docs/en/Compatibility.md).
+Version 0.4.2 fixes installers such as `pnpm 11.28.5` trying to fetch Harness dependencies during offline installation with an empty cache. Install Harness beforehand and continue to use explicit `--offline` for Web; see [compatibility](docs/en/Compatibility.md).
 
 Cloud models still require network access. Local or LAN models require a reachable model service.
 
@@ -135,7 +134,7 @@ Model, reasoning effort, permissions, and tools follow the Harness settings and 
 
 If the preset is not listed, check its status in **Settings → Super Code**, or see [troubleshooting](docs/en/UsageGuide.md#cant-find-the-preset).
 
-<a href="docs/images/preset-settings.png"><img alt="Super Code settings" src="docs/images/preset-settings.png" width="566"></a>
+[![Super Code settings](docs/images/preset-settings-display.svg)](docs/images/preset-settings.png)
 
 Select **Super Code** in the right sidebar. It contains three sections:
 
@@ -145,7 +144,7 @@ Select **Super Code** in the right sidebar. It contains three sections:
 
 Exactly one of the three sections stays open. Tasks opens by default; clicking its heading keeps it expanded.
 
-<a href="docs/images/task-status.png"><img alt="Task sidebar" src="docs/images/task-status.png" width="174"></a> <a href="docs/images/agent-tree.png"><img alt="Agent tree" src="docs/images/agent-tree.png" width="304"></a>
+[![Task sidebar](docs/images/task-status-display.svg)](docs/images/task-status.png) [![Agent tree](docs/images/agent-tree-display.svg)](docs/images/agent-tree.png)
 
 Screenshots use the current UI with sample data to illustrate the plugin.
 

@@ -4,6 +4,16 @@
 
 Versions are `major.performance.maintenance`. The second number changes when coding results or efficiency improve; the third covers fixes, UI, and compatibility. See [Compatibility](Compatibility.md) for what each release was tested on.
 
+## 0.4.2 · 2026-11-16
+
+- Added lightweight remote projects with `dsh-ssh-workspaces` and tools, tasks, and memory in dsh-Go / NEXT remote conversations. Windows remote projects retain native reads and use `remote_bash` for file changes, preserving approvals, cancellation, and disconnection checks.
+- Fixed task persistence interrupting model tool sequences, recovery after restart, and historical numbering while retaining forks and continued conversations.
+- Marked existing DSH-provided peers as optional without changing their version ranges, fixing installers that fetch DSH during offline installation with an empty cache. Harness must be installed beforehand; use explicit `--offline`.
+- Bundled patched x64 / ARM64 BusyBox binaries and their complete corresponding source to improve Windows long-file-path and Unicode operations. Long working directories, shell `cd`, and some shared-directory renames retain documented limits.
+- Fixed Windows Skill-directory and command-environment compatibility, added tool-selection guidance after BusyBox errors, and updated README version badges and Zed-compatible images while retaining the originals.
+
+This release excludes the Code Workbench, Git, and learning mode still in development and does not upgrade npm runtime dependencies. See [Compatibility](Compatibility.md) for final-package verification and the separate historical platform checks. The 100-task evaluation was not rerun for this release.
+
 ## 0.4.1 · 2026-11-14
 
 - Fixed Windows sessions failing to load when Harness `0.2.2-rc.2` removed `agents.isOwnedBy()` ([#2](https://github.com/ArtlexYoung/dsh-super-code/issues/2)); retained older-host compatibility and inheritance of the direct creator’s command environment for child and grandchild sessions.

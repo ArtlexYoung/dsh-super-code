@@ -18,6 +18,14 @@ test('npm ships every runtime resource once and retains public exports and third
   assert.equal(packed.status, 0, packed.stderr || String(packed.error))
   const files = new Set<string>(JSON.parse(packed.stdout)[0].files.map((row: { path: string }) => row.path))
   assert.ok([...files].every(path => !path.split('/').includes('..')), 'Bundled dependencies must stay inside the package')
+  for (const file of ['README.md', 'README.en.md']) {
+    const readme = await readFile(join(root, file), 'utf8')
+    for (const match of readme.matchAll(/!\[[^\]]*\]\(([^)]+)\)|(?:src|srcset)="([^"]+)"/g)) {
+      const image = match[1] ?? match[2]
+      if (/^(?:https?:|data:)/.test(image)) continue
+      assert.ok(files.has(image.replace(/^\.\//, '')), file + ': unbundled image ' + image)
+    }
+  }
   const pkg = JSON.parse(await readFile(new URL('../../package.json', import.meta.url), 'utf8'))
   for (const name of Object.keys(pkg.dependencies)) {
     assert.ok(files.has('node_modules/' + name + '/package.json'), name + ' must ship for offline installation')

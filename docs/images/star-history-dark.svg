@@ -1,22 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="320" viewBox="0 0 960 320" role="img" aria-labelledby="title description">
 <title id="title">dsh-super-code Star history</title>
-<desc id="description">ArtlexYoung/dsh-super-code. 50 stars. Through 2026-11-15. Source: GitHub.</desc>
+<desc id="description">ArtlexYoung/dsh-super-code. 58 stars. Through 2026-11-16. Source: GitHub.</desc>
 <style>text{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:12px;fill:#9da7b3;font-variant-numeric:tabular-nums}</style>
 <rect x=".5" y=".5" width="959" height="319" rx="12" fill="#0d1117" stroke="#30363d"/>
 <text x="28" y="35" style="font-size:19px;font-weight:600;fill:#e6edf3">Star history</text>
 <text x="28" y="58">ArtlexYoung/dsh-super-code</text>
-<text x="932" y="35" text-anchor="end" style="font-size:19px;font-weight:600;fill:#e6edf3">50 stars</text>
-<text x="932" y="58" text-anchor="end">Through 2026-11-15</text>
+<text x="932" y="35" text-anchor="end" style="font-size:19px;font-weight:600;fill:#e6edf3">58 stars</text>
+<text x="932" y="58" text-anchor="end">Through 2026-11-16</text>
 <path d="M68 260H926" stroke="#212830"/><text x="56" y="264" text-anchor="end">0</text>
 <path d="M68 201.67H926" stroke="#212830"/><text x="56" y="205.67" text-anchor="end">20</text>
 <path d="M68 143.33H926" stroke="#212830"/><text x="56" y="147.33" text-anchor="end">40</text>
 <path d="M68 85H926" stroke="#212830"/><text x="56" y="89" text-anchor="end">60</text>
-<polyline points="68,260 94.81,257.08 202.06,254.17 510.41,242.5 523.81,230.83 577.44,227.92 590.84,225 617.66,219.17 684.69,213.33 698.09,204.58 711.5,198.75 738.31,195.83 751.72,192.92 765.13,187.08 778.53,184.17 791.94,181.25 818.75,178.33 858.97,175.42 885.78,160.83 899.19,125.83 912.59,114.17 926,114.17" fill="none" stroke="#e3a008" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
-<circle cx="926" cy="114.17" r="3.5" fill="#e3a008"/>
+<polyline points="68,260 94.4,257.08 200,254.17 503.6,242.5 516.8,230.83 569.6,227.92 582.8,225 609.2,219.17 675.2,213.33 688.4,204.58 701.6,198.75 728,195.83 741.2,192.92 754.4,187.08 767.6,184.17 780.8,181.25 807.2,178.33 846.8,175.42 873.2,160.83 886.4,125.83 899.6,114.17 912.8,93.75 926,90.83" fill="none" stroke="#e3a008" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="926" cy="90.83" r="3.5" fill="#e3a008"/>
 <text x="68" y="285" text-anchor="middle">09/12</text>
-<text x="282.5" y="285" text-anchor="middle">09/28</text>
-<text x="497" y="285" text-anchor="middle">10/14</text>
-<text x="711.5" y="285" text-anchor="middle">10/30</text>
-<text x="926" y="285" text-anchor="middle">11/15</text>
+<text x="279.2" y="285" text-anchor="middle">09/28</text>
+<text x="490.4" y="285" text-anchor="middle">10/14</text>
+<text x="701.6" y="285" text-anchor="middle">10/30</text>
+<text x="926" y="285" text-anchor="middle">11/16</text>
 <text x="28" y="307">Source: GitHub</text>
 </svg>

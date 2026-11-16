@@ -10,6 +10,12 @@ The records below distinguish each code baseline and test layer. Component check
 
 The new PStack workflow adaptation starts at `0.2.1-alpha.1`; earlier hosts are outside its scope. Older-version records below describe historical coverage of other plugin features.
 
+## 2026-11-16 · 0.4.2 release scope
+
+Version 0.4.2 includes the implemented remote-project, task-recovery, offline-dependency, and BusyBox fixes documented below, plus Zed-compatible README images. Historical candidate versions, hashes, failures, and limits remain unchanged below; those targeted checks are not represented as reruns of the final package. Read each result with its own code baseline and environment.
+
+Use explicit `--offline` for offline installation. Cloud models require network access; local or LAN model services must be reachable. Physical Windows x64 hardware, all mobile devices, and every Skill workflow have not been fully validated. BusyBox long-working-directory and some UNC-rename limits remain. This release does not merge the in-development Workbench or upgrade npm dependencies.
+
 ## 2026-11-16 · BusyBox long paths (unreleased)
 
 The candidate remains `0.4.1`, unpublished. Only BusyBox changes to the local `FRP-6354-sc-longpaths1` build based on `FRP-6354-g5f09fb446`. DSH, Bash, MSYS, grep and npm dependencies are unchanged. Complete modified source, pinned MSVCRT toolchain instructions and both actual configurations ship with the binaries; installation does not download or compile them.

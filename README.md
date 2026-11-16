@@ -42,8 +42,8 @@
 
 ## 1.3 远程支持
 
-- **远程项目支持（待发布）**：配合 `dsh-ssh-workspaces`，在轻量远程会话中执行服务器命令，继续使用任务与记忆工具，沿用原有审批、取消和断连保护。[使用说明](docs/UsageGuide.md#远程项目)。
-- **dsh-Go / NEXT 远程控制（待发布）**：在运行 DSH 的机器上启用 Super Code，通过 dsh-Go / NEXT 的远程会话调用工具、管理任务和记忆；手机原生与网页界面的支持范围见[使用说明](docs/UsageGuide.md#dsh-go--dsh-next-远程控制)。
+- **远程项目支持**：配合 `dsh-ssh-workspaces`，在轻量远程会话中执行服务器命令，继续使用任务与记忆工具，沿用原有审批、取消和断连保护。[使用说明](docs/UsageGuide.md#远程项目)。
+- **dsh-Go / NEXT 远程控制**：在运行 DSH 的机器上启用 Super Code，通过 dsh-Go / NEXT 的远程会话调用工具、管理任务和记忆；手机原生与网页界面的支持范围见[使用说明](docs/UsageGuide.md#dsh-go--dsh-next-远程控制)。
 - **MCP 连接**：让支持 MCP 的 AI 编码工具将任务交给 DSH 执行，接入现有开发流程，默认关闭。
 
 ## 1.4 还有更多
@@ -55,10 +55,9 @@
 
 # 2 最近更新
 
-- **待发布**：完善远程项目与 dsh-Go / NEXT 远程控制，修复任务冷恢复、部分安装器的离线依赖解析及 Windows BusyBox 文件长路径问题；实测范围与限制见[兼容性记录](docs/Compatibility.md)。
+- **0.4.2**：支持远程项目与 dsh-Go / NEXT 远程控制，修复任务冷恢复、部分安装器的离线依赖解析、Windows BusyBox 文件长路径及 README 图片显示问题；实测范围与限制见[兼容性记录](docs/Compatibility.md)。
 - **0.4.1**：修复 Windows 在 Harness `0.2.2-rc.2` 中无法加载会话的问题（[#2](https://github.com/ArtlexYoung/dsh-super-code/issues/2)），随包携带运行依赖以支持本地离线安装，最低支持版本仍为 Harness `0.1.5-alpha.1`。
 - **0.4.0**：简化任务与记忆工具，新增五组可选 Skill 与工作流，优化设置、任务侧栏和 Harness 兼容性。
-- **0.3.11**：修复了大量 bug。
 
 [完整版本记录](docs/Changelog.md)
 
@@ -104,21 +103,21 @@ dsh plugin --profile web add dsh-super-code
 
 桌面版：在「包名或地址」中填写安装包的完整路径，然后点击「安装」。
 
-<a href="docs/images/install-tgz.png"><img alt="填写安装包路径" src="docs/images/install-tgz.png" width="432"></a>
+[![填写安装包路径](docs/images/install-tgz-display.svg)](docs/images/install-tgz.png)
 
 Web 版：运行以下命令（文件名以实际下载的为准）：
 
 ```bash
-dsh plugin --profile web add ./dsh-super-code-0.4.1.tgz
+dsh plugin --profile web add ./dsh-super-code-0.4.2.tgz
 ```
 
 从 0.4.1 起，安装包自带插件所需的运行依赖。离线安装须提前下载 `.tgz` 并安装好 Harness；Web 版请显式加 `--offline`，避免安装器尝试联网：
 
 ```bash
-dsh plugin --profile web add ./dsh-super-code-0.4.1.tgz --offline
+dsh plugin --profile web add ./dsh-super-code-0.4.2.tgz --offline
 ```
 
-部分安装器（已复现于 `pnpm 11.28.5`）会尝试补装 Harness 提供的依赖，导致正式版 `0.4.1` 在空缓存离线安装时失败；相关修复已在 main 完成，尚未发布，见[兼容性记录](docs/Compatibility.md)。
+0.4.2 修复了部分安装器（如 `pnpm 11.28.5`）在空缓存离线安装时尝试补装 Harness 依赖的问题；仍需提前安装 Harness，Web 版仍请显式使用 `--offline`，见[兼容性记录](docs/Compatibility.md)。
 
 断网时调用云端模型仍需恢复网络；使用本机或局域网模型时，模型服务必须可达。
 
@@ -135,7 +134,7 @@ dsh plugin --profile web add ./dsh-super-code-0.4.1.tgz --offline
 
 若未找到预设，可在「设置 → Super Code 模式」中查看状态，或参阅[排查方法](docs/UsageGuide.md#找不到预设)。
 
-<a href="docs/images/preset-settings.png"><img alt="Super Code 设置页" src="docs/images/preset-settings.png" width="566"></a>
+[![Super Code 设置页](docs/images/preset-settings-display.svg)](docs/images/preset-settings.png)
 
 在右侧边栏选择「Super Code」，包含三个部分：
 
@@ -145,7 +144,7 @@ dsh plugin --profile web add ./dsh-super-code-0.4.1.tgz --offline
 
 三个部分始终只展开一项，默认显示任务；再次点击当前标题会保持展开。
 
-<a href="docs/images/task-status.png"><img alt="任务侧边栏" src="docs/images/task-status.png" width="174"></a> <a href="docs/images/agent-tree.png"><img alt="Agent 执行树" src="docs/images/agent-tree.png" width="304"></a>
+[![任务侧边栏](docs/images/task-status-display.svg)](docs/images/task-status.png) [![Agent 执行树](docs/images/agent-tree-display.svg)](docs/images/agent-tree.png)
 
 截图使用当前界面与演示数据，仅展示插件外观。
 

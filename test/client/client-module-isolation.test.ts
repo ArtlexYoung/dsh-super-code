@@ -34,7 +34,7 @@ function fixture() {
   plugin.apply(ctx)
   const connect = (name: string, api: object) => {
     const cleanup: Function[] = []
-    const callback = callbacks.find(row => row.names.length === 1 && row.names[0] === 'remote.' + name)!
+    const callback = callbacks.filter(row => row.names.length === 1 && row.names[0] === 'remote.' + name).at(-1)!
     callback.run({ remote: { [name]: api }, effect: (run: Function) => { cleanup.push(run()) } })
     return () => cleanup.forEach(run => run())
   }
@@ -79,4 +79,12 @@ test('Remote removal retains a failed draft and reconnect does not replay an unc
   detach()
   await assert.rejects(f.settings.budgetApi.readConfig(), /unavailable/)
   assert.equal(editor.getSnapshot().draft.windowsBash, false)
+})
+
+test('stable Remote adapters preserve the stream iterator and reject unavailable streams synchronously', () => {
+  const f = fixture(), stream = { async *[Symbol.asyncIterator]() { yield [] } }
+  const detach = f.connect('superCodeConnection', { watchDirectories: () => stream })
+  assert.equal(f.settings.connectionApi.watchDirectories(), stream)
+  detach()
+  assert.throws(() => f.settings.connectionApi.watchDirectories(), /unavailable/)
 })

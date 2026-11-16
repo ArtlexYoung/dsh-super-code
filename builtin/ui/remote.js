@@ -7,10 +7,13 @@ function connectRemote(ctx, contribution) {
     current = api
     owner.effect(() => () => { if (current === api) current = undefined })
   })
-  return Object.fromEntries(contribution.descriptors.map(({ method }) => [method, async (...args) => {
-    const api = current
-    if (!api) throw new Error(name + ' is unavailable')
-    return api[method](...args)
-  }]))
+  return Object.fromEntries(contribution.descriptors.map(({ method, mode }) => {
+    const invoke = (...args) => {
+      const api = current
+      if (!api) throw new Error(name + ' is unavailable')
+      return api[method](...args)
+    }
+    return [method, mode === 'stream' ? invoke : async (...args) => invoke(...args)]
+  }))
 }
 export { connectRemote }

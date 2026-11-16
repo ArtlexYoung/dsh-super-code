@@ -36,7 +36,7 @@ function apply(ctx) {
   ctx.inject(['remote.superCodeConnection'], ready => {
     ready.slots.inject('shell.overlay', () => ready.slots.register({
       name: 'shell.overlay', id: 'super-code-directory-consent', order: 180, locale: LOCALE_NS,
-      inject: () => ({ api: ready.remote.superCodeConnection }),
+      inject: () => ({ api: ready.remote.superCodeConnection, remote: ready.remote }),
     }, ConnectionConsent))
   })
   // Locale already requires its host's preference service. Declare that same

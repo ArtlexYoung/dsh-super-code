@@ -36,7 +36,8 @@ export class ConnectionService {
   private error: string = ''
   private observationError: boolean = false
   private observing: boolean = false
-  constructor(private readonly store: ConnectionStore, private readonly host: DelegationHost) {}
+  constructor(private readonly store: ConnectionStore, private readonly host: DelegationHost,
+    private readonly directoriesChanged: () => void = () => {}) {}
   async initialize(): Promise<void> {
     await this.store.initialize()
     try {
@@ -44,7 +45,7 @@ export class ConnectionService {
       this.settings.config.knownDirectories = await canonicalKnownDirectories(this.settings.config.knownDirectories)
       this.tasks = new DelegatedTasks(this.store, this.host, () => this.closing ? { ...this.settings.config, enabled: false } : this.settings.config)
       await this.tasks.initialize()
-      this.directoryRequests = new DirectoryRequests(() => this.settings.config.allowedDirectories)
+      this.directoryRequests = new DirectoryRequests(() => this.settings.config.allowedDirectories, Date.now, this.directoriesChanged)
       this.http = new ConnectionHttp(this.tasks, (input, client) => this.exclusive(async () => {
         if (this.closing || !this.settings.config.enabled) throw new ConnectionError('connection-disabled')
         return this.directoryRequests.request(input, client)
@@ -64,6 +65,8 @@ export class ConnectionService {
     if (this.timer) return
     this.timer = setInterval(() => {
       if (this.closing || this.observing) return
+      // 复用已有观察周期处理申请过期，客户端不再定时查询。
+      this.directoryRequests.pending()
       this.observing = true
       void this.tasks.tick().then(
         () => { if (!this.closing) this.observationError = false },

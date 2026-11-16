@@ -18,8 +18,14 @@ interface SettingsEnvironment {
 }
 
 export class SuperCodeConnection extends TypertRemoteService {
+  private readonly directoryListeners = new Set<() => void>()
+  private readonly lifetime = new AbortController()
   constructor(ctx: Context, private readonly current: () => ConnectionService | false,
-    private readonly environment: SettingsEnvironment = { workspaces: false, picker: false }) { super(ctx, 'superCodeConnection') }
+    private readonly environment: SettingsEnvironment = { workspaces: false, picker: false }) {
+    super(ctx, 'superCodeConnection')
+    ctx.effect(() => () => { this.lifetime.abort() })
+  }
+  directoriesChanged(): void { for (const notify of this.directoryListeners) notify() }
   private service(): ConnectionService { const service = this.current(); if (!service) throw new ConnectionError('unavailable'); return service }
   @Remote
   readConfig(): ConnectionSnapshot { return this.current() ? this.service().read() : { configuration: structuredClone(defaultConnectionConfig), revision: 0, writable: false, state: 'error', error: 'unavailable', url: '' } }
@@ -35,6 +41,22 @@ export class SuperCodeConnection extends TypertRemoteService {
   disconnectClient(id: string): Promise<{ disconnected: true }> { return this.service().disconnect(id) }
   @Remote
   pendingDirectories(): ReturnType<ConnectionService['pendingDirectories']> { return this.current() ? this.service().pendingDirectories() : [] }
+  @Remote({ mode: 'stream' })
+  async *watchDirectories(signal: AbortSignal): AsyncGenerator<ReturnType<ConnectionService['pendingDirectories']>> {
+    const lifetime = AbortSignal.any([signal, this.lifetime.signal])
+    let wake: () => void = () => {}
+    const changed = (): void => { wake() }
+    this.directoryListeners.add(changed)
+    lifetime.addEventListener('abort', changed, { once: true })
+    try {
+      while (!lifetime.aborted) {
+        // 先订阅再取快照；等待期间的变更合并为下一份最新状态。
+        const update = new Promise<void>(resolve => { wake = resolve })
+        yield this.pendingDirectories()
+        await update
+      }
+    } finally { this.directoryListeners.delete(changed); lifetime.removeEventListener('abort', changed) }
+  }
   @Remote
   resolveDirectory(id: string, decision: string): ReturnType<ConnectionService['resolveDirectory']> { return this.service().resolveDirectory(id, decision) }
   @Remote
@@ -70,7 +92,7 @@ export class SuperCodeConnection extends TypertRemoteService {
 export function applyConnection(ctx: Context): void {
   let service: ConnectionService | false = false
   const environment: SettingsEnvironment = { workspaces: false, picker: false }
-  new SuperCodeConnection(ctx, () => service, environment)
+  const remote = new SuperCodeConnection(ctx, () => service, environment)
   applyConnectionApproval(ctx, () => service)
   ctx.inject(['workspaceRegistry'], owner => {
     environment.workspaces = owner.get('workspaceRegistry')
@@ -90,7 +112,7 @@ export function applyConnection(ctx: Context): void {
       if (!startup) return
       const { connection, initialized } = startup
       try { await initialized } catch { return }
-      if (service === connection) service = false
+      if (service === connection) { service = false; remote.directoriesChanged() }
       await connection.close()
     })
     let directory: string
@@ -113,11 +135,11 @@ export function applyConnection(ctx: Context): void {
       subagents: owner.get('subagents') } as ConnectionHostServices)
     const { ConnectionService } = await import('../connection/service.js')
     if (disposed) return
-    const connection = new ConnectionService(new ConnectionStore(join(directory, 'super-code-connection')), host)
+    const connection = new ConnectionService(new ConnectionStore(join(directory, 'super-code-connection')), host, () => remote.directoriesChanged())
     try {
       startup = { connection, initialized: connection.initialize() }
       await startup.initialized
-      if (!disposed) service = connection
+      if (!disposed) { service = connection; remote.directoriesChanged() }
     } catch (error) {
       const code = (error as NodeJS.ErrnoException).code
       owner.logger.warn(code === 'ENOTSUP' || code === 'EOPNOTSUPP' || code === 'ENOSYS'

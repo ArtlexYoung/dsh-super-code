@@ -244,18 +244,28 @@ function ConnectionSettings({ api, settings, t, active, openSession, onSaved = (
         onClick: () => { if (!disabled && !editor.getSnapshot().saving) void editor.retry() } }, t('save.retry'))),
     browser && React.createElement(DirectoryBrowser, { api, t, onSelect: choose, onClose: () => setBrowser(false) }))
 }
-function ConnectionConsent({ api, t }) {
+function ConnectionConsent({ api, remote, t }) {
   const [requests, setRequests] = useState([]), [busy, setBusy] = useState(false), [error, setError] = useState(false)
-  const dialog = useRef(null), alive = useRef(false), pending = useRef(false), resolving = useRef(false), settled = useRef(new Set())
+  const dialog = useRef(null), alive = useRef(false), resolving = useRef(false), settled = useRef(new Set())
   const current = requests[0]
-  const load = async () => {
-    if (pending.current) return
-    pending.current = true
-    try { const result = await api.pendingDirectories(); if (alive.current && result.ok) setRequests(result.value.filter(row => !settled.current.has(row.id))) }
-    catch { /* Transport loss never grants consent. */ }
-    finally { pending.current = false }
-  }
-  useEffect(() => { alive.current = true; load(); const timer = setInterval(load, 1000); return () => { alive.current = false; clearInterval(timer) } }, [api])
+  useEffect(() => {
+    alive.current = true
+    let stream, disposed = false
+    void (async () => {
+      stream = remote.$stream({ name: 'Super Code directory consent', open: signal => api.watchDirectories(signal),
+        ended: () => new Error('Directory consent stream ended'), carrierFailed: () => { if (!disposed) setRequests([]) } })
+      for await (const item of stream) {
+        if (disposed || stream.signal.aborted) return
+        setError(false)
+        setRequests(item.value.filter(row => !settled.current.has(row.id)))
+        item.accept()
+      }
+    })().catch(error => { if (!disposed) { setRequests([]); setError(true); console.warn('Super Code directory consent:', error) } })
+    return () => {
+      alive.current = false; disposed = true
+      void (async () => { await stream?.dispose() })().catch(error => console.warn('Super Code directory consent cleanup:', error))
+    }
+  }, [api, remote])
   const resolve = async decision => {
     if (resolving.current || !current) return
     resolving.current = true; setBusy(true); setError(false)
@@ -274,7 +284,7 @@ function ConnectionConsent({ api, t }) {
     window.addEventListener('keydown', escape, true)
     return () => { window.removeEventListener('keydown', escape, true); if (element.open) element.close() }
   }, [current?.id])
-  if (!current) return null
+  if (!current) return error ? React.createElement('p', { role: 'alert', className: 'dsh-super-code-connection-hint' }, t('connection.requestUnavailable')) : null
   return React.createElement('dialog', { ref: dialog, className: 'dsh-super-code-confirm', 'aria-labelledby': 'super-code-consent-title',
     onCancel: event => { event.preventDefault(); event.stopPropagation(); resolve('rejected') } },
     React.createElement('h3', { id: 'super-code-consent-title' }, t('connection.requestTitle')),

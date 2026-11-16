@@ -14,12 +14,15 @@ export interface DirectoryRequest {
 export class DirectoryRequests {
   private readonly requests = new Map<string, DirectoryRequest>()
   private readonly sources = new Map<string, { path: string; dev: bigint; ino: bigint }>()
-  constructor(private readonly allowed: () => string[], private readonly now: () => number = Date.now) {}
+  constructor(private readonly allowed: () => string[], private readonly now: () => number = Date.now,
+    private readonly changed: () => void = () => {}) {}
   private expire(): void {
+    let changed = false
     for (const row of this.requests.values()) {
-      if (row.status === 'pending' && this.now() - row.createdAt >= 5 * 60 * 1000) row.status = 'expired'
+      if (row.status === 'pending' && this.now() - row.createdAt >= 5 * 60 * 1000) { row.status = 'expired'; changed = true }
       if (row.status === 'approved' && !this.allowed().some(parent => withinDirectory(parent, row.path))) row.status = 'rejected'
     }
+    if (changed) this.changed()
   }
   async request(input: DirectoryApplication, client: string): Promise<DirectoryRequest> {
     this.expire()
@@ -41,6 +44,7 @@ export class DirectoryRequests {
       status: this.allowed().some(parent => withinDirectory(parent, path)) ? 'approved' : 'pending' }
     this.requests.set(input.requestId, row)
     this.sources.set(input.requestId, { path: input.path, dev: identity.dev, ino: identity.ino })
+    if (row.status === 'pending') this.changed()
     return { ...row }
   }
   pending(): DirectoryRequest[] { this.expire(); return [...this.requests.values()].filter(row => row.status === 'pending').map(row => ({ ...row })) }
@@ -55,13 +59,18 @@ export class DirectoryRequests {
         const source = this.sources.get(row.requestId), identity = await stat(row.path, { bigint: true })
         if (!source || !identity.isDirectory() || identity.dev !== source.dev || identity.ino !== source.ino) throw new Error()
       }
-      catch { row.status = 'rejected'; throw new ConnectionError('directory-changed') }
+      catch { row.status = 'rejected'; this.changed(); throw new ConnectionError('directory-changed') }
       this.expire()
       if (row.status !== 'pending') return { status: row.status }
       await grant(row.path)
     }
     row.status = decision
+    this.changed()
     return { status: row.status }
   }
-  rejectPending(): void { for (const row of this.requests.values()) if (row.status === 'pending') row.status = 'rejected' }
+  rejectPending(): void {
+    let changed = false
+    for (const row of this.requests.values()) if (row.status === 'pending') { row.status = 'rejected'; changed = true }
+    if (changed) this.changed()
+  }
 }

@@ -35,10 +35,11 @@ const budgetRemoteContribution = {
 }
 
 const connectionRemoteContribution = {
-  package: 'dsh-super-code', descriptors: ['readConfig', 'saveConfig', 'revealToken', 'rotateToken', 'overview', 'disconnectClient', 'directories', 'pickDirectory', 'browseDirectory', 'pendingDirectories', 'resolveDirectory'].map(method => ({
+  package: 'dsh-super-code', descriptors: ['readConfig', 'saveConfig', 'revealToken', 'rotateToken', 'overview', 'disconnectClient', 'directories', 'pickDirectory', 'browseDirectory', 'pendingDirectories', 'watchDirectories', 'resolveDirectory'].map(method => ({
     id: `dsh-super-code:superCodeConnection/${method}`, service: 'superCodeConnection', namespace: 'superCodeConnection', method, invocation: { kind: 'direct' },
     parameters: (method === 'saveConfig' ? ['content', 'expected'] : method === 'rotateToken' ? ['expected'] : method === 'resolveDirectory' ? ['id', 'decision'] : method === 'disconnectClient' ? ['id'] : method === 'browseDirectory' ? ['path'] : [])
       .map(name => ({ name, wire: name, source: 'json', codec: remoteStringCodec })), result: { mode: 'src-json' },
+    ...(method === 'watchDirectories' ? { mode: 'stream', cancellation: { parameter: 'signal' } } : {}),
   })),
 }
 

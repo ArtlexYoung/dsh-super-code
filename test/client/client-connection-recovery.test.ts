@@ -22,8 +22,8 @@ const initial = () => ({ revision: 2, writable: true, state: 'error', error: 'cl
     allowedDirectories: ['/project'], knownDirectories: [], directoriesConfigured: true } })
 
 function fixture(api: any, options: { home?: boolean; budgetApi?: any; budgetSection?: string; timers?: Function[];
-  preset?: boolean; presetApi?: any; reload?: () => void } = {}) {
-  let plugin: any, Settings: any, settingsProps: any, current: any
+  preset?: boolean; presetApi?: any; reload?: () => void; consent?: boolean; remote?: any } = {}) {
+  let plugin: any, Settings: any, settingsProps: any, Consent: any, consentProps: any, current: any
   const instances = new Map<Function, any>()
   const react = {
     Fragment: 'fragment', forwardRef: () => 'button',
@@ -49,16 +49,18 @@ function fixture(api: any, options: { home?: boolean; budgetApi?: any; budgetSec
   }
   Object.assign(react, { useLayoutEffect: react.useEffect })
   runInNewContext(readFileSync(new URL('../../dist/client.js', import.meta.url), 'utf8'), {
-    URL, setTimeout, clearTimeout, setInterval: (callback: Function) => { options.timers?.push(callback); return 1 }, clearInterval() {},
+    URL, Event, setTimeout, clearTimeout, setInterval: (callback: Function) => { options.timers?.push(callback); return 1 }, clearInterval() {},
     window: { addEventListener() {}, removeEventListener() {}, location: { reload: () => options.reload?.() },
+      dispatchEvent() {},
       __ModuleLoader__: { load: ({ factory }: any) => { plugin = factory((id: string) => id === 'react' ? react : {}) } } },
   })
   const ctx: any = {
-    effect() {}, locale: { bind: () => (key: string) => key }, remote: { $mount: async () => {}, superCodeConnection: api, superCodeBudgets: options.budgetApi, superCodePresets: options.presetApi },
+    effect() {}, locale: { bind: () => (key: string) => key }, remote: { $mount: async () => {}, ...options.remote, superCodeConnection: api, superCodeBudgets: options.budgetApi, superCodePresets: options.presetApi },
     settingsScope: { bind: () => ({}) },
     inject: (dependencies: string[], callback: Function) => { if (dependencies.every(name => name === 'settingsScope' || name.startsWith('remote.superCode'))) callback(ctx) },
     slots: { inject: (_: string, callback: Function) => callback(), register: (config: any, component: any) => {
       if (config.name === 'settings.section') { Settings = component; settingsProps = config.inject }
+      if (config.name === 'shell.overlay') { Consent = component; consentProps = config.inject }
     } },
     sidebarRightTabs: { register: () => () => {} }, sessions: {}, sidebarRight: {},
   }
@@ -71,6 +73,7 @@ function fixture(api: any, options: { home?: boolean; budgetApi?: any; budgetSec
     return tree
   }
   const mount = () => {
+    if (options.consent) return { type: Consent, props: { ...consentProps(), t: (key: string) => key } }
     if (options.preset) return { type: Settings, props: { ...settingsProps(), t: (key: string) => key } }
     const parent = render(Settings, { ...settingsProps(), t: (key: string) => key }, false)
     return nodes(parent).find(row => typeof row.type === 'function'
@@ -92,6 +95,97 @@ function fixture(api: any, options: { home?: boolean; budgetApi?: any; budgetSec
   })
 }
 const button = (tree: any) => nodes(tree).find(row => row.type === 'button' && row.children.includes('save.retry'))
+
+test('empty directory consent has no polling timer or repeated reads', async () => {
+  const timers: Function[] = []
+  let reads = 0
+  const api = { pendingDirectories: async () => { reads++; return { ok: true, value: [] } } }
+  const lifetime = new AbortController()
+  const render = fixture(api, { consent: true, timers, remote: { $stream: () => ({
+    signal: lifetime.signal, dispose: async () => { lifetime.abort() },
+    async *[Symbol.asyncIterator]() { yield { value: [], accept() {} } },
+  }) } })
+  try {
+    assert.equal(render(), null); await tick()
+    assert.equal(render(), null)
+    assert.equal(timers.length, 0, 'disabled consent must not own an interval')
+    assert.equal(reads, 0, 'consent receives snapshots instead of polling')
+  } finally { render.unmount() }
+  assert.equal(lifetime.signal.aborted, true)
+})
+
+function consent() {
+  const lifetime = new AbortController(), writes: string[] = []
+  let update = Promise.withResolvers<any[]>(), options: any, accepts = 0, disposals = 0, fail = false
+  const api = { resolveDirectory: async (id: string, decision: string) => { writes.push(id + ':' + decision); return { ok: !fail } } }
+  const render = fixture(api, { consent: true, remote: { $stream: (value: any) => {
+    options = value
+    return { signal: lifetime.signal,
+      async dispose() { disposals++; lifetime.abort(); update.resolve([]) },
+      async *[Symbol.asyncIterator]() {
+        while (!lifetime.signal.aborted) {
+          const value = await update.promise; update = Promise.withResolvers()
+          if (lifetime.signal.aborted) return
+          yield { value, accept() { accepts++ } }
+        }
+      },
+    }
+  } } })
+  render()
+  return { render, writes, emit: (rows: any[]) => update.resolve(rows), lost: () => options.carrierFailed(),
+    counts: () => ({ accepts, disposals }), fail: (value: boolean) => { fail = value } }
+}
+
+test('directory snapshots withdraw stale consent on transport loss and never send a decision themselves', async () => {
+  const f = consent()
+  try {
+    f.emit([{ id: 'first', path: '/requested', client: 'Caller', reason: 'Test' }]); await tick()
+    assert.ok(nodes(f.render()).some(row => row.children.includes('connection.approveDirectory')))
+    assert.deepEqual(f.writes, [])
+    f.lost(); assert.equal(f.render(), null)
+    f.emit([]); await tick(); assert.equal(f.render(), null)
+    assert.deepEqual(f.writes, [])
+    assert.equal(f.counts().accepts, 2)
+  } finally { f.render.unmount() }
+  assert.equal(f.counts().disposals, 1)
+})
+
+test('consent requires an explicit retry after an uncertain decision and ignores a stale snapshot after success', async () => {
+  const f = consent(), row = { id: 'first', path: '/requested', client: 'Caller', reason: 'Test' }
+  const approve = () => nodes(f.render()).find(node => node.children.includes('connection.approveDirectory') && node.props.onClick)
+  try {
+    f.emit([row]); await tick(); f.fail(true)
+    await approve().props.onClick(); await tick()
+    assert.deepEqual(f.writes, ['first:approved'])
+    assert.ok(nodes(f.render()).some(node => node.props.role === 'alert'))
+    f.emit([row]); await tick(); assert.deepEqual(f.writes, ['first:approved'])
+    f.fail(false); await approve().props.onClick(); await tick()
+    assert.equal(f.render(), null)
+    f.emit([row]); await tick(); assert.equal(f.render(), null)
+    assert.deepEqual(f.writes, ['first:approved', 'first:approved'])
+  } finally { f.render.unmount() }
+})
+
+test('a broken consent stream factory shows a local error and leaves the component mounted', async () => {
+  const render = fixture({}, { consent: true, remote: { $stream() { throw new Error('Unavailable stream API') } } })
+  try {
+    assert.equal(render(), null); await tick()
+    const tree = render()
+    assert.equal(tree.props.role, 'alert')
+    assert.ok(tree.children.includes('connection.requestUnavailable'))
+  } finally { render.unmount() }
+})
+
+test('a throwing host stream disposer does not escape consent cleanup', async () => {
+  let disposals = 0
+  const render = fixture({}, { consent: true, remote: { $stream: () => ({ signal: new AbortController().signal,
+    async *[Symbol.asyncIterator]() { yield { value: [], accept() {} } },
+    dispose() { disposals++; throw new Error('Host stream cleanup failed') },
+  }) } })
+  render(); await tick()
+  assert.doesNotThrow(() => render.unmount())
+  await tick(); assert.equal(disposals, 1)
+})
 
 for (const outcome of ['success', 'response-error', 'transport-error']) test(`disconnect waits for a pending activity poll and recovers after ${outcome}`, async () => {
   const timers: Function[] = [], writes: string[] = []

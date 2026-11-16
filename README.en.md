@@ -104,7 +104,7 @@ Download the `.tgz` file from [GitHub Releases](https://github.com/ArtlexYoung/d
 
 Desktop: enter the full path of the package in "Package name or address", then click **Install**.
 
-[![Enter the package path](docs/images/install-tgz.png)](docs/images/install-tgz.png)
+<a href="docs/images/install-tgz.png"><img alt="Enter the package path" src="docs/images/install-tgz.png" width="432"></a>
 
 Web: run the following command (use the actual file name):
 
@@ -135,7 +135,7 @@ Model, reasoning effort, permissions, and tools follow the Harness settings and 
 
 If the preset is not listed, check its status in **Settings → Super Code**, or see [troubleshooting](docs/en/UsageGuide.md#cant-find-the-preset).
 
-[![Super Code settings](docs/images/preset-settings.png)](docs/images/preset-settings.png)
+<a href="docs/images/preset-settings.png"><img alt="Super Code settings" src="docs/images/preset-settings.png" width="566"></a>
 
 Select **Super Code** in the right sidebar. It contains three sections:
 
@@ -145,9 +145,7 @@ Select **Super Code** in the right sidebar. It contains three sections:
 
 Exactly one of the three sections stays open. Tasks opens by default; clicking its heading keeps it expanded.
 
-[![Task sidebar](docs/images/task-status.png)](docs/images/task-status.png)
-
-[![Agent tree](docs/images/agent-tree.png)](docs/images/agent-tree.png)
+<a href="docs/images/task-status.png"><img alt="Task sidebar" src="docs/images/task-status.png" width="174"></a> <a href="docs/images/agent-tree.png"><img alt="Agent tree" src="docs/images/agent-tree.png" width="304"></a>
 
 Screenshots use the current UI with sample data to illustrate the plugin.
 

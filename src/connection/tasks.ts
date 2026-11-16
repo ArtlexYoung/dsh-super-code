@@ -331,9 +331,10 @@ export class DelegatedTasks {
   }
   async list(cursor: number): Promise<{ tasks: { taskId: string; sessionId: string; cwd: string; client: string; status: TaskStatus; updatedAt: number }[]; nextCursor: number | false }> {
     return this.exclusive(async () => {
-      const rows = [...this.records].reverse()
-      return { tasks: rows.slice(cursor, cursor + 25).map(task => ({ taskId: task.id, sessionId: task.sessionId, cwd: task.cwd, client: task.client, status: task.status, updatedAt: task.updatedAt })),
-        nextCursor: cursor + 25 < rows.length ? cursor + 25 : false }
+      const end = Math.max(0, this.records.length - cursor)
+      const rows = this.records.slice(Math.max(0, end - 25), end).reverse()
+      return { tasks: rows.map(task => ({ taskId: task.id, sessionId: task.sessionId, cwd: task.cwd, client: task.client, status: task.status, updatedAt: task.updatedAt })),
+        nextCursor: cursor + 25 < this.records.length ? cursor + 25 : false }
     })
   }
   async sessions(cwd: string, limit: number, status: { connections: number; maxConnections: number; ids: readonly string[] }): Promise<{

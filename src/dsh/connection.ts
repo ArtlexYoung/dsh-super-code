@@ -3,7 +3,7 @@ import { Remote, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
 import { fileURLToPath } from 'node:url'
 import { readFile, realpath, stat } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
-import type { ConnectionService } from '../connection/service.js'
+import { ConnectionService } from '../connection/service.js'
 import type { ConnectionSaveResult, ConnectionSnapshot } from '../connection/service.js'
 import { ConnectionError, defaultConnectionConfig } from '../connection/types.js'
 import { ConnectionStore } from '../connection/store.js'
@@ -133,8 +133,6 @@ export function applyConnection(ctx: Context): void {
     const host = new ConnectionHost({ presets: owner.get('superCodePresets'), controller: owner.get('sessionController'),
       workspaceRegistry: owner.get('workspaceRegistry'), agents: owner.get('agents'), query: owner.get('sessionQuery'),
       subagents: owner.get('subagents') } as ConnectionHostServices)
-    const { ConnectionService } = await import('../connection/service.js')
-    if (disposed) return
     const connection = new ConnectionService(new ConnectionStore(join(directory, 'super-code-connection')), host, () => remote.directoriesChanged())
     try {
       startup = { connection, initialized: connection.initialize() }

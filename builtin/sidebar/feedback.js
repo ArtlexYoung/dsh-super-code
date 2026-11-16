@@ -18,22 +18,29 @@ function taskFeedbackRows(view) {
       owner: node.title || node.displayTitle || '', todos, done: todos.filter(item => item.status === 'completed').length,
       total: todos.length, complete: !facts?.omittedTodos, taskStatus: recorded?.status || (facts?.goal?.kind === 'recorded' ? facts.goal.status : '') }
   })
-  const files = new Map()
+  const files = new Map(), prefixes = new Map()
   // File identity remains independent of the virtual viewport.
   for (const node of view.nodes.values()) for (const file of node.projectionValues?.superCodeFeedback?.files || []) {
     const row = files.get(file.path) || { path: file.path, operations: new Set(), sources: [] }
     row.operations.add(file.operation); row.sources.push({ node, seq: file.seq, tool: file.tool })
     files.set(file.path, row)
   }
-  return { tasks, more, files: [...files.values()].sort((a, b) => a.path.localeCompare(b.path)).map(file => ({ ...file, ...feedbackFileLabel(file) })),
+  return { tasks, more, files: [...files.values()].sort((a, b) => a.path.localeCompare(b.path)).map(file => ({ ...file, ...feedbackFileLabel(file, prefixes) })),
     partial: [...view.nodes.values()].some(node => !node.projectionValues?.superCodeFeedback || node.projectionValues.superCodeFeedback.omittedFiles) }
 }
 /** Presentation only: retain the full path while shortening workspace-owned labels. */
-function feedbackFileLabel(file) {
+function feedbackFileLabel(file, prefixes) {
   const path = file.path.replace(/\\/g, '/')
-  const cwd = file.sources.map(source => source.node.cwd || source.node.projectionValues?.workingDirectory || '')
-    .find(value => value && path.startsWith(value.replace(/\\/g, '/').replace(/\/$/, '') + '/'))
-  const relative = cwd ? path.slice(cwd.replace(/\\/g, '/').replace(/\/$/, '').length + 1) : path
+  let relative = path
+  for (const { node } of file.sources) {
+    let prefix = prefixes.get(node)
+    if (prefix === undefined) {
+      const cwd = node.cwd || node.projectionValues?.workingDirectory || ''
+      prefix = cwd ? cwd.replace(/\\/g, '/').replace(/\/$/, '') + '/' : ''
+      prefixes.set(node, prefix)
+    }
+    if (prefix && path.startsWith(prefix)) { relative = path.slice(prefix.length); break }
+  }
   const slash = relative.lastIndexOf('/')
   return { name: relative.slice(slash + 1) || relative, directory: slash < 0 ? '' : relative.slice(0, slash) }
 }

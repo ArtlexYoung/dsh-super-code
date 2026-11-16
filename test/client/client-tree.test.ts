@@ -1103,6 +1103,29 @@ test('feedback file labels keep full identity and shorten only a workspace path 
   assert.equal(file('C:\\project\\src\\sidebar.ts').directory, 'src')
 })
 
+test('反馈文件按来源顺序选择目录，下一次聚合使用更新后的目录', () => {
+  for (const [cwd, separator] of [['/project', '/'], ['C:\\项目 目录', '\\'], ['\\\\server\\share', '\\']]) {
+    const path = [cwd, 'nested', 'src', 'file.ts'].join(separator)
+    const files = [{ path, operation: 'edit', seq: 1, tool: 'edit' }]
+    const nodes = {
+      root: { id: 'root', cwd: '/unrelated', projectionValues: { superCodeFeedback: { files } } },
+      nested: { id: 'nested', parentId: 'root', cwd: cwd + separator + 'nested', projectionValues: { superCodeFeedback: { files } } },
+      broad: { id: 'broad', parentId: 'root', projectionValues: { workingDirectory: cwd, superCodeFeedback: { files } } },
+    }
+    const view = { root: 'root', nodes: new Map(Object.values(nodes).map(node => [node.id, node])),
+      children: new Map([['root', ['nested', 'broad']]]), ancestors: new Set(['root']) }
+    const first = plugin.taskFeedbackRows(view).files
+    assert.equal(first.length, 1)
+    assert.equal(first[0].path, path)
+    assert.equal(first[0].directory, 'src')
+    assert.deepEqual(Array.from(first[0].sources, (source: any) => source.node.id), ['root', 'nested', 'broad'])
+    Object.assign(view.nodes.get('nested')!, { cwd: '/moved' })
+    const changed = plugin.taskFeedbackRows(view).files
+    assert.equal(changed[0].directory, 'nested/src')
+    assert.equal(first[0].directory, 'src')
+  }
+})
+
 test('expanded feedback includes every loaded descendant, step, activity and file without artificial paging', () => {
   const nodes = Array.from({ length: 260 }, (_, index) => ({ id: 'agent' + index, parentId: index ? 'agent0' : undefined,
     title: 'Agent ' + index, running: false, projectionValues: { superCodeFeedback: { request: 'Task ' + index,

@@ -2,7 +2,7 @@
 
 [中文](README.md) · English
 
-[![npm total downloads](https://img.shields.io/npm/dt/dsh-super-code?label=npm%20downloads)](https://npmtrends.com/dsh-super-code) [![Latest npm release](https://img.shields.io/npm/v/dsh-super-code)](https://www.npmjs.com/package/dsh-super-code) [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+[![npm total downloads](https://img.shields.io/npm/dt/dsh-super-code?label=npm%20downloads)](https://npmtrends.com/dsh-super-code) [![Latest npm release](https://img.shields.io/npm/v/dsh-super-code)](https://www.npmjs.com/package/dsh-super-code) [![Supported Harness versions: 0.1.5-alpha.1–0.2.2-rc.2](https://img.shields.io/badge/Harness-0.1.5--alpha.1%20%E2%80%93%200.2.2--rc.2-blue)](docs/en/Compatibility.md) [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
 A coding tool for DeepSeek Harness worth trying: smarter, leaner, and easier to use.
 

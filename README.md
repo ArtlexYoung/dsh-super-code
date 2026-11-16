@@ -2,7 +2,7 @@
 
 中文 · [English](README.en.md)
 
-[![npm 总下载量](https://img.shields.io/npm/dt/dsh-super-code?label=npm%20downloads)](https://npmtrends.com/dsh-super-code) [![npm 当前发布版本](https://img.shields.io/npm/v/dsh-super-code)](https://www.npmjs.com/package/dsh-super-code) [![许可证：Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+[![npm 总下载量](https://img.shields.io/npm/dt/dsh-super-code?label=npm%20downloads)](https://npmtrends.com/dsh-super-code) [![npm 当前发布版本](https://img.shields.io/npm/v/dsh-super-code)](https://www.npmjs.com/package/dsh-super-code) [![Harness 支持版本：0.1.5-alpha.1～0.2.2-rc.2](https://img.shields.io/badge/Harness-0.1.5--alpha.1%20%E2%80%93%200.2.2--rc.2-blue)](docs/Compatibility.md) [![许可证：Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
 值得一试的 DeepSeek Harness 编程工具，更聪明、更节省、更好用。
 

@@ -43,7 +43,10 @@ const taskContracts: Contracts = {
 }
 const rememberSchema = z.object({ expectedRevision: count, globalConfirmed: z.boolean().optional(), entries: z.array(z.object({
   id: z.string(), kind: z.enum(['constraint', 'fact', 'experience']), summary: z.string(), detail: z.string(), sourceVersion: z.string().optional(),
-  source: z.object({ kind: z.enum(['user', 'tool']), eventSeq: count, quote: z.string().min(1).max(4000).optional(), callSeq: count.optional() }).strict(),
+  source: z.discriminatedUnion('kind', [
+    z.object({ kind: z.literal('user'), eventSeq: count, quote: z.string().min(1).max(4000) }).strict(),
+    z.object({ kind: z.literal('tool'), eventSeq: count, callSeq: count }).strict(),
+  ]),
 }).strict()).min(1).max(8) }).strict()
 const forgetSchema = z.object({ expectedRevision: count.positive(), source: sourceSchema }).strict()
 const topicsSchema = z.object({ offset: count.default(0) }).strict()

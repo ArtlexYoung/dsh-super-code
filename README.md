@@ -89,7 +89,7 @@
 
 **桌面版**：在左侧打开「插件 → 添加插件」，输入 `dsh-super-code`，依次点击「安装」和「立即启用」（旧版本请按提示重载或重启）。桌面版内置运行环境，无需安装 Node.js。
 
-**Web / 命令行版**：插件要求 Node.js 22 及以上；Harness `0.2.2-rc.2` 要求 Node.js 24.9 及以上。
+**Web / 命令行版**：建议使用 Node.js `24.9.0` 及以上，Harness 自 `0.2.2-alpha.2` 起也声明此要求。较早的 Harness（`0.1.5-alpha.1` 至 `0.2.1-rc.5`）已在 macOS 用 Node.js `22.18.0` 逐版验证启动、删除审批与冷重启恢复。插件单独支持 Node.js `22.0.0`，完整 Harness 在该版本会静默退出。
 
 ```bash
 npm install -g @deepseek-ai/dsh            # 已安装 dsh 命令可跳过

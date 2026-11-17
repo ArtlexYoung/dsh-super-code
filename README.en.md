@@ -89,7 +89,7 @@ Supports Harness `0.1.5-alpha.1` through `0.2.2-rc.2`, including `0.2.2-alpha.3`
 
 **Desktop**: open **Plugins → Add plugin** in the left sidebar, enter `dsh-super-code`, then click **Install** and **Enable now** (on older versions, reload or restart when prompted). Desktop includes its own runtime; Node.js is not required.
 
-**Web / CLI**: the plugin requires Node.js 22 or later; Harness `0.2.2-rc.2` requires Node.js 24.9 or later.
+**Web / CLI**: use Node.js `24.9.0` or later. Harness declares this requirement starting with `0.2.2-alpha.2`. On macOS, each earlier Harness release from `0.1.5-alpha.1` through `0.2.1-rc.5` passed startup, deletion approval, and cold restart checks on Node.js `22.18.0`. The plugin itself supports Node.js `22.0.0`. The full Harness exits silently on that version.
 
 ```bash
 npm install -g @deepseek-ai/dsh            # skip if dsh is already installed

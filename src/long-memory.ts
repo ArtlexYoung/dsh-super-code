@@ -7,7 +7,7 @@ import type { DomainTableSpec, KvTable } from '@deepseek-ai/dsh-storage-domain'
 import { z } from 'zod'
 
 const id = z.string().regex(/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,95}$/)
-const summary = z.string().trim().min(1).refine(value => Array.from(value).length <= 30, 'Summary exceeds 30 characters')
+const summary = z.string().trim().min(1).refine(value => value.length <= 30 || value.length <= 60 && Array.from(value).length <= 30, 'Summary exceeds 30 characters')
 export interface LongMemoryEntry {
   id: string; kind: 'constraint' | 'fact' | 'experience'; summary: string; detail: string
   source: { sessionId: string; eventSeq: number; kind: 'user'; quote: string }

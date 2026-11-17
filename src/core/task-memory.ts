@@ -29,7 +29,7 @@ const text = z.string().trim().min(1).max(4_000)
 const id = z.string().regex(/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,95}$/)
 const keyPointSchema: z.ZodType<KeyPoint> = z.object({
   kind: z.enum(['constraint', 'fact', 'decision', 'next']),
-  summary: z.string().trim().min(1).refine(value => Array.from(value).length <= 30, 'Key point exceeds 30 characters'),
+  summary: z.string().trim().min(1).refine(value => value.length <= 30 || value.length <= 60 && Array.from(value).length <= 30, 'Key point exceeds 30 characters'),
 }).strict()
 export const sourceSchema: z.ZodType<TaskSource> = z.object({ seq: z.number().int().nonnegative(), quote: text }).strict()
 export const requirementSchema: z.ZodType<Requirement> = z.object({ id, text, source: sourceSchema }).strict()

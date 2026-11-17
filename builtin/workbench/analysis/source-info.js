@@ -1,6 +1,7 @@
 import { loadLanguage } from '../editor/languages.js';
 
 const declarations = /^(?:FunctionDeclaration|FunctionDefinition|FunctionDecl|FunctionItem|MethodDeclaration|MethodDecl|MethodDefinition|ConstructorDeclaration|ArrowFunction)$/;
+const bindings = /^(?:VariableDeclaration|LetDeclaration|VarSpec|ConstSpec|ConstItem|StaticItem|AssignStatement|AssignmentExpression|FieldDeclaration|LocalVariableDeclaration|PropertyDeclaration|Declaration)$/;
 const bodies = /^(?:Block|CompoundStatement|Body|ConstructorBody)$/;
 const ignored = /^(?:LineComment|BlockComment|Comment|String|StringLiteral|RawString|CharLiteral|CharacterLiteral|RegExp|comment|string(?:\..*)?)$/;
 const interpolations = { TemplateString: 'Interpolation', FormatString: 'FormatReplacement' };
@@ -51,6 +52,13 @@ export function declarationAt(tree, offset) {
   return null;
 }
 
+function bindingAt(tree, offset) {
+  for (let node = tree?.resolveInner(offset, 1); node; node = node.parent) {
+    if (bindings.test(node.name)) return node;
+  }
+  return null;
+}
+
 export function sourceSignature(text, symbol, parsed) {
   const declaration = /func|method|generator/i.test(symbol.kind) ? declarationAt(parsed.tree, symbol.offset) : null;
   if (declaration) {
@@ -60,11 +68,13 @@ export function sourceSignature(text, symbol, parsed) {
     }
     return text.slice(declaration.from, end).trim().replace(/;$/, '').trim();
   }
-  // 旧语言模式只提供着色标记，保留源码声明头，不猜测缺少的类型。
-  const lineStart = text.lastIndexOf('\n', symbol.offset - 1) + 1;
+  // 只读取所属声明；旧词法模式没有声明节点时仍沿用源码行，不猜测缺少的类型。
+  const binding = bindingAt(parsed.tree, symbol.offset), limit = binding?.to ?? text.length;
+  const lineStart = binding?.from ?? text.lastIndexOf('\n', symbol.offset - 1) + 1;
   let header = '', depth = 0;
-  for (let from = lineStart; from < text.length;) {
-    const end = text.indexOf('\n', from), line = text.slice(from, end < 0 ? text.length : end);
+  for (let from = lineStart; from < limit;) {
+    const remaining = text.slice(from, limit), next = remaining.indexOf('\n');
+    const end = next < 0 ? limit : from + next, line = next < 0 ? remaining : remaining.slice(0, next);
     for (let column = 0; column < line.length; column++) {
       const character = line[column];
       if (character === '(') depth++;
@@ -72,7 +82,7 @@ export function sourceSignature(text, symbol, parsed) {
       if (character === '{' && depth === 0) return (header + line.slice(0, column)).trim();
     }
     header += (header ? '\n' : '') + line.trim();
-    if (depth <= 0 || end < 0) break;
+    if (depth <= 0 || end === limit) break;
     from = end + 1;
   }
   return header.replace(/;$/, '').trim();

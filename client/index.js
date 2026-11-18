@@ -4,6 +4,7 @@ export { taskFeedbackRows, feedbackStatus, feedbackListItems, feedbackListLayout
 export { connectionSessions, createConnectionAutosave, connectionDraft, connectionConfiguration } from '../builtin/settings/connection.js'
 export { createBudgetAutosave, createBudgetEditors, budgetDraft, budgetConfiguration } from '../builtin/settings/budgets.js'
 export { synchronizePresetDisplay } from '../builtin/settings/presets.js'
+export { createToolAutosave, toolConfiguration } from '../builtin/settings/tools.js'
 export { agentSessionState, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentHistoryRange, agentHistoryRows, agentHistoryWindow } from '../builtin/sidebar/agents.js'
 export { createAgentInspector } from '../builtin/sidebar/detail.js'
 export { detailRecord } from '../builtin/sidebar/messages.js'

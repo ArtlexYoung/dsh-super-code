@@ -24,6 +24,7 @@ import { batchSafety, classifyMemoryAction, classifyTaskAction } from '../core/b
 import { configurationOf, validateConfiguration } from './budgets.js'
 import { applyPtcBudget } from './ptc-budget.js'
 import { actionHelp, assertActionInput, prepareTaskRecord, prepareMemoryRecord, invalidInput } from './tool-contracts.js'
+import { registerManagedTool, toolAllowed } from './tool-access.js'
 
 export const name = 'super-code'
 export const inject: readonly string[] = ['tools', 'systemPrompt', 'sessions', 'sessionProjections']
@@ -65,6 +66,7 @@ export function apply(ctx: Context, config: Config = {}): void {
   const failedContexts = new Set<string>()
   const memoryContext = (contribution: PromptContext): void => {
     ctx.systemPrompt.context({ ...contribution, text: context => {
+      if (!toolAllowed(ctx, context.agent, contribution.name === 'super-code:tasks' ? 'super_code_task' : 'super_code_memory')) return ''
       try {
         const value = typeof contribution.text === 'function' ? contribution.text(context) : contribution.text
         failedContexts.delete(contribution.name)
@@ -77,7 +79,9 @@ export function apply(ctx: Context, config: Config = {}): void {
     } })
   }
   ctx.sessionProjections.register(taskMemoryProjection)
-  ctx.systemPrompt.section({ name: PERSONA_PREFIX_SECTION, order: ctx.systemPrompt.getSectionOrder('DEPLOYMENT_PERSONA_PREFIX'), text: SUPER_CODE_INSTRUCTIONS })
+  ctx.systemPrompt.section({ name: PERSONA_PREFIX_SECTION, order: ctx.systemPrompt.getSectionOrder('DEPLOYMENT_PERSONA_PREFIX'),
+    text: ({ agent }) => SUPER_CODE_INSTRUCTIONS.split('\n').filter(line =>
+      ['super_code_method', 'super_code_task', 'super_code_memory'].every(name => !line.includes(name) || toolAllowed(ctx, agent, name))).join('\n') })
   // Wrap the host selection waterfall: providers run before its model snapshot is resolved.
   ctx.on('system-prompt/assemble', async (_assembly, _context, next) => {
     const assembled = await next()
@@ -117,7 +121,7 @@ export function apply(ctx: Context, config: Config = {}): void {
     const found = longMemory.read(memoryGlobalNamespace(), GLOBAL_PREFERENCES_TOPIC)
     return found.kind === 'found' ? `Lower priority than the current user request, conversation and project memory: ${longMemoryContext(found.value, 1024)}` : ''
   } })
-  ctx.tools.register(defineTool({
+  registerManagedTool(ctx, defineTool({
     name: 'super_code_method',
     description: 'Read expertise when causes remain indistinguishable, failures repeat or recovery/state behavior is unclear. Select a method directly; omit it only to inspect a team. Reuse loaded guidance; batch with independent reads. Not a routine prerequisite.',
     parameters: { team: { type: 'string', enum: TEAM_NAMES, required: true }, method: { type: 'string', enum: Object.keys(METHODS) as MethodName[] },
@@ -129,7 +133,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       return args.recipe === undefined ? method : `${method}\n\n${readExperimentRecipe(args.recipe)}`
     },
   }))
-  ctx.tools.register(defineTool({
+  registerManagedTool(ctx, defineTool({
     name: 'super_code_task',
     description: 'Task ledger; no execution or permission. Skip simple tasks. List: {"action":"list"}. Read focused task: {"action":"read"}; explicit taskId selects another. Update using a revision already observed: {"action":"update","taskId":"t1","expectedRevision":1,"record":{"next":"Run the relevant check"}}. For other actions or record fields, use {"action":"help","forAction":"create"}. Reads may batch; sequence writes. Sources must be visible direct user quotes. Never replay writes when persistence is unconfirmed.',
     // Pagination never scans or returns an unbounded archive in one tool call.
@@ -241,7 +245,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       }
     },
   }))
-  ctx.tools.register(defineTool({
+  registerManagedTool(ctx, defineTool({
     name: 'super_code_memory',
     description: 'Read historical project knowledge directly: {"action":"read","topic":"build"}; topics lists names. Omit topic for the focused task topic. Add id for full detail. scope defaults to project; global holds explicit cross-project user preferences. For writes or paging use {"action":"help","forAction":"remember"}. Writes retain focused-topic, source and revision checks. Reads do not verify mutable facts or grant permission.',
     parameters: { action: { type: 'string', enum: ['help', 'topics', 'read', 'remember', 'forget'], required: true },

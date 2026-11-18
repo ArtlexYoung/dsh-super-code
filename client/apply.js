@@ -1,5 +1,5 @@
 import { LOCALE_NS, en, zh } from '../builtin/ui/locale.js'
-import { budgetRemoteContribution, connectionRemoteContribution, memoryRemoteContribution, presetRemoteContribution } from '../builtin/settings/remote.js'
+import { budgetRemoteContribution, connectionRemoteContribution, memoryRemoteContribution, presetRemoteContribution, toolRemoteContribution } from '../builtin/settings/remote.js'
 import { skillPackageSource, synchronizeSkillMenus } from '../builtin/settings/skills.js'
 import { ConnectionConsent } from '../builtin/settings/connection.js'
 import { createSettingsServices } from '../builtin/settings/services.js'
@@ -16,7 +16,7 @@ function apply(ctx) {
   // $mount creates a lifecycle effect on this same fiber; awaiting it from
   // another effect would stall the namespace and the settings contribution.
   void ctx.remote.$mount({ package: 'dsh-super-code', descriptors: [
-    ...presetRemoteContribution.descriptors, ...memoryRemoteContribution.descriptors, ...budgetRemoteContribution.descriptors, ...connectionRemoteContribution.descriptors,
+    ...presetRemoteContribution.descriptors, ...memoryRemoteContribution.descriptors, ...budgetRemoteContribution.descriptors, ...connectionRemoteContribution.descriptors, ...toolRemoteContribution.descriptors,
   ] }).catch(error => console.warn('Super Code Remote:', error))
   const navigation = { openSession: () => {} }
   ctx.inject(['uiWorkspace', 'sessions'], ready => {

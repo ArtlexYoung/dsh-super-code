@@ -16,7 +16,11 @@ export async function apply(ctx: Context, config: Configuration = {}): Promise<v
       ? 'Deletion protection is unavailable. Command tools are disabled; restore protection before retrying.' : undefined)
   })
   const features: readonly [string, readonly string[], (owner: Context) => Promise<void>][] = [
-    ['settings', ['settings'], async owner => { await (await import('./budget-settings.js')).applyBudgetRemote(owner) }],
+    ['settings', ['settings'], async owner => {
+      await (await import('./budget-settings.js')).applyBudgetRemote(owner)
+      if (typeof owner.settings.register === 'function' && !owner.get('superCodeTools'))
+        (await import('./tool-settings.js')).apply(owner)
+    }],
     ['skills', [], async owner => { (await import('./skill-directory.js')).applySkillDirectory(owner) }],
     ['shell', [], async owner => { (await import('./windows-shell.js')).applyWindowsShell(owner) }],
     ['official-shell', ['agentPresets'], async owner => { (await import('./official-windows-shell.js')).applyOfficialWindowsShell(owner) }],

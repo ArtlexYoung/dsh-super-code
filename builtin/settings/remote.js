@@ -43,4 +43,12 @@ const connectionRemoteContribution = {
   })),
 }
 
-export { budgetRemoteContribution, connectionRemoteContribution, memoryRemoteContribution, presetRemoteContribution }
+const toolRemoteContribution = {
+  package: 'dsh-super-code', descriptors: ['readConfig', 'saveConfig', 'copyProfile', 'status'].map(method => ({
+    id: `dsh-super-code:superCodeToolSettings/${method}`, service: 'superCodeToolSettings', namespace: 'superCodeToolSettings', method, invocation: { kind: 'direct' },
+    parameters: (method === 'saveConfig' ? ['content', 'expected'] : method === 'copyProfile' ? ['sourceId', 'expected'] : [])
+      .map(name => ({ name, wire: name, source: 'json', codec: remoteStringCodec })), result: { mode: 'src-json' },
+  })),
+}
+
+export { budgetRemoteContribution, connectionRemoteContribution, memoryRemoteContribution, presetRemoteContribution, toolRemoteContribution }

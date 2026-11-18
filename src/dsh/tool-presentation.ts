@@ -4,6 +4,7 @@ import type { ToolDefinition } from '@deepseek-ai/dsh-tools'
 import type { ToolSchema } from '@deepseek-ai/dsh-llm'
 import { scopeChainOf, scopeOf } from '@deepseek-ai/dsh-scope'
 import { hostModule } from './windows-shell.js'
+import { toolAllowed, toolRuntime, installToolPresentation } from './tool-access.js'
 
 export const name = 'super-code-tool-presentation'
 export const inject: readonly string[] = ['tools', 'systemPrompt', 'agents']
@@ -32,6 +33,12 @@ function windowsLongDirectory(agent: Agent): boolean {
   return process.platform === 'win32' && (agent.session.header.cwd?.length ?? 0) >= windowsWorkingDirectoryLimit
 }
 
+export function toolExecution(ctx: Context, agent: Agent, requested: 'native' | 'ptc'): { execution: 'native' | 'ptc'; reason?: string } {
+  if (ctx.tools.get('remote_bash', agent)) return { execution: 'native', reason: 'remote' }
+  if (windowsLongDirectory(agent)) return { execution: 'native', reason: 'windows-path' }
+  return { execution: requested }
+}
+
 // rc.3 将执行器从工具注册表中拆出；旧版仍使用 presentAs。
 interface Batch { readonly agent?: Agent }
 interface HostExecutor {
@@ -51,28 +58,46 @@ async function applyExecutors(ctx: Context, tools: ExecutorTools): Promise<void>
   const { NativeToolExecutor } = nativeModule as unknown as { NativeToolExecutor: new(ctx: Context) => HostExecutor }
   const native = new NativeToolExecutor(ctx)
   let ptc = native
+  let ptcAvailable = false
   try {
     const ptcModule = await hostModule(ctx, '@deepseek-ai/dsh-tool-executor-ptc')
     const { PtcExecutor } = ptcModule as unknown as { PtcExecutor: new(ctx: Context) => HostExecutor }
     ptc = new PtcExecutor(ctx)
+    ptcAvailable = true
   } catch (error) { ctx.logger.warn('PTC is unavailable; using the native tool executor.', error) }
-  const executor = (nativeOnly: boolean): HostExecutor => ({
+  const visible = (definitions: readonly ToolDefinition[], agent?: Agent): readonly ToolDefinition[] => definitions.filter(tool => toolAllowed(ctx, agent, tool.name))
+  const executor = (nativeOnly: boolean, agent?: Agent): HostExecutor => ({
     sections: nativeOnly ? [] : ptc.sections?.map(section => ({ ...section, text: definitions => remoteTools(definitions) ? ''
-      : typeof section.text === 'function' ? section.text(definitions) : section.text })),
-    describe: definitions => remoteTools(definitions)
-      ? { ...native.describe(definitions.filter(tool => !remoteUnsupported(tool.name))), knownNames: definitions.map(tool => tool.name) }
-      : (nativeOnly ? native : ptc).describe(definitions),
+      : typeof section.text === 'function' ? section.text(visible(definitions, agent)) : section.text })),
+    describe: definitions => {
+      const filtered = visible(definitions, agent)
+      return remoteTools(definitions)
+        ? { ...native.describe(filtered.filter(tool => !remoteUnsupported(tool.name))), knownNames: definitions.map(tool => tool.name) }
+        : { ...(nativeOnly ? native : ptc).describe(filtered), knownNames: definitions.map(tool => tool.name) }
+    },
     execute: input => (nativeOnly || ctx.tools.get('remote_bash', input.agent) ? native : ptc).execute(input),
   })
   tools.setExecutor(executor(false))
-  const selected = new WeakSet<Agent>(), scope = scopeOf(ctx)
+  const selected = new Map<Agent, { mode: boolean; release: () => void }>(), scope = scopeOf(ctx)
+  const select = (agent: Agent, mode: 'native' | 'ptc'): void => {
+    const nativeOnly = toolExecution(ctx, agent, mode).execution === 'native'
+    if (!nativeOnly && !ptcAvailable) throw new Error('The selected PTC executor is unavailable')
+    const previous = selected.get(agent)
+    if (previous?.mode === nativeOnly) return
+    previous?.release()
+    const set = (native: boolean) => (agent.ctx.get('tools') as unknown as ExecutorTools).setExecutor(executor(native, agent))
+    try { selected.set(agent, { mode: nativeOnly, release: set(nativeOnly) }) }
+    catch (error) {
+      if (previous) selected.set(agent, { mode: previous.mode, release: set(previous.mode) })
+      throw error
+    }
+    if (!previous) agent.ctx.effect(() => () => { selected.get(agent)?.release(); selected.delete(agent) })
+  }
+  installToolPresentation(ctx, select)
+  ctx.effect(() => () => { for (const value of selected.values()) value.release(); selected.clear() })
   const install = (agent: Agent): void => {
     if (selected.has(agent) || !windowsLongDirectory(agent) || !scopeChainOf(agent).includes(scope!)) return
-    selected.add(agent)
-    // 长目录只替换展示与调度，工具权限、参数和日志仍由 DSH 负责。
-    const release = (agent.ctx.get('tools') as unknown as ExecutorTools).setExecutor(executor(true))
-    const cleanup = ctx.effect(() => release)
-    agent.ctx.effect(() => cleanup)
+    select(agent, 'native')
   }
   ctx.on('agent/created', ({ agent }) => { install(agent); return undefined })
   ctx.on('agent/pre-step', ({ agent }, next) => { install(agent); return next() })
@@ -83,6 +108,7 @@ async function applyLegacy(ctx: Context): Promise<void> {
   const presentation = await hostModule(ctx, '@deepseek-ai/dsh-agent-tool-presentation')
   await ctx.plugin(presentation as unknown as Plugin.Object, { mode: 'ptc' })
   const selected = new Map<Agent, () => void>(), disposed = new WeakSet<Agent>(), scope = scopeOf(ctx)
+  const requested = new WeakMap<Agent, 'native' | 'ptc'>(), applied = new WeakMap<Agent, 'native' | 'ptc'>()
   let refreshing = false, active = true
   const refresh = (): void => {
     if (refreshing || !active) return
@@ -90,12 +116,15 @@ async function applyLegacy(ctx: Context): Promise<void> {
     try {
       for (const agent of ctx.agents.list()) {
         if (disposed.has(agent) || !scopeChainOf(agent).includes(scope!)) continue
-        if (ctx.tools.get('remote_bash', agent) || windowsLongDirectory(agent)) {
-          if (selected.has(agent)) continue
+        const mode = ctx.tools.get('remote_bash', agent) || windowsLongDirectory(agent) ? 'native' : requested.get(agent)
+        if (mode) {
+          if (applied.get(agent) === mode && selected.has(agent)) continue
+          selected.get(agent)?.()
           // 先占位，避免注册通知重入同一会话。
           selected.set(agent, () => {})
-          const release = agent.ctx.get('tools')!.presentAs('native')
+          const release = agent.ctx.get('tools')!.presentAs(mode)
           selected.set(agent, release)
+          applied.set(agent, mode)
           agent.ctx.effect(() => () => { disposed.add(agent); selected.delete(agent); release() })
         } else {
           const release = selected.get(agent)
@@ -106,6 +135,18 @@ async function applyLegacy(ctx: Context): Promise<void> {
     } finally { refreshing = false }
   }
   ctx.on('tools/change', refresh)
+  installToolPresentation(ctx, (agent, mode) => { requested.set(agent, mode); refresh() })
+  ctx.on('system-prompt/assemble', async (_assembly, { agent }, next) => {
+    const assembled = await next()
+    if (!agent || !toolRuntime(ctx, agent)) return assembled
+    const hostTools = await hostModule(ctx, '@deepseek-ai/dsh-tools')
+    const schemas = ctx.tools.schemas(agent).filter(tool => toolAllowed(ctx, agent, tool.name))
+    const runtime = ctx.get('codeRuntime') as { language?: string } | undefined
+    const render = hostTools[runtime?.language === 'python' ? 'renderToolsSdkPy' : 'renderToolsSdk']
+    if (typeof render !== 'function') throw new Error('The host SDK renderer is unavailable')
+    return { ...assembled, sections: assembled.sections.map(section => section.name === 'tools:sdk'
+      ? { ...section, text: String(render(schemas)) } : section) }
+  })
   ctx.on('agent/created', () => { refresh(); return undefined })
   ctx.on('agent/pre-step', (_event, next) => { refresh(); return next() })
   ctx.effect(() => () => { active = false; for (const release of selected.values()) release(); selected.clear() })

@@ -44,17 +44,31 @@ Before plugin 0.2.0, the settings page lives under **Plugins → Plugin configur
 
 ## Settings
 
-**Settings → Super Code** has five tabs:
+**Settings → Super Code** has seven tabs:
 
 | Tab | Contents |
 |---|---|
 | Home | Preset status and versions, deletion-protection level, MCP switch, connected/past conversation counts |
 | Preset configuration | Install, reinstall, rename, Windows command environment |
+| Tools | Four built-in tool profiles, custom profiles and per-conversation application status |
+| Skills | Bundled workflow and Skill switches |
 | Context settings | [Runtime budgets](#runtime-budgets) |
 | Deletion protection | [Deletion protection](#deletion-protection) |
 | Connection | [MCP connection](#mcp-connection) |
 
 Switching tabs keeps unsaved input.
+
+### Tool profiles
+
+Tools offers four read-only profiles: Standard, PTC (the default), Minimal and Create. Create follows the official Create tool set. Standard, PTC and Create also include Super Code's method, task and memory tools; Minimal uses the official persistent shell and image reader. These profiles configure Super Code without selecting a different official preset.
+
+The picker previews a profile; **Use this profile** activates it. **Copy and edit** and **New empty profile** create custom profiles with editable names, native/PTC execution, standard/persistent shells and individual tool switches. Edits save automatically; editing an inactive profile does not activate it. The limit is 30 profiles including the four built-ins. Deleting an active custom profile requires confirmation and selects PTC.
+
+Each conversation applies changes after its own current turn ends. A can switch while B still awaits answers. All pending calls in the same conversation must finish first; repeated saves while busy keep only the latest target. Pending and failed application states are shown separately. Failed application retains the previous tool set. Persistent-shell state survives switching away and back.
+
+The host supplies `ask_user_question`. Standard, PTC and Create enable it by default; Minimal does not. Enabling a mattpocock Skill supplies workflow guidance and does not enable the tool. `grill-me` still needs a profile that permits questions. Disabling a tool affects declarations, the PTC SDK and execution.
+
+Unavailable components are marked and are not downloaded by saving. Host permissions, lightweight remote restrictions and Windows path rules take precedence. Tools outside the managed catalog are shown read-only and remain controlled by their own plugin settings. Profiles persist independently. Reinstall an older Super Code preset to obtain the new tool-runtime entry.
 
 ### Names and language
 
@@ -161,7 +175,7 @@ Click a node in the tree → open **Details** → expand **Memory activity**. It
 
 ## Batched tool calls
 
-For local projects, Super Code uses Harness-native PTC: one model call can combine several tool operations, such as reading a few unrelated files at once, then decide what to do next. No separate mode needed.
+For local projects, Super Code defaults to Harness-native PTC: one model call can combine several tool operations, such as reading a few unrelated files at once, then decide what to do next. Tools settings can select native calls or a custom profile instead.
 
 - Independent reads run in parallel; writes, tests, state changes, and dependent steps run in order.
 - On partial failure, successful results are kept and only failed or stale reads are retried.

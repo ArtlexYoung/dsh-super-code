@@ -20,7 +20,8 @@ test('batch presets select host execution through the same session-aware entry',
   const preset = await readFile(join(root, 'presets/super-code/agent.cordis.yml'), 'utf8')
   const patch = await readFile(join(root, 'cordis.patch.yml'), 'utf8')
   for (const text of [preset, patch]) {
-    assert.match(text, /name: dsh-super-code\/presets\/super-code\/tool-presentation\.js/)
+    assert.match(text, /name: dsh-super-code\/tool-runtime/)
+    assert.doesNotMatch(text, /name: dsh-super-code\/presets\/super-code\/tool-presentation\.js/)
     assert.doesNotMatch(text, /mode: ptc/)
   }
   assert.match(SUPER_CODE_INSTRUCTIONS, /one run_code program/)

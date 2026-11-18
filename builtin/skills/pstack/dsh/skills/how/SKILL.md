@@ -11,7 +11,7 @@ Read [DSH host operations](../../DSH.md) once before executing this workflow.
 
 Explore the codebase to answer "how does X work?" questions. Produce architectural explanations at the level of a senior engineer onboarding onto a subsystem, enough to build a working mental model, not so much that it reads like annotated source code.
 
-Explorers use the how explorer role and explainers use how explainer from the project preferences; omit model fields for inherited aliases. These roles have read-only access. Use DSH delegation as specified in DSH.md: role-specific self-contained briefs, inherited host model by default, and only actual allowed model routes when the current tool exposes them. The root schedules every dependent phase; children return findings rather than spawning grandchildren. Keep the role count and review purpose below; queue within host capacity. A no-write brief does not strip MCP access.
+Explorers use the how explorer role and explainers use how explainer from the project preferences; omit model fields for inherited aliases. Give these roles a no-write brief; this is a workflow requirement, not a separate host permission boundary. Use DSH delegation as specified in DSH.md: role-specific self-contained briefs, inherited host model by default, and only actual allowed model routes when the current tool exposes them. The root schedules every dependent phase; children return findings rather than spawning grandchildren. Keep the role count and review purpose below; queue within host capacity. A no-write brief does not strip MCP access.
 
 ## 1. Assess complexity
 

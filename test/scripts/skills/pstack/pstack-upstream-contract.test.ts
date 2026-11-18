@@ -15,11 +15,16 @@ test('host adaptation retains upstream read-only role bodies without adding comm
   }
 })
 
-test('host delegation translation preserves upstream read-only semantics and MCP access', async () => {
+test('host delegation translation separates no-write requirements from host permissions and preserves MCP access', async () => {
   const howPath = 'skills/how/SKILL.md', whyPath = 'skills/why/SKILL.md'
   const how = adaptMarkdown(howPath, await readFile(new URL(howPath, root), 'utf8'))
   const why = adaptMarkdown(whyPath, await readFile(new URL(whyPath, root), 'utf8'))
-  assert.match(how, /These roles have read-only access/)
+  assert.match(how, /Give these roles a no-write brief/)
+  assert.match(how, /not a separate host permission boundary/)
+  assert.doesNotMatch(how, /These roles have read-only access/)
+  const host = await readFile(new URL('../../../../scripts/skills/pstack/DSH.md', import.meta.url), 'utf8')
+  assert.match(host, /does not expose a per-child read-only mode/)
+  assert.match(host, /report that this delegation path cannot meet it/)
   assert.ok(why.includes("Investigators still shouldn't write anything."))
   assert.ok(why.includes('A no-write brief does not strip MCP access.'))
   assert.ok(!how.includes('runs no shell/program commands'))

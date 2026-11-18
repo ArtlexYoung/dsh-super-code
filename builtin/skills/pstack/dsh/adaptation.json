@@ -201,7 +201,7 @@
     },
     "skills/how/SKILL.md": {
       "upstreamSha256": "08a00079bb15b4258874ac3ff62d4ca7e94350ffedb521d0fd296dc9dd21904e",
-      "sha256": "6c07298d51a2f66f4f7a364a0c3aa378946fee916ae39b307b5af2b22ec7c708",
+      "sha256": "bb1c8df325f4a94b0f99bb7ea1450e7621c1eeba8d66f9edba4481b0d552b6b0",
       "mode": "host-translation"
     },
     "skills/how/references/explainer-prompt.md": {
@@ -2795,7 +2795,7 @@
       "mode": "unchanged"
     },
     "DSH.md": {
-      "sha256": "33483fbd951c6e3a200874877217327477f2c34d20e3a1e121a207ad7f013b5d",
+      "sha256": "00933d6d40fff96aecd16005efedc6fd72e4b2b2a875c439ffa3b461ec333fe2",
       "mode": "host-addition"
     },
     "authoring.md": {

@@ -16,7 +16,7 @@ Read a completed delegate's final text/image blocks rather than serializing the 
 
 ## Tools and resources
 
-Use the current tool catalog: `read`, `write`, `edit`, `glob`, `grep`, `bash`, web tools, and MCP tools only when exposed. A role marked read-only has a no-write brief; do not change the host's permission mode to give it MCP access. For a user decision, use the host's question tool when exposed, otherwise one concise chat question. Keep todos in the existing host tool when available, otherwise the task's PLAN.md. Do not create a second task ledger for a trivial request.
+Use the current tool catalog: `read`, `write`, `edit`, `glob`, `grep`, `bash`, web tools, and MCP tools only when exposed. A role marked read-only has a no-write brief, not a separate host permission boundary. DSH's portable subagent interface does not expose a per-child read-only mode; when enforced read-only access is required, report that this delegation path cannot meet it. Do not change the host's permission mode to give a role MCP access. For a user decision, use the host's question tool when exposed, otherwise one concise chat question. Keep todos in the existing host tool when available, otherwise the task's PLAN.md. Do not create a second task ledger for a trivial request.
 
 Read-only roles may inspect source, Git history and available MCP sources, including through commands that only read. They must not write files or change external state. A probe that writes files or has other side effects belongs to a separately authorized verification task, not a read-only investigation.
 

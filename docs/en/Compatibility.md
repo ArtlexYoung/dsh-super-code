@@ -4,7 +4,9 @@
 
 ## Current support and acceptance scope (2026-11-19)
 
-The current target covers 15 Harness versions on macOS, Linux, and Windows: 45 platform/version combinations. Desktop, NEXT, and mobile coverage are tracked separately. Acceptance for the newly added `0.2.2-rc.5` is in progress; inclusion in the target does not mean every platform has passed.
+Lifecycle acceptance is complete for all 45 combinations of the 15 target Harness versions on macOS ARM64, a Linux ARM64 container, and a Windows 11 ARM64 VM, including the newly added `0.2.2-rc.5`. Coverage includes fresh installation, upgrades, enable/disable, cold restarts, uninstall recovery, and conversation history, using a controlled model. This does not establish complete coverage of real-model workflows, native desktops, physical devices, or performance on every platform. Desktop, NEXT, and mobile coverage are tracked separately.
+
+Open items include host defects in Windows long-working-directory search and cancellation error classification, default Bash restrictions under `workspace-write`, Linux NEXT native sandbox restrictions, and some PStack real-model workflows. The search fix has only been tested in isolation and has not been applied to the actual host. A no-write brief for a subagent is a work constraint: the current host entry point provides no independently enforced read-only permission, and model violations of that constraint have been recorded. Overall release acceptance remains incomplete.
 
 | Series | Included versions | Count |
 |---|---|---:|

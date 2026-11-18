@@ -19,7 +19,8 @@ test('isolated provider services activate before mounting tools and all release 
     await mkdir(location, { recursive: true })
     await writeFile(join(location, 'package.json'), JSON.stringify({ type: 'module', main: 'index.js' }))
     await writeFile(join(location, 'index.js'), `export const inject = ['tools'];
-      export function apply(ctx) { ${name ? `ctx.effect(() => ctx.tools.register({ name: ${JSON.stringify(name)},
+      export function apply(ctx) { ${module === 'dsh-tool-fs' ? `ctx.inject(['attachments'], nested => nested.tools.register({ name: 'read_image', parameters: {}, output: { schema: {} } }));` : ''}
+        ${name ? `ctx.effect(() => ctx.tools.register({ name: ${JSON.stringify(name)},
         parameters: { type: 'object', properties: { command: { type: 'string' }, ${module === 'dsh-tool-bash' ? "description: { type: 'string' }" : ''} },
           required: ['command'${module === 'dsh-tool-bash' ? ", 'description'" : ''}], additionalProperties: true },
         output: { schema: {} } }))` : ''} }`)
@@ -34,6 +35,7 @@ test('isolated provider services activate before mounting tools and all release 
   new Tools(ctx)
   ctx.provide('systemPrompt', {} as any)
   ctx.provide('shell', {} as any)
+  ctx.provide('attachments', {} as any)
   let providers!: Awaited<ReturnType<typeof mountToolProviders>>
   const owner = await ctx.plugin({ async apply(scope: Context) { providers = await mountToolProviders(scope, {} as ToolRuntime) } })
   assert.equal(providers.shellAvailable('standard'), true)
@@ -44,10 +46,13 @@ test('isolated provider services activate before mounting tools and all release 
   assert.deepEqual(parameters.properties, { command: { type: 'string' }, description: { type: 'string' } })
   assert.equal(parameters.oneOf, undefined, 'overlapping host shell parameters cannot use an exclusive union')
   assert.deepEqual(providers.catalog().filter(tool => tool.group === 'external'), [{ name: 'third_party', group: 'external', available: true }])
-  for (const name of ['bash', 'read', 'ask_user_question']) {
-    assert(registered.has(name), `${name} must already be registered when mounting finishes`)
+  for (const name of ['bash', 'read', 'read_image', 'ask_user_question']) {
+    assert(registered.has(name), `${name} must already be registered when mounting finishes: ${ctx.logger.buffer.flatMap(message => message.args.map(String)).join('\n')}`)
     assert(providers.catalog().find(tool => tool.name === name)!.available)
   }
+  const unrelated = await ctx.plugin({ apply() {} })
+  assert.equal('tools' in unrelated.inject, false, 'provider dependencies must stay inside their own tool scope')
+  assert.equal(ctx.logger.buffer.some(message => message.type === 'error'), false)
   await owner.dispose()
   assert.equal(registered.size, 0)
 })

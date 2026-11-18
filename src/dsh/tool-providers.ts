@@ -19,8 +19,15 @@ async function providerContext(ctx: Context, register: (definition: ToolDefiniti
     guard: tools.guard.bind(tools), restrict: tools.restrict.bind(tools), execute: tools.execute.bind(tools),
   }
   // 依赖方只看得到已经激活的服务；每个隔离服务须有独立且已完成初始化的拥有者。
-  await owner.plugin({ apply(scope: Context) { scope.provide('tools', facade as unknown as typeof tools) } })
-  return owner
+  const provider = await owner.plugin({ apply(scope: Context) {
+    scope.provide('tools', facade as unknown as typeof tools)
+    // 部分宿主无法在嵌套 inject 中继承隔离服务，明确声明同一工具服务的依赖。
+    scope.on('internal/plugin', fiber => {
+      if (fiber.uid !== null && fiber.parent.get('tools') === facade && !('tools' in fiber.inject)) fiber.inject.tools = null
+    })
+  } })
+  // 嵌套 inject 会沿父插件查找服务；工具插件必须挂在服务拥有者下面。
+  return provider.ctx
 }
 
 function shellDefinition(variants: Map<string, ToolDefinition>, runtime: ToolRuntime): ToolDefinition {

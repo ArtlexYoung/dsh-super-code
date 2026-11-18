@@ -30,7 +30,7 @@ test('isolated provider services activate before mounting tools and all release 
     register(definition: ToolDefinition) {
       return this.ctx.effect(() => { registered.set(definition.name, definition); return () => { registered.delete(definition.name) } })
     }
-    get() {} schemas() { return [{ name: 'third_party' }, { name: 'run_code' }, { name: 'bash' }] } guard() {} restrict() {} execute() {}
+    get() {} schemas() { return [{ name: 'third_party', description: 'Search project notes.' }, { name: 'run_code' }, { name: 'bash' }] } guard() {} restrict() {} execute() {}
   }
   new Tools(ctx)
   ctx.provide('systemPrompt', {} as any)
@@ -45,7 +45,7 @@ test('isolated provider services activate before mounting tools and all release 
   assert.deepEqual(parameters.required, ['command'])
   assert.deepEqual(parameters.properties, { command: { type: 'string' }, description: { type: 'string' } })
   assert.equal(parameters.oneOf, undefined, 'overlapping host shell parameters cannot use an exclusive union')
-  assert.deepEqual(providers.catalog().filter(tool => tool.group === 'external'), [{ name: 'third_party', group: 'external', available: true }])
+  assert.deepEqual(providers.catalog().filter(tool => tool.group === 'external'), [{ name: 'third_party', group: 'external', available: true, description: 'Search project notes.' }])
   for (const name of ['bash', 'read', 'read_image', 'ask_user_question']) {
     assert(registered.has(name), `${name} must already be registered when mounting finishes: ${ctx.logger.buffer.flatMap(message => message.args.map(String)).join('\n')}`)
     assert(providers.catalog().find(tool => tool.name === name)!.available)

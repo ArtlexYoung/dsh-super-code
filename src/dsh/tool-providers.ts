@@ -8,7 +8,7 @@ import { isManagedTool, toolGroups } from './tool-profiles.js'
 import type { ToolProfile } from './tool-profiles.js'
 import { scopeOf } from '@deepseek-ai/dsh-scope'
 
-export interface ToolAvailability { readonly name: string; readonly group: string; readonly available: boolean; readonly reason?: string }
+export interface ToolAvailability { readonly name: string; readonly group: string; readonly available: boolean; readonly reason?: string; readonly description?: string }
 
 /** 通过公开服务注入接管注册，工具本身的校验、输出、权限和终端实现仍由宿主提供。 */
 async function providerContext(ctx: Context, register: (definition: ToolDefinition, options?: ToolRegistration) => () => void): Promise<Context> {
@@ -119,5 +119,5 @@ export async function mountToolProviders(ctx: Context, runtime: ToolRuntime): Pr
     available: registered.has(name) || group.id === 'super-code' && !!ctx.get('tools')!.get(name, scopeOf(ctx)),
     ...registered.has(name) ? {} : { reason: reasons.get(group.id) ?? 'The host did not register this tool or its required service is unavailable.' },
   }))), ...ctx.tools.schemas(scopeOf(ctx)).filter(tool => tool.name !== 'run_code' && !isManagedTool(tool.name))
-      .map(tool => ({ name: tool.name, group: 'external', available: true }))] }
+      .map(tool => ({ name: tool.name, group: 'external', available: true, description: tool.description }))] }
 }

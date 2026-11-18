@@ -111,7 +111,8 @@ test('actual Tools component previews without saving, explicitly activates custo
   const button = (text: string) => nodes.find(node => node.children.includes(text) && node.props.onClick)
   const input = (id: string) => nodes.find(node => node.props.id === id && node.props.onChange)
   assert.equal(input('super-code-tool-ask_user_question').props.disabled, true)
-  picker().props.onChange({ target: { value: 'custom:one' } }); nodes = f.render()
+  assert.equal(button('tools.active').props.disabled, true)
+  picker().props.onChange('custom:one'); nodes = f.render()
   assert.equal(f.writes(), 0)
   assert.equal(input('super-code-tools-name').props.value, '我的工具')
   assert.equal(input('super-code-tool-ask_user_question').props.disabled, false)
@@ -121,9 +122,35 @@ test('actual Tools component previews without saving, explicitly activates custo
   assert.equal(f.stored().configuration.activeId, 'custom:one')
   assert.equal(f.writes(), 1)
   f.writable(false); nodes = f.render()
-  assert.equal(button('tools.use').props.disabled, true)
+  assert.equal(button('tools.active').props.disabled, true)
   assert.equal(button('tools.delete').props.disabled, true)
   assert.equal(input('super-code-tools-name').props.disabled, true)
+})
+test('tool rows show a summary before availability and summarize unknown host tools without inventing a purpose', () => {
+  const f = viewFixture()
+  const catalog = [
+    { name: 'ask_user_question', group: 'questions', available: true },
+    { name: 'read', group: 'files', available: false, reason: 'not-loaded' },
+    { name: 'third_party', group: 'external', available: true, description: 'Search project notes. More instructions follow.' },
+    { name: 'missing', group: 'external', available: true },
+    { name: 'blank', group: 'external', available: true, description: '  \n ' },
+    { name: 'long', group: 'external', available: true, description: '用'.repeat(150) },
+    { name: 'chinese', group: 'external', available: true, description: '读取网页内容。后续使用说明。' },
+    { name: 'markup', group: 'external', available: true, description: '<script>alert(1)</script>' },
+  ]
+  f.editor.receive({ ...f.stored(), catalog })
+  const nodes = f.render()
+  const hint = (name: string) => nodes.find(node => node.props.id === `super-code-tool-${name}` && node.props.hint).props.hint.children
+  assert.equal(hint('ask_user_question')[0].children[0], 'tools.summary.ask_user_question')
+  assert.equal(hint('read')[0].children[0], 'tools.summary.read')
+  assert.equal(hint('read')[1].children[0], 'tools.notLoaded')
+  assert.equal(hint('third_party')[0].children[0], 'Search project notes.')
+  assert.equal(hint('third_party')[1].children[0], 'tools.external')
+  for (const name of ['missing', 'blank']) assert.equal(hint(name)[0].children[0], 'tools.summary.unknown')
+  assert.equal(hint('long')[0].children[0], '用'.repeat(119) + '…')
+  assert.equal(hint('chinese')[0].children[0], '读取网页内容。')
+  assert.equal(hint('markup')[0].children[0], '<script>alert(1)</script>')
+  assert.equal(f.writes(), 0)
 })
 test('actual Tools component confirms deleting an active custom profile and enforces the 30-profile button limit', async () => {
   const f = viewFixture()

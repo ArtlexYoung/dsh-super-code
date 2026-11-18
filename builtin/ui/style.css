@@ -89,6 +89,11 @@
 .dsh-super-code-section-actions{display:flex;flex:none;gap:8px}
 .dsh-super-code-section-body{border:1px solid var(--sc-line);border-radius:12px;background:var(--sc-bg);min-width:0}
 .dsh-super-code-section-body[data-plain]{border:0;border-radius:0;background:none}
+.dsh-super-code-tools-actions{gap:8px;flex-wrap:wrap;margin:0;padding:0 16px 12px}
+.dsh-super-code-tools-notice{padding:0 16px 12px}
+.dsh-super-code-tools-feedback{display:grid;gap:12px;padding:12px 16px;border-top:1px solid var(--sc-line)}
+.dsh-super-code-tool-summary,.dsh-super-code-tool-availability{display:block}
+.dsh-super-code-tool-availability{margin-top:4px}
 .dsh-super-code-setting-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px 24px;padding:12px 16px}
 .dsh-super-code-section-body>*+.dsh-super-code-setting-row,.dsh-super-code-section-body>*+.dsh-super-code-section-more,.dsh-super-code-section-more>.dsh-super-code-setting-row{border-top:1px solid var(--sc-line)}
 .dsh-super-code-setting-row-text{display:grid;gap:2px;min-width:0}

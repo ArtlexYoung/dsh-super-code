@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { runInNewContext } from 'node:vm'
+import { toolNames } from '../../src/dsh/tool-profiles.js'
 
 function fixture() {
   let plugin: any
@@ -27,6 +28,16 @@ function fixture() {
   plugin.apply(ctx)
   return { plugin, dictionaries, slots }
 }
+
+test('every managed tool has a concise Chinese and English summary', () => {
+  const { dictionaries } = fixture()
+  for (const language of ['zh', 'en']) for (const name of toolNames) {
+    const summary = dictionaries[language]![`tools.summary.${name}`]
+    assert.equal(typeof summary, 'string', `${language}: ${name}`)
+    assert(summary!.length > 5 && summary!.length <= 120, `${language}: ${name}`)
+    assert.equal(summary!.includes('\n'), false)
+  }
+})
 
 test('all bundled Skill choices default off and preserve explicit saved values', () => {
   const { plugin } = fixture()

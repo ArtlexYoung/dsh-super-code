@@ -2,7 +2,7 @@
 
 [中文](README.md) · English
 
-[![npm total downloads](https://img.shields.io/npm/dt/dsh-super-code?label=npm%20downloads)](https://npmtrends.com/dsh-super-code) [![Latest npm release](https://img.shields.io/npm/v/dsh-super-code)](https://www.npmjs.com/package/dsh-super-code) [![Supported Harness versions: 0.1.5-alpha.1–0.2.2-rc.2](https://img.shields.io/badge/Harness-0.1.5--alpha.1%20%E2%80%93%200.2.2--rc.2-blue)](docs/en/Compatibility.md) [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+[![npm total downloads](https://img.shields.io/npm/dt/dsh-super-code?label=npm%20downloads)](https://npmtrends.com/dsh-super-code) [![Latest npm release](https://img.shields.io/npm/v/dsh-super-code)](https://www.npmjs.com/package/dsh-super-code) [![Target Harness support: 15 versions](https://img.shields.io/badge/Harness-15%20versions-blue)](docs/en/Compatibility.md) [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
 A coding tool for DeepSeek Harness worth trying: smarter, leaner, and easier to use.
 
@@ -85,7 +85,7 @@ Versions follow `major.performance.maintenance`: a change in the second number i
 
 # 4 Install
 
-Supports Harness `0.1.5-alpha.1` through `0.2.2-rc.2`, including `0.2.2-alpha.3`. Version 0.4.0 has been checked against all 27 Web releases in this range, official macOS Desktop `0.2.2-rc.2`, and NEXT `2.0.22-next` (bundled Harness `0.2.2-rc.1`); see [compatibility](docs/en/Compatibility.md) for tested versions and platform coverage.
+The current target covers 15 Harness versions: `0.1.5-rc.3`, `0.1.7-rc.2`, and `0.2.0-rc.2` from older series; `0.2.1-rc.1` through `rc.5`; and `0.2.2-alpha.2/alpha.3` plus `0.2.2-rc.1` through `rc.5`. Only alphas from the latest `0.2.2` series remain in release acceptance. Checks for the newly added `0.2.2-rc.5` are in progress; see [compatibility](docs/en/Compatibility.md) for actual platform results.
 
 **Desktop**: open **Plugins → Add plugin** in the left sidebar, enter `dsh-super-code`, then click **Install** and **Enable now** (on older versions, reload or restart when prompted). Desktop includes its own runtime; Node.js is not required.
 

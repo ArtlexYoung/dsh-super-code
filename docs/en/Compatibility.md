@@ -2,7 +2,23 @@
 
 [中文](../Compatibility.md) · English
 
-Supports Harness `0.1.5-alpha.1` through `0.2.2-rc.2`, including `0.2.2-alpha.3`. Version 0.4.0 has been checked against all 27 complete Web hosts in this range, official macOS arm64 Desktop `0.2.2-rc.2`, and NEXT `2.0.22-next` (bundled `0.2.2-rc.1`). This round's scope and limits are recorded below.
+## Current support and acceptance scope (2026-11-19)
+
+The current target covers 15 Harness versions on macOS, Linux, and Windows: 45 platform/version combinations. Desktop, NEXT, and mobile coverage are tracked separately. Acceptance for the newly added `0.2.2-rc.5` is in progress; inclusion in the target does not mean every platform has passed.
+
+| Series | Included versions | Count |
+|---|---|---:|
+| 0.1.5 | `0.1.5-rc.3` | 1 |
+| 0.1.7 | `0.1.7-rc.2` | 1 |
+| 0.2.0 | `0.2.0-rc.2` | 1 |
+| 0.2.1 | `0.2.1-rc.1` through `0.2.1-rc.5` | 5 |
+| 0.2.2 | `0.2.2-alpha.2`, `0.2.2-alpha.3`, `0.2.2-rc.1` through `0.2.2-rc.5` | 7 |
+
+Older series retain only their final rc listed above. All published alphas from the latest `0.2.2` series remain in acceptance, currently `alpha.2` and `alpha.3`; alphas from earlier series are no longer tested. Historical evidence is preserved without extending the current support commitment. Dependency ranges that permit installation are not the acceptance matrix.
+
+## Historical acceptance records
+
+Version 0.4.0 was checked against 27 complete Web hosts from `0.1.5-alpha.1` through `0.2.2-rc.2`, official macOS arm64 Desktop `0.2.2-rc.2`, and NEXT `2.0.22-next` (bundled `0.2.2-rc.1`). These results apply to their recorded batches.
 
 Historical Windows full-process coverage includes official Desktop `0.2.1-rc.5` and NEXT `2.0.21-next` (embedded `0.2.1-rc.4`). A November 14, 2026 supplemental check covers offline installation, sessions, and models on official Desktop `0.2.2-rc.2`; see the environment and limits below.
 

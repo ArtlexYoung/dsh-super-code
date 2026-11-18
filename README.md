@@ -2,7 +2,7 @@
 
 中文 · [English](README.en.md)
 
-[![npm 总下载量](https://img.shields.io/npm/dt/dsh-super-code?label=npm%20downloads)](https://npmtrends.com/dsh-super-code) [![npm 当前发布版本](https://img.shields.io/npm/v/dsh-super-code)](https://www.npmjs.com/package/dsh-super-code) [![Harness 支持版本：0.1.5-alpha.1～0.2.2-rc.2](https://img.shields.io/badge/Harness-0.1.5--alpha.1%20%E2%80%93%200.2.2--rc.2-blue)](docs/Compatibility.md) [![许可证：Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+[![npm 总下载量](https://img.shields.io/npm/dt/dsh-super-code?label=npm%20downloads)](https://npmtrends.com/dsh-super-code) [![npm 当前发布版本](https://img.shields.io/npm/v/dsh-super-code)](https://www.npmjs.com/package/dsh-super-code) [![Harness 目标支持范围：15 个版本](https://img.shields.io/badge/Harness-15%20versions-blue)](docs/Compatibility.md) [![许可证：Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
 值得一试的 DeepSeek Harness 编程工具，更聪明、更节省、更好用。
 
@@ -85,7 +85,7 @@
 
 # 4 安装
 
-支持 Harness `0.1.5-alpha.1` ～ `0.2.2-rc.2`，包括 `0.2.2-alpha.3`。0.4.0 已逐版验证 27 个 Web 版本，并验证官方 macOS 桌面版 `0.2.2-rc.2`、NEXT `2.0.22-next`（内置 Harness `0.2.2-rc.1`）；各版本与平台的实测范围见[兼容性记录](docs/Compatibility.md)。
+当前目标支持 15 个 Harness 版本：历史系列保留 `0.1.5-rc.3`、`0.1.7-rc.2`、`0.2.0-rc.2`；较新版本覆盖 `0.2.1-rc.1`～`rc.5`、`0.2.2-alpha.2/alpha.3` 和 `0.2.2-rc.1`～`rc.5`。仅最新 `0.2.2` 系列的 alpha 纳入发布验收。新增 `0.2.2-rc.5` 正在补验，各平台的实际结果见[兼容性记录](docs/Compatibility.md)。
 
 **桌面版**：在左侧打开「插件 → 添加插件」，输入 `dsh-super-code`，依次点击「安装」和「立即启用」（旧版本请按提示重载或重启）。桌面版内置运行环境，无需安装 Node.js。
 

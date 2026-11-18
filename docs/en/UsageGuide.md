@@ -50,7 +50,7 @@ Before plugin 0.2.0, the settings page lives under **Plugins → Plugin configur
 |---|---|
 | Home | Preset status and versions, deletion-protection level, MCP switch, connected/past conversation counts |
 | Preset configuration | Install, reinstall, rename, Windows command environment |
-| Tools | Four built-in tool profiles, custom profiles and per-conversation application status |
+| Tools | Five built-in tool profiles, custom profiles and per-conversation application status |
 | Skills | Bundled workflow and Skill switches |
 | Context settings | [Runtime budgets](#runtime-budgets) |
 | Deletion protection | [Deletion protection](#deletion-protection) |
@@ -60,15 +60,15 @@ Switching tabs keeps unsaved input.
 
 ### Tool profiles
 
-Tools offers four read-only profiles: Standard, PTC (the default), Minimal and Create. Create follows the official Create tool set. Standard, PTC and Create also include Super Code's method, task and memory tools; Minimal uses the official persistent shell and image reader. These profiles configure Super Code without selecting a different official preset.
+Tools offers five read-only profiles: Super Code default, Standard, PTC, Minimal and Create. New configurations use Super Code default, which retains the original Super Code tools and PTC execution while adding user questions; existing selections are preserved. Create follows the official Create tool set. Standard, PTC and Create also include Super Code's method, task and memory tools; Minimal uses the official persistent shell and image reader. These profiles configure Super Code without selecting a different official preset.
 
-The picker previews a profile; **Use this profile** activates it. **Copy and edit** and **New empty profile** create custom profiles with editable names, native/PTC execution, standard/persistent shells and individual tool switches. Edits save automatically; editing an inactive profile does not activate it. The limit is 30 profiles including the four built-ins. Deleting an active custom profile requires confirmation and selects PTC.
+The picker previews a profile; **Use this profile** activates it. **Copy and edit** and **New empty profile** create custom profiles with editable names, native/PTC execution, standard/persistent shells and individual tool switches. Edits save automatically; editing an inactive profile does not activate it. The limit is 30 profiles including five built-ins and up to 25 custom profiles. Deleting an active custom profile requires confirmation and selects Super Code default.
 
 Each conversation applies changes after its own current turn ends. A can switch while B still awaits answers. All pending calls in the same conversation must finish first; repeated saves while busy keep only the latest target. Pending and failed application states are shown separately. Failed application retains the previous tool set. Persistent-shell state survives switching away and back.
 
-The host supplies `ask_user_question`. Standard, PTC and Create enable it by default; Minimal does not. Enabling a mattpocock Skill supplies workflow guidance and does not enable the tool. `grill-me` still needs a profile that permits questions. Disabling a tool affects declarations, the PTC SDK and execution.
+The host supplies `ask_user_question`. Super Code default, Standard, PTC and Create enable it by default; Minimal does not. Enabling a mattpocock Skill supplies workflow guidance and does not enable the tool. `grill-me` still needs a profile that permits questions. Disabling a tool affects declarations, the PTC SDK and execution.
 
-Unavailable components are marked and are not downloaded by saving. Host permissions, lightweight remote restrictions and Windows path rules take precedence. Tools outside the managed catalog are shown read-only and remain controlled by their own plugin settings. Profiles persist independently. Reinstall an older Super Code preset to obtain the new tool-runtime entry.
+Unavailable components are marked and are not downloaded by saving. Host permissions, lightweight remote restrictions and Windows path rules take precedence. Other tools are enabled by default and can be disabled in custom profiles for Super Code conversations only, without uninstalling plugins or affecting other presets. Exclusions survive temporary plugin removal; newly installed tools remain enabled. Profiles persist independently. Reinstall an older Super Code preset to obtain the new tool-runtime entry.
 
 ### Names and language
 

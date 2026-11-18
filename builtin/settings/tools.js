@@ -14,7 +14,7 @@ function toolSummary(tool, t) {
 }
 
 function createToolAutosave(api) {
-  return createAutosave(api, { draft: { version: 1, activeId: 'builtin:ptc', custom: [] },
+  return createAutosave(api, { draft: { version: 1, activeId: 'builtin:super-code', custom: [] },
     toDraft: value => structuredClone(value),
     toConfiguration: draft => ({ ok: draft.custom.every(profile => profile.name.trim().length > 0 && profile.name.trim().length <= 60), configuration: draft }),
   })
@@ -25,7 +25,7 @@ function toolConfiguration(configuration, operation) {
   if (operation.type === 'edit') next.custom = next.custom.map(profile => profile.id === operation.id ? { ...profile, ...operation.patch } : profile)
   if (operation.type === 'delete') {
     next.custom = next.custom.filter(profile => profile.id !== operation.id)
-    if (next.activeId === operation.id) next.activeId = 'builtin:ptc'
+    if (next.activeId === operation.id) next.activeId = 'builtin:super-code'
   }
   return next
 }
@@ -113,7 +113,7 @@ function ToolSettings({ api, editor, t, active }) {
         React.createElement(ActionButton, { disabled: !snapshot.writable || busy || profiles.length >= 30, onClick: () => copy(profile.id) }, t('tools.copy')),
         React.createElement(ActionButton, { disabled: !snapshot.writable || busy || profiles.length >= 30, onClick: () => copy('') }, t('tools.new')),
         !builtin && React.createElement(ActionButton, { disabled: !editable, onClick: () => setConfirmation(profile.id) }, t('tools.delete'))),
-      builtin ? React.createElement('div', { className: 'dsh-super-code-tools-notice' }, React.createElement(Callout, {}, t('tools.builtin')))
+      builtin ? React.createElement('div', { className: 'dsh-super-code-tools-notice' }, React.createElement(Callout, {}, text(t, 'tools.builtin', { count: 30 - snapshot.builtins.length })))
         : React.createElement(SettingRow, { id: 'super-code-tools-name', label: t('tools.name') },
           React.createElement('input', { id: 'super-code-tools-name', maxLength: 60, value: profile.name, disabled: !editable, onChange: event => edit({ name: event.target.value }) })),
       ...['execution', 'shell'].map(field => React.createElement(SettingRow, { key: field, id: `super-code-tools-${field}`, label: t(`tools.${field}`) },
@@ -137,11 +137,13 @@ function ToolSettings({ api, editor, t, active }) {
         key: tool.name, id: `super-code-tool-${tool.name}`, label: tool.name,
         hint: React.createElement(React.Fragment, null,
           React.createElement('span', { className: 'dsh-super-code-tool-summary' }, toolSummary(tool, t)),
-          (group === 'external' || tool.reason === 'not-loaded' || !tool.available) && React.createElement('span', { className: 'dsh-super-code-tool-availability' },
-            group === 'external' ? t('tools.external') : tool.reason === 'not-loaded' ? t('tools.notLoaded')
+          (tool.reason === 'not-loaded' || !tool.available) && React.createElement('span', { className: 'dsh-super-code-tool-availability' },
+            tool.reason === 'not-loaded' ? t('tools.notLoaded')
               : [t('tools.unavailable'), tool.reason].filter(Boolean).join(' '))),
-      }, React.createElement(ConnectionSwitch, { id: `super-code-tool-${tool.name}`, checked: group === 'external' || profile.tools.includes(tool.name), disabled: group === 'external' || !editable,
-        onChange: checked => edit({ tools: checked ? [...profile.tools, tool.name] : profile.tools.filter(name => name !== tool.name) }) }))))),
+      }, React.createElement(ConnectionSwitch, { id: `super-code-tool-${tool.name}`, checked: group === 'external' ? !profile.disabledExternalTools?.includes(tool.name) : profile.tools.includes(tool.name), disabled: !editable,
+        onChange: checked => edit(group === 'external'
+          ? { disabledExternalTools: checked ? (profile.disabledExternalTools ?? []).filter(name => name !== tool.name) : [...profile.disabledExternalTools ?? [], tool.name] }
+          : { tools: checked ? [...profile.tools, tool.name] : profile.tools.filter(name => name !== tool.name) }) }))))),
     confirmation && React.createElement('div', { role: 'alertdialog', 'aria-label': t(confirmation === 'reload' ? 'budget.reload' : 'tools.delete'), className: 'dsh-super-code-callout' },
       React.createElement('p', null, t(confirmation === 'reload' ? 'tools.reloadConfirm' : confirmation === configuration.activeId ? 'tools.deleteActive' : 'tools.deleteConfirm')),
       React.createElement(ActionButton, { onClick: () => {

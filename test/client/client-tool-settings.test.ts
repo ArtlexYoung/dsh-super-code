@@ -25,7 +25,7 @@ test('preview and edits do not activate a profile; explicit use and deletion upd
   const used = plugin.toolConfiguration(edited, { type: 'use', id: 'custom:one' })
   assert.equal(used.activeId, 'custom:one')
   const removed = plugin.toolConfiguration(used, { type: 'delete', id: 'custom:one' })
-  assert.equal(removed.activeId, 'builtin:ptc')
+  assert.equal(removed.activeId, 'builtin:super-code')
   assert.equal(removed.custom.length, 0)
 })
 test('tool autosave preserves failed drafts, does not replay after reconnect, and supports explicit retry', async () => {
@@ -94,7 +94,7 @@ function viewFixture(statusAvailable = true) {
   const shell = Settings({ ...injected, t: (key: string) => key })
   const View = walk(shell).find(node => node.props.editor === injected.toolEditor).type
   values = []; cursor = 0; effects.length = 0
-  let stored: any = { ...snapshot(), builtins: ['standard', 'ptc', 'minimal', 'create'].map(name => ({ id: 'builtin:' + name, name, execution: name === 'ptc' ? 'ptc' : 'native', shell: 'standard', tools: ['ask_user_question'] })),
+  let stored: any = { ...snapshot(), builtins: ['standard', 'ptc', 'minimal', 'create', 'super-code'].map(name => ({ id: 'builtin:' + name, name, execution: name === 'ptc' || name === 'super-code' ? 'ptc' : 'native', shell: 'standard', tools: ['ask_user_question'] })),
     catalog: [{ name: 'ask_user_question', group: 'questions', available: true }, { name: 'third_party', group: 'external', available: true }], sessions: [] }
   let writes = 0, reads = 0
   const api = { readConfig: async () => { reads++; return { ok: true, value: structuredClone(stored) } }, status: async () => ({ ok: statusAvailable, value: [] }),
@@ -116,7 +116,7 @@ test('actual Tools component previews without saving, explicitly activates custo
   assert.equal(f.writes(), 0)
   assert.equal(input('super-code-tools-name').props.value, '我的工具')
   assert.equal(input('super-code-tool-ask_user_question').props.disabled, false)
-  assert.equal(input('super-code-tool-third_party').props.disabled, true)
+  assert.equal(input('super-code-tool-third_party').props.disabled, false)
   assert.equal(input('super-code-tool-third_party').props.checked, true)
   await button('tools.use').props.onClick(); await f.editor.flush(); nodes = f.render()
   assert.equal(f.stored().configuration.activeId, 'custom:one')
@@ -145,7 +145,7 @@ test('tool rows show a summary before availability and summarize unknown host to
   assert.equal(hint('read')[0].children[0], 'tools.summary.read')
   assert.equal(hint('read')[1].children[0], 'tools.notLoaded')
   assert.equal(hint('third_party')[0].children[0], 'Search project notes.')
-  assert.equal(hint('third_party')[1].children[0], 'tools.external')
+  assert.equal(hint('third_party')[1], false)
   for (const name of ['missing', 'blank']) assert.equal(hint(name)[0].children[0], 'tools.summary.unknown')
   assert.equal(hint('long')[0].children[0], '用'.repeat(119) + '…')
   assert.equal(hint('chinese')[0].children[0], '读取网页内容。')
@@ -164,12 +164,29 @@ test('actual Tools component confirms deleting an active custom profile and enfo
   assert.equal(f.writes(), 0)
   confirmation.children.find((node: any) => node.props?.onClick && node.children.includes('tools.delete')).props.onClick()
   await f.editor.flush()
-  assert.equal(f.stored().configuration.activeId, 'builtin:ptc')
+  assert.equal(f.stored().configuration.activeId, 'builtin:super-code')
   assert.equal(f.stored().configuration.custom.length, 0)
-  const custom = Array.from({ length: 26 }, (_, index) => ({ ...configuration().custom[0], id: 'custom:' + index }))
+  const custom = Array.from({ length: 25 }, (_, index) => ({ ...configuration().custom[0], id: 'custom:' + index }))
   f.editor.receive({ ...f.stored(), configuration: { ...config, custom } })
   nodes = f.render()
   for (const label of ['tools.copy', 'tools.new']) assert.equal(nodes.find(node => node.children.includes(label)).props.disabled, true)
+})
+test('custom external switches save exclusions, retain unavailable names and re-enable without activating a preview', async () => {
+  const f = viewFixture()
+  let nodes = f.render()
+  nodes.find(node => node.props.id === 'super-code-tool-profile' && node.props.onChange).props.onChange('custom:one')
+  nodes = f.render()
+  const switchOf = () => nodes.find(node => node.props.id === 'super-code-tool-third_party' && node.props.onChange)
+  assert.equal(switchOf().props.disabled, false)
+  switchOf().props.onChange(false); await f.editor.flush(); nodes = f.render()
+  assert.deepEqual(f.stored().configuration.custom[0].disabledExternalTools, ['third_party'])
+  assert.equal(f.stored().configuration.activeId, 'builtin:ptc')
+  assert.equal(switchOf().props.checked, false)
+  f.editor.receive({ ...f.stored(), configuration: { ...f.stored().configuration,
+    custom: [{ ...f.stored().configuration.custom[0], disabledExternalTools: ['third_party', 'missing_plugin'] }] } })
+  nodes = f.render(); switchOf().props.onChange(true); await f.editor.flush(); nodes = f.render()
+  assert.deepEqual(f.stored().configuration.custom[0].disabledExternalTools, ['missing_plugin'])
+  assert.equal(switchOf().props.checked, true)
 })
 test('hidden Tools component performs no configuration reads or status polling', () => {
   const f = viewFixture(); f.render(false)

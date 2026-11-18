@@ -8,11 +8,12 @@ import type { ToolConfiguration, ToolProfile } from './tool-profiles.js'
 import type { ToolAvailability } from './tool-providers.js'
 import type { ToolRuntimeStatus } from './tool-access.js'
 
-const settingsSchema = schema.object({ version: schema.const(1).default(1),
-  activeId: schema.string().default('builtin:ptc'),
+const settingsSchema: schema<ToolConfiguration> = schema.object({ version: schema.const(1).default(1),
+  activeId: schema.string().default('builtin:super-code'),
   custom: schema.array(schema.object({ id: schema.string().required(), name: schema.string().required(),
     execution: schema.union(['native', 'ptc']).required(), shell: schema.union(['standard', 'persistent']).required(),
     tools: schema.array(schema.string()).required(),
+    disabledExternalTools: schema.array(schema.string()),
   })).default([]),
 })
 export const name = 'super-code-tools'

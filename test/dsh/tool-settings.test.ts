@@ -44,15 +44,27 @@ test('independent tool document saves, restores, rejects stale/restarted clients
 })
 test('copy creates stable custom ids and the full 30-profile document fits without the old 4096-character ceiling', async t => {
   const { source, expected } = await fixture(t)
-  for (let index = 0; index < 26; index++) assert.equal((await source.copy('builtin:create', expected())).ok, true)
+  for (let index = 0; index < 25; index++) assert.equal((await source.copy('builtin:create', expected())).ok, true)
   const content = JSON.stringify(source.get())
   assert(content.length > 4096)
   assert(Buffer.byteLength(content) < maximumToolConfigurationBytes)
-  assert.equal(new Set(source.get().custom.map(profile => profile.id)).size, 26)
+  assert.equal(new Set(source.get().custom.map(profile => profile.id)).size, 25)
   assert.deepEqual(source.get().custom[0]!.tools, builtinToolProfiles[3]!.tools)
   assert.deepEqual(await source.copy('', expected()), { ok: false, error: 'limit' })
   assert.deepEqual(await source.save(' '.repeat(maximumToolConfigurationBytes + 1), expected()), { ok: false, error: 'invalid' })
   assert.deepEqual(await source.save('{', expected()), { ok: false, error: 'invalid' })
+})
+test('external exclusions survive saves and copying a custom profile while builtins default to enabled', async t => {
+  const { source, expected } = await fixture(t)
+  await source.copy('builtin:super-code', expected())
+  const config = source.get(), profile = config.custom[0]!
+  assert.deepEqual(profile.disabledExternalTools ?? [], [])
+  profile.disabledExternalTools = ['third_party']
+  config.activeId = profile.id
+  assert.equal((await source.save(JSON.stringify(config), expected())).ok, true)
+  assert.deepEqual(source.profile().disabledExternalTools, ['third_party'])
+  assert.equal((await source.copy(profile.id, expected())).ok, true)
+  assert.deepEqual(source.get().custom[1]!.disabledExternalTools, ['third_party'])
 })
 test('tools remain configurable before any conversation and availability follows active provider lifetimes', async t => {
   const { source } = await fixture(t)

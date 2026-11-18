@@ -1,7 +1,6 @@
 import { z } from 'zod'
 
 export const maximumToolProfiles: number = 30
-export const maximumCustomProfiles: number = maximumToolProfiles - 4
 export const maximumToolProfileNameLength: number = 60
 export const maximumToolConfigurationBytes: number = 128 * 1024
 
@@ -32,7 +31,7 @@ export const toolGroups: readonly { id: string; tools: readonly string[]; module
 ]
 export const toolNames: readonly string[] = toolGroups.flatMap(group => group.tools)
 const toolNameSet = new Set(toolNames)
-export interface ToolProfile { id: string; name: string; execution: 'native' | 'ptc'; shell: 'standard' | 'persistent'; tools: string[] }
+export interface ToolProfile { id: string; name: string; execution: 'native' | 'ptc'; shell: 'standard' | 'persistent'; tools: string[]; disabledExternalTools?: string[] }
 const profileShape: z.ZodType<ToolProfile> = z.object({
   id: z.string().regex(/^custom:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/),
   name: z.string().trim().min(1).max(maximumToolProfileNameLength),
@@ -40,6 +39,8 @@ const profileShape: z.ZodType<ToolProfile> = z.object({
   shell: z.enum(['standard', 'persistent']),
   tools: z.array(z.string().refine(name => toolNameSet.has(name), 'Unknown tool')).max(toolNames.length)
     .refine(tools => new Set(tools).size === tools.length, 'Duplicate tool'),
+  disabledExternalTools: z.array(z.string().regex(/^\S{1,200}$/u).refine(name => !toolNameSet.has(name) && name !== 'run_code', 'Not an external tool'))
+    .max(1024).refine(tools => new Set(tools).size === tools.length, 'Duplicate tool').optional(),
 }).strict()
 
 const standard = toolGroups.filter(group => !['cordis', 'market'].includes(group.id)).flatMap(group => group.tools)
@@ -53,7 +54,12 @@ export const builtinToolProfiles: readonly ToolProfile[] = [
     ...standard.filter(name => !toolGroups.find(group => group.id === 'office')!.tools.includes(name)),
     ...toolGroups.filter(group => ['cordis', 'market'].includes(group.id)).flatMap(group => group.tools),
   ] },
+  { id: 'builtin:super-code', name: 'super-code', execution: 'ptc', shell: 'standard', tools: [
+    ...toolGroups.filter(group => ['shell', 'files', 'search', 'jobs', 'web', 'agents', 'skills', 'super-code', 'questions'].includes(group.id))
+      .flatMap(group => group.tools).filter(name => name !== 'apply_patch'), 'subagent',
+  ] },
 ]
+export const maximumCustomProfiles: number = maximumToolProfiles - builtinToolProfiles.length
 export interface ToolConfiguration { version: 1; activeId: string; custom: ToolProfile[] }
 const configurationShape: z.ZodType<ToolConfiguration> = z.object({
   version: z.literal(1), activeId: z.string(), custom: z.array(profileShape).max(maximumCustomProfiles),
@@ -63,7 +69,7 @@ const configurationShape: z.ZodType<ToolConfiguration> = z.object({
   if (![...builtinToolProfiles, ...value.custom].some(profile => profile.id === value.activeId))
     ctx.addIssue({ code: 'custom', message: 'Active profile does not exist' })
 })
-export const defaultToolConfiguration: ToolConfiguration = { version: 1, activeId: 'builtin:ptc', custom: [] }
+export const defaultToolConfiguration: ToolConfiguration = { version: 1, activeId: 'builtin:super-code', custom: [] }
 
 export function validateToolConfiguration(value: unknown): ToolConfiguration { return configurationShape.parse(value) }
 export function activeToolProfile(configuration: ToolConfiguration): ToolProfile {

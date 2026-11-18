@@ -20,7 +20,7 @@ interface Selection {
   work?: Promise<void>
   disposed: boolean
 }
-const fingerprint = (profile: ToolProfile): string => JSON.stringify([profile.execution, profile.shell, [...profile.tools].sort()])
+const fingerprint = (profile: ToolProfile): string => JSON.stringify([profile.execution, profile.shell, [...profile.tools].sort(), [...profile.disabledExternalTools ?? []].sort()])
 
 /** 每个会话独立保存已应用版本；保存配置不等待其他会话的提问完成。 */
 export class ToolSelections implements ToolRuntime {
@@ -30,7 +30,9 @@ export class ToolSelections implements ToolRuntime {
     private readonly execution = (_agent: Agent, profile: ToolProfile): Pick<ToolRuntimeStatus, 'execution' | 'reason'> => ({ execution: profile.execution })) {}
   profile(agent?: Agent): ToolProfile { return agent ? this.selections.get(agent)?.profile ?? this.current() : this.current() }
   allows(agent: Agent | undefined, name: string): boolean {
-    return !isManagedTool(name) || !agent || this.selections.get(agent)?.profile.tools.includes(name) === true
+    if (!agent) return true
+    const profile = this.selections.get(agent)?.profile
+    return isManagedTool(name) ? profile?.tools.includes(name) === true : !profile?.disabledExternalTools?.includes(name)
   }
   add(agent: Agent, inherited?: ToolProfile): void {
     if (this.selections.has(agent)) return

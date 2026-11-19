@@ -1,0 +1,25 @@
+{
+  "project": "JetBrains/JetBrainsMono",
+  "fontVersion": "2.305",
+  "commit": "19371302b95d218af43299bce79ddbddd0bc364d",
+  "files": [
+    {
+      "source": "fonts/webfonts/JetBrainsMono[wght].woff2",
+      "bytes": 113672,
+      "sha256": "31ec365b93e4bad6f202ce23352a56d01ca4462b2afc782ed2cf6fa42ca9ac0e",
+      "gitBlob": "856547f84b0365f4db7bfee3ac88f558a117410e"
+    },
+    {
+      "source": "fonts/webfonts/JetBrainsMono-Italic[wght].woff2",
+      "bytes": 123160,
+      "sha256": "76a805b6ea613ce2e3973f1bac6fa29db23116b2881390b59247d22890844ecc",
+      "gitBlob": "5e8a82e3669297716702f70a5f9ca242ca050896"
+    },
+    {
+      "source": "OFL.txt",
+      "bytes": 4399,
+      "sha256": "a76abf002c49097d146e86740a3105a5d00450b1592e820a1109a8c5680cd697",
+      "gitBlob": "5ceee0025da23d2cd5fd14b28569708a8db4db2b"
+    }
+  ]
+}

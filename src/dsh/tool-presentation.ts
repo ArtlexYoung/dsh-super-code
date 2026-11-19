@@ -5,6 +5,7 @@ import type { ToolSchema } from '@deepseek-ai/dsh-llm'
 import { scopeChainOf, scopeOf } from '@deepseek-ai/dsh-scope'
 import { hostModule } from './windows-shell.js'
 import { toolAllowed, toolRuntime, installToolPresentation } from './tool-access.js'
+import { projectToolSchemas } from './tool-providers.js'
 
 export const name = 'super-code-tool-presentation'
 export const inject: readonly string[] = ['tools', 'systemPrompt', 'agents']
@@ -65,7 +66,7 @@ async function applyExecutors(ctx: Context, tools: ExecutorTools): Promise<void>
     ptc = new PtcExecutor(ctx)
     ptcAvailable = true
   } catch (error) { ctx.logger.warn('PTC is unavailable; using the native tool executor.', error) }
-  const visible = (definitions: readonly ToolDefinition[], agent?: Agent): readonly ToolDefinition[] => definitions.filter(tool => toolAllowed(ctx, agent, tool.name))
+  const visible = (definitions: readonly ToolDefinition[], agent?: Agent): readonly ToolDefinition[] => projectToolSchemas(ctx, definitions.filter(tool => toolAllowed(ctx, agent, tool.name)), agent)
   const executor = (nativeOnly: boolean, agent?: Agent): HostExecutor => ({
     sections: nativeOnly ? [] : ptc.sections?.map(section => ({ ...section, text: definitions => remoteTools(definitions) ? ''
       : typeof section.text === 'function' ? section.text(visible(definitions, agent)) : section.text })),
@@ -110,45 +111,47 @@ async function applyLegacy(ctx: Context): Promise<void> {
   const selected = new Map<Agent, () => void>(), disposed = new WeakSet<Agent>(), scope = scopeOf(ctx)
   const requested = new WeakMap<Agent, 'native' | 'ptc'>(), applied = new WeakMap<Agent, 'native' | 'ptc'>()
   let refreshing = false, active = true
-  const refresh = (): void => {
+  const refreshAgent = (agent: Agent): void => {
+    if (disposed.has(agent) || !scopeChainOf(agent).includes(scope!)) return
+    const mode = ctx.tools.get('remote_bash', agent) || windowsLongDirectory(agent) ? 'native' : requested.get(agent)
+    if (mode) {
+      if (applied.get(agent) === mode && selected.has(agent)) return
+      selected.get(agent)?.()
+      // 先占位，避免注册通知重入同一会话。
+      selected.set(agent, () => {})
+      const release = agent.ctx.get('tools')!.presentAs(mode)
+      selected.set(agent, release)
+      applied.set(agent, mode)
+      agent.ctx.effect(() => () => { disposed.add(agent); selected.delete(agent); release() })
+    } else {
+      const release = selected.get(agent)
+      selected.delete(agent)
+      release?.()
+    }
+  }
+  const refresh = (target?: Agent): void => {
     if (refreshing || !active) return
     refreshing = true
     try {
-      for (const agent of ctx.agents.list()) {
-        if (disposed.has(agent) || !scopeChainOf(agent).includes(scope!)) continue
-        const mode = ctx.tools.get('remote_bash', agent) || windowsLongDirectory(agent) ? 'native' : requested.get(agent)
-        if (mode) {
-          if (applied.get(agent) === mode && selected.has(agent)) continue
-          selected.get(agent)?.()
-          // 先占位，避免注册通知重入同一会话。
-          selected.set(agent, () => {})
-          const release = agent.ctx.get('tools')!.presentAs(mode)
-          selected.set(agent, release)
-          applied.set(agent, mode)
-          agent.ctx.effect(() => () => { disposed.add(agent); selected.delete(agent); release() })
-        } else {
-          const release = selected.get(agent)
-          selected.delete(agent)
-          release?.()
-        }
-      }
+      if (target) refreshAgent(target)
+      else for (const agent of ctx.agents.list()) refreshAgent(agent)
     } finally { refreshing = false }
   }
-  ctx.on('tools/change', refresh)
-  installToolPresentation(ctx, (agent, mode) => { requested.set(agent, mode); refresh() })
+  ctx.on('tools/change', () => refresh())
+  installToolPresentation(ctx, (agent, mode) => { requested.set(agent, mode); refresh(agent) })
   ctx.on('system-prompt/assemble', async (_assembly, { agent }, next) => {
     const assembled = await next()
     if (!agent || !toolRuntime(ctx, agent)) return assembled
     const hostTools = await hostModule(ctx, '@deepseek-ai/dsh-tools')
-    const schemas = ctx.tools.schemas(agent).filter(tool => toolAllowed(ctx, agent, tool.name))
+    const schemas = projectToolSchemas(ctx, ctx.tools.schemas(agent).filter(tool => toolAllowed(ctx, agent, tool.name)), agent)
     const runtime = ctx.get('codeRuntime') as { language?: string } | undefined
     const render = hostTools[runtime?.language === 'python' ? 'renderToolsSdkPy' : 'renderToolsSdk']
     if (typeof render !== 'function') throw new Error('The host SDK renderer is unavailable')
-    return { ...assembled, sections: assembled.sections.map(section => section.name === 'tools:sdk'
+    return { ...assembled, tools: projectToolSchemas(ctx, assembled.tools, agent), sections: assembled.sections.map(section => section.name === 'tools:sdk'
       ? { ...section, text: String(render(schemas)) } : section) }
   })
-  ctx.on('agent/created', () => { refresh(); return undefined })
-  ctx.on('agent/pre-step', (_event, next) => { refresh(); return next() })
+  ctx.on('agent/created', ({ agent }) => { refresh(agent); return undefined })
+  ctx.on('agent/pre-step', ({ agent }, next) => { refresh(agent); return next() })
   ctx.effect(() => () => { active = false; for (const release of selected.values()) release(); selected.clear() })
   refresh()
 }

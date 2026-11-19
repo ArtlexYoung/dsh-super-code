@@ -260,6 +260,26 @@ test('existing remote sessions are selected at mount and another preset remains 
   assert.ok((await f.names(agent)).includes('remote_bash'))
 })
 
+test('legacy pre-step refreshes the current session without reading the global roster', async t => {
+  const platform = process.platform
+  Object.defineProperty(process, 'platform', { value: 'win32' })
+  t.after(() => Object.defineProperty(process, 'platform', { value: platform }))
+  const f = await fixture(t), agent = f.make('long-step', f.preset.ctx, '/' + 'd'.repeat(258))
+  const other = f.make('other-step')
+  assert.deepEqual(await f.names(agent), ['run_code'])
+  const roster = f.ctx.get('agents')!, list = roster.list
+  let rosterReads = 0
+  roster.list = () => { rosterReads++; return list() }
+  const result = await f.ctx.waterfall(scopeTarget(agent, agent), 'agent/pre-step', {
+    agent, messages: [], turn: 1, step: 1, signal: new AbortController().signal,
+  } as never, async () => ({ kind: 'enter' as const, messages: [] }))
+  assert.equal(result.kind, 'enter')
+  assert.ok((await f.names(agent)).includes('read_file'))
+  assert.ok(!(await f.names(agent)).includes('run_code'))
+  assert.deepEqual(await f.names(other), ['run_code'])
+  assert.equal(rosterReads, 0, '单会话事件不应遍历其他会话')
+})
+
 test('native remote execution retains guards, disconnection and task/memory tools', async t => {
   const f = await fixture(t), agent = f.make('guarded')
   f.bind(agent); f.guard(agent)

@@ -18,7 +18,7 @@ function render(records: object[]) {
   })
   const context = {
     effect: () => {}, remote: { $mount: async () => () => {} }, settingsScope: { bind: () => ({}) },
-    inject: (_deps: string[], run: Function) => run(context),
+    inject: (deps: string[], run: Function) => { if (deps.join(',') !== 'sessions,sidebarRightTabs') run(context) },
     slots: { inject: (_name: string, register: Function) => {
       const result = register(); if (result?.[Symbol.iterator]) for (const _ of result) { /* Register details. */ }
     }, register: (config: any, component: any) => { slots.push({ config, component }); return () => {} } },
@@ -63,6 +63,15 @@ test('a paginated result never borrows a tool name from a later reused call', ()
   const messages = render([
     { seq: 1, time: 1, type: 'tool/result', data: { turn: 1, step: 1, message: { role: 'tool', toolCallId: 'reused', content: [] } } },
     { seq: 2, time: 1, type: 'tool/call', data: { turn: 2, step: 1, callId: 'reused', name: 'write', arguments: '{}' } },
+  ])
+  assert.equal(messages[0].toolName, undefined)
+  assert.equal(messages[1].toolName, 'write')
+})
+
+test('早于同轮同步骤调用的结果不借用后来的名称', () => {
+  const messages = render([
+    { seq: 1, time: 1, type: 'tool/result', data: { turn: 1, step: 1, message: { role: 'tool', toolCallId: 'reused', content: [] } } },
+    { seq: 2, time: 1, type: 'tool/call', data: { turn: 1, step: 1, callId: 'reused', name: 'write', arguments: '{}' } },
   ])
   assert.equal(messages[0].toolName, undefined)
   assert.equal(messages[1].toolName, 'write')

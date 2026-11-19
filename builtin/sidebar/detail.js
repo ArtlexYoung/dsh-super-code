@@ -4,8 +4,9 @@ import { localeCode, text, zh } from '../ui/locale.js'
 import { AgentMessage, detailRecord } from './messages.js'
 import React, { useMemo, useRef, useState, useSyncExternalStore, useLayoutEffect, useEffect } from '../ui/react.js'
 import { TaskMemoryPanel, agentExecutionStatus, agentSessionState, buildAgentView } from './agents.js'
-import { ActionButton, Glyph, IconRefreshOutline16 } from '../ui/controls.js'
+import { ActionButton, Glyph, IconRefreshOutline16, SelectControl } from '../ui/controls.js'
 import { MemoryActivity } from './memory.js'
+import { FeedbackTools, feedbackToolSummary } from './feedback.js'
 
 // The host journal owns decoding, cursor validation and reconnects. This view
 // keeps a bounded display window and never stages or sends to another session.
@@ -20,7 +21,7 @@ function createAgentInspector(createStream, address, readPage, initial, t = key 
     snapshot = { ...snapshot, cursor, ...patch }
     listeners.forEach(listener => listener())
   }
-  const itemsOf = entries => entries.map(entry => detailRecord(entry, t)).filter(item => item.kind !== 'skip' && item.text)
+  const itemsOf = entries => entries.map(entry => detailRecord(entry, t)).filter(item => item.kind !== 'skip' && (item.text || item.callId))
   stream = createStream(agentDetailTarget(address), {
     publish: change => {
       if (disposed) return
@@ -42,7 +43,7 @@ function createAgentInspector(createStream, address, readPage, initial, t = key 
       } else if (change.type === 'append' && !snapshot.earlier) {
         const item = detailRecord(change.entry, t)
         cursor = change.entry.event.seq
-        if (item.kind !== 'skip' && item.text) {
+        if (item.kind !== 'skip' && (item.text || item.callId)) {
           const items = [...snapshot.items, item]
           publish({ items: items.slice(-200), cursor, truncated: snapshot.truncated || items.length > 200,
             firstSeq: items.length > 200 ? items.at(-200).seq : snapshot.firstSeq, hasMore: snapshot.hasMore || items.length > 200 })
@@ -76,7 +77,35 @@ function createAgentInspector(createStream, address, readPage, initial, t = key 
   }
 }
 
-function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, createInspector, detailStates, openMemory, t = key => zh[key] || key }) {
+// 只归并展示；调用身份包含步骤及 PTC 父调用，返回记录仍完整保留。
+function workbenchConversationRows(records) {
+  const rows = [], calls = new Map()
+  for (const record of records) {
+    const event = record.entry?.event, data = event?.data
+    if (!['tool/call', 'tool/result', 'tool/ptc-dispatch-start', 'tool/ptc-dispatch'].includes(event?.type)) {
+      rows.push({ kind: 'message', key: record.seq, record }); continue
+    }
+    let group = rows.at(-1)
+    if (group?.kind !== 'tools') { group = { kind: 'tools', key: `tools:${record.seq}`, items: [], calls: [] }; rows.push(group) }
+    group.items.push(record)
+    const identity = (id, parent) => JSON.stringify([data.turn, data.step, parent, id])
+    const settle = (id, parent, tool, status) => {
+      const key = identity(id ?? record.seq, parent)
+      let call = calls.get(key)
+      if (!call) { call = { tool: tool || 'tool', status }; calls.set(key, call); group.calls.push(call) }
+      if (tool) call.tool = tool
+      call.status = status
+    }
+    if (event.type === 'tool/call') settle(data.callId, undefined, data.name, 'running')
+    else if (event.type === 'tool/ptc-dispatch-start') settle(data.subCallId, data.parentCallId, data.name, 'running')
+    else if (event.type === 'tool/ptc-dispatch') settle(data.subCallId, data.parentCallId, data.name, data.isError ? 'failed' : 'succeeded')
+    else if (data.message?.role === 'tool') settle(data.message.toolCallId, undefined, undefined, data.message.isError ? 'failed' : 'succeeded')
+    else for (const block of data.message?.content || []) if (block.type === 'tool-result') settle(block.toolCallId, undefined, undefined, block.isError ? 'failed' : 'succeeded')
+  }
+  return rows.map(row => row.kind === 'tools' ? { kind: row.kind, key: row.key, items: row.items, tools: feedbackToolSummary(row.calls) } : row)
+}
+
+function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, createInspector, detailStates, openMemory, compact = false, fileMentions, t = key => zh[key] || key }) {
   const { tab } = useTabInfo()
   const catalog = useSessions(s => s)
   const statuses = useSessionStatus ? useSessionStatus(s => s) : undefined
@@ -91,8 +120,25 @@ function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, cre
   const [unread, setUnread] = useState(saved.unread || false)
   const markUnread = value => { saved.unread = value; setUnread(value) }
   const [revision, setRevision] = useState(0)
+  const [away, setAway] = useState(!saved.following), [question, setQuestion] = useState('')
   const inspector = useMemo(() => createInspector(tab.contentId, saved.snapshot), [createInspector, tab.contentId, tab.visible, revision])
   const snapshot = useSyncExternalStore(inspector.subscribe, inspector.getSnapshot, inspector.getSnapshot)
+  const rows = useMemo(() => compact ? workbenchConversationRows(snapshot.items) : snapshot.items.map(record => ({ kind: 'message', key: record.seq, record })), [snapshot.items, compact])
+  const questions = useMemo(() => snapshot.items.filter(record => record.entry?.event?.type === 'user/message'), [snapshot.items])
+  function trackPosition() {
+    const element = log.current
+    if (!element) return
+    saved.top = element.scrollTop
+    saved.following = !snapshot.earlier && element.scrollHeight - element.clientHeight - element.scrollTop < 32
+    if (saved.following) markUnread(false)
+    if (compact) {
+      setAway(!saved.following)
+      const top = element.getBoundingClientRect().top
+      let active = questions[0]?.seq
+      for (const item of questions) if ((element.querySelector(`[data-message-seq="${item.seq}"]`)?.getBoundingClientRect().top ?? Infinity) <= top + 32) active = item.seq
+      setQuestion(active === undefined ? '' : String(active))
+    }
+  }
   const latest = () => {
     saved.snapshot = undefined; saved.following = true; saved.top = 0
     restored.current = false; previous.current = undefined; markUnread(false)
@@ -100,7 +146,7 @@ function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, cre
   }
   useLayoutEffect(() => {
     const element = log.current
-    if (!element || snapshot.status === 'loading') return
+    if (!element || !tab.visible || snapshot.status === 'loading') return
     if (!restored.current) {
       element.scrollTop = saved.following && !snapshot.earlier ? element.scrollHeight : saved.top
       restored.current = true
@@ -112,14 +158,16 @@ function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, cre
     }
     saved.top = element.scrollTop; saved.snapshot = snapshot; previous.current = snapshot
     const visible = new Set(snapshot.items.map(item => item.seq))
+    for (const row of rows) visible.add(row.key)
     for (const key of saved.open) if (key !== 'usage' && !visible.has(key)) saved.open.delete(key)
-  }, [snapshot, saved])
+    if (compact) trackPosition()
+  }, [snapshot, saved, compact, rows, tab.visible])
   useEffect(() => {
     if (tab.visible) inspector.start()
     return () => inspector.dispose()
   }, [inspector, tab.visible])
   const target = agentDetailTarget(tab.contentId), id = target.childSessionId || target.sessionId
-  const view = buildAgentView(state), node = view.nodes.get(id)
+  const view = useMemo(() => buildAgentView(state), [state.byId, state.subagentsByParent, state.current, state.currentAddress]), node = view.nodes.get(id)
   const path = agentPath(view, id)
   const projections = { ...snapshot.projections, ...state.byId[id]?.projectionValues }
   const totals = projections.superAgentUsage?.totals || projections.tokenUsage
@@ -127,6 +175,12 @@ function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, cre
   const format = value => value === undefined ? text(t, 'detail.unavailable') : value.toLocaleString(localeCode(t))
   const tasks = projections.superCodeTasks
   const toolNames = new Map()
+  const renderMessage = record => {
+    const data = record.entry?.event?.data
+    const key = JSON.stringify([data?.turn, data?.step, record.parentCallId, record.callId])
+    if (record.toolName && record.callId) toolNames.set(key, record.toolName)
+    return React.createElement(AgentMessage, { key: record.seq, record, saved, t, compact, fileMentions: fileMentions?.get(record.seq), toolName: toolNames.get(key) })
+  }
   const task = tasks?.current?.kind === 'task' ? tasks.current : undefined
   const title = node?.title || node?.displayTitle || text(t, 'detail.title')
   const metrics = [
@@ -155,26 +209,29 @@ function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, cre
           id !== view.root && task?.goal && task.goal !== title && React.createElement('p', { className: 'dsh-super-code-detail-task' }, task.goal),
           id === view.root && React.createElement(TaskMemoryPanel, { state: tasks, t }),
           featureView(MemoryActivity, { usage: projections.superCodeMemoryUsage, sessionId: id, openMemory, t })))),
-    React.createElement('div', { ref: log, className: 'dsh-super-code-detail-log', 'aria-label': text(t, 'tree.title'), onScroll: event => {
-      const element = event.currentTarget
-      saved.top = element.scrollTop
-      saved.following = !snapshot.earlier && element.scrollHeight - element.clientHeight - element.scrollTop < 32
-      if (saved.following) markUnread(false)
-    } },
+    compact && questions.length > 0 && React.createElement('nav', { className: 'sc-wb-question-nav', 'aria-label': text(t, 'workbench.questions') },
+      React.createElement(SelectControl, { label: text(t, 'workbench.questions'), value: questions.some(item => String(item.seq) === question) ? question : String(questions[0].seq),
+        choices: questions.map((item, index) => [String(item.seq), `${index + 1}. ${item.text.replace(/\s+/g, ' ').slice(0, 72)}`]),
+        onChange: value => {
+          const element = log.current, target = element?.querySelector(`[data-message-seq="${value}"]`)
+          if (target) { saved.following = false; element.scrollTop += target.getBoundingClientRect().top - element.getBoundingClientRect().top - 8; setQuestion(value); setAway(true) }
+        } })),
+    React.createElement('div', { ref: log, className: 'dsh-super-code-detail-log', 'aria-label': text(t, 'tree.title'), onScroll: trackPosition },
       snapshot.error && React.createElement('p', { role: 'alert' }, text(t, snapshot.error)),
       snapshot.status === 'loading' && React.createElement('p', { role: 'status' }, text(t, 'detail.reading')),
       snapshot.hasMore && React.createElement(ActionButton, { type: 'button', disabled: snapshot.status === 'paging', onClick: inspector.older }, snapshot.status === 'paging' ? text(t, 'detail.read') : text(t, 'detail.older')),
       (snapshot.earlier || snapshot.truncated) && React.createElement(ActionButton, { type: 'button', onClick: latest }, text(t, 'detail.latest')),
       snapshot.status === 'ready' && !snapshot.items.length && React.createElement('p', null, text(t, 'detail.empty')),
-      snapshot.items.map(record => {
-        const data = record.entry?.event?.data
-        const key = JSON.stringify([data?.turn, data?.step, record.callId])
-        if (record.toolName && record.callId) toolNames.set(key, record.toolName)
-        return React.createElement(AgentMessage, { key: record.seq, record, saved, t, toolName: toolNames.get(key) })
-      })),
-    unread && React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-new-content', onClick: () => {
-      saved.following = true; log.current.scrollTop = log.current.scrollHeight; markUnread(false)
-    } }, text(t, 'detail.new')))
+      rows.map(row => row.kind === 'message' ? renderMessage(row.record) : React.createElement('details', { key: row.key, className: 'sc-wb-tool-group', open: saved.open.has(row.key), onToggle: event => {
+        if (event.target !== event.currentTarget) return
+        if (event.currentTarget.open) saved.open.add(row.key); else saved.open.delete(row.key)
+      } }, React.createElement('summary', null, React.createElement(Glyph, { type: 'chevron' }),
+        row.tools.length ? React.createElement(FeedbackTools, { tools: row.tools, t, inline: true }) : text(t, 'detail.toolResult')),
+        React.createElement('div', null, row.items.map(renderMessage))))),
+    (unread || compact && (away || snapshot.earlier)) && React.createElement(ActionButton, { type: 'button', className: 'dsh-super-code-new-content', onClick: () => {
+      if (compact && snapshot.earlier) { latest(); return }
+      saved.following = true; log.current.scrollTop = log.current.scrollHeight; markUnread(false); setAway(false)
+    } }, text(t, unread ? 'detail.new' : 'workbench.bottom')))
 }
 
-export { AgentDetail, createAgentInspector }
+export { AgentDetail, createAgentInspector, workbenchConversationRows }

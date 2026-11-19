@@ -8,7 +8,7 @@ import { LOCALE_NS, LocalizedTabTitle } from '../ui/locale.js'
 import { connectRemote } from '../ui/remote.js'
 
 function applySidebar(ctx, t, state) {
-  const { memoryStates, workspaceStates, treeStates, detailStates } = state
+  const { memoryStates, workspaceStates, treeStates, detailStates, workbenchState, workbenchRemote } = state
   // 保留旧页签类型，以便恢复已有的工作区和记忆页面。
   const treeId = 'dsh-super-code'
   const treeKind = 'super-agent-agents'
@@ -56,7 +56,7 @@ function applySidebar(ctx, t, state) {
     // 记忆服务不可用时，任务和 Agent 树仍可打开。
     for (const key of [treeId, 'dsh-super-code-memory']) yield ctx.slots.register({
       name: 'sidebar.right.pane.tab', key, locale: LOCALE_NS,
-      inject: () => ({ ...treeActions, api: memoryApi, memoryStates, workspaceStates }),
+      inject: () => ({ ...treeActions, api: memoryApi, memoryStates, workspaceStates, workbenchState, workbenchRemote }),
     }, SuperCodeWorkspace)
   })
 }

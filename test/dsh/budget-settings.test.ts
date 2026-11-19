@@ -415,3 +415,67 @@ test('optional status readers cannot replace a confirmed settings receipt with a
   assert.equal(reset.ok, true)
   assert.deepEqual(scope.get(), first.configuration)
 })
+
+test('unchanged budget reads avoid rebuilding unrelated settings forms and retain revision conflicts', async t => {
+  const ctx = new Context()
+  t.after(() => ctx.fiber.dispose())
+  const settings = new MemorySettings(ctx)
+  await ctx.plugin({ apply(owner: Context) { return applyBudgetSettings(owner, {}) } })
+  await remoteReady(ctx)
+  const remote = ctx.get('superCodeBudgets') as SuperCodeBudgets
+  const describe = settings.describe.bind(settings)
+  let descriptions = 0
+  settings.describe = options => { descriptions++; return describe(options) }
+  const first = remote.readConfig()
+  for (let count = 0; count < 25; count++) assert.deepEqual(remote.readConfig(), first)
+  assert.equal(descriptions, 1, 'unchanged reads do not reconstruct every host settings form')
+
+  await settings.replace('super-code-budgets', { maxTasks: 48 })
+  const external = remote.readConfig()
+  assert.equal(external.configuration.maxTasks, 48)
+  assert.notEqual(external.revision, first.revision)
+  assert.deepEqual(await remote.saveConfig('{"maxTasks":64}', `${first.revision}:${first.generation}`), { ok: false, error: 'conflict' })
+  const saved = await remote.saveConfig('{"maxTasks":64}', `${external.revision}:${external.generation}`)
+  assert.equal(saved.ok, true)
+  if (!saved.ok) throw new Error('Save failed')
+  assert.equal(saved.snapshot.configuration.maxTasks, 64)
+  const afterSave = descriptions
+  for (let count = 0; count < 25; count++) assert.deepEqual(remote.readConfig(), saved.snapshot)
+  assert.equal(descriptions, afterSave)
+  const reset = await remote.resetConfig(`${saved.snapshot.revision}:${saved.snapshot.generation}`)
+  assert.equal(reset.ok, true)
+  if (!reset.ok) throw new Error('Reset failed')
+  assert.deepEqual(reset.snapshot.configuration, first.configuration)
+})
+
+test('budget descriptor reuse does not hide host revision errors, failed writes or writable changes', async t => {
+  const ctx = new Context()
+  t.after(() => ctx.fiber.dispose())
+  const settings = new MemorySettings(ctx)
+  await ctx.plugin({ apply(owner: Context) { return applyBudgetSettings(owner, {}) } })
+  await remoteReady(ctx)
+  const remote = ctx.get('superCodeBudgets') as SuperCodeBudgets
+  const describe = settings.describe.bind(settings)
+  let descriptions = 0, unavailable = false
+  settings.describe = options => {
+    descriptions++
+    if (unavailable) throw new Error('Host settings unavailable')
+    return describe(options)
+  }
+  const first = remote.readConfig()
+  settings.writable = false
+  assert.equal(remote.readConfig().writable, false)
+  assert.deepEqual(await remote.saveConfig('{}', `${first.revision}:${first.generation}`), { ok: false, error: 'read-only' })
+  assert.equal(descriptions, 1)
+  settings.writable = true
+  unavailable = true
+  ctx.emit('settings/document-updated', 'super-code-budgets', first.revision)
+  assert.throws(() => remote.readConfig(), /Host settings unavailable/)
+  unavailable = false
+  assert.deepEqual(remote.readConfig().configuration, first.configuration)
+  settings.fail = true
+  assert.deepEqual(await remote.saveConfig('{"maxTasks":64}', `${first.revision}:${first.generation}`), { ok: false, error: 'save-failed' })
+  const afterFailure = descriptions
+  assert.deepEqual(remote.readConfig().configuration, first.configuration)
+  assert.equal(descriptions, afterFailure + 1, 'an uncertain write forces a fresh host revision read')
+})

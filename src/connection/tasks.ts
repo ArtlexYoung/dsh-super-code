@@ -1,7 +1,7 @@
 import { randomUUID, createHash } from 'node:crypto'
 import { realpath, stat } from 'node:fs/promises'
 import { isAbsolute, relative, sep } from 'node:path'
-import { setTimeout as pause } from 'node:timers/promises'
+import { addAbortListener } from 'node:events'
 import { activeTask, ConnectionError } from './types.js'
 import type { CallerApproval, CallerApprovalDecision, ConnectionConfig, DelegatedTask, DelegationHost, HistoryCursor, HistoryPage, HostObservation, ModelSelection, TaskStatus, TaskView } from './types.js'
 import { CallerApprovals } from './approvals.js'
@@ -17,6 +17,7 @@ function digest(value: unknown): string { return createHash('sha256').update(JSO
 export class DelegatedTasks {
   private records: DelegatedTask[] = []
   private tail: Promise<unknown> = Promise.resolve()
+  private readonly waiters = new Map<string, Set<() => void>>()
   private closed: boolean = false
   private closing: Promise<void> | false = false
   readonly approvals: CallerApprovals = new CallerApprovals()
@@ -37,10 +38,15 @@ export class DelegatedTasks {
     task.events.push({ cursor: ++task.sequence, time: task.updatedAt, status, message: message.slice(0, 1000) })
     task.events = task.events.slice(-200)
   }
-  private async persist(): Promise<void> { await this.store.saveTasks(this.records) }
+  private wake(id?: string): void {
+    if (id) this.waiters.get(id)?.forEach(notify => notify())
+    else for (const listeners of this.waiters.values()) for (const notify of listeners) notify()
+  }
+  private async persist(id?: string): Promise<void> { await this.store.saveTasks(this.records); this.wake(id) }
   private async replace(task: DelegatedTask, candidate: DelegatedTask): Promise<void> {
     await this.store.saveTasks(this.records.map(row => row === task ? candidate : row))
     Object.assign(task, candidate)
+    this.wake(task.id)
   }
   private async reconnect(task: DelegatedTask, connectionId?: string): Promise<void> {
     if (connectionId && task.connectionId !== connectionId) await this.replace(task, { ...task, connectionId })
@@ -63,7 +69,9 @@ export class DelegatedTasks {
     if (!task) return 'host'
     try { await this.directory(task.cwd) } catch { return 'host' }
     if (!this.configuration().enabled || !this.configuration().allowCallerApproval || this.closed || task.cancellationRequested || !activeTask(task.status) || !owns(task)) return 'host'
-    return this.approvals.request({ ...input, taskId: task.id, cwd: task.cwd }, signal)
+    const decision = this.approvals.request({ ...input, taskId: task.id, cwd: task.cwd }, signal)
+    this.wake(task.id)
+    return decision
   }
   async approve(taskId: string, approvalId: string, decision: CallerApprovalDecision, signal?: AbortSignal): Promise<{ outcome: string; repeated: boolean }> {
     this.enabled(signal)
@@ -144,7 +152,7 @@ export class DelegatedTasks {
         output: '', sequence: 0, events: [], operations: {}, baseline: await gitSnapshot(cwd), ...(input.connectionId ? { connectionId: input.connectionId } : {}) }
       ;(await this.authorization(cwd, signal, true)).check(cwd)
       this.event(row, 'starting', 'Dispatch intent saved. A DSH turn ending does not verify task acceptance.')
-      await this.store.saveTasks([...this.records, row]); this.records.push(row)
+      await this.store.saveTasks([...this.records, row]); this.records.push(row); this.wake(row.id)
       let phase: 'authorization' | 'creation' | 'model' | 'prompt' = 'authorization'
       try {
         ;(await this.authorization(cwd, signal, true)).check(cwd)
@@ -166,7 +174,7 @@ export class DelegatedTasks {
           : 'Prompt admission could not be confirmed. No automatic retry; inspect the DSH session before continuing.'
         this.event(row, phase === 'prompt' ? 'interrupted' : 'failed', message)
       }
-      await this.persist()
+      await this.persist(row.id)
       return row
     })
     return this.view(task.id, 0)
@@ -233,7 +241,7 @@ export class DelegatedTasks {
             : `Continuation stopped (${error instanceof ConnectionError ? error.code : 'directory-unavailable'}). No prompt was sent.`)
         }
       }
-      await this.persist()
+      await this.persist(task.id)
     })
     return this.view(input.taskId, 0)
   }
@@ -250,8 +258,8 @@ export class DelegatedTasks {
       this.event(cancellation, 'cancelling', 'Cancellation requested; waiting for the root and managed descendants to stop.')
       await this.replace(task, cancellation)
       try { await this.host.cancel(task.sessionId) }
-      catch { this.event(task, 'unavailable', 'Could not confirm cancellation of the complete task tree. Check DSH.'); await this.persist(); return }
-      await this.refresh(task); await this.persist()
+      catch { this.event(task, 'unavailable', 'Could not confirm cancellation of the complete task tree. Check DSH.'); await this.persist(task.id); return }
+      await this.refresh(task); await this.persist(task.id)
     })
     return this.view(id, 0)
   }
@@ -259,8 +267,8 @@ export class DelegatedTasks {
     try { return await this.host.observe(task.sessionId, requestId, task.cancellationRequested) }
     catch { return { status: 'unavailable', output: '', detail: 'Task observation is unavailable; no request was replayed.' } }
   }
-  private async refresh(task: DelegatedTask): Promise<void> {
-    if (!activeTask(task.status) && task.status !== 'interrupted') return
+  private async updated(task: DelegatedTask): Promise<DelegatedTask | undefined> {
+    if (!activeTask(task.status) && task.status !== 'interrupted') return undefined
     if (task.cancellationRequested) await this.host.cancel(task.sessionId).catch(() => {})
     let observation = await this.observe(task, task.currentRequest)
     let pendingRequests = task.pendingRequests ?? []
@@ -275,6 +283,14 @@ export class DelegatedTasks {
         const latest = observation.latestRequestId ? pendingRequests.indexOf(observation.latestRequestId) : -1
         for (let index = latest >= 0 ? latest : pendingRequests.length - 1; index >= 0; index--) {
           const previous = await this.observe(task, pendingRequests[index]!)
+          // 读取上一轮期间，新一轮可能已被接纳；按较新的快照定位，不能用旧轮结束推断续聊中断。
+          if (previous.latestRequestId === task.currentRequest) {
+            observation = await this.observe(task, task.currentRequest)
+            if ((observation.observation?.lastEventSeq ?? -1) >= 0) pendingRequests = []
+            break
+          }
+          const admittedIndex = previous.latestRequestId ? pendingRequests.indexOf(previous.latestRequestId) : -1
+          if (admittedIndex > index) { index = admittedIndex + 1; continue }
           if (index && previous.observation?.lastEventSeq === -1) continue
           pendingRequests = pendingRequests.slice(index)
           observation = ['finished', 'failed', 'interrupted'].includes(previous.status)
@@ -292,13 +308,24 @@ export class DelegatedTasks {
     if (task.status !== status || changed) {
       const candidate = { ...task, pendingRequests, output, observation: observation.observation ?? task.observation, events: [...task.events] }
       this.event(candidate, status, observation.detail)
-      await this.replace(task, candidate)
+      return candidate
     }
+    return undefined
+  }
+  private async refresh(task: DelegatedTask): Promise<void> {
+    const candidate = await this.updated(task)
+    if (candidate) await this.replace(task, candidate)
   }
   private async refreshPending(except = ''): Promise<void> {
+    const updates = new Map<DelegatedTask, DelegatedTask>()
     for (const task of this.records) if (task.id !== except && (activeTask(task.status) || task.status === 'interrupted')) {
-      await this.refresh(task)
+      const candidate = await this.updated(task)
+      if (candidate) updates.set(task, candidate)
     }
+    if (!updates.size) return
+    await this.store.saveTasks(this.records.map(task => updates.get(task) ?? task))
+    for (const [task, candidate] of updates) Object.assign(task, candidate)
+    for (const task of updates.keys()) this.wake(task.id)
   }
   async tick(): Promise<void> {
     await this.exclusive(async () => {
@@ -385,18 +412,41 @@ export class DelegatedTasks {
   }
   async wait(id: string, cursor: number, waitMs: number, signal?: AbortSignal): Promise<TaskView> {
     const deadline = Date.now() + Math.min(Math.max(waitMs, 0), 30000)
-    let task = await this.snapshot(id)
-    while (!this.closed && activeTask(task.status) && task.status !== 'waiting_confirmation' && !this.approvals.pending(task.id).length && task.sequence <= cursor && Date.now() < deadline) {
-      signal?.throwIfAborted()
-      await pause(Math.min(1000, Math.max(1, deadline - Date.now())), undefined, { signal })
-      task = await this.snapshot(id)
+    let changed = false, wake: (() => void) | undefined
+    const notify = (): void => { changed = true; wake?.() }
+    let listeners = this.waiters.get(id)
+    if (!listeners) this.waiters.set(id, listeners = new Set())
+    listeners.add(notify)
+    try {
+      let task = await this.snapshot(id)
+      while (!this.closed && activeTask(task.status) && task.status !== 'waiting_confirmation' && !this.approvals.pending(task.id).length && task.sequence <= cursor && Date.now() < deadline) {
+        signal?.throwIfAborted()
+        if (!changed) await new Promise<void>((resolve, reject) => {
+          let release: Disposable | undefined
+          const finish = (error?: unknown): void => {
+            clearTimeout(timer); release?.[Symbol.dispose](); wake = undefined
+            if (error === undefined) resolve(); else reject(error)
+          }
+          const timer = setTimeout(() => finish(), Math.min(1000, Math.max(1, deadline - Date.now())))
+          if (signal) release = addAbortListener(signal, () => {
+            const error = new Error('The operation was aborted', { cause: signal.reason })
+            finish(Object.assign(error, { name: 'AbortError', code: 'ABORT_ERR' }))
+          })
+          wake = () => finish()
+        })
+        changed = false
+        task = await this.snapshot(id)
+      }
+      return await this.describe(task, cursor)
+    } finally {
+      listeners.delete(notify)
+      if (!listeners.size) this.waiters.delete(id)
     }
-    // Git observations are needed once per response, not at every internal status poll.
-    return this.describe(task, cursor)
   }
   close(): Promise<void> {
     if (this.closing) return this.closing
     this.closed = true
+    this.wake()
     this.approvals.withdraw()
     this.closing = this.exclusive(() => this.persist())
     return this.closing

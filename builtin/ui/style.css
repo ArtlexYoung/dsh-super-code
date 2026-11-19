@@ -608,7 +608,7 @@
 .dsh-super-code-detail-info .dsh-super-code-memory-activity{margin-top:10px;font-size:12px}
 .dsh-super-code-detail-info .dsh-super-code-task-memory{margin-top:10px;font-size:12px}
 .dsh-super-code-detail-log{flex:1;min-height:0;overflow:auto;padding:14px 14px 24px;background:var(--sc-bg)}
-.dsh-super-code-detail-log>button,.dsh-super-code-detail-entry button{border:1px solid var(--sc-line);border-radius:8px;background:var(--sc-bg);padding:5px 8px;margin:0 8px 10px 0;font-size:12px}
+.dsh-super-code-detail-log>button,.dsh-super-code-detail-entry button:where(:not(.dsh-super-code-detail-content *)){border:1px solid var(--sc-line);border-radius:8px;background:var(--sc-bg);padding:5px 8px;margin:0 8px 10px 0;font-size:12px}
 .dsh-super-code-detail-entry{display:flex;align-items:flex-start;gap:8px;min-width:0;margin:0 0 16px}
 .dsh-super-code-detail-avatar{display:grid;place-items:center;flex:none;width:26px;height:26px;margin-top:2px;border-radius:8px;background:var(--sc-surface);color:var(--sc-muted)}
 .dsh-super-code-detail-avatar .dsh-super-code-glyph{width:16px;height:16px;color:inherit}

@@ -121,3 +121,59 @@ test('a full continuation queue needs only two observations of the native journa
   await assert.rejects(f.tasks.send({ taskId: f.first.taskId, requestId: 'overflow', prompt: 'must not send' }), /task-operation-limit/)
   assert.equal(f.requests.length, 129)
 })
+
+for (const admittedIndex of [1, 2]) {
+  test(`journal admission advancing to queued turn ${admittedIndex} between snapshots preserves its result`, async t => {
+    const f = await fixture(t)
+    f.append('turn/end', { reason: { kind: 'completed' } })
+    await f.host.cancel()
+    const observe = f.host.observe
+    let advanced = false
+    f.host.observe = async (...args) => {
+      const snapshot = await observe(...args)
+      if (!advanced) {
+        advanced = true
+        f.start(f.requests[admittedIndex]!)
+        f.append('assistant/message', { content: [{ type: 'text', text: 'continuation completed' }] })
+        f.append('turn/end', { reason: { kind: 'completed' } })
+      }
+      return snapshot
+    }
+    const view = await f.tasks.view(f.first.taskId, 0)
+    if (admittedIndex === 2) {
+      assert.equal(view.status, 'finished')
+      assert.equal(view.output, 'continuation completed')
+      assert.deepEqual((await f.store.tasks())[0]!.pendingRequests, [])
+    } else {
+      assert.equal(view.status, 'interrupted')
+      assert.equal(view.output, 'continuation completed')
+      assert.deepEqual((await f.store.tasks())[0]!.pendingRequests, [f.requests[1]])
+    }
+    assert.equal(f.requests.length, 3)
+  })
+}
+
+for (const outcome of ['running', 'waiting_confirmation', 'failed', 'unavailable'] as const) {
+  test(`new admission between snapshots retains ${outcome} without replay`, async t => {
+    const f = await fixture(t, ['follow-B'])
+    f.append('turn/end', { reason: { kind: 'completed' } })
+    await f.host.cancel()
+    const observe = f.host.observe
+    let advanced = false
+    f.host.observe = async (...args) => {
+      if (advanced && outcome === 'unavailable' && args[1] === f.requests[1]) {
+        return { status: 'unavailable' as const, output: '', detail: 'Journal unavailable after admission', latestRequestId: f.requests[1] }
+      }
+      const snapshot = await observe(...args)
+      if (!advanced) {
+        advanced = true
+        f.start(f.requests[1]!)
+        if (outcome === 'waiting_confirmation') f.append('approval/asked', { id: 'late-approval' })
+        if (outcome === 'failed') f.append('turn/end', { reason: { kind: 'error' } })
+      }
+      return snapshot
+    }
+    assert.equal((await f.tasks.view(f.first.taskId, 0)).status, outcome)
+    assert.equal(f.requests.length, 2)
+  })
+}

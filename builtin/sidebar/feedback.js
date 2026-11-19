@@ -325,4 +325,4 @@ function TaskFeedbackBody({ view, catalogs, saved, openDetail, refresh, watchCat
     React.createElement(FeedbackVirtualList, { items, root: view.root, saved, openDetail, t, watchCatalog }))
 }
 
-export { TaskFeedback, feedbackListAnchor, feedbackListIndex, feedbackListItems, feedbackListLayout, feedbackListWindow, feedbackStatus, taskFeedbackRows }
+export { FeedbackTools, feedbackToolSummary, TaskFeedback, feedbackListAnchor, feedbackListIndex, feedbackListItems, feedbackListLayout, feedbackListWindow, feedbackStatus, taskFeedbackRows }

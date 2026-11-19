@@ -1,3 +1,8 @@
+import { descriptors as workbenchDescriptors } from '../builtin/workbench/remote.js'
+import { ActionButton, SelectControl, icons } from '../builtin/ui/controls.js'
+import { connectRemote } from '../builtin/ui/remote.js'
+import { WorkbenchConversation } from './workbench/conversation.js'
+import { DirectoryRecovery } from './workbench/directory.js'
 import { LOCALE_NS, en, zh } from '../builtin/ui/locale.js'
 import { budgetRemoteContribution, connectionRemoteContribution, memoryRemoteContribution, presetRemoteContribution, toolRemoteContribution } from '../builtin/settings/remote.js'
 import { skillPackageSource, synchronizeSkillMenus } from '../builtin/settings/skills.js'
@@ -16,7 +21,7 @@ function apply(ctx) {
   // $mount creates a lifecycle effect on this same fiber; awaiting it from
   // another effect would stall the namespace and the settings contribution.
   void ctx.remote.$mount({ package: 'dsh-super-code', descriptors: [
-    ...presetRemoteContribution.descriptors, ...memoryRemoteContribution.descriptors, ...budgetRemoteContribution.descriptors, ...connectionRemoteContribution.descriptors, ...toolRemoteContribution.descriptors,
+    ...presetRemoteContribution.descriptors, ...memoryRemoteContribution.descriptors, ...budgetRemoteContribution.descriptors, ...connectionRemoteContribution.descriptors, ...toolRemoteContribution.descriptors, ...workbenchDescriptors,
   ] }).catch(error => console.warn('Super Code Remote:', error))
   const navigation = { openSession: () => {} }
   ctx.inject(['uiWorkspace', 'sessions'], ready => {
@@ -26,11 +31,11 @@ function apply(ctx) {
     }
     ready.effect(() => () => { navigation.openSession = () => {} })
   })
-  ctx.inject(['remote.superCodeBudgets', 'inputTriggers'], ready => {
+  ctx.inject(['remote.superCodeBudgets', 'inputTriggers', 'sessions'], ready => {
     ready.effect(() => synchronizeSkillMenus(ready, ready.remote.superCodeBudgets, require('@deepseek-ai/dsh-client-ui-skill'),
       error => console.warn('Super Code Skill menu refresh:', error)), 'super-code: live skill menus')
   })
-  ctx.inject(['remote.skills', 'inputTriggers'], ready => {
+  ctx.inject(['remote.skills', 'inputTriggers', 'sessions'], ready => {
     ready.effect(() => ready.inputTriggers.registerSource(skillPackageSource(ready)), 'super-code: skill package search')
   })
   ctx.inject(['remote.superCodeConnection'], ready => {
@@ -48,10 +53,28 @@ function apply(ctx) {
     ready.effect(() => synchronizePresetDisplay(ready.remote.superCodePresets, locale,
       () => window.location.reload(), error => console.warn('Super Code preset display:', error), preferenceScope), 'super-code: preset display')
   })
+  let workbenchValue = null
+  const workbenchListeners = new Set()
+  const workbenchState = { snapshot: () => workbenchValue, subscribe: listener => { workbenchListeners.add(listener); return () => workbenchListeners.delete(listener) } }
+  const updateWorkbench = value => { workbenchValue = value; for (const listener of workbenchListeners) listener() }
+  const workbenchRemote = connectRemote(ctx, { descriptors: workbenchDescriptors })
+  ctx.inject(['sessions', 'sidebarRightTabs'], ready => {
+    const workbench = require('super-code-workbench')
+    const preference = workbench.createWorkbenchPreference(localStorage)
+    ready.effect(() => () => updateWorkbench(null))
+    const ui = workbench.apply(ready, { Button: ActionButton, Select: SelectControl, MarkdownText: icons.MarkdownText, Conversation: WorkbenchConversation, preference })
+    updateWorkbench({ preference, ui })
+  })
+  ctx.inject(['remote.superCodeWorkbench', 'remote.superCodeConnection'], ready => {
+    ready.slots.inject('conversation.session.header.actions', () => ready.slots.register({
+      name: 'conversation.session.header.actions', id: 'super-code-directory-recovery', order: 140, locale: LOCALE_NS,
+      inject: () => ({ api: ready.remote.superCodeWorkbench, directoryApi: ready.remote.superCodeConnection, openSession: id => navigation.openSession(id) }),
+    }, DirectoryRecovery))
+  })
   const settings = createSettingsServices(ctx)
   ctx.slots.inject('settings.section', () => ctx.slots.register({
     name: 'settings.section', id: 'super-code', order: 120, label: () => t('preset.title'), locale: LOCALE_NS,
-    inject: () => ({ ...settings, openSession: id => navigation.openSession(id) }),
+    inject: () => ({ ...settings, workbenchState, workbenchRemote, openSession: id => navigation.openSession(id) }),
   }, PresetSettings))
   ctx.effect(() => {
     const style = document.createElement('style')
@@ -62,7 +85,7 @@ function apply(ctx) {
   }, 'super-code: browser styles')
   // 视图状态属于父级，侧栏依赖卸载或恢复时保留草稿与浏览位置。
   const sidebar = { memoryStates: new WeakMap(), workspaceStates: new WeakMap(), treeStates: new WeakMap(), detailStates: new WeakMap() }
-  ctx.inject(['remote.session', 'sessions', 'sidebarRightTabs', 'sidebarRight'], ready => applySidebar(ready, t, sidebar))
+  ctx.inject(['remote.session', 'sessions', 'sidebarRightTabs', 'sidebarRight'], ready => applySidebar(ready, t, { ...sidebar, workbenchState, workbenchRemote }))
 }
 
 export { apply, inject }

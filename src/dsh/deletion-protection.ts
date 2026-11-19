@@ -55,7 +55,7 @@ export async function applyDeletionProtection(ctx: Context): Promise<void> {
       return { ...result, messages: [...result.messages, notice] }
     }, true)
     owner.on('tools/execute', async (exec, next) => {
-      if (modeFor(exec.agent) !== 'strict' || !['bash', 'pwsh'].includes(exec.name)) return next()
+      if (!['bash', 'pwsh'].includes(exec.name) || modeFor(exec.agent) !== 'strict') return next()
       const args = exec.arguments as { command?: unknown; workdir?: unknown } | null
       if (typeof args?.command !== 'string' || !deletionCommand(args.command, exec.name === 'pwsh')) return next()
       exec.signal.throwIfAborted()

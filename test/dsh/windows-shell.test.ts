@@ -11,6 +11,8 @@ import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
 import { Session, SessionId } from '@deepseek-ai/dsh-session'
 import { ToolCallId } from '@deepseek-ai/dsh-llm'
 import { createScope, scopeTarget, scopeParentOf, scopeOf, bindScopeParent } from '@deepseek-ai/dsh-scope'
+import { installToolRuntime } from '../../src/dsh/tool-access.js'
+import type { ToolRuntime } from '../../src/dsh/tool-access.js'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import { applyBudgetSettings } from '../../src/dsh/budget-settings.js'
 import * as shell from '../../src/dsh/windows-shell.js'
@@ -166,10 +168,38 @@ async function fixture(t: test.TestContext, options: { platform?: NodeJS.Platfor
     await next.ctx.plugin(await import(pwshUrl))
     return key
   }
-  return { ctx, policy, make, names, prompt, call, generation, anotherPreset, stopOfficial, stopShell, started: started.promise,
+  return { ctx, preset, policy, make, names, prompt, call, generation, anotherPreset, stopOfficial, stopShell, started: started.promise,
     activate: (agent: Agent) => { active.add(agent) },
     preparations: () => preparations, broken(value: boolean) { broken = value } }
 }
+
+test('Windows tool profiles can switch to the persistent shell and restore the original standard choice', async t => {
+  const f = await fixture(t)
+  let shell = 'standard'
+  installToolRuntime(f.preset.ctx, { profile: () => ({ shell }) } as ToolRuntime)
+  const item = f.make('profile-shell-switch')
+  await item.ready()
+  assert.deepEqual(await f.names(item.agent), ['bash'])
+  shell = 'persistent'; await item.step()
+  assert.deepEqual(await f.names(item.agent), ['pwsh'])
+  shell = 'standard'; await item.step()
+  assert.deepEqual(await f.names(item.agent), ['bash'])
+})
+
+test('Windows idle profile selection updates shell restrictions before the next tool set is captured', async t => {
+  const f = await fixture(t)
+  let selected = 'standard'
+  installToolRuntime(f.preset.ctx, { profile: () => ({ shell: selected }) } as ToolRuntime)
+  const item = f.make('profile-before-resolve')
+  await item.ready()
+  shell.selectWindowsShell(f.preset.ctx, item.agent, 'persistent'); selected = 'persistent'
+  assert.deepEqual(await f.names(item.agent), ['pwsh'], 'the host resolves tools before agent/pre-step')
+  assert.equal((await f.call(item.agent, 'pwsh')).isError, false)
+  await item.step()
+  shell.selectWindowsShell(f.preset.ctx, item.agent, 'standard'); selected = 'standard'
+  assert.deepEqual(await f.names(item.agent), ['bash'])
+  assert.equal((await f.call(item.agent, 'bash')).isError, false)
+})
 
 test('Windows Bash explains BusyBox file support and process limits while keeping native tools available', async t => {
   for (const options of [{}, { official: 'standard' }]) {

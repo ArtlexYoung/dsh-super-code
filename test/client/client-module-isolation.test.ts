@@ -20,7 +20,7 @@ function fixture() {
     effect() {}, locale: { bind: () => (key: string) => key }, remote: { $mount: async () => {} },
     inject: (names: string[], run: Function) => {
       callbacks.push({ names, run })
-      if (names.every(name => ['slots', 'remote', 'remote.session', 'sessions', 'locale', 'sidebarRightTabs', 'sidebarRight'].includes(name))) run(ctx)
+      if (names.join(',') !== 'sessions,sidebarRightTabs' && names.every(name => ['slots', 'remote', 'remote.session', 'sessions', 'locale', 'sidebarRightTabs', 'sidebarRight'].includes(name))) run(ctx)
     },
     slots: { inject: (_: string, run: Function) => {
       const result = run()

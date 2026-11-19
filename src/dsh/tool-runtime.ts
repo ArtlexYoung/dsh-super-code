@@ -6,9 +6,10 @@ import type { ToolProfile } from './tool-profiles.js'
 import type { ToolRuntime, ToolRuntimeStatus } from './tool-access.js'
 import { installToolRuntime, selectToolPresentation } from './tool-access.js'
 import { mountToolProviders } from './tool-providers.js'
-import { creatorOf } from './windows-shell-lifecycle.js'
+import { creatorOf, applyShellLifecycle } from './windows-shell-lifecycle.js'
 import { toolExecution } from './tool-presentation.js'
 import * as presentation from './tool-presentation.js'
+import { selectWindowsShell } from './windows-shell.js'
 
 export const name = 'super-code-tool-runtime'
 export const inject: string[] = ['tools', 'systemPrompt', 'agents', 'superCodeTools']
@@ -109,6 +110,7 @@ export async function apply(ctx: Context): Promise<void> {
     if (profile.tools.some(name => name === 'bash' || name === 'pwsh') && !providers?.shellAvailable(profile.shell))
       throw new Error('The selected host shell is unavailable')
     selectToolPresentation(ctx, agent, profile.execution)
+    selectWindowsShell(ctx, agent, profile.shell)
   }, (agent, profile) => toolExecution(ctx, agent, profile.execution))
   ctx.effect(() => source.attach({ status: () => runtime.status(), catalog: () => providers?.catalog() ?? [] }))
   ctx.tools.guard(exec => !runtime.allows(exec.agent, exec.name) ? 'This tool is disabled by the applied Super Code tool profile. No tool was executed.' : undefined)
@@ -139,7 +141,7 @@ export async function apply(ctx: Context): Promise<void> {
   providers = await mountToolProviders(ctx, runtime)
   installToolRuntime(ctx, runtime)
   ctx.effect(() => source.watch(() => runtime.refresh()))
-  ctx.on('agent/created', ({ agent }) => { add(agent); return undefined })
+  applyShellLifecycle(ctx, add)
   ctx.on('agent/disposed', ({ agent }) => { runtime.remove(agent) })
   ctx.on('agent/status', ({ agent, status }) => { if (status === 'idle' && belongs(agent)) runtime.refresh() })
   for (const agent of ctx.agents.list()) add(agent)

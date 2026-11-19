@@ -187,6 +187,8 @@ const ActionButton = React.forwardRef(function ActionButton({ as: Tag = 'button'
     const bubble = document.createElement('div'), id = `super-code-tooltip-${++actionTooltipSequence}`
     bubble.id = id
     bubble.className = 'dsh-super-code-tooltip'
+    const workbench = anchor.closest('.sc-workbench')
+    if (workbench) { bubble.classList.add('sc-workbench'); bubble.dataset.palette = workbench.dataset.palette }
     bubble.setAttribute('role', 'tooltip')
     bubble.textContent = name
     bubble.style.visibility = 'hidden'

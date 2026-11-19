@@ -17,7 +17,7 @@ function fixture() {
     locale: { register: (_ns: string, values: any) => Object.assign(dictionaries, values), bind: () => (key: string) => key },
     remote: { $mount: async () => () => {} },
     inject: (names: string[], ready: Function) => {
-      if (names.every(name => ['slots', 'remote', 'remote.session', 'sessions', 'locale', 'sidebarRightTabs', 'sidebarRight'].includes(name))) ready(ctx)
+      if (names.join(',') !== 'sessions,sidebarRightTabs' && names.every(name => ['slots', 'remote', 'remote.session', 'sessions', 'locale', 'sidebarRightTabs', 'sidebarRight'].includes(name))) ready(ctx)
     },
     slots: { inject: (_: string, callback: Function) => {
       const result = callback()
@@ -65,14 +65,18 @@ test('preset settings registration does not wait on the Remote mount lifecycle',
     locale: { register: () => () => {}, bind: () => (key: string) => key },
     remote: { $mount: (contribution: any) => { mounts.push(contribution); return new Promise(() => {}) } },
     inject: (dependencies: string[]) => {
-      assert.ok(['remote.superCodePresets', 'remote.superCodeMemory', 'remote.superCodeConnection', 'remote.superCodeBudgets', 'remote.superCodeToolSettings', 'remote.skills', 'uiWorkspace', 'remote.session'].includes(dependencies[0]!))
+      if (dependencies[0] === 'sessions') {
+        assert.deepEqual([...dependencies], ['sessions', 'sidebarRightTabs'])
+        return
+      }
+      assert.ok(['remote.superCodePresets', 'remote.superCodeMemory', 'remote.superCodeConnection', 'remote.superCodeBudgets', 'remote.superCodeToolSettings', 'remote.superCodeWorkbench', 'remote.skills', 'uiWorkspace', 'remote.session'].includes(dependencies[0]!))
       if (dependencies[0] === 'remote.superCodePresets') injected = true
     },
     slots: { inject: () => {} }, sidebarRightTabs: { register: () => () => {} }, sessions: {}, sidebarRight: {},
   })
   assert.equal(injected, true)
   assert.equal(mounts.length, 1, 'The registry accepts one contribution per package')
-  assert.deepEqual([...new Set(mounts[0].descriptors.map((row: any) => row.namespace))].sort(), ['superCodeBudgets', 'superCodeConnection', 'superCodeMemory', 'superCodePresets', 'superCodeToolSettings'])
+  assert.deepEqual([...new Set(mounts[0].descriptors.map((row: any) => row.namespace))].sort(), ['superCodeBudgets', 'superCodeConnection', 'superCodeMemory', 'superCodePresets', 'superCodeToolSettings', 'superCodeWorkbench'])
   for (const descriptor of mounts[0].descriptors) for (const parameter of descriptor.parameters) {
     assert.equal(parameter.codec.create().parse('valid'), 'valid')
     assert.equal(parameter.codec.schema.parse('legacy'), 'legacy')
@@ -596,4 +600,28 @@ test('connection conversation counts follow live MCP connections rather than exe
   assert.equal(overview.sessions.length, 4)
   assert.equal(dictionaries.zh['home.connectedSessions'], '正在连接的对话')
   assert.equal(dictionaries.zh['home.historySessions'], '历史对话')
+})
+
+for (const modern of [false, true]) test('详情标题直接解析' + (modern ? '新' : '旧') + '目录，保留标签优先级与语言回退', () => {
+  const { slots } = fixture()
+  const title = slots.find(slot => slot.config.name === 'sidebar.right.pane.tab.title' && slot.config.key === 'dsh-super-code-detail')
+  assert.ok(title)
+  const byId: any = new Proxy({ child: { id: 'child', title: '原名' }, blank: { id: 'blank' } }, {
+    ownKeys() { throw new Error('单个标题不应枚举整棵会话树') },
+  })
+  const entries = [{ id: 'child', label: '子任务名称' }]
+  const state: any = { byId, ...(modern
+    ? { projectionsBySession: { parent: { state: 'idle', values: { subagentCatalog: entries } } } }
+    : { subagentsByParent: { parent: { entries } } }) }
+  const props: any = { useSessions: (select: any) => select(state), t: (key: string) => '中文:' + key,
+    useTabInfo: () => ({ tab: { contentId: 'dsh-resource://super-agent/child?parent=parent&mode=continuable' } }) }
+  assert.equal(title.component(props), '子任务名称')
+  entries[0]!.label = '修改后的名称'
+  assert.equal(title.component(props), '修改后的名称')
+  props.useTabInfo = () => ({ tab: { contentId: 'dsh-resource://super-agent/blank' } })
+  assert.equal(title.component(props), '中文:detail.title')
+  props.t = (key: string) => 'English:' + key
+  assert.equal(title.component(props), 'English:detail.title')
+  props.useTabInfo = () => ({ tab: { contentId: 'dsh-resource://super-agent/missing' } })
+  assert.equal(title.component(props), 'missing')
 })

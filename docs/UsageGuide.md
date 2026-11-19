@@ -9,6 +9,7 @@
 - [设置页](#设置页)
 - [预设版本与重装](#预设版本与重装)
 - [侧边栏](#侧边栏)
+- [代码工作台](CodeWorkbench.md)
 - [批量工具调用](#批量工具调用)
 - [远程项目](#远程项目)
 - [运行预算](#运行预算)
@@ -44,7 +45,7 @@
 
 ## 设置页
 
-「设置 → Super Code 模式」包含七个标签页：
+「设置 → Super Code 模式」包含八个标签页：
 
 | 标签页 | 内容 |
 |---|---|
@@ -52,11 +53,14 @@
 | 预设配置 | 安装、重装、重命名、Windows 命令环境 |
 | 工具 | 五套预置工具集、自定义方案、按会话动态应用状态 |
 | 技能 | 随包工作流与 Skill 开关 |
+| 代码工作台 | 编辑器、Git、学习模式与独立窗口设置 |
 | 上下文配置 | [运行预算](#运行预算) |
 | 删除保护 | [删除保护](#删除保护) |
 | 连接 | [MCP 连接](#mcp-连接) |
 
 切换标签页不会丢失未保存的输入。
+
+在「设置 → Super Code 模式 → 代码工作台」开启对话中的工作台页面，默认关闭。编辑、导航、选区问答和独立窗口见[代码工作台](CodeWorkbench.md)。
 
 ### 工具集
 
@@ -245,13 +249,13 @@ maxContextBytes: 32768       # Super Code：任务记忆上下文字节数
 
 验证范围见[兼容性记录](Compatibility.md)。
 
-Windows DSH 默认在 Super Code 预设中使用内置 GNU Bash、BusyBox 和 GNU grep，运行常见 Bash 命令无需额外安装 Git。Git、Node、Python 等开发工具仍需自行安装。macOS、Linux 沿用 DSH 原有环境。
+Windows DSH 默认在 Super Code 预设中使用 Bash。先检测 PATH、Git for Windows 注册表和常见安装目录，并验证 Git 与 Bash 可以运行；可用时直接复用本机 Git Bash，没有可用安装时才使用内置 GNU Bash、BusyBox 和 GNU grep。运行常见 Bash 命令无需额外安装 Git。Git、Node、Python 等开发工具仍需自行安装。macOS、Linux 沿用 DSH 原有环境。
 
 在「预设配置 → 命令环境」关闭「使用内置 Bash（Windows）」，新启动的会话将改用 DSH 的 PowerShell。设置自动保存，运行中的 Agent 保留原有环境，子 Agent 继承会话环境和工具限制；已安装的旧预设需要先重新安装，才能使用新的命令环境入口。判断依据是 DSH 服务端系统，浏览器所在系统不影响选择。仅检测为 Windows 时可修改这里的开关；其他平台显示为灰色，悬浮提示「仅 Windows 生效」。
 
 开启同一位置的「同时应用到官方预设」，也可让官方标准、PTC、创建模式使用内置 Bash，默认关闭。此选项与预算和删除保护的适用范围独立；关闭 Bash 总开关后，官方预设也使用原有 Shell，已保存的适用范围选择会保留。极简模式保留原有持久终端，自定义预设不自动修改。官方预设无需安装 Super Code 副本即可使用此设置。
 
-运行时随插件提供，首次使用时离线准备到 `%LOCALAPPDATA%\dsh-super-code\shell`，不更改系统 PATH。设置页显示准备状态；准备失败时显示原因，关闭开关后可用 DSH 环境。命令失败不会换 Shell 重放。审批、删除保护和进程管理继续使用 DSH 的工具链。
+内置运行时随插件提供，仅在没有可用 Git Bash 时离线准备到 `%LOCALAPPDATA%\dsh-super-code\shell`，不更改系统 PATH。设置页显示准备状态；准备失败时显示原因，关闭开关后可用 DSH 环境。命令失败不会换 Shell 重放。审批、删除保护和进程管理继续使用 DSH 的工具链。
 
 官方 Windows 限权沙箱会阻止 MSYS 创建内部命名管道，因此 `read-only`、`workspace-write` 下的 Bash 调用会在命令执行前明确报错。确需运行时，Agent 可为**同一条命令**请求 DSH 的 `sandbox_permissions="danger-full-access"` 单次审批，并说明原因。只有批准的这次调用可以执行；拒绝、取消或禁用审批时不执行，也不会自动修改会话权限或切换 Shell。PTC 的 `run_code` 本身若需更大权限，仍须经过 DSH 对该程序的独立审批，Bash 的批准不授予外层程序权限。
 

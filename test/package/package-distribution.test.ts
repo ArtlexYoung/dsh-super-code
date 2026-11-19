@@ -48,6 +48,7 @@ test('npm ships every runtime resource once and retains public exports and third
   for (const target of Object.values(pkg.bin)) assert.ok(files.has(target as string), String(target))
   for (const path of ['presets/super-code/tool-presentation.js', 'lib/dsh/tool-presentation.js']) assert.ok(files.has(path), path)
   assert.ok(files.has('builtin/README.md'))
+  for (const font of ['JetBrainsMono[wght].woff2', 'JetBrainsMono-Italic[wght].woff2', 'OFL.txt', 'upstream.json']) assert.ok(files.has('builtin/workbench/fonts/' + font), font)
   assert.ok(files.has('builtin/skills/oil-ui/SKILL.md'))
   assert.ok(files.has('builtin/skills/oil-ui/LICENSE'))
   assert.ok(![...files].some(path => /^presets\/super-code\/(skills|skill-packs)\//.test(path)), 'Builtin resources are not duplicated in presets')
@@ -74,4 +75,19 @@ test('npm ships every runtime resource once and retains public exports and third
   const sources = JSON.parse(await readFile(new URL('../../builtin/windows/sources.json', import.meta.url), 'utf8'))
   assert.ok(files.has('builtin/windows/' + sources.busybox.source.bundled), 'the exact corresponding BusyBox source ships with its binaries')
   assert.ok(files.has('builtin/windows/licenses/BusyBox-LICENSE.txt'))
+  for (const path of [
+    'dist/window.js', 'lib/workbench/window.js', 'lib/workbench/window-launcher.js',
+    'builtin/workbench/native/darwin/Super Code.app/Contents/MacOS/Super Code',
+    'builtin/workbench/native/darwin/Super Code.app/Contents/Info.plist',
+    'builtin/workbench/native/linux-arm64/super-code-window',
+    'builtin/workbench/native/linux-x64/super-code-window',
+    'builtin/workbench/native/win32/SuperCode.Window.exe',
+    'builtin/workbench/native/win32/SuperCode.Window.exe.config',
+    'builtin/workbench/native/win32/Microsoft.Web.WebView2.Core.dll',
+    'builtin/workbench/native/win32/Microsoft.Web.WebView2.WinForms.dll',
+    'builtin/workbench/native/win32/WebView2.LICENSE.txt',
+    ...['arm64', 'x64', 'x86'].map(arch => `builtin/workbench/native/win32/runtimes/win-${arch}/native/WebView2Loader.dll`),
+  ]) assert.ok(files.has(path), path)
+  for (const artifact of ['dist/git.cjs', 'dist/THIRD_PARTY_NOTICES.txt']) assert.ok(files.has(artifact), artifact)
+  assert.ok(![...files].some(path => /^builtin\/workbench\/(?!fonts\/|native\/).+\.(?:js|jsx|css)$/.test(path)), '工作台前端源码不重复发布')
 })

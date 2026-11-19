@@ -150,7 +150,21 @@ export async function applyBudgetRemote(ctx: Context): Promise<void> {
         maxOverflowRetries: defaults.maxOverflowRetries }
     } catch (error) { owner.logger.warn('Host compression defaults are unavailable; saved overrides remain available.', error) }
     if (disposed) return
-    new SuperCodeBudgets(owner, new BudgetSettings(owner.settings, source,
+    let descriptors: ReturnType<SettingsWriter['describe']> | undefined
+    const invalidate = (): void => { descriptors = undefined }
+    owner.on('settings/updated', invalidate)
+    owner.on('settings/document-updated', invalidate)
+    // 宿主 describe 会重建全部设置表单；只复用版本信息，配置仍逐次读取。
+    const settings: SettingsWriter = {
+      get writable() { return owner.settings.writable },
+      describe: options => descriptors ??= owner.settings.describe(options)
+        .filter(row => row.ns === source.namespace()).map(({ ns, revision }) => ({ ns, revision })),
+      async replace(namespace, config, revision) {
+        try { await owner.settings.replace(namespace, config, revision) }
+        finally { invalidate() }
+      },
+    }
+    new SuperCodeBudgets(owner, new BudgetSettings(settings, source,
       () => { const timeout = source.timeout(); return timeout ? timeout.maxMs : false }, source.namespace(), () => {
         const timeout = source.timeout()
         return { applyToOfficialPresets: false, maxTasks: 32, maxContextBytes: 32768,

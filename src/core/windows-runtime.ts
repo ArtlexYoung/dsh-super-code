@@ -2,7 +2,7 @@
 import { createHash } from 'node:crypto'
 import { gunzipSync } from 'node:zlib'
 import { homedir } from 'node:os'
-import { join, isAbsolute } from 'node:path'
+import { join, isAbsolute, win32 } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { mkdir, mkdtemp, readFile, writeFile, link, lstat, rename, rm } from 'node:fs/promises'
 
@@ -14,6 +14,7 @@ export interface WindowsRuntime {
   readonly bash: string
   readonly version: string
   readonly arch: string
+  readonly source?: 'git'
 }
 
 const packagedRoot = fileURLToPath(new URL('../../builtin/windows/', import.meta.url))
@@ -112,8 +113,8 @@ export function windowsRuntimeEnvironment(runtime: WindowsRuntime, supplied: Nod
   for (const key of new Set([...Object.keys(process.env), ...Object.keys(supplied)])) {
     if (['PATH', 'BASH_ENV', 'ENV', 'SHELLOPTS', 'BASHOPTS'].includes(key.toUpperCase()) || key.toUpperCase().startsWith('BASH_FUNC_')) env[key] = undefined
   }
-  const overrides = { PATH: runtime.bin + ';' + (existing ?? ''), BB_GLOBBING: '0', BB_OVERRIDE_APPLETS: 'bash,sh',
-    TERM: 'dumb', BASH_ENV: '', ENV: '' }
+  const overrides = { PATH: [runtime.bin, ...(runtime.source === 'git' ? [win32.join(runtime.root, 'cmd')] : []), existing ?? ''].join(';'),
+    ...(runtime.source === 'git' ? {} : { BB_GLOBBING: '0', BB_OVERRIDE_APPLETS: 'bash,sh' }), TERM: 'dumb', BASH_ENV: '', ENV: '' }
   // Newer hosts fold Windows aliases in insertion order before Node sorts keys.
   // Updating an existing property does not move it after a later alias/tombstone.
   for (const key of Object.keys(overrides)) delete env[key]

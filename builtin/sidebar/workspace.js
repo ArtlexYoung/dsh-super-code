@@ -1,13 +1,14 @@
 import { WorkspaceSectionToggle } from './controls.js'
 import { featureView } from '../ui/boundary.js'
 import { text } from '../ui/locale.js'
-import React, { useMemo, useState, useRef, useLayoutEffect } from '../ui/react.js'
+import React, { useMemo, useState, useRef, useLayoutEffect, useSyncExternalStore } from '../ui/react.js'
 import { MemoryLibrary, memoryLibraryTarget } from './memory.js'
 import { TaskFeedback } from './feedback.js'
 import { AgentTree } from './agents.js'
 
 /** Accordion: exactly one open view. Tab state retains drafts across section switches. */
 function SuperCodeWorkspace(props) {
+  const workbench = useSyncExternalStore(props.workbenchState.subscribe, props.workbenchState.snapshot, props.workbenchState.snapshot)
   const { tab } = props.useTabInfo()
   const address = typeof tab.navigation?.params?.memory === 'string' ? tab.navigation.params.memory : tab.contentId
   const navigationKey = `${address}/${tab.navigation?.revision || 0}`
@@ -46,7 +47,12 @@ function SuperCodeWorkspace(props) {
       return active === section ? featureView(section === 'tasks' ? TaskFeedback : section === 'tree' ? AgentTree : MemoryLibrary, { ...props, key: section, onToggle })
         : React.createElement('header', { key: section + '-collapsed', className: 'dsh-super-code-workspace-collapsed' },
           React.createElement(WorkspaceSectionToggle, { section, expanded: false, onToggle, t: props.t }))
-    })))
+    })), workbench && props.workbenchRemote && featureView(WorkspaceFileChanges, { ...props, workbenchUi: workbench.ui }))
+}
+
+function WorkspaceFileChanges({ useSessions, sessionId, workbenchUi, workbenchRemote }) {
+  const revision = useSessions(state => state)
+  return React.createElement(workbenchUi.Changes, { remote: workbenchRemote, sessionId, revision })
 }
 
 export { SuperCodeWorkspace }

@@ -491,3 +491,25 @@ test('official relaxed opt-in is separate from budgets for every official preset
     assert.doesNotMatch(await f.prompt(f.officialAgent), /trash <path>/)
   }
 })
+
+
+test('non-shell execution remains available when deletion policy configuration cannot be read', async t => {
+  const f = await fixture(t)
+  let reads = 0, bodies = 0
+  f.ctx.tools.register(defineTool({ name: 'read_file', description: '只返回固定文本，不访问文件或启动进程',
+    parameters: { command: { type: 'string', required: true } },
+    output: { schema: { type: 'string' }, render: (_args, value) => [{ type: 'text', text: value }] },
+    async execute() { bodies++; return 'read completed' },
+  }))
+  f.configure({ get deletionProtection() { reads++; throw new Error('controlled deletion policy failure') } })
+  const result = await f.execute('controlled input', f.agent, 'read_file')
+  assert.equal(result.isError, false)
+  assert.equal(result.value, 'read completed')
+  assert.equal(bodies, 1)
+  assert.equal(reads, 0)
+  const shell = await f.execute('controlled harmless text')
+  assert.equal(shell.isError, true)
+  assert.match(JSON.stringify(shell.content), /controlled deletion policy failure/)
+  assert.equal(reads, 1)
+  assert.equal(f.bodies(), 0)
+})

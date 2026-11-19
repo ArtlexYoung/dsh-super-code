@@ -35,10 +35,10 @@ Tested on 2026-11-11: [Historical results and methodology](docs/en/EvaluationRes
 
 The **Code Workbench** brings your workflow from an IDE into DSH, combining coding tools and model assistance in one place, ready to use.
 
-- **Lightweight editor (in development)**: A familiar IntelliJ IDEA / VS Code experience for reading and editing project files directly in Harness, with less window switching.
-- **Git (in development)**: Review repository status and code changes, and handle version-control operations including function change history (✨), file comparisons, branch management, and remote pushes.
+- **Lightweight editor**: A familiar IntelliJ IDEA / VS Code experience for reading and editing project files directly in Harness, with less window switching.
+- **Git**: Review repository status and code changes, and handle version-control operations including function change history (✨), file comparisons, branch management, and remote pushes.
 - **Preset Skills (manual opt-in)**: Bundled grill-me, OpenSpec, oil-ui, Matt Pocock Skills, and PStack cover requirements, specifications, UI, and engineering workflows. All are off by default and take effect in existing conversations when enabled.
-- **Learning mode (in development)**: Explore code and implementation decisions in the context of your project, learning as you build.
+- **Learning mode**: Explore code and implementation decisions in the context of your project, learning as you build.
 
 ## 1.3 Remote support
 
@@ -48,7 +48,7 @@ The **Code Workbench** brings your workflow from an IDE into DSH, combining codi
 
 ## 1.4 And more
 
-- **Module isolation (in development)**: Separate features into modules to contain failures and keep as much functionality available as possible.
+- **Feature isolation**: Settings, tools, memory, connections, and the workbench have separate lifecycles, so other features remain available when an optional capability fails.
 - **Lightweight package**: Reuse the Harness runtime, models, and session capabilities through a plugin that fits into your existing development environment.
 
 > Bundled and adapted Skill sources are published under [builtin/skills](builtin/skills), including provenance, licenses, and companion resources. See the [layout and maintenance guide](builtin/README.md).

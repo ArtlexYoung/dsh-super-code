@@ -2,6 +2,10 @@
 
 [中文](../Compatibility.md) · English
 
+## Workbench integration candidate (2026-11-19)
+
+The isolated integration branch combines the workbench snapshot with the modular architecture and tool profiles. Acceptance of the original workbench package covers 15 versions on three systems. Those records remain evidence for that original package; this integration requires targeted checks of changed entry points, service isolation, shared Windows shell selection, client controls and distribution. Acceptance is in progress; the candidate is not approved for release.
+
 ## Current support and acceptance scope (2026-11-19)
 
 Lifecycle acceptance is complete for all 45 combinations of the 15 target Harness versions on macOS ARM64, a Linux ARM64 container, and a Windows 11 ARM64 VM, including the newly added `0.2.2-rc.5`. Coverage includes fresh installation, upgrades, enable/disable, cold restarts, uninstall recovery, and conversation history, using a controlled model. This does not establish complete coverage of real-model workflows, native desktops, physical devices, or performance on every platform. Desktop, NEXT, and mobile coverage are tracked separately.
@@ -44,7 +48,7 @@ Graphical Chinese/English, light/dark, narrow-screen and question-card acceptanc
 
 Version 0.4.2 includes the implemented remote-project, task-recovery, offline-dependency, and BusyBox fixes documented below, plus Zed-compatible README images. Historical candidate versions, hashes, failures, and limits remain unchanged below; those targeted checks are not represented as reruns of the final package. Read each result with its own code baseline and environment.
 
-Use explicit `--offline` for offline installation. Cloud models require network access; local or LAN model services must be reachable. Physical Windows x64 hardware, all mobile devices, and every Skill workflow have not been fully validated. BusyBox long-working-directory and some UNC-rename limits remain. This release does not merge the in-development Workbench or upgrade npm dependencies.
+Use explicit `--offline` for offline installation. Cloud models require network access; local or LAN model services must be reachable. Physical Windows x64 hardware, all mobile devices, and every Skill workflow have not been fully validated. BusyBox long-working-directory and some UNC-rename limits remain. The earlier 0.4.2 acceptance did not include the workbench; see the integration candidate scope above for this merge.
 
 ## 2026-11-16 · BusyBox long paths (unreleased)
 
@@ -119,7 +123,7 @@ The client was an Android 15 / API 35 ARM64 emulator. DSH ran in isolated Linux 
 - **Unfixed defect:** saving a task appends a model message between a tool call and its result. Tencent Responses returns HTTP 400 / `400001`, including on the next turn. Real-API controls pass with adjacent calls/results and fail with an intervening message; changing that message's role also fails. The full task and dependent project-memory workflow has not passed. Global-memory success does not establish project-memory success.
 - **Client and recovery limits:** Agents Anywhere `2.1.0` could view history but could not send with this server/bridge combination; the website's `2.2.0` download could send. After a DSH cold restart, reopening the session from the list was needed once to restore input. A background return also retained a cancelled request's running bubble until an App restart; the server did not rerun the command. Ownership of these display symptoms has not been established. With dsh-Go compact history enabled, history and new requests worked, but wire-level compaction was not inspected, so this is partial coverage.
 - **Offline check:** the same candidate installed from a local tgz with an empty npm cache and Docker `--network none`, using an independent dependency copy with DSH `0.2.2-rc.1` preinstalled. Full DSH cold startup passed. Not all install hooks ran. Windows and offline inference were not rerun with this candidate; historical results retain their original scope.
-- **Third-party inventory:** runtime dependencies are unchanged from published 0.4.1; no dependencies were upgraded. Upstream npm, Bash/MSYS/BusyBox, PortableGit sources, oil-ui, Matt, PStack, OpenSpec, and remote bridges were checked. Available updates do not imply candidate changes. Main contains neither workbench Git nor CodeMirror, and PortableGit provenance does not establish that a Git executable is bundled.
+- **Third-party inventory:** runtime dependencies are unchanged from published 0.4.1; no dependencies were upgraded. Upstream npm, Bash/MSYS/BusyBox, PortableGit sources, oil-ui, Matt, PStack, OpenSpec, and remote bridges were checked. Available updates do not imply candidate changes. The earlier main acceptance did not include workbench Git or CodeMirror; this integration candidate includes them. PortableGit provenance does not establish that a Git executable is bundled.
 - **Unverified:** physical Android/iOS devices, the NEXT desktop remote-activation entry point, current-candidate channels with macOS/Windows remote machines, SSHFS, all Skill menus/workflows, interruption during execution, and cross-machine late messages with identical session IDs. Idle SSH/service interruption does not establish physical-network outage coverage.
 
 Evidence is in the outer workspace at `source/validation/dsh-super-code/remote-acceptance-20261114-OGn6pT/Report.md`. All 1165 tests, type checks, build, and actual-package dependency-closure checks passed; these do not override the real-model failure above.

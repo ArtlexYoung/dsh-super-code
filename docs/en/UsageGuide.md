@@ -9,6 +9,7 @@ New here? Read the Install and Use sections of the [README](../../README.en.md) 
 - [Settings](#settings)
 - [Preset version and reinstall](#preset-version-and-reinstall)
 - [Sidebar](#sidebar)
+- [Code workbench](CodeWorkbench.md)
 - [Batched tool calls](#batched-tool-calls)
 - [Remote projects](#remote-projects)
 - [Runtime budgets](#runtime-budgets)
@@ -44,7 +45,7 @@ Before plugin 0.2.0, the settings page lives under **Plugins → Plugin configur
 
 ## Settings
 
-**Settings → Super Code** has seven tabs:
+**Settings → Super Code** has eight tabs:
 
 | Tab | Contents |
 |---|---|
@@ -52,11 +53,14 @@ Before plugin 0.2.0, the settings page lives under **Plugins → Plugin configur
 | Preset configuration | Install, reinstall, rename, Windows command environment |
 | Tools | Five built-in tool profiles, custom profiles and per-conversation application status |
 | Skills | Bundled workflow and Skill switches |
+| Code workbench | Editor, Git, learning mode and detached-window settings |
 | Context settings | [Runtime budgets](#runtime-budgets) |
 | Deletion protection | [Deletion protection](#deletion-protection) |
 | Connection | [MCP connection](#mcp-connection) |
 
 Switching tabs keeps unsaved input.
+
+Enable the workbench in **Settings → Super Code → Code workbench**; it is off by default. See [Code workbench](CodeWorkbench.md) for editing, navigation, selection assistance and detached windows.
 
 ### Tool profiles
 
@@ -245,13 +249,13 @@ maxContextBytes: 32768       # Super Code: task-memory context bytes
 
 See [Compatibility](Compatibility.md) for the tested scope.
 
-On Windows, Super Code defaults to bundled GNU Bash, BusyBox and GNU grep. Common Bash commands work without installing Git for its shell. Developer tools such as Git, Node and Python still need separate installation. macOS and Linux keep the host's existing environment.
+On Windows, Super Code first detects and validates a local Git Bash installation. If none is usable, it prepares bundled GNU Bash, BusyBox and GNU grep. Common Bash commands work without installing Git for its shell. Developer tools such as Git, Node and Python still need separate installation. macOS and Linux keep the host's existing environment.
 
 Turn off **Preset configuration → Command environment → Use bundled Bash (Windows)** to use the host's PowerShell for new conversations. Changes save automatically; running Agents retain their environment, and child Agents inherit their conversation's shell and tool restrictions. Reinstall an older installed preset to pick up the new shell entry. Selection follows the DSH server's platform, independently of the browser's operating system. These switches are editable only on Windows hosts; other platforms show gray, disabled switches with an **Only available on Windows** hover tooltip.
 
 Enable **Also apply to official presets** in the same section to use bundled Bash in Standard, PTC and Create; it is off by default. This choice is independent of the budget and deletion-protection scopes. Turning off the main Bash switch also restores the original shell for new official Agents while retaining the saved scope choice. Minimal keeps its persistent terminal; custom presets are not changed automatically. Official presets can use this setting without an installed Super Code preset copy.
 
-The plugin carries its runtime and prepares it offline under `%LOCALAPPDATA%\dsh-super-code\shell` on first use. It does not change the system PATH. Settings shows readiness and preparation errors; turn the switch off to use the host environment after an error. Failed commands are never replayed through a different shell. DSH continues to own approvals, deletion protection and process management.
+The plugin carries its runtime and prepares it offline under `%LOCALAPPDATA%\dsh-super-code\shell` only when no usable Git Bash installation is found. It does not change the system PATH. Settings shows readiness and preparation errors; turn the switch off to use the host environment after an error. Failed commands are never replayed through a different shell. DSH continues to own approvals, deletion protection and process management.
 
 The official Windows sandbox blocks the internal named pipes MSYS requires. Bash calls under `read-only` or `workspace-write` therefore fail explicitly before the command runs. If still needed, the Agent can request DSH approval for the **exact same command** with `sandbox_permissions="danger-full-access"` and a justification. Approval permits only that invocation; rejection, cancellation, or disabled approvals leave it unexecuted. The plugin never changes session permissions or switches shells automatically. If the outer PTC `run_code` program also needs wider access, it requires its own host approval; approving Bash does not authorize that outer program.
 

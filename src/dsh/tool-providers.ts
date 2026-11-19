@@ -1,6 +1,7 @@
 import type { Context, Plugin } from '@deepseek-ai/cordis'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import type { ToolDefinition } from '@deepseek-ai/dsh-tools'
+import type { ToolSchema } from '@deepseek-ai/dsh-llm'
 import { hostModule, apply as applyShell } from './windows-shell.js'
 import { registerManagedTool } from './tool-access.js'
 import type { ToolRuntime, ToolRegistration } from './tool-access.js'
@@ -9,6 +10,19 @@ import type { ToolProfile } from './tool-profiles.js'
 import { scopeOf } from '@deepseek-ai/dsh-scope'
 
 export interface ToolAvailability { readonly name: string; readonly group: string; readonly available: boolean; readonly reason?: string; readonly description?: string }
+
+const shellDefinitions = new WeakMap<ToolDefinition, (agent?: Agent) => ToolDefinition | undefined>()
+
+/** 声明和 SDK 使用当前会话的原装参数，与执行时的严格校验保持一致。 */
+export function projectToolSchemas<T extends ToolSchema>(ctx: Context, tools: readonly T[], agent?: Agent): T[] {
+  return tools.flatMap(tool => {
+    const registered = ctx.tools.get(tool.name, agent ?? scopeOf(ctx))
+    const select = registered && shellDefinitions.get(registered)
+    if (!select) return [tool]
+    const selected = select(agent)
+    return selected ? [{ ...tool, description: selected.description, parameters: selected.parameters }] : []
+  })
+}
 
 /** 通过公开服务注入接管注册，工具本身的校验、输出、权限和终端实现仍由宿主提供。 */
 async function providerContext(ctx: Context, register: (definition: ToolDefinition, options?: ToolRegistration) => () => void): Promise<Context> {
@@ -38,15 +52,9 @@ function shellDefinition(variants: Map<string, ToolDefinition>, runtime: ToolRun
     return definition
   }
   const schemas = () => [...new Map([...variants.values()].map(def => [JSON.stringify(def.output.schema), def.output.schema])).values()]
-  return { ...first,
+  const definition: ToolDefinition = { ...first,
     description: 'Run a command using this conversation’s selected shell. In persistent mode use only command; state persists across calls. Standard mode requires command and description and accepts the ordinary host command options.',
-    // 两种原装参数对象可重叠，不能用 oneOf；合并声明，执行时仍由所选原装工具严格校验。
-    get parameters() {
-      const schemas = [...variants.values()].map(def => def.parameters as { properties: Record<string, unknown>; required?: string[] })
-      return { type: 'object', properties: Object.assign({}, ...schemas.map(schema => schema.properties)),
-        required: (schemas[0]?.required ?? []).filter(key => schemas.every(schema => schema.required?.includes(key))),
-        additionalProperties: true }
-    },
+    parameters: first.parameters,
     output: {
       get schema() { const values = schemas(); return values.length === 1 ? values[0]! : { oneOf: values } },
       render: (args, value) => (typeof value === 'string' && variants.has('persistent') ? variants.get('persistent')! : first).output.render(args, value),
@@ -56,6 +64,8 @@ function shellDefinition(variants: Map<string, ToolDefinition>, runtime: ToolRun
     presentCall: args => [...variants.values()].map(def => def.presentCall?.(args)).find(value => value !== undefined),
     presentResult: (args, result) => [...variants.values()].map(def => def.presentResult?.(args, result)).find(value => value !== undefined),
   }
+  shellDefinitions.set(definition, agent => variants.get(runtime.profile(agent).shell))
+  return definition
 }
 
 export async function mountToolProviders(ctx: Context, runtime: ToolRuntime): Promise<{
@@ -114,10 +124,11 @@ export async function mountToolProviders(ctx: Context, runtime: ToolRuntime): Pr
     try { await mount(delegation, moduleName, config) }
     catch (error) { reasons.set('subagent', error instanceof Error ? error.message : String(error)) }
   }
+  const available = (name: string): boolean => registered.has(name) && (!shellVariants.has(name) || shellVariants.get(name)!.size > 0)
   return { shellAvailable: kind => [...shellVariants.values()].some(variants => variants.has(kind)),
     catalog: () => [...toolGroups.flatMap(group => group.tools.map(name => ({ name, group: group.id,
-    available: registered.has(name) || group.id === 'super-code' && !!ctx.get('tools')!.get(name, scopeOf(ctx)),
-    ...registered.has(name) ? {} : { reason: reasons.get(group.id) ?? 'The host did not register this tool or its required service is unavailable.' },
+    available: available(name) || group.id === 'super-code' && !!ctx.get('tools')!.get(name, scopeOf(ctx)),
+    ...available(name) ? {} : { reason: reasons.get(group.id) ?? 'The host did not register this tool or its required service is unavailable.' },
   }))), ...ctx.tools.schemas(scopeOf(ctx)).filter(tool => tool.name !== 'run_code' && !isManagedTool(tool.name))
       .map(tool => ({ name: tool.name, group: 'external', available: true, description: tool.description }))] }
 }

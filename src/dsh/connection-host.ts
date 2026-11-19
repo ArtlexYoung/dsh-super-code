@@ -84,6 +84,9 @@ export function connectionSessionFacts(events: readonly SessionEvent[], agentSta
   return { status, output, observation }
 }
 export class ConnectionHost implements DelegationHost {
+  private readonly factsByEvents = new WeakMap<readonly SessionEvent[], {
+    requestId: string; status: string; cancelling: boolean; start: number; value: ObservedFacts
+  }>()
   constructor(private readonly services: ConnectionHostServices) {}
   async preset(): Promise<string> {
     const preset = await this.services.presets.status()
@@ -136,7 +139,18 @@ export class ConnectionHost implements DelegationHost {
   private async facts(id: string, requestId: string, cancelling = false): Promise<ObservedFacts> {
     const cut = await this.services.query.observeSession(id, { projectionMode: 'none', signal: AbortSignal.timeout(5000) })
     try {
-      return scanSessionFacts(cut.events, this.services.agents.get(id)?.status ?? 'missing', requestId, cancelling, cut.inheritedEventCount)
+      const events = cut.events, status = this.services.agents.get(id)?.status ?? 'missing'
+      if (!('source' in cut) || cut.source !== 'prepared' || !Object.isFrozen(events)) {
+        return scanSessionFacts(events, status, requestId, cancelling, cut.inheritedEventCount)
+      }
+      const cached = this.factsByEvents.get(events)
+      if (cached && cached.requestId === requestId && cached.status === status
+        && cached.cancelling === cancelling && cached.start === cut.inheritedEventCount) {
+        return { ...cached.value, observation: { ...cached.value.observation } }
+      }
+      const value = scanSessionFacts(events, status, requestId, cancelling, cut.inheritedEventCount)
+      this.factsByEvents.set(events, { requestId, status, cancelling, start: cut.inheritedEventCount, value: { ...value, observation: { ...value.observation } } })
+      return value
     }
     finally { cut[Symbol.dispose]() }
   }

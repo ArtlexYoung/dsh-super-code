@@ -1,9 +1,9 @@
 import { featureView } from '../ui/boundary.js'
-import React, { useState, useRef, useEffect, useLayoutEffect } from '../ui/react.js'
+import React, { useState, useRef, useEffect, useLayoutEffect, useSyncExternalStore } from '../ui/react.js'
 import { settingsRevision } from './editors.js'
 import { BudgetSettings, budgetDraft } from './budgets.js'
 import { ActionButton, Glyph, IconRefreshOutline16 } from '../ui/controls.js'
-import { ConnectionSwitch, SegmentedControl } from './controls.js'
+import { ConnectionSwitch, SegmentedControl, SettingRow, SettingsSection } from './controls.js'
 import { ConnectionSettings, connectionSessions } from './connection.js'
 import { ToolSettings } from './tools.js'
 import { localeCode } from '../ui/locale.js'
@@ -141,7 +141,23 @@ function SettingsHome({ budgetApi, connectionApi, connectionSettings, t, active,
           : placeholder('control') })))
 }
 
-function PresetSettings({ api, budgetApi: budgets, connectionApi, connectionSettings, toolApi, toolEditor, openSession = () => {}, t }) {
+function WorkbenchSettings({ preference, workbenchUi, workbenchRemote, t }) {
+  const state = useSyncExternalStore(preference.subscribe, preference.snapshot)
+  const [error, setError] = useState(false)
+  const save = patch => { try { preference.save(patch); setError(false) } catch { setError(true) } }
+  return React.createElement(SettingsSection, { id: 'super-code-workbench-settings', title: t('settings.workbenchTab') },
+    React.createElement(SettingRow, { id: 'super-code-workbench-enabled', label: t('workbench.enable'), hint: t('workbench.hint'), error: error ? t('workbench.error') : '' },
+      described => React.createElement(ConnectionSwitch, { id: 'super-code-workbench-enabled', checked: state.enabled, 'aria-label': t('workbench.enable'), 'aria-describedby': described,
+        onChange: value => save({ enabled: value }) })),
+    React.createElement(SettingRow, { id: 'super-code-workbench-open-files', label: t('workbench.openFiles'), hint: t('workbench.openFilesHint') },
+      described => React.createElement(ConnectionSwitch, { id: 'super-code-workbench-open-files', checked: state.openFiles, disabled: !state.enabled, 'aria-label': t('workbench.openFiles'), 'aria-describedby': described,
+        onChange: value => save({ openFiles: value }) })),
+    workbenchUi && workbenchRemote && featureView(workbenchUi.Settings, { remote: workbenchRemote, t }))
+}
+
+function PresetSettings({ workbenchState, workbenchRemote, api, budgetApi: budgets, connectionApi, connectionSettings, toolApi, toolEditor, openSession = () => {}, t }) {
+  const workbench = useSyncExternalStore(workbenchState.subscribe, workbenchState.snapshot, workbenchState.snapshot)
+  const workbenchPreference = workbench?.preference, workbenchUi = workbench?.ui
   const [tab, setTab] = useState('home')
   const [status, setStatus] = useState(null), [customId, setCustomId] = useState(null)
   const reinstall = status?.reinstallable ?? status?.state === 'installed'
@@ -211,7 +227,7 @@ function PresetSettings({ api, budgetApi: budgets, connectionApi, connectionSett
   const versionProblem = Boolean(status) && status.state !== 'missing' && versionState !== 'match'
   const [overviewRevision, setOverviewRevision] = useState(0)
   const onSaved = () => setOverviewRevision(value => value + 1)
-  const tabs = ['home', 'preset', 'tools', 'skills', 'context', 'protection', 'connection']
+  const tabs = ['home', 'preset', 'tools', 'skills', ...(workbenchPreference || tab === 'workbench' ? ['workbench'] : []), 'context', 'protection', 'connection']
   return React.createElement('section', { className: 'dsh-super-code-settings' },
     React.createElement('div', { className: 'dsh-super-code-settings-tabs', role: 'tablist', 'aria-label': t('settings.tabs'), onKeyDown: event => {
       if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
@@ -279,6 +295,8 @@ function PresetSettings({ api, budgetApi: budgets, connectionApi, connectionSett
         featureView(BudgetSettings, { api: budgets, t, section: 'skills', presetStatus: status, active: tab === 'skills', onSaved })),
       React.createElement('div', { role: 'tabpanel', id: 'super-code-panel-tools', 'aria-labelledby': 'super-code-tab-tools', hidden: tab !== 'tools' },
         toolEditor && featureView(ToolSettings, { api: toolApi, editor: toolEditor, t, active: tab === 'tools' })),
+      (workbenchPreference || tab === 'workbench') && React.createElement('div', { role: 'tabpanel', id: 'super-code-panel-workbench', 'aria-labelledby': 'super-code-tab-workbench', hidden: tab !== 'workbench' },
+        workbenchPreference ? featureView(WorkbenchSettings, { preference: workbenchPreference, workbenchUi, workbenchRemote, t }) : React.createElement('p', { role: 'alert' }, t('module.unavailable'))),
       React.createElement('div', { role: 'tabpanel', id: 'super-code-panel-context', 'aria-labelledby': 'super-code-tab-context', hidden: tab !== 'context' },
         featureView(BudgetSettings, { api: budgets, t, active: tab === 'context', onSaved })),
       React.createElement('div', { role: 'tabpanel', id: 'super-code-panel-protection', 'aria-labelledby': 'super-code-tab-protection', hidden: tab !== 'protection' },

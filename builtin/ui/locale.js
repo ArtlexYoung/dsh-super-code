@@ -2,6 +2,20 @@
 import { zh as toolZh, en as toolEn } from './tool-locale.js'
 const LOCALE_NS = 'dshSuperCode'
 const zh = {
+  'directory.title': '当前回答目录不可用', 'directory.switch': '切换回答目录',
+  'directory.explain': '当前回答目录已被移除或不再是文件夹。选择其他目录后，将保留已完成的对话历史并创建续聊副本；原对话保留，不会自动重发问题。',
+  'directory.choose': '选择其他目录…', 'directory.continue': '在此目录继续', 'directory.failed': '目录操作未能完成，请重试。',
+  'directory.WORKBENCH_DIRECTORY_BUSY': '当前对话仍在运行，请先停止或等待回答结束后重试。',
+  'directory.WORKBENCH_DIRECTORY_STALE': '对话已有新记录，请核对后重试。',
+  'directory.WORKBENCH_DIRECTORY_TARGET': '所选目录不存在，请重新选择。',
+  'directory.WORKBENCH_DIRECTORY_AVAILABLE': '原目录已恢复，可以返回原对话继续。',
+  'directory.WORKBENCH_DIRECTORY_CHILD': '请从主对话切换回答目录。',
+  'directory.WORKBENCH_DIRECTORY_PRESET': '当前预设不可用，请先修复预设。',
+  'directory.WORKBENCH_DIRECTORY_UNSUPPORTED': '此宿主未提供保留历史所需的会话能力。',
+  'workbench.question': '问题', 'workbench.reply': '回复', 'workbench.questions': '本页问题', 'workbench.bottom': '回到底部',
+  'workbench.enable': '启用代码工作台（Beta）', 'workbench.hint': '在对话和轨迹旁打开项目代码、Git 与学习侧栏。', 'workbench.error': '代码工作台设置未能保存，请重试。',
+  'workbench.openFiles': '在工作台打开代码', 'workbench.openFilesHint': '对话页中的文件链接在代码工作台打开；工作台右侧对话始终在当前工作台打开。',
+  'settings.workbenchTab': '代码工作台（Beta）',
   'module.unavailable': '当前功能暂时不可用，其他功能可以继续使用。', 'module.retry': '重试此功能',
   'feedback.title': '任务',
   'feedback.tools': '工具调用汇总',
@@ -216,6 +230,20 @@ const zh = {
   'detail.path': 'Agent 路径', 'detail.title': 'Agent 详情', 'detail.refresh': '刷新对话详情', 'detail.task': '任务', 'detail.agent': 'Agent', 'detail.interrupted': 'Agent · 已中断', 'detail.error': '执行错误', 'detail.incomplete': '执行未完成，请稍后重试。', 'detail.input': '输入', 'detail.output': '输出', 'detail.cacheRead': '缓存读取', 'detail.cacheWrite': '缓存写入', 'detail.total': 'Token 总量', 'detail.hitRate': '缓存命中率', 'detail.moreUsage': '用量详情', 'detail.unavailable': '未提供', 'detail.reading': '正在读取对话…', 'detail.read': '读取中…', 'detail.older': '加载更早记录', 'detail.latest': '回到最新', 'detail.empty': '暂无执行内容', 'detail.new': '有新内容 · 查看最新', 'detail.loadError': '对话详情读取失败', 'detail.connection': '连接中断，正在重连', 'detail.historyError': '历史记录读取失败', 'detail.open': '展开全文', 'detail.noAccess': '无法打开详情，请重试', 'tree.loadError': '部分执行记录读取失败，请刷新重试', 'detail.unknown': '用量未知', 'main.agent': '主 Agent', 'tree.open': '点击查看详情', 'tree.expand': '展开', 'tree.collapse': '收起', 'image': '[图片]'
 }
 const en = {
+  'directory.title': 'Working directory unavailable', 'directory.switch': 'Change working directory',
+  'directory.explain': 'This conversation’s directory was removed or is no longer a folder. Choose another directory to continue in a new conversation with completed history. The original is kept; no question is resent automatically.',
+  'directory.choose': 'Choose another directory…', 'directory.continue': 'Continue here', 'directory.failed': 'The directory operation failed. Please retry.',
+  'directory.WORKBENCH_DIRECTORY_BUSY': 'This conversation is still running. Stop it or wait for the reply to finish, then retry.',
+  'directory.WORKBENCH_DIRECTORY_STALE': 'This conversation has new records. Review and retry.',
+  'directory.WORKBENCH_DIRECTORY_TARGET': 'The chosen directory does not exist. Choose another.',
+  'directory.WORKBENCH_DIRECTORY_AVAILABLE': 'The original directory is available again. Return to continue there.',
+  'directory.WORKBENCH_DIRECTORY_CHILD': 'Change the directory from the main conversation.',
+  'directory.WORKBENCH_DIRECTORY_PRESET': 'The current preset is unavailable. Repair it first.',
+  'directory.WORKBENCH_DIRECTORY_UNSUPPORTED': 'This host cannot continue with preserved history.',
+  'workbench.question': 'Question', 'workbench.reply': 'Reply', 'workbench.questions': 'Questions on this page', 'workbench.bottom': 'Back to bottom',
+  'workbench.enable': 'Enable code workbench (Beta)', 'workbench.hint': 'Open project code, Git and the learning sidebar beside Conversation and Trajectory.', 'workbench.error': 'Could not save code workbench settings. Try again.',
+  'workbench.openFiles': 'Open code in workbench', 'workbench.openFilesHint': 'Open Conversation file links in the code workbench. Links in the workbench conversation always open there.',
+  'settings.workbenchTab': 'Code workbench (Beta)',
   'module.unavailable': 'This feature is unavailable. Other features remain available.', 'module.retry': 'Retry this feature',
   'feedback.title': 'Tasks',
   'feedback.tools': 'Tool call summary',

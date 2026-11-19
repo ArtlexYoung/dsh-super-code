@@ -6,8 +6,14 @@ import { AgentCatalogWatch, WorkspaceSectionToggle } from './controls.js'
 
 function agentTabTitle(state, address, t) {
   const target = agentDetailTarget(address), id = target.childSessionId || target.sessionId
-  const node = buildAgentView(agentSessionState(state, id)).nodes.get(id)
-  return node?.title || node?.displayTitle || t('detail.title')
+  let node = state.byId?.[id]
+  if (!state.subagentsByParent && state.projectionsBySession?.[id] && !node) node = { id }
+  const catalogs = state.subagentsByParent ? Object.values(state.subagentsByParent).map(value => value?.entries || [])
+    : Object.values(state.projectionsBySession || {}).map(value => value.values.subagentCatalog || [])
+  for (const entries of catalogs) for (const entry of entries) if (entry.id === id) {
+    node = { title: entry.label || node?.title || node?.displayTitle || entry.id }
+  }
+  return node?.title || node?.displayTitle || (node ? t('detail.title') : id || t('detail.title'))
 }
 
 function AgentDetailTitle({ useTabInfo, useSessions, t }) {

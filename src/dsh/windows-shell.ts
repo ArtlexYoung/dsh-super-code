@@ -6,9 +6,23 @@ import type { Context, Plugin } from '@deepseek-ai/cordis'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import { configurationOf } from './budgets.js'
 import { prepareWindowsRuntime, windowsRuntimeEnvironment } from '../core/windows-runtime.js'
+import { findGitBash } from '../core/windows-git-bash.js'
 import type { WindowsRuntime } from '../core/windows-runtime.js'
 import { openspecProvider } from './openspec-shell.js'
 import { creatorOf, applyShellLifecycle, ShellPreparationError, shellPreparationFailure } from './windows-shell-lifecycle.js'
+import { toolRuntime } from './tool-access.js'
+import { scopeChainOf, scopeOf } from '@deepseek-ai/dsh-scope'
+import type { ToolProfile } from './tool-profiles.js'
+
+const shellSelections = new WeakMap<object, (agent: Agent, kind: ToolProfile['shell']) => void>()
+
+/** 在空闲维护阶段同步切换限制，先于宿主冻结下一步工具集合。 */
+export function selectWindowsShell(ctx: Context, agent: Agent, kind: ToolProfile['shell']): void {
+  for (const scope of scopeChainOf(agent)) {
+    const select = shellSelections.get(scope)
+    if (select) { select(agent, kind); return }
+  }
+}
 
 export { creatorOf } from './windows-shell-lifecycle.js'
 
@@ -87,7 +101,7 @@ export function applyWindowsShell(ctx: Context): void {
     prepare: () => {
       if (!preparing) {
         status = { platform: process.platform, state: 'pending' }
-        preparing = prepareWindowsRuntime().then(runtime => {
+        preparing = (async () => await findGitBash() ?? await prepareWindowsRuntime())().then(runtime => {
           status = { platform: process.platform, state: 'ready', version: runtime.version }
           return runtime
         }, (error: unknown) => {
@@ -148,24 +162,45 @@ export async function apply(ctx: Context): Promise<void> {
     const release = ctx.effect(() => tools.restrict({ deny }))
     agent.ctx.effect(() => release)
   }
+  const choices = new WeakMap<Agent, { deny: string; release: () => void }>()
+  const persistent = (agent: Agent): boolean => toolRuntime(ctx, agent)?.profile(agent).shell === 'persistent'
+  const restrictChoice = (agent: Agent, enabled: boolean, kind?: ToolProfile['shell']): void => {
+    const deny = (kind ? kind === 'persistent' : persistent(agent)) || !enabled ? 'bash' : 'pwsh'
+    const previous = choices.get(agent)
+    if (previous?.deny === deny) return
+    const release = ctx.effect(() => agent.ctx.get('tools')!.restrict({ deny: [deny] }))
+    previous?.release()
+    choices.set(agent, { deny, release })
+    if (!previous) agent.ctx.effect(() => () => { choices.get(agent)?.release(); choices.delete(agent) })
+  }
   const { scopeParentOf } = await hostModule(ctx, '@deepseek-ai/dsh-scope') as { scopeParentOf(key: object): object | undefined }
+  const attachSelection = (enabled: (agent: Agent) => boolean): void => {
+    const scope = scopeOf(ctx)!
+    shellSelections.set(scope, (agent, kind) => restrictChoice(agent, enabled(agent), kind))
+    ctx.effect(() => () => { shellSelections.delete(scope) })
+  }
   const prepare = await mountBundledBash(ctx)
   if (!prepare) {
     await ctx.plugin(await hostTool(ctx, '@deepseek-ai/dsh-tool-pwsh'))
-    const choices = new WeakMap<object, boolean>()
+    const ownershipChoices = new WeakMap<object, boolean>()
+    attachSelection(agent => ownershipChoices.get(agent) ?? configurationOf(ctx, agent).windowsBash !== false)
     const check = (agent: Agent): void => {
       if (disposed) return
-      if (choices.has(agent)) return
+      if (ownershipChoices.has(agent)) {
+        const enabled = ownershipChoices.get(agent)!
+        if (enabled || persistent(agent)) restrictChoice(agent, enabled)
+        return
+      }
       if (ctx.tools.get('remote_bash', agent)) return
       const creator = creatorOf(ctx, agent)
-      let enabled = creator ? choices.get(creator) : undefined
+      let enabled = creator ? ownershipChoices.get(creator) : undefined
       for (let current: object | undefined = agent; current; current = scopeParentOf(current)) {
-        if (choices.has(current)) { enabled = choices.get(current); break }
+        if (ownershipChoices.has(current)) { enabled = ownershipChoices.get(current); break }
       }
       enabled ??= configurationOf(ctx, agent).windowsBash !== false
-      if (enabled) restrict(agent, ['pwsh'])
-      choices.set(agent, enabled)
-      if (enabled) {
+      if (enabled || persistent(agent)) restrictChoice(agent, enabled)
+      ownershipChoices.set(agent, enabled)
+      if (enabled && !persistent(agent)) {
         throw new ShellPreparationError('Unsupported host shell provider; disable bundled Bash to use the host shell')
       }
     }
@@ -180,18 +215,20 @@ export async function apply(ctx: Context): Promise<void> {
     }
     return configurationOf(ctx, agent).windowsBash !== false
   }
+  attachSelection(agent => choice(agent))
   await ctx.plugin(await hostTool(ctx, '@deepseek-ai/dsh-tool-pwsh'))
   ctx.systemPrompt.section({ name: 'super-code:windows-shell', order: 94,
     text: ({ agent }) => agent && !ctx.tools.get('remote_bash', agent) && choice(agent)
       ? windowsShellInstructions : '' })
   ctx.on('system-prompt/assemble', async (_assembly, { agent }, next) => {
     const assembled = await next()
-    const hidden = choice(agent) ? 'tool:pwsh' : 'tool:bash'
+    const hidden = agent && persistent(agent) || !choice(agent) ? 'tool:bash' : 'tool:pwsh'
     return { ...assembled, sections: assembled.sections.filter(section => section.name !== hidden) }
   })
   const install = (agent: Agent): Promise<void> => {
     if (disposed) return Promise.resolve()
     if (ctx.tools.get('remote_bash', agent)) return Promise.resolve()
+    restrictChoice(agent, choice(agent))
     const existing = installed.get(agent)
     if (existing) return existing.ready
     // Descendants retain their conversation's shell and capability filters.
@@ -201,7 +238,7 @@ export async function apply(ctx: Context): Promise<void> {
     }
     const creator = creatorOf(ctx, agent), inherited = creator && installed.get(creator)
     const enabled = inherited ? inherited.enabled : configurationOf(ctx, agent).windowsBash !== false
-    restrict(agent, [enabled ? 'pwsh' : 'bash'])
+    restrictChoice(agent, enabled)
     const ready = (async () => {
       if (enabled || inherited) {
         try {

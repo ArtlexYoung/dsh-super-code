@@ -297,4 +297,4 @@ function ConnectionConsent({ api, remote, t }) {
       React.createElement(ActionButton, { type: 'button', disabled: busy, className: 'dsh-super-code-primary-button', onClick: () => resolve('approved') }, t('connection.approveDirectory'))))
 }
 
-export { ConnectionConsent, ConnectionSettings, connectionConfiguration, connectionDraft, connectionSessions, createConnectionAutosave }
+export { DirectoryBrowser, ConnectionConsent, ConnectionSettings, connectionConfiguration, connectionDraft, connectionSessions, createConnectionAutosave }

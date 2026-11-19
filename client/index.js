@@ -6,7 +6,7 @@ export { createBudgetAutosave, createBudgetEditors, budgetDraft, budgetConfigura
 export { synchronizePresetDisplay } from '../builtin/settings/presets.js'
 export { createToolAutosave, toolConfiguration } from '../builtin/settings/tools.js'
 export { agentSessionState, buildAgentView, visibleAgentRows, agentTreeDisplay, agentTreeTotals, agentTreeLayout, agentExecutionStatus, agentHistoryRange, agentHistoryRows, agentHistoryWindow } from '../builtin/sidebar/agents.js'
-export { createAgentInspector } from '../builtin/sidebar/detail.js'
+export { createAgentInspector, workbenchConversationRows } from '../builtin/sidebar/detail.js'
 export { detailRecord } from '../builtin/sidebar/messages.js'
 export { memoryLibraryAddress, memoryLibraryTarget, memoryLibraryNavigation, memoryLibraryWindow, createMemoryEditor, MemoryLibrary } from '../builtin/sidebar/memory.js'
 export { agentDetailAddress, agentDetailTarget, agentPath } from '../builtin/sidebar/address.js'

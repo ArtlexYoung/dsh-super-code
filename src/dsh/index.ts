@@ -33,6 +33,7 @@ export async function apply(ctx: Context, config: Configuration = {}): Promise<v
     }],
     ['presets', ['agentPresets', 'settings'], async owner => { (await import('./preset-installation.js')).applyPresetInstallation(owner) }],
     ['recovery', ['agentPresets', 'sessionProjections', 'tools'], async owner => { (await import('./preset-recovery.js')).applyPresetRecovery(owner) }],
+    ['workbench', [], async owner => { (await import('./workbench.js')).applyWorkbench(owner) }],
     ['connection', [], async owner => { (await import('./connection.js')).applyConnection(owner) }],
     ['storage', [], async owner => { await (await import('./memory-domains.js')).apply(owner) }],
     ['memory-library', [], async owner => {

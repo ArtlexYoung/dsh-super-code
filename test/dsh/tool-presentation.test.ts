@@ -236,7 +236,7 @@ test('separate host executors keep programs and native batches unchanged and sel
 })
 test('modern per-agent native schemas and PTC SDK omit excluded external tools without affecting another preset', async t => {
   const f = await fixture(t, false, true), agent = f.make('external-modern'), other = f.make('unrelated-modern', f.ctx)
-  let profile = { ...structuredClone(builtinToolProfiles[0]!), disabledExternalTools: ['external_tool'] }
+  let profile = { ...structuredClone(builtinToolProfiles.find(profile => profile.id === 'builtin:standard')!), disabledExternalTools: ['external_tool'] }
   const runtime = new ToolSelections(() => profile, (current, selected) => selectToolPresentation(f.preset.ctx, current, selected.execution))
   installToolRuntime(f.preset.ctx, runtime); runtime.add(agent)
   const definitions = [{ name: 'external_tool' }, { name: 'allowed_external' }, { name: 'read' }]

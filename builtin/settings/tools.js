@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useSyncExternalStore } from '../ui/react.js'
+import React, { useEffect, useRef, useState, useSyncExternalStore } from '../ui/react.js'
 import { ActionButton, SelectControl } from '../ui/controls.js'
 import { Callout, ConnectionSwitch, SaveIndicator, SettingRow, SettingsSection } from './controls.js'
 import { autosaveState, createAutosave, settingsRevision } from './editors.js'
@@ -34,6 +34,25 @@ function ToolSettings({ api, editor, t, active }) {
   const editing = useSyncExternalStore(editor.subscribe, editor.getSnapshot, editor.getSnapshot)
   const [selected, setSelected] = useState(''), [sessions, setSessions] = useState([]), [error, setError] = useState('')
   const [busy, setBusy] = useState(false), [confirmation, setConfirmation] = useState('')
+  const dialog = useRef(null)
+  useEffect(() => {
+    if (!active) { setConfirmation(''); return undefined }
+    if (!confirmation) return undefined
+    const element = dialog.current
+    element.showModal()
+    element.querySelector('[data-tools-cancel]').focus()
+    const target = element.ownerDocument.defaultView
+    // 宿主也监听Escape；先取消本层，避免一并关闭整个设置页。
+    const cancel = event => {
+      if (event.key !== 'Escape' || event.isComposing) return
+      event.preventDefault(); event.stopPropagation(); setConfirmation('')
+    }
+    target.addEventListener('keydown', cancel, true)
+    return () => {
+      target.removeEventListener('keydown', cancel, true)
+      if (element.open) element.close()
+    }
+  }, [active, confirmation])
   const reload = async () => {
     setBusy(true)
     try {
@@ -144,14 +163,19 @@ function ToolSettings({ api, editor, t, active }) {
         onChange: checked => edit(group === 'external'
           ? { disabledExternalTools: checked ? (profile.disabledExternalTools ?? []).filter(name => name !== tool.name) : [...profile.disabledExternalTools ?? [], tool.name] }
           : { tools: checked ? [...profile.tools, tool.name] : profile.tools.filter(name => name !== tool.name) }) }))))),
-    confirmation && React.createElement('div', { role: 'alertdialog', 'aria-label': t(confirmation === 'reload' ? 'budget.reload' : 'tools.delete'), className: 'dsh-super-code-callout' },
-      React.createElement('p', null, t(confirmation === 'reload' ? 'tools.reloadConfirm' : confirmation === configuration.activeId ? 'tools.deleteActive' : 'tools.deleteConfirm')),
-      React.createElement(ActionButton, { onClick: () => {
-        if (confirmation === 'reload') void reload()
-        else { change({ type: 'delete', id: confirmation }); setSelected('') }
-        setConfirmation('')
-      } }, t(confirmation === 'reload' ? 'budget.reload' : 'tools.delete')),
-      React.createElement(ActionButton, { onClick: () => setConfirmation('') }, t('tools.cancel'))))
+    active && confirmation && React.createElement('dialog', { ref: dialog, role: 'alertdialog', className: 'dsh-super-code-confirm',
+      'aria-labelledby': 'super-code-tools-confirm-title', 'aria-describedby': 'super-code-tools-confirm-hint',
+      onCancel: event => { event.preventDefault(); event.stopPropagation(); setConfirmation('') } },
+      React.createElement('h3', { id: 'super-code-tools-confirm-title' }, t(confirmation === 'reload' ? 'budget.reload' : 'tools.delete')),
+      React.createElement('p', { id: 'super-code-tools-confirm-hint' }, t(confirmation === 'reload' ? 'tools.reloadConfirm' : confirmation === configuration.activeId ? 'tools.deleteActive' : 'tools.deleteConfirm')),
+      confirmation !== 'reload' && React.createElement('p', null, profiles.find(value => value.id === confirmation)?.name),
+      React.createElement('div', { className: 'dsh-super-code-confirm-actions' },
+        React.createElement(ActionButton, { type: 'button', 'data-tools-cancel': true, onClick: () => setConfirmation('') }, t('tools.cancel')),
+        React.createElement(ActionButton, { type: 'button', disabled: busy || (confirmation !== 'reload' && !snapshot.writable), onClick: () => {
+          if (confirmation === 'reload') void reload()
+          else { change({ type: 'delete', id: confirmation }); setSelected('') }
+          setConfirmation('')
+        } }, t(confirmation === 'reload' ? 'budget.reload' : 'tools.delete')))))
 }
 
 export { ToolSettings, createToolAutosave, toolConfiguration }

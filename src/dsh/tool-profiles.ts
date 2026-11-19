@@ -46,6 +46,10 @@ const profileShape: z.ZodType<ToolProfile> = z.object({
 const standard = toolGroups.filter(group => !['cordis', 'market'].includes(group.id)).flatMap(group => group.tools)
   .filter(name => name !== 'apply_patch')
 export const builtinToolProfiles: readonly ToolProfile[] = [
+  { id: 'builtin:super-code', name: 'super-code', execution: 'ptc', shell: 'standard', tools: [
+    ...toolGroups.filter(group => ['shell', 'files', 'search', 'jobs', 'web', 'agents', 'skills', 'super-code', 'questions'].includes(group.id))
+      .flatMap(group => group.tools).filter(name => name !== 'apply_patch'), 'subagent',
+  ] },
   { id: 'builtin:standard', name: 'standard', execution: 'native', shell: 'standard', tools: standard },
   { id: 'builtin:ptc', name: 'ptc', execution: 'ptc', shell: 'standard', tools: standard.filter(name =>
     !toolGroups.filter(group => ['plugins', 'workflow'].includes(group.id)).flatMap(group => group.tools).includes(name)) },
@@ -53,10 +57,6 @@ export const builtinToolProfiles: readonly ToolProfile[] = [
   { id: 'builtin:create', name: 'create', execution: 'native', shell: 'standard', tools: [
     ...standard.filter(name => !toolGroups.find(group => group.id === 'office')!.tools.includes(name)),
     ...toolGroups.filter(group => ['cordis', 'market'].includes(group.id)).flatMap(group => group.tools),
-  ] },
-  { id: 'builtin:super-code', name: 'super-code', execution: 'ptc', shell: 'standard', tools: [
-    ...toolGroups.filter(group => ['shell', 'files', 'search', 'jobs', 'web', 'agents', 'skills', 'super-code', 'questions'].includes(group.id))
-      .flatMap(group => group.tools).filter(name => name !== 'apply_patch'), 'subagent',
   ] },
 ]
 export const maximumCustomProfiles: number = maximumToolProfiles - builtinToolProfiles.length

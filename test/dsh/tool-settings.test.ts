@@ -49,7 +49,7 @@ test('copy creates stable custom ids and the full 30-profile document fits witho
   assert(content.length > 4096)
   assert(Buffer.byteLength(content) < maximumToolConfigurationBytes)
   assert.equal(new Set(source.get().custom.map(profile => profile.id)).size, 25)
-  assert.deepEqual(source.get().custom[0]!.tools, builtinToolProfiles[3]!.tools)
+  assert.deepEqual(source.get().custom[0]!.tools, builtinToolProfiles.find(profile => profile.id === 'builtin:create')!.tools)
   assert.deepEqual(await source.copy('', expected()), { ok: false, error: 'limit' })
   assert.deepEqual(await source.save(' '.repeat(maximumToolConfigurationBytes + 1), expected()), { ok: false, error: 'invalid' })
   assert.deepEqual(await source.save('{', expected()), { ok: false, error: 'invalid' })

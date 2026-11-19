@@ -3,12 +3,13 @@ import assert from 'node:assert/strict'
 import { randomUUID } from 'node:crypto'
 import { activeToolProfile, builtinToolProfiles, defaultToolConfiguration, validateToolConfiguration } from '../../src/dsh/tool-profiles.js'
 
-const custom = () => ({ ...structuredClone(builtinToolProfiles[1]!), id: 'custom:' + randomUUID(), name: '我的工具集' })
+const custom = () => ({ ...structuredClone(builtinToolProfiles.find(profile => profile.id === 'builtin:ptc')!), id: 'custom:' + randomUUID(), name: '我的工具集' })
 test('five builtin modes include original Super Code with questions and preserve official persistent shell', () => {
   assert.equal(builtinToolProfiles.length, 5)
+  assert.equal(builtinToolProfiles[0]!.id, 'builtin:super-code')
   for (const profile of builtinToolProfiles) assert.equal(profile.tools.includes('ask_user_question'), profile.name !== 'minimal')
-  assert.equal(builtinToolProfiles[2]!.shell, 'persistent')
-  assert.deepEqual(builtinToolProfiles[2]!.tools, ['bash', 'pwsh', 'read_image'])
+  assert.equal(builtinToolProfiles.find(profile => profile.id === 'builtin:minimal')!.shell, 'persistent')
+  assert.deepEqual(builtinToolProfiles.find(profile => profile.id === 'builtin:minimal')!.tools, ['bash', 'pwsh', 'read_image'])
   assert.equal(activeToolProfile(defaultToolConfiguration).execution, 'ptc')
   const original = activeToolProfile(defaultToolConfiguration)
   assert.equal(original.id, 'builtin:super-code')

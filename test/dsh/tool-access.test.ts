@@ -14,7 +14,7 @@ test('preset runtime stays scoped without publishing a host service and preserve
   let registration!: ToolRegistration, hostEnabled = false, hostChecks = 0
   ctx.provide('tools', { resolve() {}, register(_definition: ToolDefinition, options: ToolRegistration) { registration = options; return () => {} } } as any)
   const preset = createScope(ctx, {}), other = createScope(ctx, {})
-  let profile = structuredClone(builtinToolProfiles[0]!)
+  let profile = structuredClone(builtinToolProfiles.find(profile => profile.id === 'builtin:standard')!)
   const runtime = new ToolSelections(() => profile, () => {})
   installToolRuntime(preset.ctx, runtime)
   const agent = { id: 'test' } as Agent
@@ -28,7 +28,7 @@ test('preset runtime stays scoped without publishing a host service and preserve
   assert.equal(await registration.when!(context), false)
   hostEnabled = true
   assert.equal(await registration.when!(context), true)
-  profile = structuredClone(builtinToolProfiles[2]!)
+  profile = structuredClone(builtinToolProfiles.find(profile => profile.id === 'builtin:minimal')!)
   const second = { id: 'disabled' } as Agent
   createScope(ctx, second); bindScopeParent(second, scopeOf(preset.ctx)); runtime.add(second)
   assert.equal(await registration.when!({ ...context, agent: second }), false)

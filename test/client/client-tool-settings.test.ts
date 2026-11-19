@@ -94,16 +94,128 @@ function viewFixture(statusAvailable = true) {
   const shell = Settings({ ...injected, t: (key: string) => key })
   const View = walk(shell).find(node => node.props.editor === injected.toolEditor).type
   values = []; cursor = 0; effects.length = 0
-  let stored: any = { ...snapshot(), builtins: ['standard', 'ptc', 'minimal', 'create', 'super-code'].map(name => ({ id: 'builtin:' + name, name, execution: name === 'ptc' || name === 'super-code' ? 'ptc' : 'native', shell: 'standard', tools: ['ask_user_question'] })),
+  let stored: any = { ...snapshot(), builtins: ['super-code', 'standard', 'ptc', 'minimal', 'create'].map(name => ({ id: 'builtin:' + name, name, execution: name === 'ptc' || name === 'super-code' ? 'ptc' : 'native', shell: 'standard', tools: ['ask_user_question'] })),
     catalog: [{ name: 'ask_user_question', group: 'questions', available: true }, { name: 'third_party', group: 'external', available: true }], sessions: [] }
-  let writes = 0, reads = 0
+  let writes = 0, reads = 0, failure = ''
   const api = { readConfig: async () => { reads++; return { ok: true, value: structuredClone(stored) } }, status: async () => ({ ok: statusAvailable, value: [] }),
-    saveConfig: async (content: string) => { writes++; stored = { ...stored, revision: stored.revision + 1, configuration: JSON.parse(content) }; return { ok: true, value: { ok: true, snapshot: stored } } } }
+    saveConfig: async (content: string) => {
+      writes++
+      if (failure) return { ok: true, value: { ok: false, error: failure } }
+      stored = { ...stored, revision: stored.revision + 1, configuration: JSON.parse(content) }
+      return { ok: true, value: { ok: true, snapshot: stored } }
+    } }
   const editor = plugin.createToolAutosave(api); editor.receive(stored)
   const render = (active = true) => { cursor = 0; effects.length = 0; return walk(View({ api, editor, t: (key: string) => key, active })) }
   return { render, effects, editor, scheduled, reads: () => reads, writes: () => writes, stored: () => stored,
+    failSave: (error: string) => { failure = error },
     writable: (value: boolean) => { stored = { ...stored, writable: value }; editor.permissions(value) } }
 }
+function openDelete(f: ReturnType<typeof viewFixture>) {
+  let nodes = f.render()
+  nodes.find(node => node.props.id === 'super-code-tool-profile' && node.props.onChange).props.onChange('custom:one')
+  nodes = f.render()
+  nodes.find(node => node.props.onClick && node.children.includes('tools.delete')).props.onClick()
+  return f.render()
+}
+function confirmDelete(nodes: any[]) {
+  return nodes.filter(node => node.props.onClick && node.children.includes('tools.delete')).at(-1)
+}
+test('fresh tool settings default to Super Code and picker preserves the server order', () => {
+  const plugin = client()
+  assert.equal(plugin.createToolAutosave({}).getSnapshot().draft.activeId, 'builtin:super-code')
+  const nodes = viewFixture().render()
+  const picker = nodes.find(node => node.props.id === 'super-code-tool-profile' && node.props.onChange)
+  assert.deepEqual(Array.from(picker.props.choices, (choice: any) => choice[0]),
+    ['builtin:super-code', 'builtin:standard', 'builtin:ptc', 'builtin:minimal', 'builtin:create', 'custom:one'])
+})
+test('delete confirmation opens above a long list, focuses cancel and Escape closes only the confirmation', async () => {
+  const f = viewFixture(), nodes = openDelete(f)
+  const dialog = nodes.find(node => node.props.role === 'alertdialog')
+  assert.equal(dialog.type, 'dialog')
+  let opens = 0, closes = 0, focuses = 0, prevented = 0, stopped = 0
+  const keys = new Map<string, Function>()
+  const element = { open: false, showModal() { opens++; this.open = true }, close() { closes++; this.open = false },
+    querySelector: () => ({ focus() { focuses++ } }), ownerDocument: { defaultView: {
+      addEventListener: (name: string, fn: Function) => keys.set(name, fn),
+      removeEventListener: (name: string, fn: Function) => { if (keys.get(name) === fn) keys.delete(name) },
+    } } }
+  dialog.props.ref.current = element
+  const cleanups = f.effects.map(effect => effect())
+  assert.equal(opens, 1); assert.equal(focuses, 1)
+  assert.equal(f.writes(), 0)
+  const key = (key: string, isComposing = false) => ({ key, isComposing,
+    preventDefault() { prevented++ }, stopPropagation() { stopped++ } })
+  keys.get('keydown')!(key('Enter')); keys.get('keydown')!(key('Escape', true))
+  assert(f.render().some(node => node.props.role === 'alertdialog'))
+  keys.get('keydown')!(key('Escape'))
+  assert(!f.render().some(node => node.props.role === 'alertdialog'))
+  assert.equal(prevented, 1); assert.equal(stopped, 1)
+  for (const cleanup of cleanups) cleanup?.()
+  assert.equal(closes, 1); assert.equal(keys.size, 0)
+  await new Promise(resolve => setImmediate(resolve))
+  assert.equal(f.writes(), 0)
+})
+test('cancel and native cancel keep the profile, and inactive Tools never keeps a confirmation open', () => {
+  const f = viewFixture()
+  let nodes = openDelete(f)
+  nodes.find(node => node.props.onClick && node.children.includes('tools.cancel')).props.onClick()
+  assert(!f.render().some(node => node.props.role === 'alertdialog'))
+  nodes = openDelete(f)
+  let prevented = false, stopped = false
+  nodes.find(node => node.props.role === 'alertdialog').props.onCancel({
+    preventDefault() { prevented = true }, stopPropagation() { stopped = true },
+  })
+  assert(prevented && stopped)
+  assert(!f.render().some(node => node.props.role === 'alertdialog'))
+  openDelete(f); assert(!f.render(false).some(node => node.props.role === 'alertdialog'))
+  for (const effect of f.effects) effect()
+  assert(!f.render().some(node => node.props.role === 'alertdialog'))
+  assert.equal(f.writes(), 0); assert.equal(f.stored().configuration.custom.length, 1)
+})
+test('deleting an inactive profile persists without switching the current profile, even with an invalid name draft', async () => {
+  const f = viewFixture()
+  let nodes = openDelete(f)
+  nodes.find(node => node.props.id === 'super-code-tools-name' && node.props.onChange).props.onChange({ target: { value: '' } })
+  await f.editor.flush()
+  assert.equal(f.editor.getSnapshot().error, 'invalid')
+  nodes = f.render(); confirmDelete(nodes).props.onClick(); await f.editor.flush()
+  assert.equal(f.stored().configuration.custom.length, 0)
+  assert.equal(f.stored().configuration.activeId, 'builtin:ptc')
+  assert.equal(f.editor.getSnapshot().error, '')
+  f.editor.receive(f.stored())
+  assert(!f.render().some(node => node.props.id === 'super-code-tools-name'))
+})
+test('a failed delete retains its draft and saved profile, then explicit retry persists the deletion', async () => {
+  const f = viewFixture()
+  f.failSave('save-failed')
+  confirmDelete(openDelete(f)).props.onClick(); await f.editor.flush()
+  assert.equal(f.stored().configuration.custom.length, 1)
+  assert.equal(f.editor.getSnapshot().draft.custom.length, 0)
+  assert(f.render().some(node => node.children.includes('tools.error.save-failed')))
+  f.failSave(''); await f.editor.retry()
+  assert.equal(f.stored().configuration.custom.length, 0)
+  assert.equal(f.editor.getSnapshot().notice, 'saved')
+})
+test('a delete conflict never overwrites another page and reload requires a visible confirmation', async () => {
+  const f = viewFixture()
+  f.failSave('conflict')
+  confirmDelete(openDelete(f)).props.onClick(); await f.editor.flush()
+  let nodes = f.render()
+  assert.equal(f.stored().configuration.custom.length, 1)
+  nodes.find(node => node.props.action).props.action.props.onClick()
+  nodes = f.render()
+  assert.equal(nodes.find(node => node.props.role === 'alertdialog').type, 'dialog')
+  assert(nodes.some(node => node.children.includes('tools.reloadConfirm')))
+  nodes.filter(node => node.props.onClick && node.children.includes('budget.reload')).at(-1).props.onClick()
+  await new Promise(resolve => setImmediate(resolve))
+  assert.equal(f.editor.getSnapshot().draft.custom.length, 1)
+  assert.equal(f.editor.getSnapshot().error, '')
+})
+test('confirmation reflects revoked write access before committing a delete', () => {
+  const f = viewFixture(); openDelete(f); f.writable(false)
+  assert.equal(confirmDelete(f.render()).props.disabled, true)
+  assert.equal(f.writes(), 0)
+})
 test('actual Tools component previews without saving, explicitly activates custom tools and keeps builtins read-only', async () => {
   const f = viewFixture()
   let nodes = f.render()
@@ -161,8 +273,9 @@ test('actual Tools component confirms deleting an active custom profile and enfo
   nodes = f.render()
   const confirmation = nodes.find(node => node.props.role === 'alertdialog')
   assert(confirmation)
+  assert.equal(confirmation.type, 'dialog', 'confirmation must appear in the native top layer, outside the long tool list')
   assert.equal(f.writes(), 0)
-  confirmation.children.find((node: any) => node.props?.onClick && node.children.includes('tools.delete')).props.onClick()
+  nodes.filter(node => node.props.onClick && node.children.includes('tools.delete')).at(-1).props.onClick()
   await f.editor.flush()
   assert.equal(f.stored().configuration.activeId, 'builtin:super-code')
   assert.equal(f.stored().configuration.custom.length, 0)

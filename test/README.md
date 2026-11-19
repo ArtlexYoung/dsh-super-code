@@ -23,6 +23,8 @@ npm test
 
 发布前执行 `npm run build && npm run pack:check`。分发检查验证实际 npm 文件清单，确保全部运行依赖及其传递依赖随包携带，并排除 DSH 模块和开发工具。新增依赖会自动纳入检查；`offline-install.test.ts` 另用真实 tgz、空安装目录和空 npm 缓存执行离线安装，保留默认 peer 解析和安装脚本，防止 DSH peer 被自动补装。实际 DSH 管理器安装、加载和工具运行仍需在已安装 DSH 的隔离环境中验收。
 
+离线安装检查通过全部断言后，移除本轮 `安装 目录/node_modules` 和 `cache/_cacache`，保留 `.tgz`、安装目录的包声明和锁文件、`Pack.log`、`Install.log` 及 `cache/_logs`。安装或断言失败时保留现场。复查旧包可在新的空目录用原 `.tgz` 执行 `npm install <tgz 的绝对路径> --offline --cache <空缓存目录> --no-audit --no-fund --legacy-peer-deps=false --force=false`，不覆盖历史结果。
+
 连接模块加载方式变更时，还需在官方 Electron 桌面宿主中冷启动验证：确认 MCP 配置可写，在设置中切换并恢复一个 Skill 开关后，再拒绝和批准中文、空格路径的目录申请，核对服务端授权目录。连接功能入口已由独立子插件延迟加载，内部依赖应随入口一起加载；内部再次动态导入可能触发宿主热加载与 CommonJS 缓存冲突。普通 Node 测试和只检查配置默认值不能代替这项回归。
 
 测试命令中的 glob 保留引号，由测试工具递归发现，避免 shell 提前展开而遗漏根目录或更深层的测试。

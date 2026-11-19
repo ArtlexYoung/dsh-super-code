@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtemp, mkdir, readFile, readdir, writeFile } from 'node:fs/promises'
+import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import { spawnSync } from 'node:child_process'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -42,4 +42,8 @@ test('local tgz installs offline with empty cache and default peer resolution', 
     await readFile(join(modules, 'dsh-super-code', 'node_modules', name, 'package.json'), 'utf8')
   }
   assert.equal((await readFile(join(modules, 'dsh-super-code', 'lib/index.js'), 'utf8')).length > 0, true)
+
+  // Preserve the tarball, lockfile and logs. Keep the installation intact if an assertion fails.
+  await rm(modules, { recursive: true, force: true, maxRetries: 3 })
+  await rm(join(cache, '_cacache'), { recursive: true, force: true, maxRetries: 3 })
 })

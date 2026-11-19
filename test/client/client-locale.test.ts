@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { runInNewContext } from 'node:vm'
+import { toolNames } from '../../src/dsh/tool-profiles.js'
 
 function fixture() {
   let plugin: any
@@ -27,6 +28,16 @@ function fixture() {
   plugin.apply(ctx)
   return { plugin, dictionaries, slots }
 }
+
+test('every managed tool has a concise Chinese and English summary', () => {
+  const { dictionaries } = fixture()
+  for (const language of ['zh', 'en']) for (const name of toolNames) {
+    const summary = dictionaries[language]![`tools.summary.${name}`]
+    assert.equal(typeof summary, 'string', `${language}: ${name}`)
+    assert(summary!.length > 5 && summary!.length <= 120, `${language}: ${name}`)
+    assert.equal(summary!.includes('\n'), false)
+  }
+})
 
 test('all bundled Skill choices default off and preserve explicit saved values', () => {
   const { plugin } = fixture()
@@ -54,14 +65,14 @@ test('preset settings registration does not wait on the Remote mount lifecycle',
     locale: { register: () => () => {}, bind: () => (key: string) => key },
     remote: { $mount: (contribution: any) => { mounts.push(contribution); return new Promise(() => {}) } },
     inject: (dependencies: string[]) => {
-      assert.ok(['remote.superCodePresets', 'remote.superCodeMemory', 'remote.superCodeConnection', 'remote.superCodeBudgets', 'remote.skills', 'uiWorkspace', 'remote.session'].includes(dependencies[0]!))
+      assert.ok(['remote.superCodePresets', 'remote.superCodeMemory', 'remote.superCodeConnection', 'remote.superCodeBudgets', 'remote.superCodeToolSettings', 'remote.skills', 'uiWorkspace', 'remote.session'].includes(dependencies[0]!))
       if (dependencies[0] === 'remote.superCodePresets') injected = true
     },
     slots: { inject: () => {} }, sidebarRightTabs: { register: () => () => {} }, sessions: {}, sidebarRight: {},
   })
   assert.equal(injected, true)
   assert.equal(mounts.length, 1, 'The registry accepts one contribution per package')
-  assert.deepEqual([...new Set(mounts[0].descriptors.map((row: any) => row.namespace))].sort(), ['superCodeBudgets', 'superCodeConnection', 'superCodeMemory', 'superCodePresets'])
+  assert.deepEqual([...new Set(mounts[0].descriptors.map((row: any) => row.namespace))].sort(), ['superCodeBudgets', 'superCodeConnection', 'superCodeMemory', 'superCodePresets', 'superCodeToolSettings'])
   for (const descriptor of mounts[0].descriptors) for (const parameter of descriptor.parameters) {
     assert.equal(parameter.codec.create().parse('valid'), 'valid')
     assert.equal(parameter.codec.schema.parse('legacy'), 'legacy')

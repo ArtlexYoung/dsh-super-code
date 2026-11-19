@@ -1,4 +1,5 @@
 
+import { zh as toolZh, en as toolEn } from './tool-locale.js'
 const LOCALE_NS = 'dshSuperCode'
 const zh = {
   'module.unavailable': '当前功能暂时不可用，其他功能可以继续使用。', 'module.retry': '重试此功能',
@@ -421,6 +422,8 @@ const en = {
   'history.aria': 'Collapsed agents', 'history.search': 'Search agents or parent tasks', 'history.find': 'Find collapsed agents', 'history.created': 'Created', 'history.sort': 'Sort', 'history.all': 'All time', 'history.today': 'Today', 'history.week': 'Last 7 days', 'history.month': 'Last 30 days', 'history.custom': 'Custom', 'history.latest': 'Newest first', 'history.earliest': 'Oldest first', 'history.tokensHigh': 'Most tokens first', 'history.tokensLow': 'Fewest tokens first', 'history.titleAsc': 'Title A–Z', 'history.titleDesc': 'Title Z–A', 'history.start': 'Start date', 'history.end': 'End date', 'history.summary': '{shown} / {total} collapsed nodes · Includes descendants', 'history.invalid': 'Choose a valid date range', 'history.empty': 'No matching nodes', 'history.view': 'View details for {title}', 'history.unknownTime': 'Unknown time', 'history.unknownUsage': 'Usage unknown',
   'detail.path': 'Agent path', 'detail.title': 'Agent details', 'detail.refresh': 'Refresh conversation details', 'detail.task': 'Task', 'detail.agent': 'Agent', 'detail.interrupted': 'Agent · Interrupted', 'detail.error': 'Execution error', 'detail.incomplete': 'Execution did not finish. Try again later.', 'detail.input': 'Input', 'detail.output': 'Output', 'detail.cacheRead': 'Cache reads', 'detail.cacheWrite': 'Cache writes', 'detail.total': 'Total tokens', 'detail.hitRate': 'Cache hit rate', 'detail.moreUsage': 'Usage details', 'detail.unavailable': 'Unavailable', 'detail.reading': 'Reading conversation…', 'detail.read': 'Reading…', 'detail.older': 'Load earlier records', 'detail.latest': 'Back to latest', 'detail.empty': 'No execution content', 'detail.new': 'New content · View latest', 'detail.loadError': 'Could not read conversation details', 'detail.connection': 'Connection interrupted, reconnecting', 'detail.historyError': 'Could not read history', 'detail.open': 'Expand', 'detail.noAccess': 'Could not open details. Try again.', 'tree.loadError': 'Some execution records failed to load. Refresh to retry.', 'detail.unknown': 'Usage unknown', 'main.agent': 'Main agent', 'tree.open': 'Click to view details', 'tree.expand': 'Expand', 'tree.collapse': 'Collapse', 'image': '[Image]'
 }
+Object.assign(zh, toolZh)
+Object.assign(en, toolEn)
 function formatText(template, values = {}) { return template.replace(/\{(\w+)\}/g, (_, key) => values[key] ?? '') }
 function text(t, key, values) { return formatText(t(key), values) }
 function localeCode(t) { return text(t, 'status.active') === en['status.active'] ? 'en-US' : 'zh-CN' }

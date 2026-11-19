@@ -14,6 +14,9 @@ import type { Agent } from '@deepseek-ai/dsh-agent'
 import * as presentation from '../../src/dsh/tool-presentation.js'
 import superCode from '../../src/dsh/super-code.js'
 import { installTaskMemory } from '../task-memory-fixture.js'
+import { installToolRuntime, selectToolPresentation } from '../../src/dsh/tool-access.js'
+import { ToolSelections } from '../../src/dsh/tool-runtime.js'
+import { builtinToolProfiles } from '../../src/dsh/tool-profiles.js'
 
 interface CapturedExecutor {
   describe(tools: { name: string }[]): { schemas: { name: string }[] }
@@ -230,6 +233,19 @@ test('separate host executors keep programs and native batches unchanged and sel
   const result = await f.ctx.waterfall(scopeTarget(remote, remote), 'system-prompt/assemble', textOnly as never,
     { agent: remote, scope: remote }, async () => textOnly as never)
   assert.equal('tools' in result, false)
+})
+test('modern per-agent native schemas and PTC SDK omit excluded external tools without affecting another preset', async t => {
+  const f = await fixture(t, false, true), agent = f.make('external-modern'), other = f.make('unrelated-modern', f.ctx)
+  let profile = { ...structuredClone(builtinToolProfiles.find(profile => profile.id === 'builtin:standard')!), disabledExternalTools: ['external_tool'] }
+  const runtime = new ToolSelections(() => profile, (current, selected) => selectToolPresentation(f.preset.ctx, current, selected.execution))
+  installToolRuntime(f.preset.ctx, runtime); runtime.add(agent)
+  const definitions = [{ name: 'external_tool' }, { name: 'allowed_external' }, { name: 'read' }]
+  assert.deepEqual(f.executor(agent).describe(definitions).schemas.map(tool => tool.name), ['allowed_external', 'read'])
+  assert.equal(runtime.allows(other, 'external_tool'), true)
+  profile = { ...profile, execution: 'ptc' }
+  const ptcAgent = f.make('external-modern-ptc'); runtime.add(ptcAgent)
+  assert.equal(f.executor(ptcAgent).sections[0].text(definitions), 'allowed_external,read')
+  assert.deepEqual(f.executor(ptcAgent).describe(definitions).schemas.map(tool => tool.name), ['run_code'])
 })
 
 test('existing remote sessions are selected at mount and another preset remains native', async t => {

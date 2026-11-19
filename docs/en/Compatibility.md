@@ -28,6 +28,18 @@ The records below distinguish each code baseline and test layer. Component check
 
 The new PStack workflow adaptation starts at `0.2.1-alpha.1`; earlier hosts are outside its scope. Older-version records below describe historical coverage of other plugin features.
 
+## 2026-11-19 · Tool-profile branch (unreleased)
+
+The daily NEXT installation exposed a nested `inject` failure in `2.0.19-next` (Harness `0.2.1-rc.2`): image and schedule tools could not inherit the isolated tool service. Providers now declare that dependency for child plugins in the same tool scope, without changing other tool scopes. A regression reproduces the original failure. Installation and graphical results are recorded separately in this run's `next-install-ou9DKA`, preserving the earlier candidate evidence below.
+
+`feat/tool-profiles` adds five built-ins, up to 25 custom profiles, independent persistence and per-conversation switching at idle boundaries. New configurations use Super Code default (the original tools plus user questions, with PTC execution); existing selections remain unchanged. Custom profiles can disable other tools for Super Code conversations without affecting other presets. The host supplies user questions; enabling a Skill does not enable that tool. Older presets require reinstallation; the unchanged package version 0.4.2 alone does not identify this feature.
+
+Complete isolated Web hosts on macOS ARM64, versions `0.1.5-alpha.1`, `0.2.2-rc.2` and `0.2.2-rc.3`, cover settings saves, changed tool declarations in the next actual Super Code turn and persistence through a cold restart. The old directory preset was installed using the packaged copy helper; automatic installation and its Remote were not validated. These runs use a deterministic model fixture, without graphical or real-model acceptance.
+
+Official `0.2.2-rc.2` Agent/tool integration additionally covers independent pending conversations, two concurrent multi-question calls in one Agent, disabled native/PTC execution and persistent-shell state across switching. Real-model native and PTC runs each enabled, disabled and re-enabled questions, consumed random answer receipts, and used seven requests and two questions. All 1,261 automated tests, type checking, build and two distribution checks passed.
+
+Graphical Chinese/English, light/dark, narrow-screen and question-card acceptance remains unverified; built-component tests cover the settings logic. Windows, Linux, Desktop, NEXT, remote devices and the complete 28-version host matrix were not rerun for this feature. Historical results do not fill those gaps. Evidence is in the outer `source/validation/dsh-super-code/tool-profiles-20261119/Report.md`.
+
 ## 2026-11-16 · 0.4.2 release scope
 
 Version 0.4.2 includes the implemented remote-project, task-recovery, offline-dependency, and BusyBox fixes documented below, plus Zed-compatible README images. Historical candidate versions, hashes, failures, and limits remain unchanged below; those targeted checks are not represented as reruns of the final package. Read each result with its own code baseline and environment.

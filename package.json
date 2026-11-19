@@ -49,6 +49,14 @@
     "./skills": {
       "types": "./lib/dsh/bundled-skills.d.ts",
       "default": "./lib/dsh/bundled-skills.js"
+    },
+    "./tools": {
+      "types": "./lib/dsh/tool-settings.d.ts",
+      "default": "./lib/dsh/tool-settings.js"
+    },
+    "./tool-runtime": {
+      "types": "./lib/dsh/tool-runtime.d.ts",
+      "default": "./lib/dsh/tool-runtime.js"
     }
   },
   "files": [

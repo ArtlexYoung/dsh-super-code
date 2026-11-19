@@ -33,7 +33,9 @@ Tested on 2026-11-11: [Historical results and methodology](docs/en/EvaluationRes
 
 ## 1.2 A smoother development experience
 
-The **Code Workbench** lets you browse, edit, and understand project code while continuing the same Harness conversation. Enable it in **Settings → Super Code → Code workbench**; it is off by default. [Usage guide](docs/en/CodeWorkbench.md).
+The **Code Workbench** lets you browse, edit, and understand project code while continuing the same Harness conversation. It is off by default. In **Settings → Super Code → Code workbench**, turn on **Enable code workbench (Beta)**, then open the **Code workbench** tab beside Conversation and Trajectory. [Step-by-step guide](docs/en/CodeWorkbench.md).
+
+[![Code workbench: files, outline and editor](docs/images/workbench-en-display.svg)](docs/images/workbench-en.png)
 
 - **Tool profiles**: Five built-ins and up to 25 custom profiles let you choose tools, execution mode, and shell for each task. Conversations apply changes after their current turn, preserving persistent-shell state across switches.
 - **Lightweight editor**: A familiar IntelliJ IDEA / VS Code experience for reading and editing project files directly in Harness, with less window switching.
@@ -105,7 +107,7 @@ Download the `.tgz` file from [GitHub Releases](https://github.com/ArtlexYoung/d
 
 Desktop: enter the full path of the package in "Package name or address", then click **Install**.
 
-[![Enter the package path](docs/images/install-tgz-display.svg)](docs/images/install-tgz.png)
+[Illustrated installation steps](docs/en/UsageGuide.md#installation-and-first-use)
 
 Web: run the following command (use the actual file name):
 
@@ -136,7 +138,7 @@ Model, reasoning effort, permissions, and tools follow the Harness settings and 
 
 If the preset is not listed, check its status in **Settings → Super Code**, or see [troubleshooting](docs/en/UsageGuide.md#cant-find-the-preset).
 
-[![Super Code settings](docs/images/preset-settings-display.svg)](docs/images/preset-settings.png)
+[Settings and tool profiles](docs/en/UsageGuide.md#settings)
 
 Select **Super Code** in the right sidebar. It contains three sections:
 
@@ -146,7 +148,9 @@ Select **Super Code** in the right sidebar. It contains three sections:
 
 Exactly one of the three sections stays open. Tasks opens by default; clicking its heading keeps it expanded.
 
-[![Task sidebar](docs/images/task-status-display.svg)](docs/images/task-status.png) [![Agent tree](docs/images/agent-tree-display.svg)](docs/images/agent-tree.png)
+[![Task sidebar](docs/images/task-status-display.svg)](docs/images/task-status.png)
+
+[More sidebar screenshots and instructions](docs/en/UsageGuide.md#sidebar)
 
 Screenshots use the current UI with sample data to illustrate the plugin.
 

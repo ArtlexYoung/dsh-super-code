@@ -1,10 +1,35 @@
 # Code workbench
 
+[中文](../CodeWorkbench.md) · English
+
+## Enable and open the workbench
+
+1. Open **Settings → Super Code → Code workbench**.
+2. Turn on **Enable code workbench (Beta)**, the first switch shown below. It is off by default, takes effect immediately, and is saved in this client. Toggling it does not initialize a project or change its preset.
+
+[![Code workbench settings: enable the first switch](../images/workbench-settings-en-display.svg)](../images/workbench-settings-en.png)
+
+3. Return to a conversation with a working directory. Open **Code workbench** beside **Conversation** and **Trajectory**, then select a file in the left-hand tree.
+
+[![Browse files and navigate symbols in the workbench](../images/workbench-en-display.svg)](../images/workbench-en.png)
+
+- **Files** browses the project; **Outline** jumps to declarations in the current file. Each can be collapsed independently.
+- Edit in the center, then click **Save** or press Ctrl/⌘+S to write changes. The current conversation's access permissions apply.
+- Use **Git**, **Open window**, or **Editor settings** in the top toolbar. The right rail opens Conversation, Quick conversations, Changed files and Learn as needed; these panes are collapsed in the example to leave more room for code.
+
+The second switch, **Open code in workbench**, controls file links in the main Conversation tab. Enable it if those links should open in the workbench. It is also off by default and is separate from the main workbench switch.
+
+Screenshots use the current components and a demonstration project. Click an image for the full-size version.
+
+## Reading and navigation
+
 Code defaults to bundled JetBrains Mono at 14px with 1.5 line spacing. The variable regular and italic faces support weights 100–800 and work offline. In **Reading & font** in either editor settings or Super Code settings, choose the English code font and Chinese fallback font separately, and adjust size and spacing. Chinese defaults to system fallback; existing font choices are preserved. Preferences save immediately and synchronize across this client's sessions and detached windows; changing autosave, model, or toolbar settings preserves the current documentation and keyboard focus.
 
 Opening settings detects available local font families; **Refresh fonts** scans again. Browsers that support full font enumeration offer an authorization button. Other environments check system candidates on the current client, so a remote server's fonts are not assumed to exist locally; the list may be incomplete. Saved fonts that are not detected remain selectable with a fallback notice. Detection neither installs fonts nor reads project files.
 
 **Reader mode** is off by default. Toggle it beside the current file path. It adds 1px to the code font size and uses line spacing of at least 1.65 times that size, rounded to whole pixels. Documentation shares the code line height. Comments appear upright with stronger contrast, and long lines wrap to the editor width. Source line numbers, text, selections, and undo history are preserved. Turning the mode off restores horizontal scrolling. Git comparisons keep their line alignment.
+
+[![Reader mode formats source documentation](../images/workbench-reader-en-display.svg)](../images/workbench-reader-en.png)
 
 Standalone multiline `/** … */` comments and initial Python module, class, and function docstrings follow their source indentation and show their original starting line. When space is tight, longer blocks show a summary first. Choose **Expand documentation** for the full description, parameters, return values, and examples. Wider views open blocks in full by default. IDEA uses an inset card with a boxed control, and VS Code uses the editor background, a thin rule, and a chevron. **View source**, a search match, or a selection entering the block restores the original comment for editing, questions, and undo. Formatting is limited to documentation in view. Very long blocks remain virtual source lines.
 
@@ -40,17 +65,13 @@ Place the cursor inside a function and choose **Code history** in the toolbar to
 
 Unsaved selections are mapped to their committed predecessor; newly written code may have no committed history. Shallow history, ambiguous sources, replacements spanning adjacent code and unsupported historical text are marked as incomplete. Queries can be stopped, retried or refreshed. Refresh uses the code snapshot captured when the dialog opened; reopen Code history after editing the selection. Queries are read-only, use no model and create no disk index. Existing text-diff size limits apply.
 
-[中文](../CodeWorkbench.md) · English
-
-Enable “Open code in workbench” on the same settings page to open Conversation file links in the workbench at the referenced line. This option is off by default. The workbench conversation uses the host’s path recognition and always opens file links in the current workbench. Disabling the workbench keeps the host’s original file preview.
+Conversation file links opened through **Open code in workbench** locate the referenced line. File links in the workbench conversation always open in the current workbench using the host’s path recognition, regardless of this switch. Disabling the workbench restores the host’s original file preview.
 
 Opening a file does not wait for the project index. Indexing continues in the background while files remain available for reading, editing, and navigation.
 
 Mouse Back/Forward buttons and toolbar navigation restore cursor positions within and across files. Drag selection and continuous typing do not create per-character history. Each editor pane and separate window keeps its own navigation history.
 
 Project search displays matches while scanning and renders only visible result rows. Versioned filters skip files that cannot match; short queries, Unicode queries and files without reliable versions still use complete reads. Rebuildable metadata uses the project background cache described below, without storing source text or unsaved buffers.
-
-Enable **Settings → Super Code → Code workbench** to add **Code workbench** beside Conversation and Trajectory. It is off by default, takes effect immediately, and is saved in the current client. Toggling it does not initialize projects or change presets.
 
 The right sidebar initially shows journaled messages and tool records from the current conversation, with a short transition that respects reduced-motion preferences. Its text input shares the host draft and submits through public host input actions, keeping the same session, prompt, and model. Consecutive tool records collapse into tool names and success/failure counts; zero-count badges are omitted, and expanding shows original calls and results. The question bar navigates questions in the loaded window, and **Back to bottom** resumes following new messages; older records remain paginated. Conversation and Changed files collapse independently, with Changed files initially collapsed. Token streaming, approvals, and reference or attachment operations remain in the full **Conversation** page; the original draft is preserved. Messages reuse the plugin's existing renderer rather than reproducing the complete host chat interface. Hosts without public input actions offer a return-to-conversation link.
 

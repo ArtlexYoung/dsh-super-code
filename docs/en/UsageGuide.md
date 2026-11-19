@@ -4,6 +4,7 @@
 
 New here? Read the Install and Use sections of the [README](../../README.en.md) first. This page covers the details.
 
+- [Installation and first use](#installation-and-first-use)
 - [Model](#model)
 - [Can't find the preset](#cant-find-the-preset)
 - [Settings](#settings)
@@ -17,6 +18,18 @@ New here? Read the Install and Use sections of the [README](../../README.en.md) 
 - [Deletion protection](#deletion-protection)
 - [MCP connection](#mcp-connection)
 - [Frontend Skill](#frontend-skill)
+
+## Installation and first use
+
+1. In the desktop app, open **Plugins → Add plugin**, enter `dsh-super-code`, then install and enable it. To install a downloaded `.tgz`, enter its full path in the same field. The screenshot shows archive installation.
+
+[![Enter the downloaded archive path](../images/install-tgz-display.svg)](../images/install-tgz.png)
+
+2. In **Settings → Agent presets**, select **Super Code** (`super-code`), then create a conversation. **Settings → Super Code → Preset configuration** shows the preset status and offers installation or reinstallation when needed.
+
+[![Super Code preset settings](../images/preset-settings-display.svg)](../images/preset-settings.png)
+
+3. The workbench has its own opt-in switch. Follow the [illustrated workbench guide](CodeWorkbench.md) to enable it and open project files.
 
 ## Model
 
@@ -60,7 +73,7 @@ Before plugin 0.2.0, the settings page lives under **Plugins → Plugin configur
 
 Switching tabs keeps unsaved input.
 
-Enable the workbench in **Settings → Super Code → Code workbench**; it is off by default. See [Code workbench](CodeWorkbench.md) for editing, navigation, selection assistance and detached windows.
+In **Settings → Super Code → Code workbench**, turn on **Enable code workbench (Beta)**. Return to your conversation and open **Code workbench** beside Conversation and Trajectory. See the [illustrated workbench guide](CodeWorkbench.md) for the switches, editing and reading controls.
 
 ### When a feature is unavailable
 
@@ -77,6 +90,8 @@ Each conversation applies changes after its own current turn ends. A can switch 
 The host supplies `ask_user_question`. Super Code default, Standard, PTC and Create enable it by default; Minimal does not. Enabling a mattpocock Skill supplies workflow guidance and does not enable the tool. `grill-me` still needs a profile that permits questions. Disabling a tool affects declarations, the PTC SDK and execution.
 
 Unavailable components are marked and are not downloaded by saving. Host permissions, lightweight remote restrictions and Windows path rules take precedence. Other tools are enabled by default and can be disabled in custom profiles for Super Code conversations only, without uninstalling plugins or affecting other presets. Exclusions survive temporary plugin removal; newly installed tools remain enabled. Profiles persist independently. Reinstall an older Super Code preset to obtain the new tool-runtime entry.
+
+[![Preview and copy a tool profile](../images/tool-profiles-en-display.svg)](../images/tool-profiles-en.png)
 
 ### Names and language
 
@@ -142,6 +157,8 @@ Notes:
 - Everything is expanded in a virtual list, so long histories stay smooth. There is a display limit; you'll see a notice when it's hit, and full content is in the details.
 - It doesn't change prompts, model requests, or tool definitions, and writes nothing into model context.
 
+[![Task progress and recorded file changes](../images/task-status-display.svg)](../images/task-status.png)
+
 ### Agent execution
 
 The Agent tree, with status, usage, and cache rate for each Agent. Usage counts only calls made by that Agent; forked history is not charged again to the child or the tree total.
@@ -151,7 +168,9 @@ The Agent tree, with status, usage, and cache rate for each Agent. Usage counts 
 - Details are shown as a chat: user task, Agent replies, expandable tool calls and results, including PTC sub-calls and terminal failures. Harness's Markdown and code components render lists, tables, and highlighted code, while tool arguments and output remain literal. The header shows status, tokens, and cache; open **Details** for more usage, task records, and memory activity.
 - Running animations respect the system's reduced-motion setting.
 
-The [task](../images/task-status.png) and [tree screenshots](../images/agent-tree.png) render the current plugin with official frontend components and sample data. They illustrate the UI, not model quality.
+[![Agent tree: select a node for details](../images/agent-tree-display.svg)](../images/agent-tree.png)
+
+Screenshots show the current UI with sample data. Click an image to view it at full size.
 
 ### Memory library
 

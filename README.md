@@ -33,7 +33,9 @@
 
 ## 1.2 更便捷的开发体验
 
-**代码工作台**让你在 Harness 中浏览、编辑和理解项目代码，并在同一会话中继续开发。默认关闭，可在「设置 → Super Code 模式 → 代码工作台」开启。[使用说明](docs/CodeWorkbench.md)。
+**代码工作台**让你在 Harness 中浏览、编辑和理解项目代码，并在同一会话中继续开发。默认关闭：在「设置 → Super Code 模式 → 代码工作台」打开「启用代码工作台（Beta）」，再进入当前会话中「对话」「轨迹」旁的「代码工作台」标签。[图文使用说明](docs/CodeWorkbench.md)。
+
+[![代码工作台：文件树、文件结构与编辑器](docs/images/workbench-zh-display.svg)](docs/images/workbench-zh.png)
 
 - **工具方案**：五套预置与最多 25 套自定义方案，按任务选择工具、调用方式和 Shell；各会话完成当前轮后应用，切换时保留持久 Shell 状态。
 - **轻量编辑器**：熟悉的 IDEA / VS Code 体验，在 Harness 中直接阅读和编辑项目文件，减少窗口切换。
@@ -105,7 +107,7 @@ dsh plugin --profile web add dsh-super-code
 
 桌面版：在「包名或地址」中填写安装包的完整路径，然后点击「安装」。
 
-[![填写安装包路径](docs/images/install-tgz-display.svg)](docs/images/install-tgz.png)
+[安装图解](docs/UsageGuide.md#安装与首次使用)
 
 Web 版：运行以下命令（文件名以实际下载的为准）：
 
@@ -136,7 +138,7 @@ dsh plugin --profile web add ./dsh-super-code-0.4.2.tgz --offline
 
 若未找到预设，可在「设置 → Super Code 模式」中查看状态，或参阅[排查方法](docs/UsageGuide.md#找不到预设)。
 
-[![Super Code 设置页](docs/images/preset-settings-display.svg)](docs/images/preset-settings.png)
+[设置页与工具方案图解](docs/UsageGuide.md#设置页)
 
 在右侧边栏选择「Super Code」，包含三个部分：
 
@@ -146,7 +148,9 @@ dsh plugin --profile web add ./dsh-super-code-0.4.2.tgz --offline
 
 三个部分始终只展开一项，默认显示任务；再次点击当前标题会保持展开。
 
-[![任务侧边栏](docs/images/task-status-display.svg)](docs/images/task-status.png) [![Agent 执行树](docs/images/agent-tree-display.svg)](docs/images/agent-tree.png)
+[![任务侧边栏](docs/images/task-status-display.svg)](docs/images/task-status.png)
+
+[更多侧栏截图与操作说明](docs/UsageGuide.md#侧边栏)
 
 截图使用当前界面与演示数据，仅展示插件外观。
 

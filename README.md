@@ -60,7 +60,7 @@
 
 - **待发布**：新增工具方案与代码工作台，整合编辑、Git 和学习模式；按功能隔离加载与释放，改善故障恢复。已完成三系统整合差异验收，具体范围见[兼容性记录](docs/Compatibility.md)。
 - **0.4.2**：支持远程项目与 dsh-Go / NEXT 远程控制，修复任务冷恢复、部分安装器的离线依赖解析、Windows BusyBox 文件长路径及 README 图片显示问题；实测范围与限制见[兼容性记录](docs/Compatibility.md)。
-- **0.4.1**：修复 Windows 在 Harness `0.2.2-rc.2` 中无法加载会话的问题（[#2](https://github.com/ArtlexYoung/dsh-super-code/issues/2)），随包携带运行依赖以支持本地离线安装，最低支持版本仍为 Harness `0.1.5-alpha.1`。
+- **0.4.1**：修复 Windows 在 Harness `0.2.2-rc.2` 中无法加载会话的问题（[#2](https://github.com/ArtlexYoung/dsh-super-code/issues/2)），随包携带运行依赖以支持本地离线安装，该历史版本当时最低支持 Harness `0.1.5-alpha.1`。
 - **0.4.0**：简化任务与记忆工具，新增五组可选 Skill 与工作流，优化设置、任务侧栏和 Harness 兼容性。
 
 [完整版本记录](docs/Changelog.md)
@@ -89,11 +89,11 @@
 
 # 4 安装
 
-当前验收范围覆盖 15 个 Harness 版本：历史系列保留 `0.1.5-rc.3`、`0.1.7-rc.2`、`0.2.0-rc.2`；较新版本覆盖 `0.2.1-rc.1`～`rc.5`、`0.2.2-alpha.2/alpha.3` 和 `0.2.2-rc.1`～`rc.5`。仅最新 `0.2.2` 系列的 alpha 纳入发布验收。已包含 `0.2.2-rc.5`；三系统验收方式、桌面端范围与已知限制见[兼容性记录](docs/Compatibility.md)。
+当前支持 15 个 Harness 版本，最低为 `0.1.5-rc.3`：历史系列保留 `0.1.5-rc.3`、`0.1.7-rc.2`、`0.2.0-rc.2`；较新版本覆盖 `0.2.1-rc.1`～`rc.5`、`0.2.2-alpha.2/alpha.3` 和 `0.2.2-rc.1`～`rc.5`。安装依赖声明与这 15 个版本一致，早期 alpha 和 `0.1.6` 不在当前支持范围；最新系列保留 `0.2.2-alpha.2`、`alpha.3`。三系统验收方式、桌面端范围与已知限制见[兼容性记录](docs/Compatibility.md)。
 
 **桌面版**：在左侧打开「插件 → 添加插件」，输入 `dsh-super-code`，依次点击「安装」和「立即启用」（旧版本请按提示重载或重启）。桌面版内置运行环境，无需安装 Node.js。
 
-**Web / 命令行版**：建议使用 Node.js `24.9.0` 及以上，Harness 自 `0.2.2-alpha.2` 起也声明此要求。较早的 Harness（`0.1.5-alpha.1` 至 `0.2.1-rc.5`）已在 macOS 用 Node.js `22.18.0` 逐版验证启动、删除审批与冷重启恢复。插件单独支持 Node.js `22.0.0`，完整 Harness 在该版本会静默退出。
+**Web / 命令行版**：建议使用 Node.js `24.9.0` 及以上，Harness 自 `0.2.2-alpha.2` 起也声明此要求。历史验收曾在 macOS 用 Node.js `22.18.0` 逐版验证较早的 Harness；当前支持的 Harness 版本以上述列表为准。插件单独支持 Node.js `22.0.0`，完整 Harness 在该版本会静默退出。
 
 ```bash
 npm install -g @deepseek-ai/dsh            # 已安装 dsh 命令可跳过

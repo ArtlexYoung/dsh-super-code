@@ -60,7 +60,7 @@ The **Code Workbench** lets you browse, edit, and understand project code while 
 
 - **Unreleased**: Added tool profiles and the Code Workbench with editing, Git, and learning mode; isolated feature loading and cleanup, with improved recovery. Integration checks are complete on three systems; see [compatibility](docs/en/Compatibility.md) for coverage.
 - **0.4.2**: Added remote projects and dsh-Go / NEXT remote control, with fixes for task recovery after restart, offline dependency resolution in some installers, Windows BusyBox file operations on long paths, and README image rendering. See [compatibility](docs/en/Compatibility.md) for tested coverage and limits.
-- **0.4.1**: Fixed Windows sessions failing to load on Harness `0.2.2-rc.2` ([#2](https://github.com/ArtlexYoung/dsh-super-code/issues/2)) and bundled runtime dependencies for local offline installation, while keeping Harness `0.1.5-alpha.1` as the minimum supported version.
+- **0.4.1**: Fixed Windows sessions failing to load on Harness `0.2.2-rc.2` ([#2](https://github.com/ArtlexYoung/dsh-super-code/issues/2)) and bundled runtime dependencies for local offline installation, with Harness `0.1.5-alpha.1` as that historical release’s minimum.
 - **0.4.0**: Simplified task and memory tools, added five opt-in Skill and workflow packages, and improved Settings, the task sidebar, and Harness compatibility.
 
 [Full changelog](docs/en/Changelog.md)
@@ -89,11 +89,11 @@ Versions follow `major.performance.maintenance`: a change in the second number i
 
 # 4 Install
 
-The current acceptance scope covers 15 Harness versions: `0.1.5-rc.3`, `0.1.7-rc.2`, and `0.2.0-rc.2` from older series; `0.2.1-rc.1` through `rc.5`; and `0.2.2-alpha.2/alpha.3` plus `0.2.2-rc.1` through `rc.5`. Only alphas from the latest `0.2.2` series remain in release acceptance. This includes `0.2.2-rc.5`; see [compatibility](docs/en/Compatibility.md) for the three-system environments, desktop coverage, and known limits.
+The current release supports 15 Harness versions, starting at `0.1.5-rc.3`: `0.1.5-rc.3`, `0.1.7-rc.2`, and `0.2.0-rc.2` from older series; `0.2.1-rc.1` through `rc.5`; and `0.2.2-alpha.2/alpha.3` plus `0.2.2-rc.1` through `rc.5`. Peer dependency declarations match these 15 versions. Earlier alpha releases and `0.1.6` are outside the current support scope; the latest series retains `0.2.2-alpha.2` and `alpha.3`. see [compatibility](docs/en/Compatibility.md) for the three-system environments, desktop coverage, and known limits.
 
 **Desktop**: open **Plugins → Add plugin** in the left sidebar, enter `dsh-super-code`, then click **Install** and **Enable now** (on older versions, reload or restart when prompted). Desktop includes its own runtime; Node.js is not required.
 
-**Web / CLI**: use Node.js `24.9.0` or later. Harness declares this requirement starting with `0.2.2-alpha.2`. On macOS, each earlier Harness release from `0.1.5-alpha.1` through `0.2.1-rc.5` passed startup, deletion approval, and cold restart checks on Node.js `22.18.0`. The plugin itself supports Node.js `22.0.0`. The full Harness exits silently on that version.
+**Web / CLI**: use Node.js `24.9.0` or later. Harness declares this requirement starting with `0.2.2-alpha.2`. Historical macOS checks covered earlier Harness releases on Node.js `22.18.0`. Currently supported Harness versions are listed above. The plugin itself supports Node.js `22.0.0`. The full Harness exits silently on that version.
 
 ```bash
 npm install -g @deepseek-ai/dsh            # skip if dsh is already installed

@@ -50,7 +50,7 @@ The matrix below covers fresh installation, upgrades, enable/disable, cold resta
 | 0.2.1 | `0.2.1-rc.1` through `0.2.1-rc.5` | 5 |
 | 0.2.2 | `0.2.2-alpha.2`, `0.2.2-alpha.3`, `0.2.2-rc.1` through `0.2.2-rc.5` | 7 |
 
-Older series retain only their final rc listed above. All published alphas from the latest `0.2.2` series remain in acceptance, currently `alpha.2` and `alpha.3`; alphas from earlier series are no longer tested. Historical evidence is preserved without extending the current support commitment. Dependency ranges that permit installation are not the acceptance matrix.
+Historical series retain only the final rc listed above; the latest `0.2.2` series retains all published alphas, currently `alpha.2` and `alpha.3`. All 18 DSH peers supplied by Harness explicitly list these 15 versions in `package.json` and the lockfile. Earlier alphas, `0.1.6`, and other unlisted releases are no longer declared. Peers remain optional to avoid installing host components during offline installation. Cordis and Schemastery retain their own component-version ranges, which differ from Harness version numbers. Historical evidence remains; current platform and feature scope is described above.
 
 ## Historical acceptance records
 

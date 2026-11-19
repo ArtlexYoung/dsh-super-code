@@ -6,6 +6,7 @@ Versions are `major.performance.maintenance`. The second number changes when cod
 
 ## Unreleased · Modular architecture and Code Workbench
 
+- Aligned current support with 15 Harness versions, from `0.1.5-rc.3` to `0.2.2-rc.5`, updating DSH peers, lockfile and usage documentation while retaining historical acceptance records.
 - Added five built-in tool profiles and up to 25 custom profiles, with per-conversation switching at idle boundaries, tool toggles, and persistent-shell state retention.
 - Integrated the Code Workbench for file editing, navigation, Git, learning mode, and detached windows. It is off by default and can be enabled independently of the preset.
 - Gave settings, tools, memory, connections, and the workbench separate lifecycles. Affected features release resources when optional services disappear and reconnect when restored; cancelled requests are not replayed automatically.

@@ -49,7 +49,7 @@ First make sure the plugin is enabled, then check your host version against [Com
 
 **Harness 0.1.7 and later (declarative presets)**: the plugin declares the preset and the host loads it. Go to **Settings → Super Code** and click **Install preset**. If the host doesn't expose management APIs, the page says so.
 
-**Harness 0.1.5 / 0.1.6 (directory presets)**: the plugin installs a user copy on first load. If it's missing, install it manually from **Settings → Super Code**.
+**Harness `0.1.5-rc.3` (directory presets)**: the plugin installs a user copy on first load. If it's missing, install it manually from **Settings → Super Code**.
 
 - If the default identifier `super-code` is taken, pick another one. Existing presets are never overwritten.
 - If you delete this copy yourself, a restart won't bring it back. Install it again manually.
@@ -425,7 +425,7 @@ In a main conversation using the Super Code preset, type `/` to select a Skill f
 
 Native same-name precedence is preserved: project/user Skills take priority. With Matt and PStack both enabled, `/tdd` and `/teach` use the earlier-registered Matt version; disable Matt to use PStack’s versions.
 
-PStack uses a converted edition for **DSH `0.2.1-alpha.1` and later**, retaining all 58 entrypoints and 23 playbooks. The adapter handles delegation, model selection, history access, Skill paths and long-run checkpoints. `/setup-pstack` writes only optional project `.dsh/pstack.md` preferences; `/make-bot-ui` uses the plugin's MCP connection. Models inherit the host selection by default and the root schedules dependent phases. Without history tools, workflows use explicit handoffs or project artifacts rather than private host records. Original upstream files remain for upgrade comparison; no global prompt is changed.
+PStack uses a converted edition for **DSH `0.2.1` and `0.2.2` releases in the current support list**, retaining all 58 entrypoints and 23 playbooks. The adapter handles delegation, model selection, history access, Skill paths and long-run checkpoints. `/setup-pstack` writes only optional project `.dsh/pstack.md` preferences; `/make-bot-ui` uses the plugin's MCP connection. Models inherit the host selection by default and the root schedules dependent phases. Without history tools, workflows use explicit handoffs or project artifacts rather than private host records. Original upstream files remain for upgrade comparison; no global prompt is changed.
 
 Configuration retains all 17 upstream role categories. Reasoning budget, panel size and concurrency are distinct; when per-call model or effort selection is unavailable, the workflow explicitly inherits the host. Reflect retains three reviews followed by independent synthesis. A host without timed resumption can preserve a checkpoint but cannot promise scheduled work after the turn ends.
 
@@ -458,7 +458,7 @@ Both state tools support `{"action":"help","forAction":"read"}`. One help respon
 
 `super_code_task {"action":"read"}` reads the focused task; no focus is an explicit error, never a guess. Updates still require an observed expectedRevision. Shape validation precedes task barriers; errors include repair examples. No automatic alias/type/source/revision correction is performed.
 
-The unreleased task-storage fix stores task changes in the `super_code_tasks` domain under DSH's configured storage directory. It no longer inserts task messages into the conversation or separates model tool calls from their results. Task functionality continues to support DSH `0.1.5-alpha.1` and later without relying on experimental plugin records.
+The unreleased task-storage fix stores task changes in the `super_code_tasks` domain under DSH's configured storage directory. It no longer inserts task messages into the conversation or separates model tool calls from their results. It does not rely on experimental plugin records and supports the current [compatibility list](Compatibility.md#current-support-and-acceptance-scope-2026-11-19), starting at `0.1.5-rc.3`.
 
 Task writes, history and archives use the returned `recordId`; archive pages use `nextBeforeRecordId`. Requirement sources and tool evidence still use conversation `eventSeq` values. These identities are separate. Existing conversation-based task records remain readable as `event:<original sequence>`; `history` and `restore` also accept their original `eventSeq`. Backups and migrations must include both conversations and the `super_code_tasks` domain. A conversation file alone does not contain newly saved full tasks.
 

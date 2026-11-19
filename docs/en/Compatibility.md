@@ -2,15 +2,45 @@
 
 [中文](../Compatibility.md) · English
 
-## Workbench integration candidate (2026-11-19)
+## Integration acceptance (2026-11-19, unreleased)
 
-The isolated integration branch combines the workbench snapshot with the modular architecture and tool profiles. Acceptance of the original workbench package covers 15 versions on three systems. Those records remain evidence for that original package; this integration requires targeted checks of changed entry points, service isolation, shared Windows shell selection, client controls and distribution. Acceptance is in progress; the candidate is not approved for release.
+Tool profiles and the Code Workbench are integrated with the modular architecture, with checks for the integration changes completed on three systems. Tool profiles and the original workbench package each completed the 15-version, three-system matrix below. Integration checks cover changed entry points, service isolation, Windows shell selection, client controls, and distribution resources; the original matrix results remain tied to their packages.
+
+| Environment | Integration checks |
+|---|---|
+| macOS ARM64 | Oldest and newest Web hosts, Settings and workbench conversations, Chinese/English and light/dark themes; first Git request and directory selection/cancellation in official Desktop; directory selection/cancellation in NEXT |
+| Debian 12 ARM64 container | Oldest and newest Web hosts, file conflicts and recovery, service isolation, switching between two SSH sources and disconnection |
+| Windows 11 ARM64 VM | Oldest and newest Web hosts, tools and shell, file links and conversation reads; Node.js 24.18.1 |
+
+The oldest version is `0.1.5-rc.3`; the newest is `0.2.2-rc.5`. This integration fixed a missing host-interface declaration that blocked workbench conversation reads. Checks also covered dependency removal and restoration, model failures and cancellation, invalid directories, a broken Git index, and isolation between sources. The SSH scenario used two separate users and real backends; responses arriving after a source switch did not mix into the other source's conversations, tasks, or memory.
+
+### Workbench performance
+
+On macOS ARM64 with official Web `0.2.2-rc.5`, ten alternating pairs compared the integrated package with the earlier workbench package. Twenty initial baseline samples had a maximum variation of 6.40%. Values below are medians and include browser-automation overhead.
+
+| Operation | Before integration | After integration | Change |
+|---|---:|---:|---:|
+| Reload with the workbench closed until the conversation, file link, and shared services are ready | 641.48 ms | 547.30 ms | -14.68% |
+| First file open | 241.71 ms | 238.36 ms | -1.38% |
+| Reopen the same file | 173.95 ms | 154.31 ms | -11.29% |
+
+These results cover the listed page operations. Two broader performance comparisons did not reach candidate measurement because of baseline variation and a cold-start timeout in an older reference package; no end-to-end improvement is estimated from them.
+
+### Known limits and untested environments
+
+- The stock Windows host retains limits in long-working-directory search, search cancellation error classification, and Bash under `workspace-write`. Search fixes were tested in isolation and have not been applied to the official host.
+- Plugin hot upgrades on the stock Windows host retain a resolution-cache issue. An isolated fix can request a restart and recover settings and history after a cold start; restart when prompted after updating.
+- Linux NEXT encounters native sandbox restrictions in the tested container. Web-host coverage is listed above.
+- Physical Android/iOS devices, physical Windows x64 hardware, real driver mounts with the integrated package, and physical network outages remain untested. Native Desktop and NEXT records cover their tested features.
+- Earlier runs recorded a Linux file conflict and a Windows Node.js 22 test-bridge connection failure. The same file-check sequence and follow-up checks with Node.js 24 passed; the original causes remain undetermined.
+
+### Permissions and model workflows
+
+Harness enforces permissions. A request for a child Agent to work read-only is an instruction; use the host's corresponding permissions when writes must be prohibited. Model behavior in bundled Skills is recorded separately from plugin compatibility, including failures in historical workflow checks.
 
 ## Current support and acceptance scope (2026-11-19)
 
-Lifecycle acceptance is complete for all 45 combinations of the 15 target Harness versions on macOS ARM64, a Linux ARM64 container, and a Windows 11 ARM64 VM, including the newly added `0.2.2-rc.5`. Coverage includes fresh installation, upgrades, enable/disable, cold restarts, uninstall recovery, and conversation history, using a controlled model. This does not establish complete coverage of real-model workflows, native desktops, physical devices, or performance on every platform. Desktop, NEXT, and mobile coverage are tracked separately.
-
-Open items include host defects in Windows long-working-directory search and cancellation error classification, default Bash restrictions under `workspace-write`, Linux NEXT native sandbox restrictions, and some PStack real-model workflows. The search fix has only been tested in isolation and has not been applied to the actual host. A no-write brief for a subagent is a work constraint: the current host entry point provides no independently enforced read-only permission, and model violations of that constraint have been recorded. Overall release acceptance remains incomplete.
+The matrix below covers fresh installation, upgrades, enable/disable, cold restarts, uninstall recovery, and conversation history using a controlled model. It contains 45 combinations across macOS ARM64, a Linux ARM64 container, and a Windows 11 ARM64 VM. The relationship between the original package matrices and integration checks is described above.
 
 | Series | Included versions | Count |
 |---|---|---:|

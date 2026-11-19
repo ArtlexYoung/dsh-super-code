@@ -62,6 +62,10 @@ Switching tabs keeps unsaved input.
 
 Enable the workbench in **Settings → Super Code → Code workbench**; it is off by default. See [Code workbench](CodeWorkbench.md) for editing, navigation, selection assistance and detached windows.
 
+### When a feature is unavailable
+
+The workbench and MCP connection are off by default; enable them as needed. File browsing and Git remain available when the model service is unavailable. Features that need a missing host interface are marked unavailable. If the working directory becomes invalid, follow the recovery prompt; in-flight requests are not replayed automatically. After updating the plugin, reload or restart when prompted, then check the preset version. Reinstall an older preset from **Preset configuration**.
+
 ### Tool profiles
 
 Tools offers five read-only profiles: Super Code default, Standard, PTC, Minimal and Create. Super Code default appears first and is used by new configurations; it retains the original Super Code tools and PTC execution while adding user questions; existing selections are preserved. Create follows the official Create tool set. Standard, PTC and Create also include Super Code's method, task and memory tools; Minimal uses the official persistent shell and image reader. These profiles configure Super Code without selecting a different official preset.

@@ -33,8 +33,9 @@ Tested on 2026-11-11: [Historical results and methodology](docs/en/EvaluationRes
 
 ## 1.2 A smoother development experience
 
-The **Code Workbench** brings your workflow from an IDE into DSH, combining coding tools and model assistance in one place, ready to use.
+The **Code Workbench** lets you browse, edit, and understand project code while continuing the same Harness conversation. Enable it in **Settings → Super Code → Code workbench**; it is off by default. [Usage guide](docs/en/CodeWorkbench.md).
 
+- **Tool profiles**: Five built-ins and up to 25 custom profiles let you choose tools, execution mode, and shell for each task. Conversations apply changes after their current turn, preserving persistent-shell state across switches.
 - **Lightweight editor**: A familiar IntelliJ IDEA / VS Code experience for reading and editing project files directly in Harness, with less window switching.
 - **Git**: Review repository status and code changes, and handle version-control operations including function change history (✨), file comparisons, branch management, and remote pushes.
 - **Preset Skills (manual opt-in)**: Bundled grill-me, OpenSpec, oil-ui, Matt Pocock Skills, and PStack cover requirements, specifications, UI, and engineering workflows. All are off by default and take effect in existing conversations when enabled.
@@ -55,6 +56,7 @@ The **Code Workbench** brings your workflow from an IDE into DSH, combining codi
 
 # 2 Recent releases
 
+- **Unreleased**: Added tool profiles and the Code Workbench with editing, Git, and learning mode; isolated feature loading and cleanup, with improved recovery. Integration checks are complete on three systems; see [compatibility](docs/en/Compatibility.md) for coverage.
 - **0.4.2**: Added remote projects and dsh-Go / NEXT remote control, with fixes for task recovery after restart, offline dependency resolution in some installers, Windows BusyBox file operations on long paths, and README image rendering. See [compatibility](docs/en/Compatibility.md) for tested coverage and limits.
 - **0.4.1**: Fixed Windows sessions failing to load on Harness `0.2.2-rc.2` ([#2](https://github.com/ArtlexYoung/dsh-super-code/issues/2)) and bundled runtime dependencies for local offline installation, while keeping Harness `0.1.5-alpha.1` as the minimum supported version.
 - **0.4.0**: Simplified task and memory tools, added five opt-in Skill and workflow packages, and improved Settings, the task sidebar, and Harness compatibility.
@@ -85,7 +87,7 @@ Versions follow `major.performance.maintenance`: a change in the second number i
 
 # 4 Install
 
-The current target covers 15 Harness versions: `0.1.5-rc.3`, `0.1.7-rc.2`, and `0.2.0-rc.2` from older series; `0.2.1-rc.1` through `rc.5`; and `0.2.2-alpha.2/alpha.3` plus `0.2.2-rc.1` through `rc.5`. Only alphas from the latest `0.2.2` series remain in release acceptance. Checks for the newly added `0.2.2-rc.5` are in progress; see [compatibility](docs/en/Compatibility.md) for actual platform results.
+The current acceptance scope covers 15 Harness versions: `0.1.5-rc.3`, `0.1.7-rc.2`, and `0.2.0-rc.2` from older series; `0.2.1-rc.1` through `rc.5`; and `0.2.2-alpha.2/alpha.3` plus `0.2.2-rc.1` through `rc.5`. Only alphas from the latest `0.2.2` series remain in release acceptance. This includes `0.2.2-rc.5`; see [compatibility](docs/en/Compatibility.md) for the three-system environments, desktop coverage, and known limits.
 
 **Desktop**: open **Plugins → Add plugin** in the left sidebar, enter `dsh-super-code`, then click **Install** and **Enable now** (on older versions, reload or restart when prompted). Desktop includes its own runtime; Node.js is not required.
 

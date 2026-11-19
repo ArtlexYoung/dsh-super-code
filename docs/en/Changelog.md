@@ -4,6 +4,14 @@
 
 Versions are `major.performance.maintenance`. The second number changes when coding results or efficiency improve; the third covers fixes, UI, and compatibility. See [Compatibility](Compatibility.md) for what each release was tested on.
 
+## Unreleased · Modular architecture and Code Workbench
+
+- Added five built-in tool profiles and up to 25 custom profiles, with per-conversation switching at idle boundaries, tool toggles, and persistent-shell state retention.
+- Integrated the Code Workbench for file editing, navigation, Git, learning mode, and detached windows. It is off by default and can be enabled independently of the preset.
+- Gave settings, tools, memory, connections, and the workbench separate lifecycles. Affected features release resources when optional services disappear and reconnect when restored; cancelled requests are not replayed automatically.
+- Fixed a missing host-interface declaration that blocked workbench conversation reads, and improved directory recovery, failed profile application, and switching between remote sources.
+- Tool profiles and the original workbench package each completed a 15-version, three-system matrix. Integration changes passed targeted checks on all three platforms, and the workbench passed three page-timing checks. See [Compatibility](Compatibility.md) for environments, historical evidence, and remaining limits.
+
 ## 0.4.2 · 2026-11-16
 
 - Added lightweight remote projects with `dsh-ssh-workspaces` and tools, tasks, and memory in dsh-Go / NEXT remote conversations. Windows remote projects retain native reads and use `remote_bash` for file changes, preserving approvals, cancellation, and disconnection checks.

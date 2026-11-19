@@ -88,10 +88,11 @@ test('只读、越界、符号链接、无效请求和外部索引锁不会被�
   await fs.unlink(join(root, '.git/index.lock'))
   const outside = await fs.mkdtemp(join(validationRoot, 'git-outside-'))
   t.after(() => fs.rm(outside, { recursive: true, force: true }))
-  await fs.writeFile(join(outside, 'secret'), 'private')
+  const secret = 'Confidential file contents must stay outside the repository'
+  await fs.writeFile(join(outside, 'secret'), secret)
   await fs.symlink(join(outside, 'secret'), join(root, 'link'))
   const result = await request({ action: 'diff', path: 'link', side: 'worktree', version: (await state()).version })
-  assert.equal(result.kind === 'diff' && result.diff.after.includes('private'), false)
+  assert.equal(result.kind === 'diff' && result.diff.after.includes(secret), false)
   await assert.rejects(request({ action: 'status', extra: true }))
   const abort = new AbortController(); abort.abort()
   await assert.rejects(repository.execute({ action: 'status' }, undefined, abort.signal))

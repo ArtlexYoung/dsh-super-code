@@ -41,7 +41,8 @@ export async function verifyCandidate(directory, logDirectory) {
   await writeFile(join(logDirectory, 'test-root.txt'), testRoot + '\n');
   const checks = [
     ['build', ['run', 'build']], ['typecheck', ['run', 'typecheck']],
-    ['tests', ['test']], ['distribution', ['run', 'pack:check']],
+    ['skills', ['run', 'skills:check']],
+    ['tests', ['exec', '--no', '--', 'tsx', '--test', '--test-concurrency=4', 'test/**/*.test.ts']], ['distribution', ['run', 'pack:check']],
   ];
   for (const [name, args] of checks) {
     try { await writeFile(join(logDirectory, `${name}.log`), await command('npm', args, directory, { timeout: 600000, env: { ...process.env, SUPER_CODE_TEST_ROOT: testRoot } })); }

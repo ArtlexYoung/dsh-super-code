@@ -5,6 +5,7 @@ import { parseArgs } from 'node:util';
 import { sources, command, inspectSource, prepareSource } from './sources.mjs';
 import { inspectDependencies, updateDependencies } from './dependencies.mjs';
 import { acquireLock, updateCheckout } from './checkout.mjs';
+import { developmentInstall } from './install.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const usage = 'npm run updates:check [-- --only oil-ui,mattpocock,pstack,openspec,dependencies]\n'
@@ -52,7 +53,7 @@ async function prepareDependencies(directory, checkout, changed) {
     if (process.platform === 'darwin') await command('cp', ['-cR', join(directory, 'node_modules'), modules]);
     else await cp(join(directory, 'node_modules'), modules, { recursive: true });
   }
-  if (changed) await command('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', '--prefer-offline'], checkout);
+  if (changed) await developmentInstall(checkout, ['install', '--ignore-scripts', '--no-audit', '--no-fund', '--prefer-offline']);
 }
 
 export async function applyUpdates(directory, options, inspection, runDirectory, checkout) {

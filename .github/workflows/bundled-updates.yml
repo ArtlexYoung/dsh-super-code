@@ -32,7 +32,7 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run updates:install
       - name: Check or prepare updates
         run: |
           if [ "$APPLY_UPDATES" = true ]; then

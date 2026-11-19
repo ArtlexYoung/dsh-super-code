@@ -7,6 +7,7 @@ import { safePath, blobHash, mappings, adaptOil, command } from '../../scripts/u
 import { parseOptions, applyUpdates } from '../../scripts/updates/run.mjs';
 import { acquireLock, updateCheckout } from '../../scripts/updates/checkout.mjs';
 import { auditLock, newestVersion } from '../../scripts/updates/dependencies.mjs';
+import { developmentInstall } from '../../scripts/updates/install.mjs';
 
 test('maintenance requires a separate explicit branch and known targets', () => {
   for (const args of [['--apply'], ['--apply', '--branch', 'main'], ['--apply', '--branch', 'feat/../main'], ['--only', 'unknown']]) assert.throws(() => parseOptions(args));
@@ -34,6 +35,25 @@ test('dependency selection sorts numeric versions; changed transitive sources, l
   const entry = { version: '1.2.3', license: 'MIT', resolved: 'https://registry.npmjs.org/example/-/example-1.2.3.tgz', integrity: 'sha512-YWJj' };
   assert.equal(auditLock({ packages: {} }, { packages: { 'node_modules/example': entry } }).length, 1);
   for (const patch of [{ license: 'AGPL-3.0-only' }, { resolved: 'https://example.com/package.tgz' }, { hasInstallScript: true }]) assert.throws(() => auditLock({ packages: {} }, { packages: { 'node_modules/example': { ...entry, ...patch } } }));
+});
+
+test('development install uses the locked test host and restores public metadata after npm failure', async t => {
+  const root = await mkdtemp(join(tmpdir(), 'super-code-peer-test-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const manifest = { name: 'fixture', peerDependencies: { '@deepseek-ai/dsh-agent': '0.2.2-rc.5' } };
+  const lock = { packages: { '': { peerDependencies: manifest.peerDependencies }, 'node_modules/@deepseek-ai/dsh-agent': { version: '0.1.5-rc.2', integrity: 'sha512-fixture' } } };
+  const original = JSON.stringify(manifest, null, 2) + '\n';
+  await writeFile(join(root, 'package.json'), original);
+  await writeFile(join(root, 'package-lock.json'), JSON.stringify(lock, null, 2) + '\n');
+  const fake = join(root, 'npm-fixture.cjs');
+  await writeFile(fake, `const fs=require('node:fs');const p=JSON.parse(fs.readFileSync('package.json'));if(p.peerDependencies['@deepseek-ai/dsh-agent']!=='0.1.5-rc.2')process.exit(8);fs.writeFileSync('observed','locked');process.exit(7);`);
+  const previous = process.env.npm_execpath;
+  process.env.npm_execpath = fake;
+  try { await assert.rejects(developmentInstall(root, ['install']), /Command failed/); }
+  finally { if (previous === undefined) delete process.env.npm_execpath; else process.env.npm_execpath = previous; }
+  assert.equal(await readFile(join(root, 'observed'), 'utf8'), 'locked');
+  assert.equal(await readFile(join(root, 'package.json'), 'utf8'), original);
+  assert.deepEqual(JSON.parse(await readFile(join(root, 'package-lock.json'), 'utf8')), lock);
 });
 
 test('update worktrees preserve dirty work, reuse clean branches and block concurrent writers', async t => {

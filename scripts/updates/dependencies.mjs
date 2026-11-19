@@ -1,6 +1,7 @@
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { command, readJson } from './sources.mjs';
+import { developmentInstall } from './install.mjs';
 
 export const acceptedLicense = license => /^(?:MIT|MIT-0|ISC|Apache-2\.0|BSD-2-Clause|BSD-3-Clause|0BSD|CC0-1\.0|BlueOak-1\.0\.0|\(MIT OR Apache-2\.0\))$/.test(license);
 export function newestVersion(versions) {
@@ -53,7 +54,7 @@ export async function updateDependencies(root, records) {
     manifest[record.group][record.name] = record.range.startsWith('^') ? `^${record.version}` : record.version;
   }
   await writeFile(join(root, 'package.json'), JSON.stringify(manifest, null, 2) + '\n');
-  await command('npm', ['install', '--package-lock-only', '--ignore-scripts', '--no-audit', '--no-fund'], root);
+  await developmentInstall(root, ['install', '--package-lock-only', '--ignore-scripts', '--no-audit', '--no-fund']);
   const lock = await readJson(join(root, 'package-lock.json'));
   for (const record of records) {
     const installed = lock.packages[`node_modules/${record.name}`];

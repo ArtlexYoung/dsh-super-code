@@ -258,6 +258,7 @@
   },
   "scripts": {
     "updates:check": "node scripts/updates/run.mjs",
+    "updates:install": "node scripts/updates/install.mjs",
     "updates:apply": "node scripts/updates/run.mjs --apply",
     "skills:build": "node scripts/skills/pstack/convert.mjs && node scripts/skills/catalog.mjs",
     "skills:check": "node scripts/skills/pstack/convert.mjs --check && node scripts/skills/catalog.mjs --check",

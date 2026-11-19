@@ -69,7 +69,7 @@ export function WorkflowLibrary({ api, subscribe, sessionId, useInput, inputActi
   const saveRun = completed => save({ runs: { ...Object.fromEntries(Object.entries(preferences.runs).filter(([id]) => id !== sessionId).slice(-31)), [sessionId]: { recipe: route.id, completed } } });
   const selectRoute = recipe => { setRoute(recipe); choose(null); };
   const context = step === null ? '' : `${t('draftContext')}${localized(route.title, language)} / ${route.steps[step][language === 'zh' ? 1 : 2]}`;
-  return <section ref={container} className="sc-flows" lang={language} aria-label={t('title')}>
+  return <section ref={container} className="sc-flows" data-conversation-composer-overlay="" lang={language} aria-label={t('title')}>
     <style>{stylesheet}</style>
     <header className="sc-flow-header"><div><span className="sc-flow-eyebrow">SUPER CODE</span><h1>{t('title')}</h1><p>{t('intro')}</p></div>
       <button type="button" onClick={() => refresh(value => value + 1)} disabled={native.status === 'loading'}>{t('refresh')}</button></header>

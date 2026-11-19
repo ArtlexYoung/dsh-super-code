@@ -1,4 +1,5 @@
-import { mkdir, mkdtemp, writeFile, rename, cp, lstat } from 'node:fs/promises';
+import { mkdir, mkdtemp, writeFile, rename, cp, lstat, realpath, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { resolve, join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
@@ -35,14 +36,18 @@ export async function inspectUpdates(directory, only) {
 }
 
 export async function verifyCandidate(directory, logDirectory) {
+  // Fixtures must not discover the parent project's Git or node_modules.
+  const testRoot = await realpath(await mkdtemp(join(tmpdir(), 'super-code-maintenance-tests-')));
+  await writeFile(join(logDirectory, 'test-root.txt'), testRoot + '\n');
   const checks = [
     ['build', ['run', 'build']], ['typecheck', ['run', 'typecheck']],
     ['tests', ['test']], ['distribution', ['run', 'pack:check']],
   ];
   for (const [name, args] of checks) {
-    try { await writeFile(join(logDirectory, `${name}.log`), await command('npm', args, directory, { timeout: 600000 })); }
+    try { await writeFile(join(logDirectory, `${name}.log`), await command('npm', args, directory, { timeout: 600000, env: { ...process.env, SUPER_CODE_TEST_ROOT: testRoot } })); }
     catch (error) { await writeFile(join(logDirectory, `${name}.log`), `${error.stdout || ''}\n${error.stderr || ''}`); throw new Error(`${name} failed; see ${name}.log`); }
   }
+  await rm(testRoot, { recursive: true, force: true });
 }
 
 async function prepareDependencies(directory, checkout, changed) {

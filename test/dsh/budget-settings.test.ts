@@ -1,5 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
 import { Context } from '@deepseek-ai/cordis'
 import { SettingsProvider } from '@deepseek-ai/dsh-settings'
 import type { SettingsNamespace } from '@deepseek-ai/dsh-settings'
@@ -220,7 +221,7 @@ test('settings responses retain host shell status after saving and resetting', a
   assert.equal(first.shell.platform, process.platform)
   assert.equal(first.skillPackages.grillMeSkill.version, '1.3.2')
   assert.equal(first.skillPackages.openspecSkills.version, '1.17.0')
-  assert.equal(first.skillPackages.oilUiSkill.version, '0.32.0')
+  assert.equal(first.skillPackages.oilUiSkill.version, JSON.parse(await readFile(new URL('../../builtin/skills/oil-ui/distribution.json', import.meta.url), 'utf8')).version)
   assert.equal(first.skillPackages.mattpocockSkills.version, '1.3.2')
   assert.equal(first.skillPackages.pstackSkills.version, '0.15.36')
   const saved = await api.saveConfig('{"windowsBash":false}', String(first.revision))

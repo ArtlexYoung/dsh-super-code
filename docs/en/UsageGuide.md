@@ -73,7 +73,7 @@ Before plugin 0.2.0, the settings page lives under **Plugins → Plugin configur
 
 Switching tabs keeps unsaved input.
 
-In **Settings → Super Code → Code workbench**, turn on **Enable code workbench (Beta)**. Return to your conversation and open **Code workbench** beside Conversation and Trajectory. See the [illustrated workbench guide](CodeWorkbench.md) for the switches, editing and reading controls.
+In **Settings → Super Code → Code workbench**, turn on **Enable code workbench (Beta)**. Return to your conversation and open **Code workbench** beside Conversation. See the [illustrated workbench guide](CodeWorkbench.md) for the switches, editing and reading controls.
 
 ### When a feature is unavailable
 

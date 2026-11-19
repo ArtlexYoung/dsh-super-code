@@ -33,11 +33,14 @@
 
 ## 1.2 更便捷的开发体验
 
-**代码工作台**让你在 Harness 中浏览、编辑和理解项目代码，并在同一会话中继续开发。默认关闭：在「设置 → Super Code 模式 → 代码工作台」打开「启用代码工作台（Beta）」，再进入当前会话中「对话」「轨迹」旁的「代码工作台」标签。[图文使用说明](docs/CodeWorkbench.md)。
+**代码工作台**让你在 Harness 中浏览、编辑和理解项目代码，并在同一会话中继续开发。默认关闭：在「设置 → Super Code 模式 → 代码工作台」打开「启用代码工作台（Beta）」，再进入当前会话中「对话」旁的「代码工作台」标签。[图文使用说明](docs/CodeWorkbench.md)。
 
 [![代码工作台：文件树、文件结构与编辑器](docs/images/workbench-zh-display.svg)](docs/images/workbench-zh.png)
 
-- **工具方案**：五套预置与最多 25 套自定义方案，按任务选择工具、调用方式和 Shell；各会话完成当前轮后应用，切换时保留持久 Shell 状态。
+**工具方案**：五套预置与最多 25 套自定义方案，按任务选择工具、调用方式和 Shell；各会话完成当前轮后应用，切换时保留持久 Shell 状态。在「设置 → Super Code 模式 → 工具」查看和自定义。
+
+[![工具方案设置：预置方案与自定义入口](docs/images/tool-profiles-zh-display.svg)](docs/images/tool-profiles-zh.png)
+
 - **轻量编辑器**：熟悉的 IDEA / VS Code 体验，在 Harness 中直接阅读和编辑项目文件，减少窗口切换。
 - **Git**：集中查看仓库状态与代码改动，处理常用版本管理操作，包括但不限于函数变更历史（✨）、文件对比、分支管理、远程推送。
 - **预设 Skill（需手动开启）**：内置 grill-me、OpenSpec、oil-ui、Matt Pocock Skills 和 PStack，覆盖需求梳理、规范、界面与工程开发。默认全部关闭，启用后在已有对话中实时生效。

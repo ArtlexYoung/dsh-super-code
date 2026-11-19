@@ -9,17 +9,17 @@
 
 [![Code workbench settings: enable the first switch](../images/workbench-settings-en-display.svg)](../images/workbench-settings-en.png)
 
-3. Return to a conversation with a working directory. Open **Code workbench** beside **Conversation** and **Trajectory**, then select a file in the left-hand tree.
+3. Return to a conversation with a working directory. Open **Code workbench** beside **Conversation**, then select a file in the left-hand tree.
 
 [![Browse files and navigate symbols in the workbench](../images/workbench-en-display.svg)](../images/workbench-en.png)
 
 - **Files** browses the project; **Outline** jumps to declarations in the current file. Each can be collapsed independently.
 - Edit in the center, then click **Save** or press Ctrl/⌘+S to write changes. The current conversation's access permissions apply.
-- Use **Git**, **Open window**, or **Editor settings** in the top toolbar. The right rail opens Conversation, Quick conversations, Changed files and Learn as needed; these panes are collapsed in the example to leave more room for code.
+- Use **Git**, **Open window**, or **Editor settings** in the top toolbar. The right rail opens Conversation, Quick conversations, Changed files and Learn as needed; the example shows the current conversation alongside the code.
 
 The second switch, **Open code in workbench**, controls file links in the main Conversation tab. Enable it if those links should open in the workbench. It is also off by default and is separate from the main workbench switch.
 
-Screenshots use the current components and a demonstration project. Click an image for the full-size version.
+Workbench overviews, settings and tool-profile screenshots show an isolated Harness instance with a demo project and sample conversation; the reader image shows the same workbench component. Click an image for the full-size version.
 
 ## Reading and navigation
 

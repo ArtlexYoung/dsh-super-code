@@ -33,11 +33,14 @@ Tested on 2026-11-11: [Historical results and methodology](docs/en/EvaluationRes
 
 ## 1.2 A smoother development experience
 
-The **Code Workbench** lets you browse, edit, and understand project code while continuing the same Harness conversation. It is off by default. In **Settings → Super Code → Code workbench**, turn on **Enable code workbench (Beta)**, then open the **Code workbench** tab beside Conversation and Trajectory. [Step-by-step guide](docs/en/CodeWorkbench.md).
+The **Code Workbench** lets you browse, edit, and understand project code while continuing the same Harness conversation. It is off by default. In **Settings → Super Code → Code workbench**, turn on **Enable code workbench (Beta)**, then open the **Code workbench** tab beside Conversation. [Step-by-step guide](docs/en/CodeWorkbench.md).
 
 [![Code workbench: files, outline and editor](docs/images/workbench-en-display.svg)](docs/images/workbench-en.png)
 
-- **Tool profiles**: Five built-ins and up to 25 custom profiles let you choose tools, execution mode, and shell for each task. Conversations apply changes after their current turn, preserving persistent-shell state across switches.
+**Tool profiles**: Five built-ins and up to 25 custom profiles let you choose tools, execution mode, and shell for each task. Conversations apply changes after their current turn, preserving persistent-shell state across switches. Open **Settings → Super Code → Tools** to browse and customize profiles.
+
+[![Tool profiles: built-ins and customization](docs/images/tool-profiles-en-display.svg)](docs/images/tool-profiles-en.png)
+
 - **Lightweight editor**: A familiar IntelliJ IDEA / VS Code experience for reading and editing project files directly in Harness, with less window switching.
 - **Git**: Review repository status and code changes, and handle version-control operations including function change history (✨), file comparisons, branch management, and remote pushes.
 - **Preset Skills (manual opt-in)**: Bundled grill-me, OpenSpec, oil-ui, Matt Pocock Skills, and PStack cover requirements, specifications, UI, and engineering workflows. All are off by default and take effect in existing conversations when enabled.

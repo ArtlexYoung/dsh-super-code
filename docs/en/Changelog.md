@@ -4,7 +4,7 @@
 
 Versions are `major.performance.maintenance`. The second number changes when coding results or efficiency improve; the third covers fixes, UI, and compatibility. See [Compatibility](Compatibility.md) for what each release was tested on.
 
-## Unreleased · Modular architecture and Code Workbench
+## 0.4.3 · 2026-11-19
 
 - Aligned current support with 15 Harness versions, from `0.1.5-rc.3` to `0.2.2-rc.5`, updating DSH peers, lockfile and usage documentation while retaining historical acceptance records.
 - Added five built-in tool profiles and up to 25 custom profiles, with per-conversation switching at idle boundaries, tool toggles, and persistent-shell state retention.

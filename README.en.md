@@ -61,10 +61,9 @@ The **Code Workbench** lets you browse, edit, and understand project code while 
 
 # 2 Recent releases
 
-- **Unreleased**: Added tool profiles and the Code Workbench with editing, Git, and learning mode; isolated feature loading and cleanup, with improved recovery. Integration checks are complete on three systems; see [compatibility](docs/en/Compatibility.md) for coverage.
-- **0.4.2**: Added remote projects and dsh-Go / NEXT remote control, with fixes for task recovery after restart, offline dependency resolution in some installers, Windows BusyBox file operations on long paths, and README image rendering. See [compatibility](docs/en/Compatibility.md) for tested coverage and limits.
-- **0.4.1**: Fixed Windows sessions failing to load on Harness `0.2.2-rc.2` ([#2](https://github.com/ArtlexYoung/dsh-super-code/issues/2)) and bundled runtime dependencies for local offline installation, with Harness `0.1.5-alpha.1` as that historical release’s minimum.
-- **0.4.0**: Simplified task and memory tools, added five opt-in Skill and workflow packages, and improved Settings, the task sidebar, and Harness compatibility.
+- **0.4.3**: Added tool profiles and the Code Workbench for editing, Git, and learning, with separate feature lifecycles to improve fault isolation and recovery.
+- **0.4.2**: Added remote projects and dsh-Go / NEXT remote control, with fixes for task recovery, offline dependency resolution, Windows BusyBox long-path operations, and image rendering.
+- **0.4.1**: Fixed Windows sessions failing to load on Harness `0.2.2-rc.2` ([#2](https://github.com/ArtlexYoung/dsh-super-code/issues/2)) and bundled runtime dependencies for local offline installation.
 
 [Full changelog](docs/en/Changelog.md)
 
@@ -115,13 +114,13 @@ Desktop: enter the full path of the package in "Package name or address", then c
 Web: run the following command (use the actual file name):
 
 ```bash
-dsh plugin --profile web add ./dsh-super-code-0.4.2.tgz
+dsh plugin --profile web add ./dsh-super-code-0.4.3.tgz
 ```
 
 Starting with 0.4.1, the package includes the plugin runtime dependencies. Download the `.tgz` and install Harness before going offline. For Web, explicitly add `--offline` to prevent the installer from attempting network requests:
 
 ```bash
-dsh plugin --profile web add ./dsh-super-code-0.4.2.tgz --offline
+dsh plugin --profile web add ./dsh-super-code-0.4.3.tgz --offline
 ```
 
 Version 0.4.2 fixes installers such as `pnpm 11.28.5` trying to fetch Harness dependencies during offline installation with an empty cache. Install Harness beforehand and continue to use explicit `--offline` for Web; see [compatibility](docs/en/Compatibility.md).

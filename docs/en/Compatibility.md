@@ -2,7 +2,7 @@
 
 [中文](../Compatibility.md) · English
 
-## Integration acceptance (2026-11-19, unreleased)
+## 0.4.3 integration acceptance (2026-11-19)
 
 Tool profiles and the Code Workbench are integrated with the modular architecture, with checks for the integration changes completed on three systems. Tool profiles and the original workbench package each completed the 15-version, three-system matrix below. Integration checks cover changed entry points, service isolation, Windows shell selection, client controls, and distribution resources; the original matrix results remain tied to their packages.
 

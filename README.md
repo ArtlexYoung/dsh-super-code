@@ -61,10 +61,9 @@
 
 # 2 最近更新
 
-- **待发布**：新增工具方案与代码工作台，整合编辑、Git 和学习模式；按功能隔离加载与释放，改善故障恢复。已完成三系统整合差异验收，具体范围见[兼容性记录](docs/Compatibility.md)。
-- **0.4.2**：支持远程项目与 dsh-Go / NEXT 远程控制，修复任务冷恢复、部分安装器的离线依赖解析、Windows BusyBox 文件长路径及 README 图片显示问题；实测范围与限制见[兼容性记录](docs/Compatibility.md)。
-- **0.4.1**：修复 Windows 在 Harness `0.2.2-rc.2` 中无法加载会话的问题（[#2](https://github.com/ArtlexYoung/dsh-super-code/issues/2)），随包携带运行依赖以支持本地离线安装，该历史版本当时最低支持 Harness `0.1.5-alpha.1`。
-- **0.4.0**：简化任务与记忆工具，新增五组可选 Skill 与工作流，优化设置、任务侧栏和 Harness 兼容性。
+- **0.4.3**：新增工具方案与代码工作台，集中编辑代码、管理 Git 和学习项目，并通过独立的功能生命周期改善故障隔离与恢复。
+- **0.4.2**：支持远程项目与 dsh-Go / NEXT 远程控制，修复任务恢复、离线依赖解析、Windows BusyBox 长路径操作及图片显示。
+- **0.4.1**：修复 Windows 在 Harness `0.2.2-rc.2` 中无法加载会话的问题（[#2](https://github.com/ArtlexYoung/dsh-super-code/issues/2)），随包携带运行依赖以支持本地离线安装。
 
 [完整版本记录](docs/Changelog.md)
 
@@ -115,13 +114,13 @@ dsh plugin --profile web add dsh-super-code
 Web 版：运行以下命令（文件名以实际下载的为准）：
 
 ```bash
-dsh plugin --profile web add ./dsh-super-code-0.4.2.tgz
+dsh plugin --profile web add ./dsh-super-code-0.4.3.tgz
 ```
 
 从 0.4.1 起，安装包自带插件所需的运行依赖。离线安装须提前下载 `.tgz` 并安装好 Harness；Web 版请显式加 `--offline`，避免安装器尝试联网：
 
 ```bash
-dsh plugin --profile web add ./dsh-super-code-0.4.2.tgz --offline
+dsh plugin --profile web add ./dsh-super-code-0.4.3.tgz --offline
 ```
 
 0.4.2 修复了部分安装器（如 `pnpm 11.28.5`）在空缓存离线安装时尝试补装 Harness 依赖的问题；仍需提前安装 Harness，Web 版仍请显式使用 `--offline`，见[兼容性记录](docs/Compatibility.md)。

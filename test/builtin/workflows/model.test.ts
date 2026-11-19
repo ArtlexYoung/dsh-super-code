@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { workflowCatalog } from '../../../scripts/skills/catalog.mjs';
 import { recipes } from '../../../builtin/workflows/recipes.js';
-import { skillAvailability, filterSkills, commandDraft, initialPreferences, readPreferences, savePreferences } from '../../../builtin/workflows/model.js';
+import { skillAvailability, filterSkills, commandDraft, initialPreferences, readPreferences, recordProgress, savePreferences } from '../../../builtin/workflows/model.js';
 
 test('workflow catalog covers every distributed Skill and every route resolves to a real entry', async () => {
   const catalog = await workflowCatalog();
@@ -11,7 +11,10 @@ test('workflow catalog covers every distributed Skill and every route resolves t
   assert.deepEqual(JSON.parse(await readFile(new URL('../../../builtin/workflows/catalog.json', import.meta.url), 'utf8')), catalog);
   for (const recipe of recipes) {
     const pack = catalog.find(pack => pack.id === recipe.pack)!;
-    for (const [name] of recipe.steps) assert.ok(pack.skills.some(skill => skill.name === name), `${recipe.id}/${name}`);
+    assert.equal(new Set(recipe.steps.map(step => step.id)).size, recipe.steps.length);
+    for (const step of recipe.steps) assert.ok(pack.skills.some(skill => skill.name === step.skill), `${recipe.id}/${step.skill}`);
+    for (const tool of recipe.tools || []) assert.ok(pack.skills.some(skill => skill.name === tool.skill), `${recipe.id}/${tool.skill}`);
+    if (recipe.playbook) assert.match(await readFile(new URL(`../../../builtin/skills/pstack/dsh/skills/poteto-mode/playbooks/${recipe.playbook}.md`, import.meta.url), 'utf8'), /Verify|Prove/);
   }
 });
 
@@ -39,7 +42,7 @@ test('command insertion preserves the draft and is idempotent', () => {
 test('favorite, recent and per-conversation progress survive reload; failed writes remain visible', () => {
   let data: string | null = null;
   const storage = { getItem: () => data, setItem: (_key: string, value: string) => { data = value; } };
-  const value = { favorites: ['matt/tdd'], recent: ['matt/tdd'], runs: { session: { recipe: 'matt-fix', completed: [0, 2] } } };
+  const value = { favorites: ['matt/tdd'], recent: ['matt/tdd'], runs: { session: { recipe: 'matt-fix', routes: { 'matt-fix': ['diagnosing-bugs', 'retro'] } } } };
   savePreferences(storage, value);
   assert.deepEqual(readPreferences(storage), value);
   assert.throws(() => savePreferences({ setItem: () => { throw new Error('quota'); } }, value), /quota/);
@@ -47,4 +50,35 @@ test('favorite, recent and per-conversation progress survive reload; failed writ
   assert.equal(initialPreferences(storage).error, true);
   data = '{"favorites":[],"recent":[],"runs":{"session":{"recipe":"x","completed":[-1]}}}';
   assert.throws(() => readPreferences(storage));
+});
+
+test('legacy progress follows the same work, never a new checkpoint at the old index', () => {
+  const legacy = JSON.stringify({ favorites: ['mattpocock/grilling'], recent: [], runs: {
+    session: { recipe: 'matt-feature', completed: [0, 1, 2, 3, 4] },
+    oil: { recipe: 'oil-design', completed: [0, 2] },
+    fix: { recipe: 'matt-fix', completed: [0, 2, 3] },
+  } });
+  const read = readPreferences({ getItem: (key: string) => key.endsWith('.v1') ? legacy : null });
+  assert.deepEqual(read.runs.session.routes['matt-feature'], ['to-spec']);
+  assert.deepEqual(read.runs.oil.routes['oil-design'], ['task', 'implement']);
+  assert.deepEqual(read.runs.fix.routes['matt-fix'], ['diagnosing-bugs', 'code-review', 'retro']);
+  assert.deepEqual(read.favorites, ['mattpocock/grilling']);
+});
+
+test('independent routes keep progress when switching and use stable checkpoint identities', () => {
+  const empty = initialPreferences({ getItem: () => null }).value;
+  const feature = recordProgress(empty, 'session', 'matt-feature', ['to-spec']);
+  const fix = recordProgress(feature, 'session', 'matt-fix', ['diagnosing-bugs']);
+  assert.deepEqual(fix.runs.session.routes, { 'matt-feature': ['to-spec'], 'matt-fix': ['diagnosing-bugs'] });
+  const storage = new Map<string, string>();
+  savePreferences({ setItem: (key: string, value: string) => { storage.set(key, value); } }, fix);
+  assert.deepEqual(readPreferences({ getItem: (key: string) => storage.get(key) ?? null }), fix);
+});
+
+test('repeated use of one Skill updates the generated checkpoint and preserves user text', () => {
+  const first = '本次流程步骤：Feature / 理解现状\n本关目标：了解入口';
+  const second = '本次流程步骤：Feature / 定义结构\n本关目标：设计类型';
+  const draft = commandDraft({ name: 'poteto-mode' }, '保留我的需求\n和第二行', first);
+  assert.equal(commandDraft({ name: 'poteto-mode' }, draft, second), `/poteto-mode ${second}\n\n保留我的需求\n和第二行`);
+  assert.equal(commandDraft({ name: 'poteto-mode' }, '/poteto-mode 我的独立指令', second), '/poteto-mode 我的独立指令');
 });

@@ -1,12 +1,15 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import catalog from './catalog.json';
 import { recipes, localized } from './recipes.js';
-import { commandDraft, filterSkills, initialPreferences, savePreferences, skillAvailability } from './model.js';
+import { commandDraft, initialPreferences, recordProgress, savePreferences, skillAvailability } from './model.js';
 import { Route, SkillDetail } from './Route.jsx';
+import { Catalog } from './Catalog.jsx';
+import { Landmark } from './MapArt.jsx';
 import stylesheet from './style.css';
 
 const allSkills = catalog.flatMap(pack => pack.skills.map(skill => ({ ...skill, pack: pack.id })));
-const pageSize = 24;
+const packTitles = Object.fromEntries(catalog.map(pack => [pack.id, pack.title]));
+const selectionFor = (recipe, index) => ({ id: `${recipe.pack}/${recipe.steps[index].skill}`, index });
 
 function Compose({ skill, availability, api, sessionId, useInput, inputActions, openView, context, onUsed, t }) {
   const input = useInput(state => state), [error, setError] = useState(''), [busy, setBusy] = useState(false);
@@ -34,12 +37,16 @@ function Compose({ skill, availability, api, sessionId, useInput, inputActions, 
 export function WorkflowLibrary({ api, subscribe, sessionId, useInput, inputActions, openView, t, storage = localStorage }) {
   const [initial] = useState(() => initialPreferences(storage)), [preferences, setPreferences] = useState(initial.value);
   const [error, setError] = useState(initial.error ? t('storageFailed') : ''), [native, setNative] = useState({ status: 'loading', skills: [] });
-  const [revision, refresh] = useState(0), [pack, setPack] = useState(''), [query, setQuery] = useState(''), [filter, setFilter] = useState('all'), [page, setPage] = useState(0);
+  const [revision, refresh] = useState(0), [view, setView] = useState('map');
   const [route, setRoute] = useState(() => recipes.find(item => item.id === initial.value.runs[sessionId]?.recipe) || recipes[0]);
-  const [selected, setSelected] = useState(null), [step, setStep] = useState(null), [copied, setCopied] = useState(false);
-  const container = useRef(null);
-  const [selectionRevision, focusSelection] = useState(0);
-  const language = t('language'), run = preferences.runs[sessionId];
+  const [pack, setPack] = useState(route.pack), [notice, setNotice] = useState(''), [copied, setCopied] = useState(false);
+  const [selection, setSelection] = useState(() => {
+    const done = initial.value.runs[sessionId]?.routes[route.id] || [];
+    const next = route.steps.findIndex(step => !done.includes(step.id));
+    return selectionFor(route, next === -1 ? route.steps.length - 1 : next);
+  });
+  const container = useRef(null), latestPreferences = useRef(preferences);
+  const language = t('language'), completed = preferences.runs[sessionId]?.routes[route.id] || [];
   useEffect(() => subscribe(() => refresh(value => value + 1)), [subscribe]);
   useEffect(() => {
     const abort = new AbortController(); setNative({ status: 'loading', skills: [] });
@@ -50,58 +57,68 @@ export function WorkflowLibrary({ api, subscribe, sessionId, useInput, inputActi
     }).catch(() => { if (!abort.signal.aborted) setNative({ status: 'failed', skills: [] }); });
     return () => abort.abort();
   }, [api, sessionId, revision]);
-  const save = patch => {
-    try { const next = savePreferences(storage, { ...preferences, ...patch }); setPreferences(next); setError(''); }
-    catch { setError(t('storageFailed')); }
+  const save = update => {
+    try {
+      const next = savePreferences(storage, update(latestPreferences.current));
+      latestPreferences.current = next; setPreferences(next); setError(''); return true;
+    } catch { setError(t('storageFailed')); return false; }
   };
-  const rows = useMemo(() => {
-    const matches = filterSkills(allSkills, { query, pack, favorites: preferences.favorites, onlyFavorites: filter === 'favorites' });
-    return filter === 'recent' ? preferences.recent.flatMap(id => matches.filter(skill => skill.id === id)) : matches;
-  }, [query, pack, filter, preferences.favorites, preferences.recent]);
-  const currentPage = Math.min(page, Math.max(0, Math.ceil(rows.length / pageSize) - 1));
-  const skill = allSkills.find(item => item.id === selected), skillPack = catalog.find(item => item.id === skill?.pack);
-  const availability = skill ? skillAvailability(skill, native.skills) : 'unavailable';
-  useEffect(() => {
-    const detail = container.current?.querySelector('.sc-flow-detail');
-    if (detail && container.current.clientWidth < 1020) detail.scrollIntoView({ block: 'start' });
-  }, [selectionRevision]);
-  const choose = (skill, index = null) => { setSelected(skill?.id || null); setStep(index); setCopied(false); focusSelection(value => value + 1); };
-  const saveRun = completed => save({ runs: { ...Object.fromEntries(Object.entries(preferences.runs).filter(([id]) => id !== sessionId).slice(-31)), [sessionId]: { recipe: route.id, completed } } });
-  const selectRoute = recipe => { setRoute(recipe); choose(null); };
-  const context = step === null ? '' : `${t('draftContext')}${localized(route.title, language)} / ${route.steps[step][language === 'zh' ? 1 : 2]}`;
-  return <section ref={container} className="sc-flows" data-conversation-composer-overlay="" lang={language} aria-label={t('title')}>
+  const choose = (next, focus = true) => {
+    setSelection(next); setCopied(false);
+    if (focus && container.current.clientWidth <= 860) requestAnimationFrame(() => container.current?.querySelector('.sc-flow-detail')?.scrollIntoView({ block: 'start' }));
+  };
+  const selectRoute = recipe => {
+    const done = latestPreferences.current.runs[sessionId]?.routes[recipe.id] || [];
+    const next = recipe.steps.findIndex(step => !done.includes(step.id));
+    setRoute(recipe); setPack(recipe.pack); setNotice('');
+    choose(selectionFor(recipe, next === -1 ? recipe.steps.length - 1 : next), false);
+    save(previous => recordProgress(previous, sessionId, recipe.id, done));
+  };
+  const changeView = next => {
+    setView(next); setNotice(''); setCopied(false);
+    if (next === 'map') { selectRoute(route); return; }
+    setPack(''); choose(null, false);
+  };
+  const toggleComplete = () => {
+    const previous = latestPreferences.current.runs[sessionId]?.routes[route.id] || [];
+    const stepId = route.steps[selection.index].id, reopening = previous.includes(stepId);
+    const done = reopening ? previous.filter(id => id !== stepId) : [...previous, stepId];
+    if (!save(value => recordProgress(value, sessionId, route.id, done))) return;
+    const next = route.steps.findIndex(step => !done.includes(step.id));
+    setNotice(next === -1 ? t('finish') : `${t(reopening ? 'questReopened' : 'questCompleted')} · ${t('nextQuest')}：${localized(route.steps[next].title, language)}`);
+  };
+  const skill = allSkills.find(item => item.id === selection?.id), skillPack = catalog.find(item => item.id === skill?.pack);
+  const mission = view === 'map' && selection?.index != null ? { index: selection.index, step: route.steps[selection.index], completed: completed.includes(route.steps[selection.index].id) } : null;
+  const context = mission ? `${route.playbook ? `${t('playbookContext')}${route.playbook}\n` : ''}${t('draftContext')}${localized(route.title, language)} / ${localized(mission.step.title, language)}\n${t('questGoal')}：${localized(mission.step.goal, language)}\n${t('questOutput')}：${localized(mission.step.output, language)}` : '';
+  const nextIndex = route.steps.findIndex(step => !completed.includes(step.id));
+  return <section ref={container} className="sc-flows" data-conversation-composer-overlay="" data-world={view === 'map' ? route.pack : pack} lang={language} aria-label={t('title')}>
     <style>{stylesheet}</style>
-    <header className="sc-flow-header"><div><span className="sc-flow-eyebrow">SUPER CODE</span><h1>{t('title')}</h1><p>{t('intro')}</p></div>
-      <button type="button" onClick={() => refresh(value => value + 1)} disabled={native.status === 'loading'}>{t('refresh')}</button></header>
-    <nav className="sc-flow-packages" aria-label={t('skills')}>
-      <button type="button" aria-pressed={!pack} onClick={() => { setPack(''); setPage(0); }}>{t('all')} <span>{allSkills.length}</span></button>
-      {catalog.map(item => <button type="button" key={item.id} aria-pressed={pack === item.id} onClick={() => { setPack(item.id); setPage(0); const recipe = recipes.find(recipe => recipe.pack === item.id); selectRoute(recipe); }}>
-        {item.title}<span>{item.skills.length}</span></button>)}
+    <header className="sc-flow-header"><div className="sc-flow-brand"><Landmark name="compass" /><div><span className="sc-flow-eyebrow">SUPER CODE</span><h1>{t('title')}</h1></div></div>
+      <nav className="sc-flow-views" aria-label={t('view')}><button type="button" aria-pressed={view === 'map'} onClick={() => changeView('map')}>{t('map')}</button><button type="button" aria-pressed={view === 'catalog'} onClick={() => changeView('catalog')}>{t('skills')} <span>{allSkills.length}</span></button></nav>
+      <button type="button" className="sc-flow-refresh" onClick={() => refresh(value => value + 1)} disabled={native.status === 'loading'} aria-label={t('refresh')} title={t('refresh')}>↻</button></header>
+    <nav className="sc-flow-packages" aria-label={t('worlds')}>
+      {view === 'catalog' && <button type="button" aria-pressed={!pack} onClick={() => setPack('')}>{t('all')} <span>{allSkills.length}</span></button>}
+      {catalog.map(item => <button type="button" key={item.id} data-world={item.id} aria-pressed={pack === item.id} onClick={() => {
+        if (view === 'map') { selectRoute(recipes.find(recipe => recipe.pack === item.id)); return; }
+        setPack(item.id); choose(null, false);
+      }}><Landmark name={{ mattpocock: 'compass', pstack: 'camp', openspec: 'tower', 'oil-ui': 'flask' }[item.id]} /><span><strong>{item.title}</strong><small>{t('world.' + item.id)}</small></span><span className="sc-flow-package-count">{item.skills.length}</span></button>)}
     </nav>
-    {error && <p className="sc-flow-alert" role="alert">{error}</p>}
-    {native.status !== 'ready' && <p className="sc-flow-alert" role={native.status === 'failed' ? 'alert' : 'status'}>{t(native.status)}</p>}
-    <div className="sc-flow-body">
-      <nav className="sc-flow-routes" aria-label={t('routes')}><h2>{t('routes')}</h2>{recipes.filter(item => !pack || item.pack === pack).map(item =>
-        <button type="button" key={item.id} aria-current={route.id === item.id ? 'step' : undefined} onClick={() => selectRoute(item)}><small>{catalog.find(pack => pack.id === item.pack).title}</small><strong>{localized(item.title, language)}</strong><span>{item.steps.length} {language === 'zh' ? '步' : 'steps'}</span></button>)}</nav>
-      <main className="sc-flow-main">
-        <Route recipe={route} run={run} t={t} choose={(name, index) => choose(allSkills.find(skill => skill.pack === route.pack && skill.name === name), index)}
-          start={() => saveRun([])} toggle={index => saveRun(run.completed.includes(index) ? run.completed.filter(step => step !== index) : [...run.completed, index].sort((a, b) => a - b))} />
-        <section className="sc-flow-catalog" aria-label={t('skills')}><div className="sc-flow-catalog-heading"><h2>{t('skills')}</h2><span>{rows.length}</span></div>
-          <input type="search" aria-label={t('search')} placeholder={t('search')} value={query} onChange={event => { setQuery(event.target.value); setPage(0); }} />
-          <div className="sc-flow-filters">{['all', 'favorites', 'recent'].map(id => <button type="button" key={id} aria-pressed={filter === id} onClick={() => { setFilter(id); setPage(0); }}>{t(id)}</button>)}</div>
-          <ul className="sc-flow-skills">{rows.slice(currentPage * pageSize, (currentPage + 1) * pageSize).map(item => <li key={item.id}><button type="button" aria-pressed={selected === item.id} onClick={() => choose(item)}>
-            <span><strong>{item.name}</strong><small>{catalog.find(pack => pack.id === item.pack).title}</small></span><span className="sc-flow-status-dot" data-ready={skillAvailability(item, native.skills) === 'ready'} aria-label={t(skillAvailability(item, native.skills))} /></button></li>)}</ul>
-          {!rows.length && <p role="status">{t('noResults')} <button type="button" onClick={() => { setQuery(''); setFilter('all'); setPack(''); }}>{t('clear')}</button></p>}
-          {rows.length > pageSize && <nav className="sc-flow-pagination"><button type="button" disabled={currentPage === 0} onClick={() => setPage(currentPage - 1)}>{t('previous')}</button><span>{currentPage + 1} / {Math.ceil(rows.length / pageSize)}</span><button type="button" disabled={(currentPage + 1) * pageSize >= rows.length} onClick={() => setPage(currentPage + 1)}>{t('next')}</button></nav>}
-        </section>
-      </main>
-      {skill && <SkillDetail skill={skill} pack={skillPack} availability={availability} favorite={preferences.favorites.includes(skill.id)} t={t}
-        close={() => { choose(null); container.current.querySelector('.sc-flow-route').scrollIntoView({ block: 'start' }); }}
-        toggleFavorite={() => save({ favorites: preferences.favorites.includes(skill.id) ? preferences.favorites.filter(id => id !== skill.id) : [...preferences.favorites, skill.id] })}
+    {error && <p className="sc-flow-alert" role="alert">{error}</p>}{native.status !== 'ready' && <p className="sc-flow-alert" role={native.status === 'failed' ? 'alert' : 'status'}>{t(native.status)}</p>}
+    <div className="sc-flow-body" data-view={view}>
+      {view === 'map' && <nav className="sc-flow-routes" aria-label={t('routes')}><h2>{t('routes')}</h2>{recipes.filter(item => item.pack === pack).map((item, index) => {
+        const done = preferences.runs[sessionId]?.routes[item.id] || [];
+        return <button type="button" key={item.id} aria-current={route.id === item.id ? 'step' : undefined} onClick={() => selectRoute(item)}><span className="sc-flow-route-number">0{index + 1}</span><strong>{localized(item.title, language)}</strong><span>{done.length} / {item.steps.length} {t('confirmed')}</span><span className="sc-flow-route-ticks" aria-hidden="true">{item.steps.map((_, index) => <i key={index} data-complete={done.includes(item.steps[index].id)} />)}</span></button>;
+      })}<div className="sc-flow-route-supplies"><span>{t('input')}</span><p>{localized(route.input, language)}</p><span>{t('routeOutput')}</span><p>{localized(route.output, language)}</p></div></nav>}
+      <main className="sc-flow-main">{view === 'map' ? <Route recipe={route} completed={completed} selected={selection?.index} choose={index => choose(selectionFor(route, index))} t={t} notice={notice} chooseTool={name => choose({ id: `${route.pack}/${name}`, index: null })} />
+        : <Catalog skills={allSkills} native={native.skills} preferences={preferences} selected={selection?.id} choose={skill => choose({ id: skill.id, index: null })} pack={pack} titles={packTitles} t={t} />}</main>
+      {skill && <SkillDetail key={`${skill.id}-${selection.index}`} skill={skill} pack={skillPack} availability={skillAvailability(skill, native.skills)} favorite={preferences.favorites.includes(skill.id)} t={t} mission={mission} toggleComplete={toggleComplete} backLabel={t(view === 'map' ? 'back' : 'backToCatalog')}
+        close={() => { if (view === 'catalog') choose(null, false); container.current.querySelector(view === 'map' ? '.sc-flow-route' : '.sc-flow-catalog').scrollIntoView({ block: 'start' }); }}
+        toggleFavorite={() => save(previous => ({ ...previous, favorites: previous.favorites.includes(skill.id) ? previous.favorites.filter(id => id !== skill.id) : [...previous.favorites, skill.id] }))}
+        nextQuest={mission?.completed && nextIndex !== -1 ? () => choose(selectionFor(route, nextIndex)) : null}
         compose={<>
-          {useInput && inputActions && <Compose key={`${skill.id}-${step}`} skill={skill} availability={availability} api={api} sessionId={sessionId} useInput={useInput} inputActions={inputActions} openView={openView} context={context}
-            onUsed={() => save({ recent: [skill.id, ...preferences.recent.filter(id => id !== skill.id)].slice(0, 12) })} t={t} />}
-          <button type="button" onClick={() => { void navigator.clipboard.writeText(commandDraft(skill, '', context)).then(() => setCopied(true)).catch(() => setError(t('copyFailed'))); }}>{t(copied ? 'copied' : 'copy')}</button>
+          {useInput && inputActions && <Compose key={`${skill.id}-${selection.index}`} skill={skill} availability={skillAvailability(skill, native.skills)} api={api} sessionId={sessionId} useInput={useInput} inputActions={inputActions} openView={openView} context={context}
+            onUsed={() => save(previous => ({ ...previous, recent: [skill.id, ...previous.recent.filter(id => id !== skill.id)].slice(0, 12) }))} t={t} />}
+          <button type="button" className="sc-flow-copy" onClick={() => { void navigator.clipboard.writeText(commandDraft(skill, '', context)).then(() => setCopied(true)).catch(() => setError(t('copyFailed'))); }}>{t(copied ? 'copied' : 'copy')}</button>
         </>} />}
     </div>
   </section>;

@@ -1,14 +1,31 @@
 # Workflows
 
-Open **Workflows** at the top of a conversation to browse the four bundled Skill packages. Disabled packages remain visible. Enable a package in **Settings → Super Code → Preset Skills**, and use a conversation preset that allows Skills.
+Open **Workflows** at the top of a conversation. Enable packages in **Settings → Super Code → Preset Skills** and use a conversation preset that allows Skills.
 
-Suggested routes cover requirements, implementation, diagnosis, research, continuous development, code refinement and UI design. Each step opens the actual Skill, its purpose, contents, version and source. Search the full catalog by package, keywords, favorites or recent use; pages contain at most 24 entries.
+The **Quest map** presents four worlds. Select a landmark to inspect a real Skill, its goal and expected output. Confirm completion to light up the route, continue to the next quest, or reopen a completed checkpoint. Every checkpoint remains available to inspect.
 
-**Add to conversation draft** prepends the actual `/skill-name`, preserves existing text and returns to chat for you to review and send. Drafts with attachments or references, and drafts being sent, cannot be changed here. If the host resolves the same name to another package or project, the bundled entry explains the conflict and cannot be invoked.
+Routes follow the bundled authors’ guidance. **The author’s method** explains the conditions and links to the source. This is Super Code’s visualization of those methods, not an author-provided task execution system.
 
-Route progress records your manual confirmations. It does not certify AI execution or successful validation. Favorites, recent use and conversation progress are stored only in the current browser and do not sync between devices.
+| Route | Method |
+| --- | --- |
+| Matt · Single-session change | Use `grill-with-docs` in a repository, then `implement` and `retro`. Go directly to implementation when the requirements are clear. Implementation includes TDD at agreed seams and Standards + Spec review. |
+| Matt · Multi-ticket build | `grill-with-docs` → `to-spec` → `to-tickets` → per-ticket `implement` → `retro`. Follow blocking dependencies, or use `implement-spec` to orchestrate the ready frontier on an integration branch. |
+| Matt · Diagnose and fix | Establish a reliable failing feedback loop with `diagnosing-bugs`, diagnose and fix, then review and improve the agent environment through `retro`. |
+| Matt · Large exploration | Use `wayfinder` to resolve decision tickets, then hand a clear path to `to-spec`. Exploration produces decisions rather than building the feature. |
+| PStack · Feature | `poteto-mode` drives understanding, data and interface design, verifiable units, implementation/review and verification on the real artifact. |
+| PStack · Refactoring | `poteto-mode` pins behavior, defines the target shape, subtracts and migrates, then proves equivalence. |
+| OpenSpec | Explore, propose, implement, verify and archive. |
+| oil-ui | Define the task, structure the interface, implement and inspect actual screens and interactions. |
 
-The code workbench's **All commands** combines existing actions and open files. Press `Ctrl+Shift+P` (`Cmd+Shift+P` on macOS), search, select with the arrow keys and press Enter. Escape closes it. Unsaved files and unavailable actions are identified.
+**Tools when needed** contains conditional detours. Matt’s prototype answers a concrete design question; first-time project setup configures the tracker and document layout. PStack model setup is optional. Start `show-me-your-work` at the beginning of long work; `sharpen` rewrites a prompt rather than editing code. Delegation, remote writes and publication remain subject to the project and conversation authorization.
+
+**Skill atlas** searches all bundled Skills by package, keywords, favorites or recent use, with 24 entries per page. Details show the original description, contents, version and source.
+
+**Add to conversation draft** prepends the real `/skill-name`, adds the checkpoint goal and expected output, preserves existing text and returns to the conversation. You review and send it. Selecting another checkpoint using the same Skill updates its generated context. Drafts with attachments, references or an active send are protected. A bundled entry cannot invoke a name overridden by another project or package.
+
+**Confirm quest complete** records your confirmation, not automatic execution or acceptance. Routes keep separate progress for each conversation, including after reload. Favorites, recent use and progress stay in this browser and do not sync across devices. Older progress transfers only to checkpoints with the same meaning, never by a reused numeric position.
+
+The workbench **All commands** panel opens with `Ctrl+Shift+P` (`Cmd+Shift+P` on macOS). Search actions and open files, use arrow keys and Enter to select, or Escape to close. Unavailable actions remain disabled and unsaved files are marked.
 
 ## Maintaining bundled resources
 

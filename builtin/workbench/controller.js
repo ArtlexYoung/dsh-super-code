@@ -662,6 +662,7 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
             definition: () => { void definition().catch(fail); return true; }, project: () => { controller.panel({ kind: 'search' }); return true; },
             save: () => { void save().catch(fail); return true; },
             projectReplace: () => { controller.panel({ kind: 'projectReplace' }); return true; },
+            commands: () => { controller.panel({ kind: 'commands' }); return true; },
             undo: () => { void undo().catch(fail); return true; }, redo: () => { void undo('redo').catch(fail); return true; },
             back: () => { void move(-1).catch(fail); return true; }, forward: () => { void move(1).catch(fail); return true; } },
         });

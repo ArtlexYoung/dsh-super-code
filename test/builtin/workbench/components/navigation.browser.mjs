@@ -1139,4 +1139,38 @@ try {
       } finally { await peer?.close(); await page.close(); }
     });
   });
+  await test('所有操作支持空编辑器快捷键、键盘保存与切换未保存文件', async () => {
+    const page = await browser.newPage({ viewport: { width: 1440, height: 940 } });
+    page.setDefaultTimeout(8000);
+    try {
+      await page.goto(`http://127.0.0.1:${server.address().port}/`);
+      await page.waitForFunction(() => window.test && !window.test.controller.snapshot().indexing);
+      await page.locator('.sc-wb-main').focus();
+      await page.keyboard.press('ControlOrMeta+Shift+p');
+      const input = page.getByRole('combobox', { name: '搜索操作或已打开的文件' });
+      await input.waitFor();
+      await input.fill('save');
+      assert.equal(await page.getByRole('option').first().getAttribute('aria-disabled'), 'true');
+      await input.press('Enter');
+      assert.equal(await input.isVisible(), true);
+      await input.press('Escape');
+      await page.evaluate(async () => { await window.test.controller.visit({ file: 'a.ts' }); window.test.controller.view().dispatch({ changes: { from: 0, insert: '// palette edit\n' } }); });
+      await page.locator('.cm-content').focus();
+      await page.keyboard.press('ControlOrMeta+Shift+p');
+      await input.fill('保存'); await input.press('Enter');
+      await page.waitForFunction(() => window.test.texts.get('a.ts').startsWith('// palette edit') && !window.test.controller.snapshot().tabs.find(tab => tab.path === 'a.ts').dirty);
+      await page.evaluate(async () => { await window.test.controller.visit({ file: 'b.ts' }); window.test.controller.view().dispatch({ changes: { from: 0, insert: '// unsaved\n' } }); });
+      await page.locator('.cm-content').focus(); await page.keyboard.press('ControlOrMeta+Shift+p');
+      await input.fill('.ts');
+      assert.match(await page.getByRole('option').allTextContents().then(values => values.join(' ')), /b\.ts.*未保存/);
+      await input.press('ArrowDown'); await input.press('ArrowUp'); await input.press('Enter');
+      await page.waitForFunction(() => window.test.controller.snapshot().file === 'a.ts');
+      assert.equal(await page.evaluate(() => window.test.controller.snapshot().tabs.find(tab => tab.path === 'b.ts').dirty), true);
+      await page.evaluate(() => window.test.language('en'));
+      await page.locator('.cm-content').focus(); await page.keyboard.press('ControlOrMeta+Shift+p');
+      await page.getByRole('combobox', { name: 'Search commands or open files' }).fill('settings');
+      await page.keyboard.press('Enter');
+      await page.getByRole('dialog', { name: 'Editor settings', exact: true }).waitFor();
+    } finally { await page.close(); }
+  });
 } finally { await browser.close(); windows.dispose(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); }

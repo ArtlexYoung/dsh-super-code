@@ -3,6 +3,7 @@ import { zh as readingZh, en as readingEn } from './reading/locales.js';
 export const NS = 'dsh-super-code-workbench';
 export const zh = {
   languageTag: 'zh',
+  commands: '所有操作', commandSearch: '搜索操作或已打开的文件', action_commands: '打开所有操作', unsavedFile: '未保存', openFileTab: '已打开',
   foldCode: '折叠代码', unfoldCode: '展开代码',
   readingSettings: '阅读与字体', editorFont: '英文代码字体', chineseFont: '中文回退字体', chineseFontSystem: '系统自动选择', editorFontSize: '代码字号', editorLineHeight: '代码行距',
   editorFont_theme: '跟随主题', editorFont_system: '系统等宽字体', editorFont_jetbrains: 'JetBrains Mono（内置）', editorFont_cascadia: 'Cascadia Code', editorFont_menlo: 'Menlo', editorFont_consolas: 'Consolas',
@@ -115,6 +116,7 @@ export const zh = {
 };
 export const en = {
   languageTag: 'en',
+  commands: 'All commands', commandSearch: 'Search commands or open files', action_commands: 'Open all commands', unsavedFile: 'Unsaved', openFileTab: 'Open',
   parameters: 'Parameter info', action_parameters: 'Show call parameters', parameterPosition: '{name} · Argument {count}',
   parameterMissing: 'No matching signature was found in this project.', parameterFailed: 'Could not read the signature. Open parameter info to retry.',
   foldCode: 'Fold code', unfoldCode: 'Unfold code',

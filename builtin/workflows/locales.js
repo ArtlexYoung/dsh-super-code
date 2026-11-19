@@ -1,0 +1,33 @@
+export const NS = 'dsh-super-code-workflows';
+export const zh = {
+  language: 'zh', title: '工作流', intro: '选好路线，带着明确的下一步开始。', all: '全部', favorites: '收藏', recent: '最近使用',
+  search: '搜索 Skill、用途或包名', skills: '技能目录', routes: '推荐路线', input: '准备什么', output: '得到什么',
+  ready: '可使用', unavailable: '未启用或当前预设不可用', overridden: '同名 Skill 来自其他包或项目', reference: '供工作流引用',
+  refresh: '刷新可用状态', loading: '正在读取当前会话的 Skill…', failed: '未能读取当前会话的 Skill，请刷新重试。',
+  use: '放入对话草稿', copied: '已复制命令', copy: '复制命令', draftFailed: '未能写入草稿，原有内容已保留。', copyFailed: '复制失败，请手动复制下方命令。',
+  'module.unavailable': '工作流页面暂时无法显示。', 'module.retry': '重新打开',
+  disabledHint: '可在设置 → Super Code → 预置 Skill 中启用。当前会话的预设也需要允许使用 Skill。',
+  overrideHint: '宿主会执行当前会话中优先级更高的同名 Skill，因此这里不替你调用。',
+  favorite: '收藏此 Skill', unfavorite: '取消收藏', noResults: '没有匹配的 Skill', clear: '清除筛选',
+  previous: '上一页', next: '下一页', details: 'Skill 详情', sections: '内容结构', source: '上游项目', version: '版本',
+  start: '开始此路线', resume: '继续此路线', complete: '确认本步完成', reopen: '重新打开本步', completed: '已确认完成',
+  progress: '进度由你确认，保存在此浏览器中。', pending: '待处理', finish: '路线各步骤均已确认完成。',
+  storageFailed: '浏览记录未能保存；请检查浏览器存储后重试。', richDraft: '当前草稿含附件或引用，或正在发送。请先回到对话处理，再插入命令。',
+  draftContext: '本次流程步骤：', choose: '选择步骤查看对应 Skill', browse: '浏览全部 Skill', back: '返回路线',
+};
+export const en = {
+  language: 'en', title: 'Workflows', intro: 'Choose a route and start with a clear next step.', all: 'All', favorites: 'Favorites', recent: 'Recently used',
+  search: 'Search Skills, purposes or packages', skills: 'Skill catalog', routes: 'Suggested routes', input: 'Bring', output: 'Produce',
+  ready: 'Available', unavailable: 'Disabled or unavailable in this preset', overridden: 'Another package or project provides this name', reference: 'Used by workflows',
+  refresh: 'Refresh availability', loading: 'Reading Skills for this conversation…', failed: 'Could not read Skills for this conversation. Refresh to retry.',
+  use: 'Add to conversation draft', copied: 'Command copied', copy: 'Copy command', draftFailed: 'Could not update the draft. Existing content is preserved.', copyFailed: 'Copy failed. Copy the command below manually.',
+  'module.unavailable': 'Workflows could not be displayed.', 'module.retry': 'Reopen',
+  disabledHint: 'Enable the package in Settings → Super Code → Preset Skills. This conversation preset also needs to allow Skills.',
+  overrideHint: 'The host would run the higher-priority Skill with this name, so it cannot be invoked from this bundled entry.',
+  favorite: 'Favorite this Skill', unfavorite: 'Remove favorite', noResults: 'No matching Skills', clear: 'Clear filters',
+  previous: 'Previous', next: 'Next', details: 'Skill details', sections: 'Contents', source: 'Upstream project', version: 'Version',
+  start: 'Start this route', resume: 'Continue this route', complete: 'Confirm step complete', reopen: 'Reopen step', completed: 'Confirmed complete',
+  progress: 'You confirm progress. It is saved in this browser.', pending: 'To do', finish: 'All steps are confirmed complete.',
+  storageFailed: 'Browsing history could not be saved. Check browser storage and retry.', richDraft: 'The draft has attachments or references, or is being sent. Return to the conversation before inserting a command.',
+  draftContext: 'Workflow step: ', choose: 'Choose a step to inspect its Skill', browse: 'Browse all Skills', back: 'Back to routes',
+};

@@ -4,6 +4,7 @@ import { appearanceDefaults, readAppearance } from './appearance.js';
 
 export const actions = [
   { id: 'close', idea: 'Escape', vscode: 'Escape', dialog: true },
+  { id: 'commands', idea: 'Mod-Shift-p', vscode: 'Mod-Shift-p', global: true },
   { id: 'definition', idea: 'Mod-b', vscode: 'F12' },
   { id: 'complete', idea: 'Ctrl-Space', vscode: 'Ctrl-Space' },
   { id: 'parameters', idea: 'Mod-p', vscode: 'Mod-Shift-Space' },

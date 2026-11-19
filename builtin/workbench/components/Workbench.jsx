@@ -91,7 +91,7 @@ export function Workbench({ workbench: primary, Button, Select, MarkdownText, Co
       if (event.target.closest('.sc-wb-conversation,.sc-wb-file-search,.sc-wb-file-menu,.sc-wb-file-dialog')) return;
       if (event.target.closest('input,textarea,[contenteditable]') && !event.target.closest('.cm-editor')) return;
       if (!workbench.view() && !event.target.closest('[data-workbench-dialog]')) {
-        const commands = { undo: () => workbench.undo(), redo: () => workbench.undo('redo'), project: () => workbench.panel({ kind: 'search' }), projectReplace: () => workbench.panel({ kind: 'projectReplace' }) };
+        const commands = { commands: () => workbench.panel({ kind: 'commands' }), undo: () => workbench.undo(), redo: () => workbench.undo('redo'), project: () => workbench.panel({ kind: 'search' }), projectReplace: () => workbench.panel({ kind: 'projectReplace' }) };
         const id = Object.keys(commands).find(id => matchesShortcut(event, keyOf(snapshot.preferences, id)));
         if (id && !event.defaultPrevented) { event.preventDefault(); void Promise.resolve().then(commands[id]).catch(workbench.fail); }
       }

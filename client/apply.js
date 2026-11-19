@@ -11,6 +11,7 @@ import { createSettingsServices } from '../builtin/settings/services.js'
 import { PresetSettings, synchronizePresetDisplay } from '../builtin/settings/presets.js'
 import { applySidebar } from '../builtin/sidebar/apply.js'
 import stylesheet from '../builtin/ui/style.css'
+import { applyWorkflows } from '../builtin/workflows/apply.jsx'
 
 const inject = ['slots', 'remote', 'locale']
 
@@ -18,6 +19,7 @@ function apply(ctx) {
   const locale = ctx.locale || { register: () => () => {}, bind: () => key => zh[key] || key }
   ctx.effect(() => locale.register(LOCALE_NS, { zh, en }), 'dsh-super-code: dictionaries')
   const t = locale.bind(LOCALE_NS)
+  applyWorkflows(ctx)
   // $mount creates a lifecycle effect on this same fiber; awaiting it from
   // another effect would stall the namespace and the settings contribution.
   void ctx.remote.$mount({ package: 'dsh-super-code', descriptors: [

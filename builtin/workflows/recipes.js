@@ -1,0 +1,33 @@
+// These guides describe useful routes through the bundled Skills; the host owns execution.
+export const recipes = [
+  { id: 'matt-feature', pack: 'mattpocock', title: ['从想法到实现', 'From idea to implementation'],
+    summary: ['把需求问清楚，形成规格，再按小步实现和检查。', 'Clarify the need, write a specification, implement and review.'],
+    input: ['一个目标、已有代码和限制条件', 'A goal, existing code and constraints'], output: ['规格、实现与验证记录', 'Specification, implementation and validation'],
+    steps: [['grilling', '澄清需求', 'Clarify'], ['to-spec', '编写规格', 'Specify'], ['prototype', '验证设计', 'Prototype'], ['implement-spec', '实现规格', 'Implement'], ['code-review', '检查改动', 'Review']] },
+  { id: 'matt-fix', pack: 'mattpocock', title: ['定位并修复故障', 'Diagnose and fix'],
+    summary: ['保留复现条件，用验证结果推动修复。', 'Keep a reproduction and let evidence guide the fix.'],
+    input: ['错误现象、复现步骤和预期结果', 'Symptoms, reproduction and expected behavior'], output: ['原因说明、修复与回归检查', 'Diagnosis, fix and regression checks'],
+    steps: [['diagnosing-bugs', '查明原因', 'Diagnose'], ['tdd', '复现与修复', 'Test and fix'], ['code-review', '检查影响', 'Review'], ['retro', '记录经验', 'Reflect']] },
+  { id: 'matt-research', pack: 'mattpocock', title: ['调研与设计', 'Research and design'],
+    summary: ['先取得一手资料，再理清模型和模块边界。', 'Gather primary sources, then clarify the domain and module boundaries.'],
+    input: ['待回答的问题或设计难点', 'A research question or design problem'], output: ['调研依据、领域术语与设计方案', 'Sources, domain vocabulary and a design'],
+    steps: [['research', '收集依据', 'Research'], ['domain-modeling', '理清概念', 'Model'], ['codebase-design', '设计模块', 'Design'], ['handoff', '整理交接', 'Hand off']] },
+  { id: 'pstack-delivery', pack: 'pstack', title: ['有验证的持续开发', 'Develop with verification'],
+    summary: ['设置工作方式，设计可验证单元，再实现、检查与复盘。', 'Set working preferences, design verifiable units, implement and reflect.'],
+    input: ['项目目标和允许执行的范围', 'Project goals and authorized scope'], output: ['实现、验证证据与后续经验', 'Implementation, evidence and lessons'],
+    steps: [['setup-pstack', '设置偏好', 'Set up'], ['architect', '设计方案', 'Design'], ['poteto-mode', '推进开发', 'Develop'], ['show-me-your-work', '核对证据', 'Verify'], ['reflect', '复盘', 'Reflect']] },
+  { id: 'pstack-quality', pack: 'pstack', title: ['打磨代码与表达', 'Improve code and communication'],
+    summary: ['检查影响范围，改善实现和说明，再核对结果。', 'Inspect the impact, improve the implementation and explain the result.'],
+    input: ['需要改善的代码或文稿', 'Code or writing to improve'], output: ['更清楚的实现与说明', 'Clearer implementation and documentation'],
+    steps: [['blast-radius', '检查影响', 'Inspect impact'], ['sharpen', '改进实现', 'Sharpen'], ['technical-writing', '写清说明', 'Document'], ['show-me-your-work', '确认结果', 'Verify']] },
+  { id: 'openspec-change', pack: 'openspec', title: ['按规格推进变更', 'Deliver a specified change'],
+    summary: ['把提案、任务、实现和验证放在同一条变更流程里。', 'Keep the proposal, tasks, implementation and verification in one change.'],
+    input: ['变更目标；项目可运行 OpenSpec', 'A change request and an OpenSpec-ready project'], output: ['变更产物、实现与归档记录', 'Change artifacts, implementation and archive'],
+    steps: [['openspec-explore', '探索', 'Explore'], ['openspec-propose', '提出方案', 'Propose'], ['openspec-apply-change', '实施任务', 'Apply'], ['openspec-verify-change', '验证', 'Verify'], ['openspec-archive-change', '归档', 'Archive']] },
+  { id: 'oil-design', pack: 'oil-ui', title: ['把界面做清楚', 'Design a clear interface'],
+    summary: ['围绕用户任务确定层级，用真实画面和操作验证设计。', 'Build hierarchy around the user task and validate the actual interface.'],
+    input: ['页面目标、真实内容和现有设计约束', 'Page goals, real content and existing design constraints'], output: ['界面实现、关键状态与画面验证', 'An interface, key states and visual verification'],
+    steps: [['oil-ui', '确定任务', 'Define the task'], ['oil-ui', '建立结构', 'Structure'], ['oil-ui', '实现界面', 'Implement'], ['oil-ui', '检查画面和操作', 'Verify']] },
+];
+
+export const localized = (value, language) => value[language === 'zh' ? 0 : 1];

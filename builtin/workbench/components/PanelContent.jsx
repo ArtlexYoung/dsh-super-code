@@ -11,6 +11,7 @@ import { Icon } from './Icon.jsx';
 import { usePanelState } from './panel-state.js';
 import { FileCompare } from './FileCompare.jsx';
 import { LibrarySource } from './LibrarySource.jsx';
+import { Commands } from './Commands.jsx';
 
 const emptyResults = { matches: [] };
 
@@ -87,6 +88,7 @@ export function PanelContent({ panel, workbench, Button, Select, t }) {
   const { preferences } = useSyncExternalStore(workbench.subscribe, workbench.snapshot);
   const props = { workbench, Button, Select, t, palette: preferences.palette };
   switch (panel.kind) {
+    case 'commands': return <Commands {...props} />;
     case 'settings': return <Settings {...props} preferences={preferences} />;
     case 'library': return <LibrarySource target={panel.target} preferences={preferences} t={t} />;
     case 'git': return <GitPanel {...props} />;

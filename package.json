@@ -111,6 +111,7 @@
     "dist",
     "locales",
     "docs/CodeWorkbench.md",
+    "docs/Workflows.md",
     "builtin/workbench/fonts",
     "builtin/workbench/native"
   ],
@@ -256,8 +257,10 @@
     "typescript": "^5.7.0"
   },
   "scripts": {
-    "skills:build": "node scripts/skills/pstack/convert.mjs",
-    "skills:check": "node scripts/skills/pstack/convert.mjs --check",
+    "updates:check": "node scripts/updates/run.mjs",
+    "updates:apply": "node scripts/updates/run.mjs --apply",
+    "skills:build": "node scripts/skills/pstack/convert.mjs && node scripts/skills/catalog.mjs",
+    "skills:check": "node scripts/skills/pstack/convert.mjs --check && node scripts/skills/catalog.mjs --check",
     "build": "npm run skills:build && tsc -p tsconfig.json && npm run build:client",
     "prepare": "npm run build",
     "typecheck": "tsc -p tsconfig.json --noEmit",

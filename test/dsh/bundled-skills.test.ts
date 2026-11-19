@@ -60,8 +60,10 @@ async function verifySkillResources(root: string): Promise<Record<string, string
   }
   assert.equal(frontmatter.name, skillName)
   assert.ok(frontmatter.description.length > 0)
-  assert.equal(frontmatter.metadata.version, '0.32.0')
+  const provenance = JSON.parse(await readFile(join(directory, 'distribution.json'), 'utf8')) as { version: string; files?: Record<string, { path: string; sha256: string }> }
+  assert.equal(frontmatter.metadata.version, provenance.version)
   const files = await resourceSnapshot(directory)
+  for (const record of Object.values(provenance.files ?? {})) assert.equal(files[record.path], record.sha256, record.path)
   for (const path of ['LICENSE', 'UPSTREAM.md', 'assets/style-explorer.html', 'assets/logo.png',
     'assets/fonts/instrument-serif/InstrumentSerif-Regular.ttf', 'assets/fonts/instrument-serif/OFL.txt',
     'scripts/build_explorer.py', 'scripts/shoot.mjs', 'scripts/chrome.mjs']) assert.ok(files[path], path)

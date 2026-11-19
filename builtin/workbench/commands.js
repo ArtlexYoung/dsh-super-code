@@ -1,0 +1,27 @@
+import { openSearchPanel } from '@codemirror/search';
+import { startCompletion } from '@codemirror/autocomplete';
+import { editingCommands } from './editor/input.js';
+import { openCodeHistory } from './git/history.js';
+
+export function workbenchCommands(workbench, snapshot, current, t) {
+  const withEditor = run => () => { const view = workbench.view(); if (view) { view.focus(); run(view); } };
+  return {
+    back: { run: () => workbench.move(-1), disabled: !snapshot.back },
+    forward: { run: () => workbench.move(1), disabled: !snapshot.forward },
+    find: { run: withEditor(openSearchPanel), disabled: !current },
+    replace: { run: withEditor(editingCommands.replace), disabled: !current },
+    project: { run: () => workbench.panel({ kind: 'search' }) },
+    projectReplace: { run: () => workbench.panel({ kind: 'projectReplace' }) },
+    definition: { run: workbench.definition, disabled: !current },
+    complete: { run: withEditor(startCompletion), disabled: !current },
+    parameters: { run: withEditor(editingCommands.parameters), disabled: !current },
+    codeHistory: { run: () => openCodeHistory(workbench, t), disabled: !current },
+    commands: { run: () => workbench.panel({ kind: 'commands' }) },
+    refresh: { run: workbench.refresh, disabled: snapshot.indexing },
+    window: { run: workbench.external ? workbench.returnToHost : workbench.openWindow },
+    save: { run: () => { workbench.view()?.focus(); return workbench.save(); }, disabled: !current?.dirty },
+    git: { run: () => workbench.panel({ kind: 'git' }) },
+    settings: { run: () => workbench.panel({ kind: 'settings' }) },
+    undo: { run: () => workbench.undo() }, redo: { run: () => workbench.undo('redo') },
+  };
+}

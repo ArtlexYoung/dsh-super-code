@@ -9,6 +9,7 @@ export const toolbarActions = [
   { id: 'complete', label: 'complete', icon: 'complete', shortcut: 'complete' },
   { id: 'parameters', label: 'parameters', icon: 'function', shortcut: 'parameters' },
   { id: 'codeHistory', label: 'codeHistory', icon: 'git' },
+  { id: 'commands', label: 'commands', icon: 'find', shortcut: 'commands' },
   { id: 'save', label: 'save', icon: 'save', shortcut: 'save', fixed: true },
   { id: 'git', label: 'git', icon: 'git', fixed: true },
   { id: 'refresh', label: 'refreshShort', title: 'refresh', icon: 'refresh', fixed: true },

@@ -5,7 +5,7 @@ import { defaults, readPreferences } from '../../../builtin/workbench/editor/pre
 
 test('原有编辑设置自动补齐工具栏，固定操作不参与显示隐藏和排序', () => {
   const value = readPreferences({ keymap: 'idea', palette: 'idea', shortcuts: {} })
-  assert.deepEqual(value.toolbar.map((item: any) => item.id), ['back', 'forward', 'find', 'replace', 'project', 'projectReplace', 'definition', 'complete', 'parameters', 'codeHistory', 'undo', 'redo'])
+  assert.deepEqual(value.toolbar.map((item: any) => item.id), ['back', 'forward', 'find', 'replace', 'project', 'projectReplace', 'definition', 'complete', 'parameters', 'codeHistory', 'commands', 'undo', 'redo'])
   assert.equal(value.toolbar.every((item: any) => item.visible), true)
   for (const id of ['refresh', 'window', 'save', 'git', 'reading', 'settings']) assert.equal(value.toolbar.some((item: any) => item.id === id), false)
 })

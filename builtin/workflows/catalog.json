@@ -1099,25 +1099,24 @@
   {
     "id": "oil-ui",
     "title": "oil-ui",
-    "version": "0.32.0",
+    "version": "0.34.2",
     "source": "https://github.com/oil-oil/oil-ui",
-    "revision": "0d64a00f3a5c45bf7a30d35bded9b7c0fdff2128",
+    "revision": "81f2657f41410f04ae47ba77f902fcc0567eaab2",
     "skills": [
       {
         "id": "oil-ui/oil-ui",
         "name": "oil-ui",
-        "description": "设计、改进和评审网站、App、后台与组件的界面：探索设计方向、生成多风格同屏对比页，并基于真实截图打磨视觉层级；按请求交付对比页、设计说明、设计稿或可运行界面。只负责设计判断，不用于纯业务逻辑、接口构建、无界面变化的代码整理，或改法已完全明确的日常修改（如改文案、调数量、删指定元素、复用现有样式，哪怕带有“优化”字样）。已安装 oil-ui-pro 时交给 oil-ui-pro。",
+        "description": "UI/UX design skill for Claude Code, Cursor, Codex & AI coding agents: design, refine, and review frontend interfaces for websites, apps, dashboards, and components with visual direction exploration, 3-direction side-by-side HTML comparison on request, DESIGN.md conflict checks, and real-browser screenshot & lightweight UX review. Defers to oil-ui-pro when installed. 设计、改进和评审网站、App、后台与组件的界面：探索设计方向、按需生成多风格同屏对比页、排查设计规范（DESIGN.md）冲突，并基于真实截图打磨视觉层级；按请求交付对比页、设计说明、设计稿或可运行界面。只负责设计判断，不用于纯业务逻辑、接口构建、无界面变化的代码整理，或改法已完全明确的日常修改（如改文案、调数量、删指定元素、复用现有样式，哪怕带有“优化”字样）。已安装 oil-ui-pro 时交给 oil-ui-pro。",
         "path": "oil-ui/SKILL.md",
         "userInvocable": true,
         "sections": [
-          "主流程",
           "内置版本",
           "选择范围",
-          "1. 形成并收敛方向",
-          "2. 建立视觉与交互结构",
-          "3. 制作并取得实际证据",
-          "4. 独立评审与修正",
-          "5. 验证与交付"
+          "页面类型",
+          "什么时候加深",
+          "按需再读",
+          "评审与交付",
+          "能力边界"
         ]
       }
     ]

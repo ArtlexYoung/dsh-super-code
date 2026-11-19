@@ -1,5 +1,139 @@
 {
   "source": "https://github.com/oil-oil/oil-ui",
-  "version": "0.32.0",
-  "revision": "0d64a00f3a5c45bf7a30d35bded9b7c0fdff2128"
+  "version": "0.34.2",
+  "revision": "81f2657f41410f04ae47ba77f902fcc0567eaab2",
+  "skills": [
+    "oil-ui"
+  ],
+  "files": {
+    "assets/fonts/instrument-serif/InstrumentSerif-Regular.ttf": {
+      "path": "assets/fonts/instrument-serif/InstrumentSerif-Regular.ttf",
+      "sha256": "498efd461f6ddfcb7a111bf9a565709d2085d48201d501ead960d93e84ffbb88"
+    },
+    "assets/fonts/instrument-serif/OFL.txt": {
+      "path": "assets/fonts/instrument-serif/OFL.txt",
+      "sha256": "129ed7618959716959f2941fdd5b49e0ad6e6c1d78726761786a00253d865521"
+    },
+    "assets/logo.png": {
+      "path": "assets/logo.png",
+      "sha256": "35f58a88e195bf4472e2f0fc795122fb9396464cbb3f0d7a2cb639b6c004f972"
+    },
+    "assets/style-explorer.html": {
+      "path": "assets/style-explorer.html",
+      "sha256": "910bbc6ed3e4a8bf92bd24883ac87b400f346fe146f2deafd8eee2ce38b4962e"
+    },
+    "LICENSE": {
+      "path": "LICENSE",
+      "sha256": "d44a3ca218007a85d3be41a0b76553d746e42336c7a63c6c6687d2619199c3c4"
+    },
+    "references/design-direction.md": {
+      "path": "references/design-direction.md",
+      "sha256": "afb8e5b8f6e7d188d07d05f828c2607810f5a5068acd5ff047f5bbb6ebba1d9f"
+    },
+    "references/direction-persuasion.md": {
+      "path": "references/direction-persuasion.md",
+      "sha256": "59efd787daddd270192b4e40bed2d4059f812bcc263a1ad0a1ed1348066428d4"
+    },
+    "references/image-ideation.md": {
+      "path": "references/image-ideation.md",
+      "sha256": "f2add5110432a44bc58c29e24164c30798eb6c6213ab8fdf224a25de86c271a8"
+    },
+    "references/layout-and-viewport.md": {
+      "path": "references/layout-and-viewport.md",
+      "sha256": "025c3ba31820b94cad33e623d12a058a97b256b2616e3f7fd499027c5b428e59"
+    },
+    "references/light-path.md": {
+      "path": "references/light-path.md",
+      "sha256": "a8a7f5e4e5ef08a857b105f329a60ed4b0e62e451e82a4f841343b52f2330685"
+    },
+    "references/media.md": {
+      "path": "references/media.md",
+      "sha256": "ce83a8992a8bdde1688f1ed5794761a183f8680b7748ea3ddbd589b56ca4dafa"
+    },
+    "references/motion.md": {
+      "path": "references/motion.md",
+      "sha256": "d8b85f8e83faa32dd032baac9ac83da9e27838bb543d111e81a2d943ef0c5af7"
+    },
+    "references/play.md": {
+      "path": "references/play.md",
+      "sha256": "1785dd9eb73525631dcc516b7be45ba9676eb298742495615f6db67d1dd4baf5"
+    },
+    "references/reviewer-manual.md": {
+      "path": "references/reviewer-manual.md",
+      "sha256": "cce297fa183f7ebf7a609a43a9ed505d73e3cdf30e2b0d79df007ea367377a48"
+    },
+    "references/scroll-narrative.md": {
+      "path": "references/scroll-narrative.md",
+      "sha256": "5855d1c3e3d45e8df4b6270ceb0ed77d329c983fc07e64505b9df0e9b282b67d"
+    },
+    "references/style-explorer.md": {
+      "path": "references/style-explorer.md",
+      "sha256": "3e2dc3c1c0c0e4544a0b12688490bcf42c04a63339857b06e6dbd2e13dc4e65c"
+    },
+    "references/task-explore.md": {
+      "path": "references/task-explore.md",
+      "sha256": "e8bb2f7a9e1c184358bf43836523e94c707bd8e525b403c709677dede5387484"
+    },
+    "references/task-review.md": {
+      "path": "references/task-review.md",
+      "sha256": "54c3366f46ef7dbfe16c76e5b9dda68c5965a0000e6a164d11cde04079b646b5"
+    },
+    "references/tools.md": {
+      "path": "references/tools.md",
+      "sha256": "2b8c0562c3dbe8d4df34ec4c361ddd7ecf37d7381db8573122e0e3673d4ea801"
+    },
+    "references/ux-review.md": {
+      "path": "references/ux-review.md",
+      "sha256": "307250dc06d139bd009d8d3e2dfbe3c30d0eb0ef0786b665c7009c630b3d9376"
+    },
+    "references/ux-reviewer.md": {
+      "path": "references/ux-reviewer.md",
+      "sha256": "aafc0753939c06591d5078b066a89d8fe15bc539022b82b9778348a600b119fc"
+    },
+    "references/visual-language.md": {
+      "path": "references/visual-language.md",
+      "sha256": "4c153fec80fe0a35fdc018db8d23eeb368d4a876a804e2090d766a44960b17d9"
+    },
+    "references/visual-review.md": {
+      "path": "references/visual-review.md",
+      "sha256": "752a70db9c5e43898200e77adf979d176f7e7121b76831de44691f8b1563d942"
+    },
+    "references/workdir.md": {
+      "path": "references/workdir.md",
+      "sha256": "8f56ed917e9784565c06e236bb783a8d7d644830daf67f27b2f3eff87ed0ca94"
+    },
+    "scripts/build_explorer.py": {
+      "path": "scripts/build_explorer.py",
+      "sha256": "a48d3cc52a0b273b8cdb84f2d29224c31e22f0e07c0ac0c56119d86f38788dd3"
+    },
+    "scripts/chrome.mjs": {
+      "path": "scripts/chrome.mjs",
+      "sha256": "dcdc40740e541c97dc467f28f3430edc632469545504fdc165f633383ea01de3"
+    },
+    "scripts/curate-media.mjs": {
+      "path": "scripts/curate-media.mjs",
+      "sha256": "2bc60a4bd761b7082ac17d0d3e2d4bc1d4630cf763138e9f3bd291d6ceb3bdf4"
+    },
+    "scripts/measure_reference.py": {
+      "path": "scripts/measure_reference.py",
+      "sha256": "7a10a0f87c2b1434d5047dea1903e7b0ec324ba539c68a448c0808c3a2aac536"
+    },
+    "scripts/oiloil-image.mjs": {
+      "path": "scripts/oiloil-image.mjs",
+      "sha256": "9def8ef07485436207db85a97f4a8b2a5b8ccd7b3d381547834cfcb7ed6d0164"
+    },
+    "scripts/prep-image.mjs": {
+      "path": "scripts/prep-image.mjs",
+      "sha256": "e886cb55c3e8e99317793fb53bc33aef1bfe4511c2c3aef66de6b48bdf107782"
+    },
+    "scripts/shoot.mjs": {
+      "path": "scripts/shoot.mjs",
+      "sha256": "a4b0440a99ed01fcedeed7915a801020466ed18816502a1fdee2cf6aa125d5cb"
+    },
+    "SKILL.md": {
+      "path": "SKILL.md",
+      "sha256": "94560ce3576ac012906c05f62e3b873600b331feeed292d01d6bcf16a7c8889a",
+      "upstreamSha256": "bd59b27da0fc58fc921c51d697d16a22ee8a989402314a13564c474988f03bb1"
+    }
+  }
 }

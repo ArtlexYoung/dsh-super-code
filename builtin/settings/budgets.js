@@ -5,8 +5,8 @@ import { text } from '../ui/locale.js'
 import { ActionButton, Glyph, SelectControl } from '../ui/controls.js'
 
 const skillGroups = [
-  { id: 'individual', keys: ['grillMeSkill', 'openspecSkills', 'oilUiSkill'] },
-  { id: 'workflows', keys: ['mattpocockSkills', 'pstackSkills'] },
+  { id: 'individual', keys: ['grillMeSkill', 'oilUiSkill'] },
+  { id: 'workflows', keys: ['mattpocockSkills', 'pstackSkills', 'openspecSkills'] },
 ]
 const skillPackageKeys = skillGroups.flatMap(group => group.keys)
 const budgetFields = [

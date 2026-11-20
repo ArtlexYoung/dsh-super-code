@@ -3,7 +3,7 @@ import { WorkflowLibrary } from './Library.jsx';
 import { NS, zh, en } from './locales.js';
 import { featureView } from '../ui/boundary.js';
 
-export function applyWorkflows(ctx) {
+export function applyWorkflows(ctx, hasWorkbench) {
   ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'super-code: workflow locale');
   ctx.inject(['remote.skills'], ready => {
     const subscribe = listener => {
@@ -14,7 +14,7 @@ export function applyWorkflows(ctx) {
     ready.slots.inject('conversation.view', () => ready.slots.register({
       name: 'conversation.view', id: 'super-code-workflows', order: 30, locale: NS,
       label: () => ctx.locale.bind(NS)('title'),
-      inject: () => ({ api: ready.remote.skills, subscribe }),
+      inject: () => ({ api: ready.remote.skills, subscribe, hasWorkbench }),
     }, props => featureView(WorkflowLibrary, { ...props, key: props.sessionId, t: ctx.locale.bind(NS) })));
   });
 }

@@ -25,7 +25,7 @@ test('工作台独立初始化、随开关登记，并在卸载时撤销登记',
     effect(callback: () => unknown) { const dispose = callback(); if (typeof dispose === 'function') effects.push(dispose as () => void) },
     inject(names: string[], callback: (ctx: any) => void) {
       if (names.join(',') === 'sessions,sidebarRightTabs') activateWorkbench = callback
-      else if (names.every(name => ['remote.superCodeWorkbench', 'remote.session'].includes(name))) callback(this)
+      else if (names.every(name => ['remote.superCodeWorkbench', 'remote.session', 'remote.skills'].includes(name))) callback(this)
     },
   }
   runInNewContext(readFileSync(new URL('../../dist/client.js', import.meta.url), 'utf8'), {
@@ -44,23 +44,29 @@ test('工作台独立初始化、随开关登记，并在卸载时撤销登记',
   }
   const stop = start()
   const settings = entries.get('super-code').contribution.inject()
+  const workflow = entries.get('super-code-workflows').contribution.inject()
   const preference = settings.workbenchState.snapshot()?.preference
   assert.ok(preference)
   assert.equal(entries.has('super-code-workbench'), false)
+  assert.equal(workflow.hasWorkbench(), false)
   preference.save({ enabled: true })
+  assert.equal(workflow.hasWorkbench(), true, '工作流文件入口读取工作台现有开关')
   assert.equal(entries.get('super-code-workbench').contribution.name, 'conversation.view')
   assert.ok(entries.has('super-code'))
   preference.save({ enabled: false })
   assert.equal(entries.has('super-code-workbench'), false)
+  assert.equal(workflow.hasWorkbench(), false)
   preference.save({ enabled: true })
   const changes: unknown[] = []
   const unsubscribe = settings.workbenchState.subscribe(() => changes.push(settings.workbenchState.snapshot()))
   stop()
   assert.equal(settings.workbenchState.snapshot(), null)
+  assert.equal(workflow.hasWorkbench(), false)
   assert.equal(entries.has('super-code-workbench'), false)
   const stopAgain = start()
   assert.equal(settings.workbenchState.snapshot().preference.snapshot().enabled, true)
   assert.equal(entries.has('super-code-workbench'), true)
+  assert.equal(workflow.hasWorkbench(), true)
   assert.equal(changes.length, 2)
   unsubscribe()
   stopAgain()

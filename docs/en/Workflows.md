@@ -2,9 +2,9 @@
 
 Open **Workflows** at the top of a conversation. Enable packages in **Settings → Super Code → Preset Skills** and use a conversation preset that allows Skills.
 
-The **Quest map** presents four worlds. Select a landmark to inspect a real Skill, its goal and expected output. Confirm completion to light up the route, continue to the next quest, or reopen a completed checkpoint. Every checkpoint remains available to inspect.
+**Work in progress** brings the goal, workflow stages and live conversation activity together. Stage cards show expected outputs and status. Select a stage to prepare a real Skill instruction, record an outcome, attach files, track a blocker or accept the result. Progress feedback follows work records, and every stage remains available to inspect.
 
-Routes follow the bundled authors’ guidance. **The author’s method** explains the conditions and links to the source. This is Super Code’s visualization of those methods, not an author-provided task execution system.
+Routes follow the bundled authors’ guidance. The author-method disclosure explains the conditions and links to the source. This is Super Code’s visualization of those methods, not an author-provided task execution system.
 
 | Route | Method |
 | --- | --- |
@@ -19,11 +19,17 @@ Routes follow the bundled authors’ guidance. **The author’s method** explain
 
 **Tools when needed** contains conditional detours. Matt’s prototype answers a concrete design question; first-time project setup configures the tracker and document layout. PStack model setup is optional. Start `show-me-your-work` at the beginning of long work; `sharpen` rewrites a prompt rather than editing code. Delegation, remote writes and publication remain subject to the project and conversation authorization.
 
-**Skill atlas** searches all bundled Skills by package, keywords, favorites or recent use, with 24 entries per page. Details show the original description, contents, version and source.
+**Skill library** searches all bundled Skills by package, keywords, favorites or recent use, with 24 entries per page. Details show the original description, contents, version and source.
 
-**Add to conversation draft** prepends the real `/skill-name`, adds the checkpoint goal and expected output, preserves existing text and returns to the conversation. You review and send it. Selecting another checkpoint using the same Skill updates its generated context. Drafts with attachments, references or an active send are protected. A bundled entry cannot invoke a name overridden by another project or package.
+**Prepare stage instruction** prepends the real `/skill-name`, adds the stage goal and expected output, preserves existing text and returns to the conversation. You review and send it. Selecting another stage using the same Skill updates its generated context. Drafts with attachments, references or an active send are protected. A bundled entry cannot invoke a name overridden by another project or package.
 
-**Confirm quest complete** records your confirmation, not automatic execution or acceptance. Routes keep separate progress for each conversation, including after reload. Favorites, recent use and progress stay in this browser and do not sync across devices. Older progress transfers only to checkpoints with the same meaning, never by a reused numeric position.
+**Conversation activity** reads the recorded current task, next step, todos, tool activity and file records. Todo availability depends on the selected tool profile; default Super Code execution can display records from its task tool. Open a tool record to inspect it, or open a file in the enabled code workbench and attach it to a stage. File activity is evidence of a tool operation, not the current Git diff or a review of file contents.
+
+Stages can be **To do**, **In progress**, **Blocked** or **Accepted**. Each workflow has at most one active stage. Blocking requires a reason; accepting requires an outcome note or an attached file. Completed todos, successful tools and an ended AI turn never accept a stage automatically. Reopening a stage preserves its outcomes.
+
+Each workflow stores its own goal, stages and outcomes per conversation. Switching stages retains unsaved input. Saving one stage or the goal leaves other drafts untouched. Successful saves survive reload; failed writes retain input and show an error. Favorites, recent use and stage records stay in this browser, with records for the most recent 32 conversations. They do not sync across devices. Earlier confirmations transfer only to stages with the same meaning and are labeled as lacking artifact records.
+
+Stage connections describe the authors’ methods. They do not provide a ticket dependency engine, automatic task scheduling, artifact-content validation or GitHub/GitLab synchronization.
 
 The workbench **All commands** panel opens with `Ctrl+Shift+P` (`Cmd+Shift+P` on macOS). Search actions and open files, use arrow keys and Enter to select, or Escape to close. Unavailable actions remain disabled and unsaved files are marked.
 

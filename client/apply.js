@@ -19,7 +19,6 @@ function apply(ctx) {
   const locale = ctx.locale || { register: () => () => {}, bind: () => key => zh[key] || key }
   ctx.effect(() => locale.register(LOCALE_NS, { zh, en }), 'dsh-super-code: dictionaries')
   const t = locale.bind(LOCALE_NS)
-  applyWorkflows(ctx)
   // $mount creates a lifecycle effect on this same fiber; awaiting it from
   // another effect would stall the namespace and the settings contribution.
   void ctx.remote.$mount({ package: 'dsh-super-code', descriptors: [
@@ -58,6 +57,7 @@ function apply(ctx) {
   let workbenchValue = null
   const workbenchListeners = new Set()
   const workbenchState = { snapshot: () => workbenchValue, subscribe: listener => { workbenchListeners.add(listener); return () => workbenchListeners.delete(listener) } }
+  applyWorkflows(ctx, () => workbenchState.snapshot()?.preference.snapshot().enabled === true)
   const updateWorkbench = value => { workbenchValue = value; for (const listener of workbenchListeners) listener() }
   const workbenchRemote = connectRemote(ctx, { descriptors: workbenchDescriptors })
   ctx.inject(['sessions', 'sidebarRightTabs'], ready => {

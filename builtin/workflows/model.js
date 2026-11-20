@@ -24,7 +24,7 @@ export function commandDraft(skill, draft, context = '') {
   return `${command} ${context ? context + '\n\n' : ''}${draft}`;
 }
 
-const storageKey = 'dsh-super-code.workflows.v2';
+const storageKey = 'dsh-super-code.workflows.v3';
 const empty = () => ({ favorites: [], recent: [], runs: {} });
 const legacySteps = {
   'matt-feature': ['grilling', 'to-spec', 'prototype', 'implement-spec', 'code-review'],
@@ -35,35 +35,63 @@ const legacySteps = {
   'openspec-change': ['openspec-explore', 'openspec-propose', 'openspec-apply-change', 'openspec-verify-change', 'openspec-archive-change'],
   'oil-design': ['task', 'structure', 'implement', 'verify'],
 };
-function normalizeRoutes(routes, legacy) {
+export const emptyRoute = () => ({ goal: '', stages: {} });
+export const emptyStage = () => ({ status: 'pending', result: '', blocker: '', files: [] });
+
+/** Stage acceptance is explicit; host execution never awards it. */
+export function changeStage(route, stepId, stage) {
+  if (stage.status === 'completed' && !stage.result.trim() && !stage.files.length) throw new Error('A result is required');
+  if (stage.status === 'blocked' && !stage.blocker.trim()) throw new Error('A blocker is required');
+  const stages = Object.fromEntries(Object.entries(route.stages).map(([id, value]) => [id,
+    stage.status === 'active' && value.status === 'active' ? { ...value, status: 'pending' } : value]));
+  stages[stepId] = { status: stage.status, result: stage.result.trim(), blocker: stage.status === 'blocked' ? stage.blocker.trim() : '', files: [...new Set(stage.files)] };
+  return { ...route, stages };
+}
+export function nextStageIndex(recipe, route) {
+  const active = recipe.steps.findIndex(step => route.stages[step.id]?.status === 'active');
+  if (active !== -1) return active;
+  return recipe.steps.findIndex(step => route.stages[step.id]?.status !== 'completed');
+}
+function normalizeRoutes(routes, version) {
   if (!routes || typeof routes !== 'object' || Array.isArray(routes)) throw new Error('Invalid workflow routes');
-  return Object.fromEntries(Object.entries(routes).flatMap(([id, completed]) => {
-    const valid = step => legacy ? Number.isSafeInteger(step) && step >= 0 : typeof step === 'string';
-    if (!Array.isArray(completed) || !completed.every(valid)) throw new Error('Invalid workflow steps');
+  return Object.fromEntries(Object.entries(routes).flatMap(([id, saved]) => {
     const recipe = recipes.find(recipe => recipe.id === id);
+    if (version < 3) {
+      if (!Array.isArray(saved) || !saved.every(step => version === 1 ? Number.isSafeInteger(step) && step >= 0 : typeof step === 'string')) throw new Error('Invalid workflow steps');
+      if (!recipe) return [];
+      const completed = version === 1 ? saved.map(index => legacySteps[id]?.[index]) : saved;
+      return [[id, { goal: '', stages: Object.fromEntries(recipe.steps.filter(step => completed.includes(step.id)).map(step => [step.id, { ...emptyStage(), status: 'completed', legacy: true }])) }]];
+    }
+    if (!saved || typeof saved.goal !== 'string' || saved.goal.length > 4000 || !saved.stages || typeof saved.stages !== 'object' || Array.isArray(saved.stages)) throw new Error('Invalid workflow record');
     if (!recipe) return [];
-    const ids = legacy ? completed.map(index => legacySteps[id]?.[index]) : completed;
-    return [[id, recipe.steps.filter(step => ids.includes(step.id)).map(step => step.id)]];
+    const stages = Object.fromEntries(Object.entries(saved.stages).filter(([id]) => recipe.steps.some(step => step.id === id)).map(([id, value]) => {
+      if (!value || !['pending', 'active', 'blocked', 'completed'].includes(value.status)
+        || !['result', 'blocker'].every(key => typeof value[key] === 'string' && value[key].length <= 4000)
+        || !Array.isArray(value.files) || value.files.length > 16 || !value.files.every(path => typeof path === 'string' && path.length > 0 && path.length <= 4096)) throw new Error('Invalid workflow stage');
+      return [id, { status: value.status, result: value.result, blocker: value.blocker, files: [...new Set(value.files)], ...(value.legacy === true ? { legacy: true } : {}) }];
+    }));
+    return [[id, { goal: saved.goal, stages }]];
   }));
 }
 export function readPreferences(storage) {
-  const current = storage.getItem(storageKey), saved = current ?? storage.getItem('dsh-super-code.workflows.v1');
+  const versions = [3, 2, 1].map(version => ({ version, raw: storage.getItem(`dsh-super-code.workflows.v${version}`) }));
+  const saved = versions.find(item => item.raw !== null);
   if (!saved) return empty();
-  const value = JSON.parse(saved);
+  const value = JSON.parse(saved.raw);
   if (!value || !['favorites', 'recent'].every(key => Array.isArray(value[key]) && value[key].every(id => typeof id === 'string'))
     || !value.runs || typeof value.runs !== 'object' || Array.isArray(value.runs)
     || Object.values(value.runs).some(run => !run || typeof run.recipe !== 'string')) throw new Error('Invalid workflow preferences');
   return { favorites: [...new Set(value.favorites)], recent: [...new Set(value.recent)].slice(0, 12),
     runs: Object.fromEntries(Object.entries(value.runs).slice(-32).flatMap(([session, run]) => {
-      const routes = normalizeRoutes(current === null ? { [run.recipe]: run.completed } : run.routes, current === null);
+      const routes = normalizeRoutes(saved.version === 1 ? { [run.recipe]: run.completed } : run.routes, saved.version);
       const recipe = recipes.some(recipe => recipe.id === run.recipe) ? run.recipe : Object.keys(routes)[0];
       return recipe ? [[session, { recipe, routes }]] : [];
     })) };
 }
-export function recordProgress(preferences, sessionId, recipeId, completed) {
+export function recordProgress(preferences, sessionId, recipeId, route) {
   const previous = preferences.runs[sessionId];
   const runs = Object.fromEntries(Object.entries(preferences.runs).filter(([id]) => id !== sessionId).slice(-31));
-  return { ...preferences, runs: { ...runs, [sessionId]: { recipe: recipeId, routes: { ...previous?.routes, [recipeId]: completed } } } };
+  return { ...preferences, runs: { ...runs, [sessionId]: { recipe: recipeId, routes: { ...previous?.routes, [recipeId]: route } } } };
 }
 export function savePreferences(storage, value) {
   storage.setItem(storageKey, JSON.stringify(value));

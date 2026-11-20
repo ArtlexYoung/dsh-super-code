@@ -6,15 +6,18 @@ import { runInNewContext } from 'node:vm'
 
 const require = createRequire(import.meta.url)
 
-test('工作台独立初始化、随开关登记，并在卸载时撤销登记', () => {
+test('工作台独立初始化、工作流随真实开关登记，并在卸载时撤销登记', async () => {
   let plugin: any
   const storage = new Map<string, string>()
   const localStorage = { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => storage.set(key, value) }
   const entries = new Map<string, any>(), effects: (() => void)[] = []
   let activateWorkbench: (owner: any) => void = () => {}
-  const remote = { $mount: async () => {}, superCodeWorkbench: {} }
+  let configuration = { mattpocockSkills: false, pstackSkills: false, openspecSkills: false, oilUiSkill: false }
+  const settingListeners = new Set<() => void>()
+  const remote = { $mount: async () => {}, $on: (_event: string, listener: () => void) => { settingListeners.add(listener); return () => settingListeners.delete(listener) }, superCodeWorkbench: {}, superCodeBudgets: { readConfig: async (...args: unknown[]) => { assert.equal(args.length, 0, '设置接口没有参数'); return { ok: true, value: { configuration } } } } }
+  const settingsUpdated = async () => { for (const listener of settingListeners) listener(); await new Promise(resolve => setImmediate(resolve)) }
   const ctx: any = {
-    remote,
+    remote, on: () => () => {},
     locale: { register: () => () => {}, bind: () => (key: string) => key, getLocale: () => ({ active: 'zh', locales: [{ id: 'zh', label: '中文' }] }) },
     sessions: { list: { getSnapshot: () => ({ byId: {} }) } }, sidebarRightTabs: { register: () => () => {} },
     slots: {
@@ -25,7 +28,7 @@ test('工作台独立初始化、随开关登记，并在卸载时撤销登记',
     effect(callback: () => unknown) { const dispose = callback(); if (typeof dispose === 'function') effects.push(dispose as () => void) },
     inject(names: string[], callback: (ctx: any) => void) {
       if (names.join(',') === 'sessions,sidebarRightTabs') activateWorkbench = callback
-      else if (names.every(name => ['remote.superCodeWorkbench', 'remote.session', 'remote.skills'].includes(name))) callback(this)
+      else if (names.every(name => ['remote.superCodeWorkbench', 'remote.session', 'remote.skills', 'remote.superCodeBudgets'].includes(name))) callback(this)
     },
   }
   runInNewContext(readFileSync(new URL('../../dist/client.js', import.meta.url), 'utf8'), {
@@ -44,7 +47,23 @@ test('工作台独立初始化、随开关登记，并在卸载时撤销登记',
   }
   const stop = start()
   const settings = entries.get('super-code').contribution.inject()
-  const workflow = entries.get('super-code-workflows').contribution.inject()
+  await settingsUpdated()
+  assert.equal(entries.has('super-code-mattpocock'), false)
+  assert.equal(entries.has('super-code-skills'), false)
+  configuration = { ...configuration, oilUiSkill: true }
+  await settingsUpdated()
+  assert.equal(entries.has('super-code-skills'), true)
+  assert.equal(entries.has('super-code-oil-ui'), false, 'oil-ui只登记目录，不登记工作流')
+  configuration = { ...configuration, mattpocockSkills: true, pstackSkills: true, openspecSkills: true }
+  await settingsUpdated()
+  assert.equal(entries.has('super-code-pstack'), true)
+  assert.equal(entries.has('super-code-openspec'), true)
+  const workflow = entries.get('super-code-mattpocock').contribution.inject()
+  configuration = { ...configuration, pstackSkills: false }
+  await settingsUpdated()
+  assert.equal(entries.has('super-code-pstack'), false)
+  assert.deepEqual(Array.from(workflow.packageState.snapshot()), ['mattpocock', 'openspec', 'oil-ui'])
+  assert.equal(workflow.page, 'mattpocock')
   const preference = settings.workbenchState.snapshot()?.preference
   assert.ok(preference)
   assert.equal(entries.has('super-code-workbench'), false)

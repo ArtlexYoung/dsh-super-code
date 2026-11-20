@@ -197,28 +197,6 @@ export const recipes = [
         output: ["完成的变更归档","An archived change"] },
     ],
   },
-  {
-    id: "oil-design",
-    pack: "oil-ui",
-    title: ["把界面做清楚","Design a clear interface"],
-    summary: ["明确用户任务，用真实画面和操作验证设计。","Define the user task and verify the design through real screens and interactions."],
-    input: ["页面目标、真实内容和现有设计约束","Page goals, real content and existing design constraints"],
-    output: ["界面实现、关键状态与画面验证","An interface, key states and visual verification"],
-    steps: [
-      { id: "task", skill: "oil-ui", title: ["确定任务","Define the task"],
-        goal: ["确定用户要做什么，以及这一屏的主动作。","Define the user task and the primary action on this screen."],
-        output: ["用户任务与设计方向","A user task and design direction"] },
-      { id: "structure", skill: "oil-ui", title: ["建立结构","Structure"],
-        goal: ["先安排内容层级和主要操作路径。","Arrange the content hierarchy and the main interaction."],
-        output: ["清楚的布局和操作路径","A clear layout and interaction path"] },
-      { id: "implement", skill: "oil-ui", title: ["实现界面","Implement"],
-        goal: ["把选定的设计变成可操作的界面。","Turn the chosen design into a working interface."],
-        output: ["可运行的界面与关键状态","A working interface and key states"] },
-      { id: "verify", skill: "oil-ui", title: ["检查画面和操作","Verify"],
-        goal: ["在实际尺寸下看图，并走完主要操作。","Inspect the actual viewports and walk through the main task."],
-        output: ["截图、操作验证与修正","Screenshots, interaction checks and refinements"] },
-    ],
-  },
 ];
 
 export const localized = (value, language) => value[language === 'zh' ? 0 : 1];

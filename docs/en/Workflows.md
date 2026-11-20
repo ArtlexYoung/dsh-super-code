@@ -1,37 +1,24 @@
 # Workflows
 
-Open **Workflows** at the top of a conversation. Enable packages in **Settings → Super Code → Preset Skills** and use a conversation preset that allows Skills.
+Enable a package in Settings → Super Code → Preset Skills to reveal its independent conversation page: Matt Workflows, PStack Workflows or OpenSpec. Narrow windows may place the entry under More conversation views. Disabling the package hides the entry and preserves saved tasks and outcomes. oil-ui appears only in the Skill Library. The library lists enabled packages; the conversation preset must also allow Skills.
 
-**Work in progress** brings the goal, workflow stages and live conversation activity together. Stage cards show expected outputs and status. Select a stage to prepare a real Skill instruction, record an outcome, attach files, track a blocker or accept the result. Progress feedback follows work records, and every stage remains available to inspect.
+Matt uses paper task cards, a focused single-change page, an investigation desk and a decision frontier. PStack Feature separates understanding and design from implementation and evidence. Its Refactoring page keeps the behavior baseline beside the new structure and equivalence evidence. OpenSpec groups document cards into proposal, implementation and verification folios.
 
-Routes follow the bundled authors’ guidance. The author-method disclosure explains the conditions and links to the source. This is Super Code’s visualization of those methods, not an author-provided task execution system.
+Author templates guide the work without locking every task into a fixed sequence. Add specific tasks, use the same Skill more than once, insert optional branches, reorder cards and edit prerequisites. Only explicit prerequisites block starting or accepting a task. Cycles are rejected without losing input. Changing an accepted task’s goal, output, Skill or prerequisites reopens it and retains the prior evidence for review. A workflow supports up to 64 cards. Filter by state or search task names and Skills.
 
-| Route | Method |
-| --- | --- |
-| Matt · Single-session change | Use `grill-with-docs` in a repository, then `implement` and `retro`. Go directly to implementation when the requirements are clear. Implementation includes TDD at agreed seams and Standards + Spec review. |
-| Matt · Multi-ticket build | `grill-with-docs` → `to-spec` → `to-tickets` → per-ticket `implement` → `retro`. Follow blocking dependencies, or use `implement-spec` to orchestrate the ready frontier on an integration branch. |
-| Matt · Diagnose and fix | Establish a reliable failing feedback loop with `diagnosing-bugs`, diagnose and fix, then review and improve the agent environment through `retro`. |
-| Matt · Large exploration | Use `wayfinder` to resolve decision tickets, then hand a clear path to `to-spec`. Exploration produces decisions rather than building the feature. |
-| PStack · Feature | `poteto-mode` drives understanding, data and interface design, verifiable units, implementation/review and verification on the real artifact. |
-| PStack · Refactoring | `poteto-mode` pins behavior, defines the target shape, subtracts and migrates, then proves equivalence. |
-| OpenSpec | Explore, propose, implement, verify and archive. |
-| oil-ui | Define the task, structure the interface, implement and inspect actual screens and interactions. |
+Task cards show saved outcomes and blockers. Acceptance requires an outcome or an attached file and remains an explicit user action. Tool success, completed conversation todos and an idle AI do not automatically accept tasks. Reopening preserves the outcome. Only one task per workflow is current.
 
-**Tools when needed** contains conditional detours. Matt’s prototype answers a concrete design question; first-time project setup configures the tracker and document layout. PStack model setup is optional. Start `show-me-your-work` at the beginning of long work; `sharpen` rewrites a prompt rather than editing code. Delegation, remote writes and publication remain subject to the project and conversation authorization.
+Matt's multi-session guidance uses fresh context for each implementation ticket; prototypes are optional. Configure a project's tracker and documents with setup-matt-pocock-skills when needed. PStack uses poteto-mode with the Feature or Refactoring playbook, with model setup as needed and decision records throughout longer work. sharpen improves prompts rather than refactoring code. Author notes link to the bundled version's primary source. Delegation, remote changes and publication still follow project and session authorization.
 
-**Skill library** searches all bundled Skills by package, keywords, favorites or recent use, with 24 entries per page. Details show the original description, contents, version and source.
+Prepare task instruction places the real /skill-name, task goal, expected output and saved prerequisite outcomes in the native draft, preserves existing text and returns to the conversation for review and sending. Rich drafts and sending are protected. Conflicting higher-priority Skills are identified and cannot be invoked through the bundled entry.
 
-**Prepare stage instruction** prepends the real `/skill-name`, adds the stage goal and expected output, preserves existing text and returns to the conversation. You review and send it. Selecting another stage using the same Skill updates its generated context. Drafts with attachments, references or an active send are protected. A bundled entry cannot invoke a name overridden by another project or package.
+Conversation activity reads actual current tasks, next actions, todos, tool calls and file operations. Default Super Code PTC tasks are supported; native todo availability depends on tool configuration. Open recorded files in the enabled code workbench or attach them to a task. These records do not replace Git diffs or content verification.
 
-**Conversation activity** reads the recorded current task, next step, todos, tool activity and file records. Todo availability depends on the selected tool profile; default Super Code execution can display records from its task tool. Open a tool record to inspect it, or open a file in the enabled code workbench and attach it to a stage. File activity is evidence of a tool operation, not the current Git diff or a review of file contents.
+Each author page restores its last-used workflow. Task definitions, goals and outcomes are saved separately per conversation and workflow. Stable task identities retain outcomes when reordering. Unsaved inputs remain while switching tasks; saving one field does not discard another draft. Failed writes preserve input and state. Independent pages share current preferences without overwriting another page's saved work. Local browser storage retains up to 32 conversations and does not synchronize across devices. Earlier confirmations migrate without inventing artifacts.
 
-Stages can be **To do**, **In progress**, **Blocked** or **Accepted**. Each workflow has at most one active stage. Blocking requires a reason; accepting requires an outcome note or an attached file. Completed todos, successful tools and an ended AI turn never accept a stage automatically. Reopening a stage preserves its outcomes.
+The Skill Library supports package, keyword, favorites and recent-use filtering, with 24 entries per page. Task cards are local working records; they do not automatically create GitHub/GitLab issues, schedule AI work or verify file contents. Skills and the host perform execution.
 
-Each workflow stores its own goal, stages and outcomes per conversation. Switching stages retains unsaved input. Saving one stage or the goal leaves other drafts untouched. Successful saves survive reload; failed writes retain input and show an error. Favorites, recent use and stage records stay in this browser, with records for the most recent 32 conversations. They do not sync across devices. Earlier confirmations transfer only to stages with the same meaning and are labeled as lacking artifact records.
-
-Stage connections describe the authors’ methods. They do not provide a ticket dependency engine, automatic task scheduling, artifact-content validation or GitHub/GitLab synchronization.
-
-The workbench **All commands** panel opens with `Ctrl+Shift+P` (`Cmd+Shift+P` on macOS). Search actions and open files, use arrow keys and Enter to select, or Escape to close. Unavailable actions remain disabled and unsaved files are marked.
+The workbench command palette opens with Ctrl+Shift+P (Cmd+Shift+P on macOS). Search existing commands or open files, select with arrow keys and Enter, and close with Escape. Unsaved and disabled states remain visible.
 
 ## Maintaining bundled resources
 

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { workflowCatalog } from '../../../scripts/skills/catalog.mjs';
 import { recipes } from '../../../builtin/workflows/recipes.js';
-import { skillAvailability, filterSkills, commandDraft, initialPreferences, readPreferences, recordProgress, savePreferences, emptyRoute, emptyStage, changeStage, nextStageIndex } from '../../../builtin/workflows/model.js';
+import { skillAvailability, filterSkills, commandDraft, initialPreferences, readPreferences, recordProgress, savePreferences, emptyRoute, emptyStage, changeStage, nextStageIndex, subscribePreferences } from '../../../builtin/workflows/model.js';
 
 test('workflow catalog covers every distributed Skill and every route resolves to a real entry', async () => {
   const catalog = await workflowCatalog();
@@ -110,4 +110,22 @@ test('v2 completion is kept as historical confirmation without inventing artifac
   assert.equal(stage.legacy, true);
   assert.equal(stage.result, '');
   assert.deepEqual(stage.files, []);
+});
+
+
+test('mounted workflow pages observe saves and stop receiving updates after unmount', () => {
+  const data = new Map<string, string>();
+  const storage = { getItem: (key: string) => data.get(key) ?? null, setItem: (key: string, value: string) => { data.set(key, value); } };
+  let observed = initialPreferences(storage).value;
+  const stop = subscribePreferences(storage, () => { observed = readPreferences(storage); });
+  const matt = recordProgress(observed, 'shared', 'matt-feature', { goal: 'Matt goal', stages: {} });
+  savePreferences(storage, matt);
+  const pstack = recordProgress(readPreferences(storage), 'shared', 'pstack-feature', { goal: 'PStack goal', stages: {} });
+  savePreferences(storage, pstack);
+  assert.equal(observed.runs.shared.routes['matt-feature'].goal, 'Matt goal');
+  assert.equal(observed.runs.shared.routes['pstack-feature'].goal, 'PStack goal');
+  stop();
+  savePreferences(storage, { ...pstack, favorites: ['mattpocock/tdd'] });
+  assert.deepEqual(observed.favorites, []);
+  assert.deepEqual(readPreferences(storage).favorites, ['mattpocock/tdd']);
 });

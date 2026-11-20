@@ -1,26 +1,5 @@
 import React from 'react';
 import { localized } from './recipes.js';
-import { nextStageIndex } from './model.js';
-
-export function Route({ recipe, run, selected, choose, t, notice, chooseTool }) {
-  const language = t('language'), next = nextStageIndex(recipe, run);
-  const completed = recipe.steps.filter(step => run.stages[step.id]?.status === 'completed').length;
-  return <section className="sc-flow-route" aria-label={localized(recipe.title, language)}>
-    <header className="sc-flow-route-heading"><div><span className="sc-flow-eyebrow">{t('workflow')}</span><h2>{localized(recipe.title, language)}</h2><p>{localized(recipe.summary, language)}</p></div>
-      <div className="sc-flow-route-progress"><strong>{completed}<span> / {recipe.steps.length}</span></strong><small>{t('confirmed')}</small><progress aria-label={t('stageProgress')} value={completed} max={recipe.steps.length} /></div></header>
-    <ol className="sc-flow-steps">{recipe.steps.map((step, index) => {
-      const state = run.stages[step.id]?.status || 'pending', current = index === next;
-      return <li key={step.id} data-state={state} data-complete={state === 'completed'} data-current={current}>
-        <button type="button" className="sc-flow-step" aria-label={`${index + 1}. ${localized(step.title, language)}`} aria-pressed={selected === index} aria-current={current ? 'step' : undefined} onClick={() => choose(index)}>
-          <span className="sc-flow-step-top"><span className="sc-flow-step-number">{state === 'completed' ? '✓' : String(index + 1).padStart(2, '0')}</span><small>{t(current && state === 'pending' ? 'stage.next' : 'stage.' + state)}</small></span>
-          <strong>{localized(step.title, language)}</strong><span className="sc-flow-step-output">{localized(step.output, language)}</span>
-        </button></li>;
-    })}</ol>
-    <div className="sc-flow-route-result" role="status" aria-live="polite" data-finished={next === -1}><span>{next === -1 ? t('finish') : notice || t('progress')}</span><button type="button" className="sc-flow-locate" onClick={() => choose(next === -1 ? recipe.steps.length - 1 : next)}>{t(next === -1 ? 'reviewRoute' : 'locate')} →</button></div>
-    {recipe.source && <details className="sc-flow-method"><summary>{recipe.source.label}<span>{t('authorMethod')}</span></summary><p>{localized(recipe.guidance, language)}</p><a href={recipe.source.url} target="_blank" rel="noreferrer">{t('readMethod')} ↗</a></details>}
-    {recipe.tools?.length > 0 && <div className="sc-flow-tools" aria-label={t('tools')}><span>{t('tools')}</span>{recipe.tools.map(tool => <button type="button" key={tool.skill} title={localized(tool.when, language)} onClick={() => chooseTool(tool.skill)}>{localized(tool.label, language)} <span>↗</span></button>)}</div>}
-  </section>;
-}
 
 function StageRecord({ mission, update, save, openFile, t }) {
   const record = mission.record;
@@ -36,15 +15,16 @@ function StageRecord({ mission, update, save, openFile, t }) {
   </section>;
 }
 
-export function SkillDetail({ skill, pack, availability, favorite, toggleFavorite, compose, close, backLabel, t, mission, updateRecord, saveRecord, nextQuest, openFile, choosePrevious }) {
+export function SkillDetail({ skill, pack, availability, favorite, toggleFavorite, compose, close, backLabel, t, mission, updateRecord, saveRecord, nextQuest, openFile, chooseDependency, editTask }) {
   const language = t('language');
   return <aside className="sc-flow-detail" aria-label={t('details')} data-mission={Boolean(mission)}>
-    <div className="sc-flow-detail-header"><span>{mission ? `${t('stage')} ${String(mission.index + 1).padStart(2, '0')}` : pack.title}</span><button type="button" aria-label={t(favorite ? 'unfavorite' : 'favorite')} aria-pressed={favorite} onClick={toggleFavorite}>{favorite ? '★' : '☆'}</button></div>
+    <div className="sc-flow-detail-header"><span>{mission ? `#${String(mission.index + 1).padStart(2, '0')} · ${t('stage')}` : pack.title}</span><button type="button" aria-label={t(favorite ? 'unfavorite' : 'favorite')} aria-pressed={favorite} onClick={toggleFavorite}>{favorite ? '★' : '☆'}</button></div>
     <h2>{mission ? localized(mission.step.title, language) : skill.name}</h2>
+    {mission && <button type="button" className="sc-flow-edit-task" onClick={editTask}>{t('editTask')} ↗</button>}
     <p className="sc-flow-description">{mission ? localized(mission.step.goal, language) : skill.description}</p>
     <div className="sc-flow-invoke"><div><code className="sc-flow-command">/{skill.name}</code><span className="sc-flow-availability" data-ready={availability === 'ready'}>{t(availability)}</span></div>{compose}</div>
     {mission && <><div className="sc-flow-mission-output"><span>{t('questOutput')}</span><strong>{localized(mission.step.output, language)}</strong></div>
-      {mission.previous && <button type="button" className="sc-flow-dependency" onClick={choosePrevious}><span>{t('inputFrom')}</span><strong>{localized(mission.previous.output, language)}</strong><small>{t(mission.previousCompleted ? 'previousConfirmed' : 'previousUnconfirmed')} →</small></button>}
+      {mission.dependencies.map(dependency => <button key={dependency.id} type="button" className="sc-flow-dependency" onClick={() => chooseDependency(dependency.id)}><span>{t('inputFrom')}</span><strong>{localized(dependency.title, language)}</strong><small>{t(dependency.completed ? 'previousConfirmed' : 'previousUnconfirmed')} →</small></button>)}
       {mission.record.status === 'blocked' && <p className="sc-flow-blocked" role="status">{t('stage.blocked')} · {mission.record.blocker}</p>}</>}
     {mission && <StageRecord mission={mission} update={updateRecord} save={saveRecord} openFile={openFile} t={t} />}
     {nextQuest && <button type="button" className="sc-flow-next-quest" onClick={nextQuest}>{t('goNext')} →</button>}

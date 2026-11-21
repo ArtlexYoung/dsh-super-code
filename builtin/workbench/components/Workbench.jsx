@@ -17,6 +17,7 @@ import { workbenchCommands } from '../commands.js';
 import { fileTarget, WORKBENCH_VIEW } from '../file-links.js';
 import { Toolbar } from './Toolbar.jsx';
 import { PanelContent } from './PanelContent.jsx';
+import { RecoveryNotice } from './WorkspaceRecovery.jsx';
 
 
 export function Workbench({ workbench: primary, Button, Select, MarkdownText, Conversation, conversationRemote, conversationT, sessionId, useSessions, useSessionStatus, useInput, inputActions, useChat, useConversation, fileContext, fileMentions, openView, viewRequest, completeViewRequest, presentation = { kind: 'workbench' }, t }) {
@@ -118,6 +119,7 @@ export function Workbench({ workbench: primary, Button, Select, MarkdownText, Co
       {fileOnly && <Button disabled={!current?.dirty} onClick={action(() => workbench.save())}><Icon name="save" />{t('save')}</Button>}
       <Button onClick={workbench.returnToHost}><Icon name="back" />{t('windowReturn')}</Button></nav></header>
       : <Toolbar workbench={workbench} snapshot={snapshot} current={current} Button={Button} t={t} toggleFocus={toggleFocus} />}
+    <RecoveryNotice workbench={primary} state={base.recovery} Button={Button} t={t} />
     <div className="sc-wb-body" data-focused={focused} data-reading-focus={readingFocusActive} data-left-open={explorerOpen} data-right-open={rightVisible} hidden={panelOnly || selectionOnly || closeOnly}>
       {!focused && <nav className="sc-wb-side-rail" aria-label={t('explorerBar')}>{[{ key: 'filesOpen', label: 'files', icon: 'files' }, { key: 'outlineOpen', label: 'symbols', icon: 'outline' }].map(item =>
         <Button key={item.key} aria-pressed={explorerOpen && layout[item.key]} title={t(item.label)} onClick={() => toggleExplorer(item.key)}><Icon name={item.icon} /><span>{t(item.label)}</span></Button>)}</nav>}

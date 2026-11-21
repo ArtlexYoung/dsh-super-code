@@ -23,6 +23,12 @@ Workbench overviews, settings and tool-profile screenshots show an isolated Harn
 
 ## Reading and navigation
 
+After reloading the page or reopening the client, choose **Continue previous work** on the empty workspace to restore file tabs, pinned files, editor splits and their proportions, the active pane, cursor positions and source scroll positions. Recent files are also retained. Restoration starts when you choose it; opening another file does not jump back to an old location. Records are kept separately for each client, conversation and project directory. Navigation in a separate window does not overwrite the main workspace record.
+
+During restoration, choose **Stop** or open another file. Files that have already opened remain available.
+
+Restoration reads current file contents. Moved, deleted or unreadable files are listed with their errors while the other files open. Records contain interface state, not unsaved text, quick conversations or learning content. Save unsaved text before exiting. If browser storage is unavailable, a notice offers a retry while editing remains available. Each record supports up to 16 panes and 50 tabs per pane; exceeding the storage limit keeps the previous record and shows a notice. The empty workspace also offers **Open file**.
+
 Choose **Open file**, or press Ctrl/⌘+Shift+O with the IDEA keymap or Ctrl/⌘+P with VS Code. An empty query lists recently visited files first; matching names include their relative paths. Type `@` to find a symbol in the current file or `>` to search actions. Arrow keys select, Enter opens, and Esc returns to the editor. Enter during IME composition only confirms input. IDEA keeps Ctrl/⌘+P for parameter info. Ctrl/⌘+Shift+P opens All actions; Ctrl/⌘+Shift+Enter toggles reading focus. Existing custom bindings take priority over new default shortcuts; buttons remain available and shortcuts can be reassigned in settings.
 
 The default toolbar shows Back, Forward, Open file, Find and project Search. Replace, definitions, completion, parameter info and code history are available through All actions and can be restored to the toolbar in settings. New layouts use a 200px explorer and 320px right sidebar, keeping more room for code in narrow windows. Saved dimensions, pane visibility, action order and visibility are preserved.

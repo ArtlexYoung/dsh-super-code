@@ -934,3 +934,40 @@ test('保存冲突恢复：自动保存失败后应用结果等待用户核对�
   assert.equal(text(view), 'ONE\nTWO\n')
   await view.save(); assert.equal(await read(), 'ONE\nTWO\n')
 })
+
+test('工作状态恢复读取当前磁盘，保留固定项与位置，缺失文件不阻止其他标签', async t => {
+  const { create, read, write } = await fixture(t, { 'main.ts': 'one\ntwo\n', 'other.ts': 'another' })
+  const original = await create()
+  await original.visit({ file: 'main.ts', line: 1 }); await original.pinFile('main.ts')
+  await original.visit({ file: 'other.ts' }); original.keepTab('other.ts')
+  const record = original.captureSession()
+  edit(original, 0, 0, '// private draft\n')
+  await write('main.ts', 'latest\ncontent\n')
+  const restored = await create({}, new Map())
+  const failures = await restored.restoreSession({ ...record, tabs: [...record.tabs, { path: 'missing.ts', kind: 'file', pinned: false, dirty: false }] }, new AbortController().signal)
+  assert.equal(failures.length, 1); assert.equal(failures[0].path, 'missing.ts')
+  assert.deepEqual(restored.snapshot().tabs.map((item: { path: string; pinned: boolean }) => [item.path, item.pinned]), [['main.ts', true], ['other.ts', false]])
+  await restored.visit({ file: 'main.ts' })
+  assert.equal(text(restored), 'latest\ncontent\n')
+  assert.equal(restored.snapshot().cursor.line, 1)
+  assert.equal(await read('other.ts'), 'another')
+  assert.equal(restored.documents.get('other.ts').dirty, false)
+})
+
+test('恢复过程中主动打开文件会取消剩余恢复，不覆盖新导航或写盘', async t => {
+  const { create, read, api } = await fixture(t, { 'main.ts': 'main', 'other.ts': 'other', 'chosen.ts': 'chosen' })
+  let blocked = false, release = () => {}, requested = false
+  const view = await create({ read: async (path: string, signal: AbortSignal) => {
+    if (blocked && path === 'main.ts') { requested = true; await new Promise<void>(resolve => { release = resolve }) }
+    return api.read(path, signal)
+  } })
+  blocked = true
+  const record = { tabs: ['main.ts', 'other.ts'].map(path => ({ path, kind: 'file', pinned: false, dirty: false })), current: { file: 'other.ts', kind: 'file' }, recent: ['other.ts', 'main.ts'] }
+  const restoring = assert.rejects(view.restoreSession(record, new AbortController().signal), { name: 'AbortError' })
+  await waitFor(() => requested, '恢复已开始读取文件')
+  const chosen = view.visit({ file: 'chosen.ts' }); release()
+  await Promise.all([restoring, chosen])
+  assert.equal(view.snapshot().file, 'chosen.ts')
+  assert.equal(view.snapshot().tabs.some((tab: { path: string }) => tab.path === 'other.ts'), false)
+  assert.equal(await read(), 'main')
+})

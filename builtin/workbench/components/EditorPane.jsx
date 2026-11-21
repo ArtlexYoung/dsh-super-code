@@ -5,6 +5,7 @@ import { Icon } from './Icon.jsx';
 import { FileIcon } from './FileIcon.jsx';
 import { ScopePath } from './ScopePath.jsx';
 import { MarkdownPreview } from './MarkdownPreview.jsx';
+import { EmptyWorkspace } from './WorkspaceRecovery.jsx';
 import { groupRect } from '../editor/groups.js';
 
 export async function openGroupTab(pane, item) {
@@ -34,12 +35,16 @@ export function EditorPane({ pane, rect, groups, active, hidden, drop, drag, spl
     if (!initial) void ready.catch(workbench.fail);
     else void ready.then(async () => {
       if (pane.ready !== ready) return;
-      const success = await openGroupTab(pane, initial.item);
+      const success = initial.restore ? await initial.restore(workbench) : await openGroupTab(pane, initial.item);
       if (pane.ready !== ready) return;
       pane.initial = null;
       if (success) await initial.opened(pane);
       else if (!workbench.snapshot().file) groups.remove(pane);
-    }).catch(error => { if (pane.ready === ready) { initial.fail(error); groups.remove(pane); } });
+    }).catch(error => {
+      if (pane.ready !== ready) return;
+      pane.initial = null; initial.fail(error);
+      if (!initial.restore) groups.remove(pane);
+    });
     return () => { pane.ready = null; if (!pane.closed) workbench.detach(); };
   }, [groups, pane, workbench]);
   useLayoutEffect(() => {
@@ -86,7 +91,7 @@ export function EditorPane({ pane, rect, groups, active, hidden, drop, drag, spl
     <div className="sc-wb-editor-area" data-markdown-split={showBoth}>
       <div ref={editor} className="sc-wb-editor" hidden={markdown} />
       {preview}
-      {!file && <div className="sc-wb-empty"><strong>{t('title')}</strong><span>{t('empty')}</span></div>}
+      {!file && <EmptyWorkspace workbench={workbench} snapshot={snapshot} Button={Button} t={t} />}
       {split && drag?.dragging && <div className="sc-wb-editor-drop-zones" aria-hidden="true">
         {['left', 'right', 'up', 'down'].map(direction => <i key={direction} data-direction={direction} />)}
         {drop?.direction && <div className="sc-wb-editor-drop-preview" data-direction={drop.direction} />}

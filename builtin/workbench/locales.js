@@ -3,6 +3,11 @@ import { zh as readingZh, en as readingEn } from './reading/locales.js';
 export const NS = 'dsh-super-code-workbench';
 export const zh = {
   languageTag: 'zh',
+  resumeWorkspace: '继续上次工作 · {count} 个标签', resumeHint: '上次打开的文件和阅读位置已保留',
+  resumeMetadata: '恢复时读取最新文件内容；此记录不包含未保存的正文。', resumeWorking: '正在恢复文件和阅读位置…',
+  resumeFailures: '{count} 个文件未能恢复', resumeRetry: '重试', resumeFinished: '已恢复 {count} 个标签', resumeStopped: '已停止恢复',
+  WORKBENCH_SESSION_READ: '无法读取上次的工作记录，仍可直接打开文件。', WORKBENCH_SESSION_WRITE: '工作位置未能记住，请检查浏览器存储后重试；当前编辑仍保留。',
+  WORKBENCH_SESSION_INVALID: '工作记录无法识别，仍可直接打开文件。', WORKBENCH_SESSION_SIZE: '工作记录超出容量，暂未更新；当前编辑仍保留。',
   navigate: '快速导航', navigateFiles: '快速打开文件', navigateSymbols: '当前文件符号', commandPalette: '所有操作',
   navigateHint: '输入文件名 · @ 查符号 · > 查操作', navigateCount: '{count} 项', navigateClose: 'Esc 返回编辑区',
   action_navigateFiles: '快速打开文件', action_navigateSymbols: '查找当前文件符号', action_commandPalette: '搜索所有操作', action_readingFocus: '切换专注阅读',
@@ -129,6 +134,11 @@ export const zh = {
 };
 export const en = {
   languageTag: 'en',
+  resumeWorkspace: 'Continue previous work · {count} tabs', resumeHint: 'Your previous files and reading positions are available',
+  resumeMetadata: 'Restoring reads the latest files. This record does not include unsaved text.', resumeWorking: 'Restoring files and reading positions…',
+  resumeFailures: '{count} files could not be restored', resumeRetry: 'Retry', resumeFinished: 'Restored {count} tabs', resumeStopped: 'Restoration stopped',
+  WORKBENCH_SESSION_READ: 'Could not read the previous workspace. You can still open files.', WORKBENCH_SESSION_WRITE: 'Could not remember your workspace. Check browser storage and retry; current edits are preserved.',
+  WORKBENCH_SESSION_INVALID: 'The workspace record is not recognized. You can still open files.', WORKBENCH_SESSION_SIZE: 'The workspace record exceeds the storage limit and was not updated; current edits are preserved.',
   navigate: 'Quick navigation', navigateFiles: 'Open file', navigateSymbols: 'File symbols', commandPalette: 'All actions',
   navigateHint: 'File name · @ symbols · > actions', navigateCount: '{count} results', navigateClose: 'Esc returns to editor',
   action_navigateFiles: 'Quick open file', action_navigateSymbols: 'Find file symbol', action_commandPalette: 'Search all actions', action_readingFocus: 'Toggle reading focus',

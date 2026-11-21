@@ -34,12 +34,12 @@ function editorConfiguration(value) {
   };
 }
 
-export function createEditor({ parent, tooltipParent, index, t, changed, commands, assistant, receiving = () => false, currentFile }) {
+export function createEditor({ parent, tooltipParent, index, t, changed, commands, assistant, receiving = () => false, currentFile, viewportChanged = () => {} }) {
   const keys = new Compartment(), theme = new Compartment(), readonly = new Compartment(), viewport = new Compartment(), reader = new Compartment();
   const stickyHeaders = stickyLines(t, line => commands.visit({ file: currentFile(), line }));
   const viewportConfig = ({ stickyScroll, readerMode }) => stickyScroll || readerMode ? [stickyHeaders, viewportOptions.of({ stickyScroll, readerMode })] : [];
   const preferencesByState = new WeakMap();
-  let view = null, configured = null;
+  let view = null, configured = null, finishRestore;
   const bound = () => ({ ...editingCommands, ...commands });
   async function complete(context) {
     const word = context.matchBefore(/[\p{L}\p{N}_$]+/u);
@@ -68,6 +68,7 @@ export function createEditor({ parent, tooltipParent, index, t, changed, command
       signatureTooltip(async (_route, input) => { await index.change(input.file, input.text); return index.describe(await index.resolve(input.file, input.word, input.offset)); }, currentFile, t), parameterInfo(index, currentFile, t),
       selectionExtension(assistant.threads(file), assistant.open, assistant.select, t),
       EditorView.updateListener.of(update => { if (!receiving()) assistant.update(update); changed(update); }),
+      EditorView.domEventHandlers({ scroll: viewportChanged }),
     ];
     // 重挂载时保留文档、选区和撤销历史，重新绑定当前页面的气泡容器与事件。
     const ready = saved ? saved.update({ effects: StateEffect.reconfigure.of(extensions) }).state : EditorState.create({ doc: Text.of(text.split(/\r\n?|\n/)), extensions });
@@ -91,6 +92,29 @@ export function createEditor({ parent, tooltipParent, index, t, changed, command
     state,
     // 原生快照保存文档锚点，随未激活文件的事务一起映射，不按旧像素猜位置。
     capture() { return view.state.update({ effects: rememberScroll.of(view.scrollSnapshot()) }).state; },
+    location() {
+      if (!view) return;
+      const { from, to } = view.state.selection.main, line = view.state.doc.lineAt(from), block = view.lineBlockAtHeight(view.scrollDOM.scrollTop);
+      return { line: line.number - 1, character: from - line.from, length: to - from,
+        viewport: { line: view.state.doc.lineAt(block.from).number - 1, offset: Math.max(0, view.scrollDOM.scrollTop - block.top), left: view.scrollDOM.scrollLeft } };
+    },
+    restoreViewport(position, signal) {
+      if (!position || !view || signal?.aborted) return Promise.resolve();
+      const target = view, line = target.state.doc.line(Math.min(position.line + 1, target.state.doc.lines));
+      target.dispatch({ effects: EditorView.scrollIntoView(line.from, { y: 'start', yMargin: 0 }) });
+      return new Promise(resolve => {
+        const finish = () => { signal?.removeEventListener('abort', finish); if (finishRestore === finish) finishRestore = null; resolve(); };
+        finishRestore = finish; signal?.addEventListener('abort', finish, { once: true });
+        target.requestMeasure({ read: () => target.lineBlockAt(line.from).top,
+          write(top) {
+            // CodeMirror 在本轮 measure 之后才完成 scrollIntoView，下一帧再还原精确偏移。
+            requestAnimationFrame(() => {
+              if (view === target && !signal?.aborted) target.scrollDOM.scrollTo(position.left, top + position.offset);
+              finish();
+            });
+          } });
+      });
+    },
     show(state) {
       if (view) view.setState(state); else view = new EditorView({ parent, state });
       // 恢复的状态会保留旧 Compartment，先应用此次偏好，再按变化更新。
@@ -102,6 +126,6 @@ export function createEditor({ parent, tooltipParent, index, t, changed, command
     },
     readonly(value) { view?.dispatch({ effects: readonly.reconfigure(EditorState.readOnly.of(value)) }); },
     preferences: configure,
-    dispose() { view?.destroy(); view = null; configured = null; },
+    dispose() { finishRestore?.(); view?.destroy(); view = null; configured = null; },
   };
 }

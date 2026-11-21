@@ -38,6 +38,18 @@ export function createEditorGroups(primary) {
   publish();
   return {
     snapshot: () => snapshot,
+    capture() {
+      const panes = snapshot.panes.map(item => item.pane);
+      const serialize = node => node.children ? { vertical: node.vertical, ratio: node.ratio, children: node.children.map(serialize) } : panes.indexOf(node);
+      return { tree: serialize(root), active: panes.indexOf(active), panes: panes.map(pane => pane.workbench.captureSession()) };
+    },
+    restore(tree, selected, initial) {
+      this.reset();
+      const panes = initial.map((value, index) => index === 0 ? first : { id: ++sequence, workbench: primary.createPane(), initial: value });
+      const build = node => typeof node === 'number' ? panes[node] : { id: ++sequence, vertical: node.vertical, ratio: node.ratio, children: node.children.map(build) };
+      root = build(tree); active = panes[selected]; publish();
+      return panes;
+    },
     subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); },
     activate(pane) { if (active !== pane && snapshot.panes.some(item => item.pane === pane)) { active = pane; publish(); } },
     split(pane, direction, initial) {

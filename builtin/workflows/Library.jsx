@@ -5,6 +5,9 @@ import { commandDraft, initialPreferences, readPreferences, subscribePreferences
 import { cardsFor, replaceCards, moveCard, cardState } from './deck.js';
 import { SkillDetail } from './Route.jsx';
 import { Board } from './Board.jsx';
+import { Compose } from './Compose.jsx';
+import { PStack } from './PStack.jsx';
+import { OpenSpec } from './OpenSpec.jsx';
 import { TaskEditor } from './TaskEditor.jsx';
 import { Catalog } from './Catalog.jsx';
 import { Execution } from './Execution.jsx';
@@ -17,30 +20,8 @@ const packTitles = Object.fromEntries(catalog.map(pack => [pack.id, pack.title])
 const savedRoute = (preferences, sessionId, recipeId) => preferences.runs[sessionId]?.routes[recipeId] || emptyRoute();
 const selectionFor = (recipe, card) => ({ id: `${recipe.pack}/${card.skill}`, cardId: card.id });
 
-function Compose({ skill, availability, api, sessionId, useInput, inputActions, openView, context, onUsed, t }) {
-  const input = useInput(state => state), [error, setError] = useState(''), [busy, setBusy] = useState(false);
-  const latest = useRef(input), lifetime = useRef(null);
-  latest.current = input;
-  useEffect(() => { const abort = new AbortController(); lifetime.current = abort; return () => abort.abort(); }, []);
-  const locked = input.phase !== 'plain' || input.attachmentIds?.length > 0 || input.occurrences?.length > 0;
-  const insert = async () => {
-    setBusy(true); setError('');
-    try {
-      const response = await api.list({ sessionId }, lifetime.current.signal);
-      if (lifetime.current.signal.aborted) return;
-      if (!response.ok || skillAvailability(skill, response.value.skills) !== 'ready') throw new Error('Unavailable');
-      const current = latest.current;
-      if (current.phase !== 'plain' || current.attachmentIds?.length || current.occurrences?.length) throw new Error('Draft is busy');
-      inputActions.setDraft(commandDraft(skill, current.draft, context));
-      onUsed(); openView('chat', '');
-    } catch { if (!lifetime.current.signal.aborted) setError(t('draftFailed')); }
-    finally { if (!lifetime.current.signal.aborted) setBusy(false); }
-  };
-  return <><button type="button" className="sc-flow-primary" disabled={availability !== 'ready' || locked || busy} onClick={insert}>{t('use')}</button>
-    {locked && <p className="sc-flow-note">{t('richDraft')}</p>}{error && <p role="alert">{error}</p>}</>;
-}
 
-export function WorkflowLibrary({ api, subscribe, sessionId, useSessions, useInput, inputActions, openView, inspectCall, hasWorkbench, packageState, page, t, storage = localStorage }) {
+export function WorkflowLibrary({ api, subscribe, sessionId, useSessions, useInput, inputActions, openView, inspectCall, hasWorkbench, packageState, page, filesApi, MarkdownText, t, storage = localStorage }) {
   const enabled = useSyncExternalStore(packageState.subscribe, packageState.snapshot);
   const availableSkills = allSkills.filter(skill => enabled.includes(skill.pack) || enabled.includes('grill-me') && ['grill-me', 'grilling'].includes(skill.name) && skill.pack === 'mattpocock');
   const view = page === 'skills' ? 'catalog' : 'map';
@@ -136,6 +117,7 @@ export function WorkflowLibrary({ api, subscribe, sessionId, useSessions, useInp
     if (!record?.result && !record?.files.length) return '';
     return `\n${t('inputFrom')}：${localized(item.title, language)}\n${[record.result, ...record.files].filter(Boolean).join('\n')}`;
   }).join('')}` : '';
+  const recordUse = id => save(previous => ({ ...previous, recent: [id, ...previous.recent.filter(previousId => previousId !== id)].slice(0, 12) }));
   const nextIndex = nextStageIndex(route, persisted);
   const detail = skill && <SkillDetail key={`${skill.id}-${selection.cardId}`} skill={skill} pack={skillPack} availability={skillAvailability(skill, native.skills)} favorite={preferences.favorites.includes(skill.id)} t={t} mission={mission} backLabel={t(view === 'map' ? 'back' : 'backToCatalog')}
     close={() => { if (view === 'catalog') choose(null, false); container.current.querySelector(view === 'map' ? '.sc-flow-route' : '.sc-flow-catalog')?.scrollIntoView({ block: 'start' }); }}
@@ -144,7 +126,7 @@ export function WorkflowLibrary({ api, subscribe, sessionId, useSessions, useInp
     nextQuest={mission?.record.status === 'completed' && nextIndex !== -1 ? () => choose(selectionFor(route, cards[nextIndex])) : null}
     compose={<>
       {useInput && inputActions && <Compose key={`${skill.id}-${selection.cardId}`} skill={skill} availability={skillAvailability(skill, native.skills)} api={api} sessionId={sessionId} useInput={useInput} inputActions={inputActions} openView={openView} context={context}
-        onUsed={() => save(previous => ({ ...previous, recent: [skill.id, ...previous.recent.filter(id => id !== skill.id)].slice(0, 12) }))} t={t} />}
+        onUsed={() => recordUse(skill.id)} t={t} />}
       <button type="button" className="sc-flow-copy" onClick={() => { void navigator.clipboard.writeText(commandDraft(skill, '', context)).then(() => setCopied(true)).catch(() => setError(t('copyFailed'))); }}>{t(copied ? 'copied' : 'copy')}</button>
       {mission && !['active', 'completed'].includes(mission.record.status) && <button type="button" className="sc-flow-focus" disabled={cardState(step, persisted) === 'waiting'} onClick={() => saveRecord('active')}>{t('focusStage')}</button>}
     </>} />;
@@ -156,13 +138,20 @@ export function WorkflowLibrary({ api, subscribe, sessionId, useSessions, useInp
     {error && <p className="sc-flow-alert" role="alert">{error}</p>}{native.status !== 'ready' && <p className="sc-flow-alert" role={native.status === 'failed' ? 'alert' : 'status'}>{t(native.status)}</p>}
     <main className="sc-flow-main">{view === 'map' ? <>
       <section className="sc-flow-goal"><div><span className="sc-flow-eyebrow">{t('goal')}</span><h2>{run.goal || facts.goal || t('noGoal')}</h2></div><details><summary>{t('editGoal')}</summary><form onSubmit={event => { event.preventDefault(); if (commitRun(run, 'goal')) setNotice(t('recordSaved')); }}><label>{t('goal')}<textarea aria-label={t('goal')} rows={2} maxLength={4000} value={run.goal} placeholder={facts.goal || t('goalHint')} onChange={event => setDrafts(previous => ({ ...previous, [route.id]: { ...previous[route.id], goal: event.target.value } }))} /></label><button type="submit">{t('saveRecord')}</button></form></details></section>
-      <div className="sc-flow-workspace"><Board key={route.id} recipe={route} cards={cards} run={persisted} selected={index} choose={index => choose(selectionFor(route, cards[index]))} start={index => { if (saveRecord('active', index)) choose(selectionFor(route, cards[index])); }} edit={setEditing} add={add} t={t} notice={notice} chooseTool={name => choose({ id: `${route.pack}/${name}` })} />
+      {page === 'pstack' ? <PStack onUsed={recordUse} recipe={route} run={persisted} goal={run.goal || facts.goal} facts={facts} openFile={openFile} inspectCall={inspectCall} openChat={() => openView('chat', '')} t={t}
+        saveNote={(id, note) => save(previous => {
+          const current = savedRoute(previous, sessionId, route.id);
+          return recordProgress(previous, sessionId, route.id, { ...current, stages: { ...current.stages, [id]: { ...(current.stages[id] || emptyStage()), ...note } } });
+        })} skills={availableSkills} native={native} api={api} sessionId={sessionId} useInput={useInput} inputActions={inputActions} openView={openView} />
+      : page === 'openspec' ? <OpenSpec onUsed={recordUse} MarkdownText={MarkdownText} filesApi={filesApi} sessionId={sessionId} revision={revision} goal={run.goal || facts.goal} facts={facts} run={persisted} openFile={openFile} t={t}
+        skills={availableSkills} native={native} api={api} useInput={useInput} inputActions={inputActions} openView={openView} />
+      : <div className="sc-flow-workspace"><Board key={route.id} recipe={route} cards={cards} run={persisted} selected={index} choose={index => choose(selectionFor(route, cards[index]))} start={index => { if (saveRecord('active', index)) choose(selectionFor(route, cards[index])); }} edit={setEditing} add={add} t={t} notice={notice} chooseTool={name => choose({ id: `${route.pack}/${name}` })} />
         <div className="sc-flow-inspector">{editing ? <TaskEditor key={editing.id} card={editing} cards={cards} skills={availableSkills.filter(skill => skill.pack === route.pack && skill.userInvocable)} save={saveCard} close={() => setEditing(null)} move={cards.some(card => card.id === editing.id) ? direction => commitRun(moveCard({ ...persisted, cards }, editing.id, direction), '__cards') : null} t={t} /> : detail}
           <Execution facts={facts} openFile={openFile} inspectCall={inspectCall} openChat={() => openView('chat', '')} t={t} attachFile={mission ? path => {
             if (mission.record.files.includes(path)) return;
             if (mission.record.files.length === 16) { setError(t('fileLimit')); return; }
             updateRecord({ ...mission.record, files: [...mission.record.files, path] }); setNotice(t('fileAttached'));
-          } : null} /></div></div>
+          } : null} /></div></div>}
     </> : <div className="sc-flow-workspace" data-catalog=""><Catalog skills={availableSkills} native={native.skills} preferences={preferences} selected={selection?.id} choose={skill => choose({ id: skill.id })} pack={pack} titles={packTitles} t={t} />{detail}</div>}</main>
   </section>;
 }

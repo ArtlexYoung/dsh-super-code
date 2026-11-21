@@ -1,3 +1,4 @@
+export { SafeMarkdown } from './windows/markdown.jsx';
 import React, { useMemo, useSyncExternalStore } from 'react';
 import { workspaceApi } from './remote.js';
 export { descriptors } from './remote.js';

@@ -2,15 +2,12 @@ import React, { useState } from 'react';
 import { localized } from './recipes.js';
 import { cardState } from './deck.js';
 
-// Each method arranges its work around its own objects, while cards share acceptance semantics.
+// Matt workflows organize independently verifiable work as cards.
 const layouts = {
   'matt-feature': { mark: 'M / 01', title: ['任务布告板', 'The task board'], caption: ['选一张卡，把想法变成成果。', 'Pick a card. Turn an idea into an outcome.'], sections: [['desk', '待办与成果', 'Work and outcomes']] },
   'matt-small': { group: card => card.skill === 'implement' ? 'focus' : 'support', mark: 'M / 02', title: ['专注这一件事', 'One change, one sitting'], caption: ['需求清楚，就直接动手。', 'A clear request is enough to start.'], sections: [['focus', '现在动手', 'Make the change'], ['support', '需要时再展开', 'Open when needed']] },
   'matt-fix': { group: card => card.skill === 'diagnosing-bugs' ? 'investigate' : 'review', mark: 'M / 03', title: ['故障调查室', 'The investigation desk'], caption: ['从可复现的失败，走到可验证的修复。', 'From a reproducible failure to a verified fix.'], sections: [['investigate', '调查与修复', 'Investigate and repair'], ['review', '复核与经验', 'Review and learn']] },
   'matt-wayfinder': { group: (card, run) => run.stages[card.id]?.status === 'completed' ? 'decisions' : 'questions', mark: 'M / 04', title: ['把未知逐个变清楚', 'Make the unknown clear'], caption: ['沿着问题探索，带着决策回来。', 'Explore a question. Bring back a decision.'], sections: [['questions', '待探明', 'Open questions'], ['decisions', '已确定', 'Decisions made']] },
-  'pstack-feature': { group: card => ['understand', 'shape', 'checkpoint'].includes(card.id) ? 'shape' : 'build', mark: 'P / FEATURE', title: ['先定形，再构建', 'Shape it. Build it. Prove it.'], caption: ['数据与接口，是实现的起点。', 'Start with the data and the interface.'], sections: [['shape', '01 / 理解与定形', '01 / Understand & shape'], ['build', '02 / 实现与证据', '02 / Build & prove']] },
-  'pstack-refactor': { group: card => card.id === 'contract' ? 'before' : 'after', mark: 'P / REFACTOR', title: ['结构变清楚，行为保持住', 'Less structure. Same behavior.'], caption: ['把基线放在手边，每次迁移都能对照。', 'Keep the baseline beside every change.'], sections: [['before', '行为基线', 'Behavior to preserve'], ['after', '目标结构与等价证据', 'New shape & equivalence']] },
-  'openspec-change': { group: card => ['openspec-explore', 'openspec-propose'].includes(card.skill) ? 'proposal' : card.skill === 'openspec-apply-change' ? 'implementation' : 'archive', mark: 'O / CHANGE', title: ['一份变更，完整交付', 'A change, fully accounted for'], caption: ['让提案、代码与验证有据可查。', 'Keep the proposal, implementation and evidence together.'], sections: [['proposal', '提案卷', 'Proposal'], ['implementation', '实施卷', 'Implementation'], ['archive', '验收卷', 'Verification & archive']] },
 };
 
 function TaskCard({ card, index, state, record, selected, choose, start, edit, t }) {

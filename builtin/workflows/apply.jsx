@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { WorkflowLibrary } from './Library.jsx';
+import { workspaceApi } from '../workbench/remote.js';
 import { NS, zh, en } from './locales.js';
 import { featureView } from '../ui/boundary.js';
 
@@ -11,9 +12,14 @@ const pages = [
   { id: 'skills', label: 'Skill 目录', en: 'Skill Library' },
 ];
 
+function WorkflowPage({ filesRemote, ...props }) {
+  const filesApi = useMemo(() => workspaceApi(filesRemote, props.sessionId), [filesRemote, props.sessionId]);
+  return featureView(WorkflowLibrary, { ...props, filesApi, MarkdownText: require('super-code-workbench').SafeMarkdown });
+}
+
 export function applyWorkflows(ctx, hasWorkbench) {
   ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'super-code: workflow locale');
-  ctx.inject(['remote.skills', 'remote.superCodeBudgets'], ready => {
+  ctx.inject(['remote.skills', 'remote.superCodeBudgets', 'remote.superCodeWorkbench'], ready => {
     const subscribe = listener => {
       const off = ready.remote.$on('settings/document-updated', listener);
       const reset = ready.on('connection/reset', listener);
@@ -32,7 +38,7 @@ export function applyWorkflows(ctx, hasWorkbench) {
             name: 'conversation.view', id: `super-code-${page.id}`, order: 30 + pages.indexOf(page), locale: NS,
             label: () => ctx.locale.bind(NS)('language') === 'zh' ? page.label : page.en,
             inject: () => ({ api: ready.remote.skills, subscribe, hasWorkbench, packageState, page: page.id }),
-          }, props => featureView(WorkflowLibrary, { ...props, key: `${page.id}-${props.sessionId}`, t: ctx.locale.bind(NS) })));
+          }, props => <WorkflowPage {...props} key={`${page.id}-${props.sessionId}`} filesRemote={ready.remote.superCodeWorkbench} t={ctx.locale.bind(NS)} />));
         }
       };
       const refresh = async () => {

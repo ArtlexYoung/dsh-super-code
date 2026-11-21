@@ -11,6 +11,8 @@ import { Icon } from './Icon.jsx';
 import { usePanelState } from './panel-state.js';
 import { FileCompare } from './FileCompare.jsx';
 import { LibrarySource } from './LibrarySource.jsx';
+import { SaveConflict } from './SaveConflict.jsx';
+import { Navigator } from './Navigator.jsx';
 
 const emptyResults = { matches: [] };
 
@@ -83,17 +85,17 @@ export function Locations({ data, query, search, workbench, Button, t }) {
 }
 
 
-export function PanelContent({ panel, workbench, Button, Select, t }) {
+const panelComponents = new Map([['git', GitPanel], ['projectReplace', Replace], ['lineHistory', CodeHistory], ['fileCompare', FileCompare], ['saveConflict', SaveConflict], ['navigate', Navigator]]);
+
+export function PanelContent({ panel, workbench, Button, Select, t, toggleFocus }) {
   const { preferences } = useSyncExternalStore(workbench.subscribe, workbench.snapshot);
   const props = { workbench, Button, Select, t, palette: preferences.palette };
+  const Component = panelComponents.get(panel.kind);
+  if (Component) return <Component {...props} panel={panel} toggleFocus={toggleFocus} />;
   switch (panel.kind) {
     case 'settings': return <Settings {...props} preferences={preferences} />;
     case 'library': return <LibrarySource target={panel.target} preferences={preferences} t={t} />;
-    case 'git': return <GitPanel {...props} />;
-    case 'lineHistory': return <CodeHistory {...props} panel={panel} />;
-    case 'projectReplace': return <Replace {...props} />;
     case 'fileAction': return <FileAction {...props} dialog={panel} />;
-    case 'fileCompare': return <FileCompare {...props} panel={panel} />;
     case 'diff': return <Comparison {...props} comparison={panel} />;
     default: return <Locations {...props} data={panel} search={panel.kind === 'search'} />;
   }

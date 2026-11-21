@@ -81,6 +81,11 @@ await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 const browser = await playwright[process.env.SC_TEST_BROWSER || 'chromium'].launch({ headless: true, executablePath: process.env.SC_TEST_EXECUTABLE || undefined });
 try {
   await test('代码历史与紧凑对话真实浏览器交互', async t => {
+    const openHistory = async page => {
+      await page.locator('[data-toolbar-action=commandPalette]').click();
+      await page.locator('.sc-wb-navigator input').fill('>codeHistory');
+      await page.getByRole('option').filter({ hasText: /代码历史|Code history/ }).click();
+    };
     async function run(name, query, action) {
       await t.test(name, async () => {
         const page = await browser.newPage({ viewport: { width: 1400, height: 900 } }), errors = [];
@@ -94,7 +99,7 @@ try {
       });
     }
     for (const backend of ['native', 'builtin']) await run(`${backend}：从函数入口追踪36次修改、虚拟滚动和按需对比`, `backend=${backend}`, async page => {
-      await page.locator('[data-toolbar-action="codeHistory"]').click();
+      await openHistory(page);
       await page.locator('.sc-wb-code-history-list button').first().waitFor();
       assert.equal((await page.evaluate(() => window.test.panel())).title, '函数历史');
       assert.match(await page.locator('.sc-wb-code-history .sc-wb-git-toolbar').textContent(), /36/);
@@ -111,7 +116,7 @@ try {
     });
     await run('显式选区优先，停止后晚到结果不能覆盖重新查询，关闭也取消读取', 'backend=builtin', async page => {
       await page.evaluate(() => { const doc=window.test.controller.view().state.doc;window.test.select(doc.line(3).from,doc.line(3).to);window.test.gate(true); });
-      await page.locator('[data-toolbar-action="codeHistory"]').click();
+      await openHistory(page);
       await page.waitForFunction(() => window.test.count() === 1);
       await page.getByRole('button', { name: '停止', exact: true }).click();
       await page.evaluate(() => { window.test.gate(false); });
@@ -126,14 +131,14 @@ try {
       await page.locator('.sc-wb-code-history').waitFor({ state: 'detached' });
     });
     await run('历史查询失败显示错误并可重试', 'backend=builtin&language=en', async page => {
-      await page.evaluate(() => window.test.fail(true)); await page.locator('[data-toolbar-action="codeHistory"]').click();
+      await page.evaluate(() => window.test.fail(true)); await openHistory(page);
       await page.getByRole('alert').filter({ hasText: 'repository changed' }).waitFor();
       await page.evaluate(() => window.test.fail(false)); await page.getByRole('button', { name: 'Retry', exact: true }).click();
       await page.locator('.sc-wb-code-history-list button').first().waitFor();
     });
     await run('独立窗口打开后内嵌历史仍可完成，关窗不重复查询', 'backend=builtin', async page => {
       await page.evaluate(() => window.test.gate(true));
-      await page.locator('[data-toolbar-action="codeHistory"]').click();
+      await openHistory(page);
       await page.waitForFunction(() => window.test.count() === 1);
       await page.evaluate(() => window.test.controller.windowState({ state: 'active' }));
       assert.equal(await page.locator('.sc-wb-code-history').isVisible(),true);

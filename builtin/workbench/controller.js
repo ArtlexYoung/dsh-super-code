@@ -18,6 +18,7 @@ import { createProject } from './editing/project.js';
 import { asText, textChanges } from './editing/history.js';
 import { createAutosave } from './editing/autosave.js';
 import { undoEdit, replaceFiles } from './editing/actions.js';
+import { readSaveConflict, applySaveConflict } from './editing/save-conflict.js';
 import { createTabs } from './tabs.js';
 import { createEditorGroups } from './editor/groups.js';
 import { createWindowRoute } from './windows/route.js';
@@ -59,7 +60,7 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
   // 同会话窗口共用撤销记录，编辑通知仍按视图区分，保证其他窗口收到修改。
   const owner = historyOwner || Symbol('workbench'), origin = Symbol('workbench-view');
   let project, unsubscribeProject = () => {}, synchronizing = false, receiving = false;
-  let snapshot = { file: null, editorKind: 'file', tabs: [], directories, symbols: [], cursor: null, status: t('ready'), error: '', preferences, environmentPaths: {}, panel: null, assistant: null, indexing: false, indexed: 0, back: false, forward: false, fileMenu: null, fileClipboard: null, closingFile: null };
+  let snapshot = { file: null, editorKind: 'file', tabs: [], recentFiles: [], saveConflict: null, directories, symbols: [], cursor: null, status: t('ready'), error: '', preferences, environmentPaths: {}, panel: null, assistant: null, indexing: false, indexed: 0, back: false, forward: false, fileMenu: null, fileClipboard: null, closingFile: null };
   const publish = patch => { if (disposed) return; snapshot = { ...snapshot, ...patch }; for (const listener of subscribers) listener(); };
   const fail = error => { if (error.name !== 'AbortError') publish({ error: errorText(error, t) }); };
   const fileTabs = createTabs(documents), tabs = fileTabs.list;
@@ -80,7 +81,7 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
       await ready;
       if (operation) await operation.finished;
     } while (ready !== binding || operation);
-    if (!disposed && project === target && preferences.autoSave !== 'manual') await save(path);
+    if (!disposed && project === target && preferences.autoSave !== 'manual') await save(path, true);
   }, fail);
   const unsubscribeSettings = preference.subscribe(loadSettings);
   loadSettings();
@@ -136,6 +137,7 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
       fileTabs.keep(current);
       doc.state = update.state;
       if (!synchronizing) {
+        doc.saveReview = false;
         doc.writers.add(owner);
         for (const transaction of update.transactions) if (transaction.docChanged) project.history.record(owner, {
           kind: 'text', path: current, before: transaction.startState.doc, after: transaction.newDoc, changes: transaction.changes,
@@ -207,7 +209,7 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
       }
       void updateIndex(file).catch(fail);
       if (turn !== generation || !editor) return false;
-      publish({ file, tabs: tabs(), status: doc.dirty ? t('unsaved') : t('saved') });
+      publish({ file, recentFiles: [file, ...snapshot.recentFiles.filter(path => path !== file)].slice(0, 50), tabs: tabs(), status: doc.dirty ? t('unsaved') : t('saved') });
     }
     const editorKind = target.kind === 'markdown' ? 'markdown' : 'file';
     if (editorKind === 'markdown') fileTabs.render(file);
@@ -360,22 +362,28 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
   async function persist(path) {
     const target = project, doc = target.documents.get(path);
     if (!doc || !doc.dirty) return;
-    const result = await api.save({ path, text: doc.text, version: doc.version });
-    doc.original = result.text; doc.version = result.version;
+    let result;
+    try { result = await api.save({ path, text: doc.text, version: doc.version }); }
+    catch (error) {
+      if (error.message.includes('WORKBENCH_CONFLICT') && project === target) publish({ saveConflict: path });
+      throw error;
+    }
+    doc.original = result.text; doc.version = result.version; doc.saveReview = false;
     if (!doc.dirty) doc.writers.clear();
     target.publish({ kind: 'saved', path, source: origin });
     if (project === target) {
-      publish({ tabs: tabs(), status: doc.dirty ? t('unsaved') : t('saved'), error: '' });
+      publish({ tabs: tabs(), status: doc.dirty ? t('unsaved') : t('saved'), error: '', saveConflict: snapshot.saveConflict === path ? null : snapshot.saveConflict });
       changes.invalidate();
     }
   }
-  async function save(path = current) {
+  async function save(path = current, automatic = false) {
     if (operation) throw new Error('WORKBENCH_FILE_BUSY');
     if (!project || !path) return;
     autosave.cancel(path);
     const target = project, ready = binding;
     const result = target.run(() => {
       if (project !== target || binding !== ready) throw new Error('WORKBENCH_PROJECT_CHANGED');
+      if (automatic && target.documents.get(path)?.saveReview) return;
       return persist(path);
     }); saving = result;
     try { await result; } finally { if (saving === result) saving = null; }
@@ -487,7 +495,8 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
       if (affected(directory)) directories.delete(directory);
       else { const entries = result.entries.filter(entry => !affected(entry.path)); if (entries.length !== result.entries.length) directories.set(directory, { ...result, entries }); }
     }
-    publish({ directories: new Map(directories) });
+    publish({ directories: new Map(directories), recentFiles: snapshot.recentFiles.filter(file => !affected(file)),
+      saveConflict: snapshot.saveConflict && affected(snapshot.saveConflict) ? null : snapshot.saveConflict });
     const next = history.slice(0, at + 1).filter(item => !affected(item.file)).length - 1;
     history = history.filter(item => !affected(item.file)); at = next;
     if (current && affected(current)) { assistant.switchFile(); current = null; editor?.dispose(); publish({ file: null, cursor: null, symbols: [] }); }
@@ -551,7 +560,7 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
   }
   function acceptDisk(doc, loaded, target = project) {
     const before = doc.state?.doc || asText(doc.text), after = asText(loaded.text);
-    doc.original = loaded.text; doc.version = loaded.version;
+    doc.original = loaded.text; doc.version = loaded.version; doc.saveReview = false;
     doc.writers.clear();
     if (!before.eq(after)) {
       let changes;
@@ -564,6 +573,7 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
     if (event.kind === 'environment') { publish({ environmentPaths: project.environment.snapshot().paths }); return; }
     if (event.kind === 'lock') { if (event.locked) assistant.switchFile(); editor?.readonly(event.locked); return; }
     if (event.source === origin) return;
+    if (event.kind === 'saved' && snapshot.saveConflict === event.path) publish({ saveConflict: null, error: '' });
     if (event.kind === 'files') { forgetFiles(event.path); files.reset(); }
     if (event.kind === 'directory') {
       if (directories.has(event.path) || listings.has(event.path)) void list(event.path).catch(fail);
@@ -612,7 +622,7 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
       const paths = [...documents.keys()]; projectViews.get(previous)?.delete(documents); documents.clear(); collectBuffers(previous, paths);
       states.clear(); fileTabs.clear(); directories.clear(); listings.clear(); current = null; history = []; at = -1; editor?.dispose();
       changes.reset();
-      publish({ file: null, tabs: [], symbols: [], cursor: null, closingFile: null, fileClipboard: null, fileMenu: null, panel: null, directories: new Map(directories), error: '', status: t('ready') });
+      publish({ file: null, recentFiles: [], tabs: [], symbols: [], cursor: null, closingFile: null, fileClipboard: null, fileMenu: null, panel: null, saveConflict: null, directories: new Map(directories), error: '', status: t('ready') });
     }
     if (!projectViews.has(project)) projectViews.set(project, new Set());
     projectViews.get(project).add(documents);
@@ -695,6 +705,19 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
       states.clear(); subscribers.clear(); editorSubscribers.clear();
     },
     visit, move, list, refresh, save, settings, definition, fail, fileOperation, submitFileAction, undo, closeFile, models: api.models, fonts: api.fonts, searchProject,
+    async readSaveConflict(path, signal) {
+      await binding;
+      if (!project) throw new Error('WORKBENCH_WORKSPACE');
+      return readSaveConflict(editing, path, signal);
+    },
+    async applySaveConflict(entry, text) {
+      if (!project || operation) throw new Error('WORKBENCH_FILE_BUSY');
+      const target = project, ready = binding;
+      await applySaveConflict(editing, entry, text);
+      if (project !== target || binding !== ready) return;
+      publish({ saveConflict: snapshot.saveConflict === entry.path ? null : snapshot.saveConflict, error: '', status: t('conflictApplied'), tabs: tabs() });
+      void updateIndex(entry.path).catch(fail);
+    },
     async environmentPaths(value) {
       const target = project, ready = binding;
       await ready;

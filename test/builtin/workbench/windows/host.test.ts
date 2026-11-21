@@ -164,3 +164,23 @@ test('独立窗口的依赖定义和环境设置走只读RPC，不调用不存�
   const environments=await proxy.environments(new AbortController().signal);assert.equal(environments.environments[0].language,'python');assert.deepEqual(signalCalls,['resolve','environments'])
  }finally{proxy.dispose();f.host.dispose()}
 })
+
+
+test('独立窗口保存冲突的比较与应用沿用宿主版本快照，不调用 Git', async () => {
+  const entry = { project: 'demo', path: 'demo.ts', base: 'old', draft: 'draft', version: 'v1', disk: { path: 'demo.ts', text: 'disk', version: 'v2' }, merged: null }
+  const f = fixture()
+  f.workbench.readSaveConflict = async (path: string, signal: AbortSignal) => { signal.throwIfAborted(); assert.equal(path, 'demo.ts'); return entry }
+  f.workbench.applySaveConflict = async (value: typeof entry, text: string) => { assert.deepEqual(value, entry); f.calls.push(text) }
+  const proxy = createWindowProxy(async (message: unknown) => {
+    await f.host.accept(encode(message))
+    for (const content of f.sent.splice(0)) await proxy.accept(content)
+  }, (key: string) => key)
+  try {
+    await f.host.accept('{"kind":"hello"}'); await settled()
+    for (const message of f.sent.splice(0)) await proxy.accept(message)
+    const result = await proxy.readSaveConflict('demo.ts', new AbortController().signal)
+    assert.deepEqual(result, entry)
+    await proxy.applySaveConflict(result, 'resolved')
+    assert.deepEqual(f.calls, ['resolved'])
+  } finally { proxy.dispose(); f.host.dispose() }
+})

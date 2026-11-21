@@ -12,6 +12,19 @@ const file = (path: string) => ({ type: 'file', path, name: path.split('/').at(-
 const directory = (path: string) => ({ type: 'directory', path, name: path.split('/').at(-1)! })
 const listing = (entries: ReturnType<typeof file>[], truncated = false) => ({ entries, truncated })
 
+test('关闭快速导航不会取消文件侧栏仍在使用的搜索，两处关闭后才取消', async () => {
+  const pending = Promise.withResolvers<ReturnType<typeof listing>>()
+  let signal: AbortSignal | undefined
+  const search = createFileSearch(async (_path: string, abort: AbortSignal) => { signal = abort; return pending.promise })
+  search.activate(true)
+  search.activate(true, 'navigator')
+  search.activate(false, 'navigator')
+  assert.equal(signal?.aborted, false)
+  search.activate(false)
+  assert.equal(signal?.aborted, true)
+  pending.resolve(listing([])); search.dispose()
+})
+
 test('文件名和路径搜索支持中文、空格、大小写及 Windows 分隔符，空查询不列结果', () => {
   const files = ['src/中文 目录/测试 File.ts', 'images/logo.svg', 'Makefile', 'a/[literal].dat']
   for (const query of ['测试 file', ' SRC\\中文 目录\\测试 ', '中文 目录']) assert.deepEqual(matchFiles(files, query), [files[0]])

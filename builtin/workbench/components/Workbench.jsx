@@ -12,7 +12,8 @@ import { CloseFile } from './Tabs.jsx';
 import { EditorGroups, useTabLayout } from './EditorGroups.jsx';
 import { Sidebar, rightPanels } from './Sidebar.jsx';
 import { Icon } from './Icon.jsx';
-import { keyOf, matchesShortcut } from '../editor/preferences.js';
+import { actions, keyOf, matchesShortcut } from '../editor/preferences.js';
+import { workbenchCommands } from '../commands.js';
 import { fileTarget, WORKBENCH_VIEW } from '../file-links.js';
 import { Toolbar } from './Toolbar.jsx';
 import { PanelContent } from './PanelContent.jsx';
@@ -33,13 +34,14 @@ export function Workbench({ workbench: primary, Button, Select, MarkdownText, Co
   const sidebarId = useId();
   const explorerOpen = layout.explorerOpen && (layout.filesOpen || layout.outlineOpen), rightVisible = Object.values(rightOpen).some(Boolean);
   const fileOnly = presentation.kind === 'file', panelOnly = presentation.kind === 'panel', selectionOnly = presentation.kind === 'selection', closeOnly = presentation.kind === 'closeFile', focused = fileOnly || panelOnly || selectionOnly || closeOnly;
+  const closingConflict = closeOnly && snapshot.panel?.kind === 'saveConflict';
   const canSplit = !focused && Boolean(primary.createPane);
   const openTabWindow = primary.openFileWindow || primary.openWindow;
   const tabLayout = useTabLayout(groups, openTabWindow, canSplit);
   const dialog = useRef({ order: 0 });
   Object.assign(dialog.current, { shortcut: keyOf(snapshot.preferences, 'close'), close: () => {
     if (snapshot.panel?.busy) return;
-    if (closeOnly) workbench.cancelCloseFile(); else workbench.panel(null);
+    if (closeOnly && !closingConflict) workbench.cancelCloseFile(); else workbench.panel(null);
     void workbench.returnToHost().catch(workbench.fail);
   } });
   useDialogKeyboard(dialog.current, panelOnly || closeOnly);
@@ -76,6 +78,7 @@ export function Workbench({ workbench: primary, Button, Select, MarkdownText, Co
   const current = snapshot.tabs.find(item => item.path === snapshot.file && item.kind === 'file'), panel = snapshot.panel;
   useEffect(() => { if (fileOnly) setDirectory(null); }, [fileOnly, snapshot.file]);
   const readingFocusActive = Boolean(snapshot.file && !focused && readingFocus);
+  const toggleFocus = useCallback(() => setReadingFocus(value => !value), []);
   const toggleExplorer = key => {
     const next = { filesOpen: layout.explorerOpen && layout.filesOpen, outlineOpen: layout.explorerOpen && layout.outlineOpen };
     next[key] = !next[key];
@@ -87,6 +90,14 @@ export function Workbench({ workbench: primary, Button, Select, MarkdownText, Co
   const action = callback => () => { Promise.resolve().then(callback).catch(workbench.fail); };
   return <section className="sc-workbench sc-wb-main" lang={t('languageTag')} tabIndex={-1} data-conversation-composer-overlay="" data-palette={snapshot.preferences.palette} data-tool-names={snapshot.preferences.showToolNames} aria-label={t('title')}
     style={{ '--wb-explorer-width': `${layout.explorer}px`, '--wb-reading-width': `${layout.reading}px`, '--wb-files-height': `${layout.files}px` }}
+    onKeyDownCapture={event => {
+      if (event.defaultPrevented || event.nativeEvent.isComposing || event.target.closest('.sc-wb-conversation,[data-workbench-dialog]')) return;
+      const action = actions.find(item => item.surface && matchesShortcut(event, keyOf(snapshot.preferences, item.id)));
+      if (!action) return;
+      const command = workbenchCommands(workbench, snapshot, t, !focused ? toggleFocus : undefined)[action.id];
+      event.preventDefault(); event.stopPropagation();
+      if (!command.disabled) void Promise.resolve().then(command.run).catch(workbench.fail);
+    }}
     onKeyDown={event => {
       if (event.target.closest('.sc-wb-conversation,.sc-wb-file-search,.sc-wb-file-menu,.sc-wb-file-dialog')) return;
       if (event.target.closest('input,textarea,[contenteditable]') && !event.target.closest('.cm-editor')) return;
@@ -103,10 +114,10 @@ export function Workbench({ workbench: primary, Button, Select, MarkdownText, Co
     onPointerUpCapture={event => navigationPointer(event)}>
     <div className="sc-wb-window-content">
     <FloatingBoundary preferences={snapshot.preferences}>
-    {focused ? <header className="sc-wb-focused-toolbar"><strong>{fileOnly ? snapshot.file : panelOnly ? panel?.title || panel?.path || t(panel?.kind || 'title') : t(closeOnly ? 'closeFile' : 'selection')}</strong><nav>
+    {focused ? <header className="sc-wb-focused-toolbar"><strong>{fileOnly ? snapshot.file : panelOnly || closingConflict ? panel?.title || panel?.path || t(panel?.kind || 'title') : t(closeOnly ? 'closeFile' : 'selection')}</strong><nav>
       {fileOnly && <Button disabled={!current?.dirty} onClick={action(() => workbench.save())}><Icon name="save" />{t('save')}</Button>}
       <Button onClick={workbench.returnToHost}><Icon name="back" />{t('windowReturn')}</Button></nav></header>
-      : <Toolbar workbench={workbench} snapshot={snapshot} current={current} Button={Button} t={t} />}
+      : <Toolbar workbench={workbench} snapshot={snapshot} current={current} Button={Button} t={t} toggleFocus={toggleFocus} />}
     <div className="sc-wb-body" data-focused={focused} data-reading-focus={readingFocusActive} data-left-open={explorerOpen} data-right-open={rightVisible} hidden={panelOnly || selectionOnly || closeOnly}>
       {!focused && <nav className="sc-wb-side-rail" aria-label={t('explorerBar')}>{[{ key: 'filesOpen', label: 'files', icon: 'files' }, { key: 'outlineOpen', label: 'symbols', icon: 'outline' }].map(item =>
         <Button key={item.key} aria-pressed={explorerOpen && layout[item.key]} title={t(item.label)} onClick={() => toggleExplorer(item.key)}><Icon name={item.icon} /><span>{t(item.label)}</span></Button>)}</nav>}
@@ -125,7 +136,7 @@ export function Workbench({ workbench: primary, Button, Select, MarkdownText, Co
       </section>
     </aside>}{!focused && explorerOpen && <Splitter panel="explorer" label={t('resizeExplorer')} value={layout.explorer} ratio={.3}
       change={value => changeLayout({ explorer: value })} commit={persistLayout} />}<EditorGroups groups={groups} layout={groupLayout} tabLayout={tabLayout} canSplit={canSplit} Button={Button} t={t}
-      fileOnly={fileOnly} closeOnly={closeOnly} focus={readingFocusActive} toggleFocus={!focused ? () => setReadingFocus(value => !value) : undefined}
+      fileOnly={fileOnly} closeOnly={closeOnly} focus={readingFocusActive} toggleFocus={!focused ? toggleFocus : undefined}
       viewportLayout={layout} cwd={fileContext?.()?.cwd} list={primary.list} revealDirectory={revealDirectory}
       initialPreview={presentation.markdownSplit ? presentation.file : undefined} />{!focused && rightVisible && <Splitter panel="reading" label={t('resizeReading')} value={layout.reading} ratio={.48}
       change={value => changeLayout({ reading: value })} commit={persistLayout} />}{!focused && <Sidebar key={sessionId} hidden={!rightVisible} id={sidebarId}
@@ -137,14 +148,15 @@ export function Workbench({ workbench: primary, Button, Select, MarkdownText, Co
       {!focused && <nav className="sc-wb-side-rail sc-wb-side-rail-right" aria-label={t('conversationBar')}>{rightPanels.map(item =>
         <Button key={item.key} aria-pressed={rightOpen[item.key]} aria-controls={`${sidebarId}-${item.key}`} title={t(item.label)} onClick={() => toggleRight(item.key)}><Icon name={item.icon} /><span>{t(item.label)}</span></Button>)}</nav>}
     </div>
-    {panelOnly && <section className={`sc-wb-focused-panel${panel?.kind === 'fileAction' ? ' sc-wb-file-dialog' : ''}`} data-workbench-dialog>{panel ? <PanelContent key={panel.id} panel={panel} workbench={workbench} Button={Button} Select={Select} t={t} /> : <div className="sc-wb-empty">{t('windowContentClosed')}</div>}</section>}
-    {closeOnly && <section className="sc-wb-focused-panel" data-workbench-dialog>{snapshot.closingFile ? <CloseFile path={snapshot.closingFile} workbench={workbench} snapshot={snapshot} Button={Button} t={t} inline /> : <p>{t('windowContentClosed')}</p>}</section>}
+    {(panelOnly || closingConflict) && <section className={`sc-wb-focused-panel${panel?.kind === 'fileAction' ? ' sc-wb-file-dialog' : ''}`} data-workbench-dialog>{panel ? <PanelContent key={panel.id} panel={panel} workbench={workbench} Button={Button} Select={Select} t={t} /> : <div className="sc-wb-empty">{t('windowContentClosed')}</div>}</section>}
+    {closeOnly && !closingConflict && <section className="sc-wb-focused-panel" data-workbench-dialog>{snapshot.closingFile ? <CloseFile path={snapshot.closingFile} workbench={workbench} snapshot={snapshot} Button={Button} t={t} inline /> : <p>{t('windowContentClosed')}</p>}</section>}
     <footer className="sc-wb-status" role="status"><span className={snapshot.error ? 'sc-wb-error' : ''}>{snapshot.error || snapshot.status}</span>
+      {snapshot.saveConflict && <Button className="sc-wb-conflict-link" onClick={() => workbench.panel({ kind: 'saveConflict', path: snapshot.saveConflict })}>{t('saveConflict')}</Button>}
       {snapshot.cursor && <span>{message(t, 'position', { line: snapshot.cursor.line + 1, column: snapshot.cursor.character + 1 })}{snapshot.cursor.length > 0 && ` · ${message(t, 'selected', { count: snapshot.cursor.length })}`}</span>}</footer>
-    {panel && (!focused || fileOnly) && !(panel.kind === 'diff' && panel.origin === 'sidebar' && !workbench.external) && <Floating key={panel.id || panel.kind} openWindow={workbench.openWindow ? () => workbench.openWindow({ kind: 'panel' }) : undefined} title={panel.title || panel.path || t(panel.kind)} close={() => { if (!panel.busy) workbench.panel(null); }} t={t} Button={Button} palette={snapshot.preferences.palette}
-      className={['git', 'diff', 'lineHistory', 'fileCompare'].includes(panel.kind) ? 'sc-wb-git-window' : panel.kind === 'fileAction' ? 'sc-wb-file-dialog' : ''}
-      initialSize={['git', 'diff', 'lineHistory', 'fileCompare'].includes(panel.kind) ? { width: 1180, height: 720 } : panel.kind === 'settings' ? { width: 920, height: 680 } : panel.kind === 'fileAction' ? { width: 470, height: 260 } : undefined}>
-      <PanelContent panel={panel} workbench={workbench} Button={Button} Select={Select} t={t} />
+    {panel && (!focused || fileOnly) && !(panel.kind === 'diff' && panel.origin === 'sidebar' && !workbench.external) && <Floating key={panel.id || panel.kind} openWindow={workbench.openWindow ? () => workbench.openWindow({ kind: 'panel' }) : undefined} title={panel.title || panel.path || t(panel.kind)} close={() => { if (panel.busy) return; workbench.panel(null); if (panel.kind === 'navigate') workbench.view()?.focus(); }} t={t} Button={Button} palette={snapshot.preferences.palette}
+      className={['git', 'diff', 'lineHistory', 'fileCompare', 'saveConflict'].includes(panel.kind) ? 'sc-wb-git-window' : panel.kind === 'fileAction' ? 'sc-wb-file-dialog' : ''}
+      initialSize={['git', 'diff', 'lineHistory', 'fileCompare', 'saveConflict'].includes(panel.kind) ? { width: 1180, height: 720 } : panel.kind === 'settings' ? { width: 920, height: 680 } : panel.kind === 'fileAction' ? { width: 470, height: 260 } : undefined}>
+      <PanelContent panel={panel} workbench={workbench} Button={Button} Select={Select} t={t} toggleFocus={!focused ? toggleFocus : undefined} />
     </Floating>}
     {fileOnly && directory && <Floating title={t('files')} close={() => setDirectory(null)} t={t} Button={Button} palette={snapshot.preferences.palette}>
       <Files snapshot={snapshot} workbench={workbench} Button={Button} t={t} visible directory={directory} />

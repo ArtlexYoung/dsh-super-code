@@ -1,25 +1,30 @@
 export const toolbarActions = [
   { id: 'back', label: 'back', icon: 'back', shortcut: 'back' },
   { id: 'forward', label: 'forward', icon: 'forward', shortcut: 'forward' },
+  { id: 'navigateFiles', label: 'navigateFiles', icon: 'files', shortcut: 'navigateFiles' },
   { id: 'find', label: 'find', icon: 'find', shortcut: 'find' },
-  { id: 'replace', label: 'replace', icon: 'replace', shortcut: 'replace' },
+  { id: 'replace', label: 'replace', icon: 'replace', shortcut: 'replace', secondary: true },
   { id: 'project', label: 'search', icon: 'search', shortcut: 'project' },
-  { id: 'projectReplace', label: 'projectReplace', icon: 'replace', shortcut: 'projectReplace' },
-  { id: 'definition', label: 'definition', icon: 'definition', shortcut: 'definition' },
-  { id: 'complete', label: 'complete', icon: 'complete', shortcut: 'complete' },
-  { id: 'parameters', label: 'parameters', icon: 'function', shortcut: 'parameters' },
-  { id: 'codeHistory', label: 'codeHistory', icon: 'git' },
+  { id: 'projectReplace', label: 'projectReplace', icon: 'replace', shortcut: 'projectReplace', secondary: true },
+  { id: 'definition', label: 'definition', icon: 'definition', shortcut: 'definition', secondary: true },
+  { id: 'complete', label: 'complete', icon: 'complete', shortcut: 'complete', secondary: true },
+  { id: 'parameters', label: 'parameters', icon: 'function', shortcut: 'parameters', secondary: true },
+  { id: 'codeHistory', label: 'codeHistory', icon: 'git', secondary: true },
   { id: 'save', label: 'save', icon: 'save', shortcut: 'save', fixed: true },
   { id: 'git', label: 'git', icon: 'git', fixed: true },
   { id: 'refresh', label: 'refreshShort', title: 'refresh', icon: 'refresh', fixed: true },
   { id: 'window', label: 'windowOpen', icon: 'window', fixed: true },
   { id: 'settings', label: 'settings', icon: 'settings', fixed: true },
-  { id: 'undo', label: 'action_undo', shortcut: 'undo' },
-  { id: 'redo', label: 'action_redo', shortcut: 'redo' },
+  { id: 'commandPalette', label: 'commandPalette', icon: 'complete', shortcut: 'commandPalette', fixed: true },
+  { id: 'undo', label: 'action_undo', shortcut: 'undo', secondary: true },
+  { id: 'redo', label: 'action_redo', shortcut: 'redo', secondary: true },
+  { id: 'navigateSymbols', label: 'navigateSymbols', icon: 'outline', shortcut: 'navigateSymbols', secondary: true },
+  { id: 'readingFocus', label: 'readingFocus', icon: 'focus', shortcut: 'readingFocus', secondary: true },
+  { id: 'saveConflict', label: 'saveConflict', icon: 'replace', secondary: true },
 ];
 
 export function readToolbar(value) {
-  const defaults = toolbarActions.filter(item => !item.fixed).map(({ id }) => ({ id, visible: true }));
+  const defaults = toolbarActions.filter(item => !item.fixed).map(({ id, secondary }) => ({ id, visible: !secondary }));
   if (value === undefined) return defaults;
   if (!Array.isArray(value)) throw new Error('WORKBENCH_PREFERENCES_INVALID');
   const found = new Set();

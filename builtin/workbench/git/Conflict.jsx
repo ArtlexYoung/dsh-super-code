@@ -9,10 +9,26 @@ import { conflictBlocks } from '../../../src/workbench/git/text-diff.ts';
 import { usePanelState } from '../components/panel-state.js';
 import { errorText } from '../locales.js';
 import { Icon } from '../components/Icon.jsx';
+import { asText, textChanges } from '../editing/history.js';
 
 const TransactionSource = Annotation.define();
 
-function ConflictEditor({ path, text, change, label, palette, disabled, block }) {
+function comparisonMarks(base, doc) {
+  if (base === undefined) return [];
+  const lines = new Set();
+  try {
+    textChanges(asText(base), doc).iterChangedRanges((_from, _to, from, to) => {
+      const first = doc.lineAt(from).number, last = doc.lineAt(Math.max(from, to - 1)).number;
+      for (let line = first; line <= last; line++) lines.add(doc.line(line).from);
+    });
+  } catch (error) {
+    // 超大差异保留完整可读文本；着色不影响手动处理和版本检查。
+    if (error.message !== 'WORKBENCH_UNDO_CONFLICT') throw error;
+  }
+  return [...lines].map(from => Decoration.line({ class: 'sc-wb-conflict-changed' }).range(from));
+}
+
+export function ConflictEditor({ path, text, change, label, palette, disabled, block, base, wrap = false }) {
   const parent = useRef(null), editor = useRef(null), changed = useRef(change);
   const [access] = useState(() => new Compartment());
   const [highlight] = useState(() => new Compartment());
@@ -21,13 +37,14 @@ function ConflictEditor({ path, text, change, label, palette, disabled, block })
     let disposed = false;
     const view = new EditorView({ parent: parent.current, state: EditorState.create({ doc: text ?? '', extensions: [
       editorTheme(palette), lineNumbers(), drawSelection(), history(), keymap.of([...searchKeymap, ...historyKeymap, ...defaultKeymap]), search(),
+      ...(wrap ? [EditorView.lineWrapping] : []),
       EditorView.contentAttributes.of({ 'aria-label': label }), access.of([EditorView.editable.of(!!change && !disabled), EditorState.readOnly.of(!change || disabled)]), highlight.of([]),
       EditorView.updateListener.of(update => { if (update.docChanged && !update.transactions.some(item => item.annotation(TransactionSource))) changed.current?.(update.state.doc.toString()); }),
     ] }) });
     editor.current = view;
     void loadLanguage(path).then(language => { if (!disposed) view.dispatch({ effects: StateEffect.appendConfig.of(language) }); });
     return () => { disposed = true; editor.current = null; view.destroy(); };
-  }, [path, palette, label, !!change]);
+  }, [path, palette, label, !!change, wrap]);
   useEffect(() => { editor.current?.dispatch({ effects: access.reconfigure([EditorView.editable.of(!!change && !disabled), EditorState.readOnly.of(!change || disabled)]) }); }, [disabled, !!change]);
   useEffect(() => {
     const view = editor.current, value = text ?? '';
@@ -35,13 +52,13 @@ function ConflictEditor({ path, text, change, label, palette, disabled, block })
   }, [text]);
   useEffect(() => {
     const view = editor.current; if (!view) return;
-    const marks = [];
+    const marks = comparisonMarks(base, view.state.doc);
     if (block) {
       const first = view.state.doc.lineAt(Math.min(block.from, view.state.doc.length)), last = view.state.doc.lineAt(Math.min(Math.max(block.from, block.to - 1), view.state.doc.length));
       for (let line = first.number; line <= last.number; line++) marks.push(Decoration.line({ class: 'sc-wb-conflict-selected' }).range(view.state.doc.line(line).from));
     }
     view.dispatch({ effects: [highlight.reconfigure(EditorView.decorations.of(Decoration.set(marks))), ...(block ? [EditorView.scrollIntoView(Math.min(view.state.doc.length, block.from), { y: 'center' })] : [])] });
-  }, [block?.from, block?.to, palette]);
+  }, [block?.from, block?.to, palette, base, text]);
   return <div ref={parent} className="sc-wb-conflict-editor" />;
 }
 

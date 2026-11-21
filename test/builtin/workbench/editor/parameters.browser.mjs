@@ -139,12 +139,14 @@ try {
         await tooltip.waitFor({ state: 'detached' });
       }
     });
-    await t.test('VS Code 和自定义快捷键，以及工具栏按钮都能打开', async () => {
+    await t.test('VS Code、自定义快捷键和所有操作均可打开参数信息', async () => {
       await page.evaluate(() => window.test.c.settings({...window.test.c.snapshot().preferences,keymap:'vscode'}));
       await page.keyboard.press('Control+Shift+Space'); await active.first().waitFor(); await page.keyboard.press('Escape');
       await page.evaluate(() => window.test.c.settings({...window.test.c.snapshot().preferences,shortcuts:{parameters:'Alt-p'}}));
       await page.keyboard.press('Alt+p'); await active.first().waitFor(); await page.keyboard.press('Escape');
-      const button = page.locator('[data-toolbar-action=parameters]'); await button.scrollIntoViewIfNeeded(); await button.click(); await active.first().waitFor();
+      await page.locator('[data-toolbar-action=commandPalette]').click();
+      await page.locator('.sc-wb-navigator input').fill('>参数信息');
+      await page.getByRole('option').filter({ hasText: '参数信息' }).click(); await active.first().waitFor();
       assert.equal(await page.evaluate(() => window.test.c.view().hasFocus), true);
     });
     await t.test('命名参数按名称强调，PHP 声明不用 HTML 模式误读', async () => {

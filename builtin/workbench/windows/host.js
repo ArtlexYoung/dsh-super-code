@@ -15,7 +15,7 @@ function createHost(workbench, transmit, close, metadata, onReady) {
   const push = value => { if (!stopped && initialized) void transmit(value).catch(close); };
   const edits = createEditHost(workbench.view, push);
   const calls = Object.fromEntries(['visit', 'move', 'list', 'refresh', 'save', 'settings', 'environmentPaths', 'definition', 'fileOperation', 'undo', 'closeFile', 'cancelCloseFile',
-    'moveTab', 'keepTab', 'openConversation', 'menu', 'copyFile', 'pinFile', 'panel', 'submitFileAction'].map(name => [name, args => workbench[name](...args)]));
+    'moveTab', 'keepTab', 'openConversation', 'menu', 'copyFile', 'pinFile', 'panel', 'submitFileAction', 'applySaveConflict'].map(name => [name, args => workbench[name](...args)]));
   for (const [name, target, methods] of [
     ['assistant', workbench.assistant, ['open', 'select', 'close', 'send', 'stop', 'remove', 'draft', 'mode', 'pin']],
     ['reading', workbench.reading, ['goal', 'plan', 'file', 'retry', 'step', 'stop', 'open', 'verify']],
@@ -37,6 +37,7 @@ function createHost(workbench, transmit, close, metadata, onReady) {
     environments: (_args, signal) => workbench.environments(signal),
     git: (args, signal) => workbench.git(args[0], signal),
     compareFiles: (args, signal) => workbench.compareFiles(args[0], args[1], signal),
+    readSaveConflict: (args, signal) => workbench.readSaveConflict(args[0], signal),
     'changes.diff': (args, signal) => workbench.changes.diff(args[0], signal),
     replaceProject: (args, signal, progress) => workbench.replaceProject(...args, progress, signal),
     async searchProject(args, signal, progress) { for await (const value of workbench.searchProject(args[0], signal)) progress(value); },

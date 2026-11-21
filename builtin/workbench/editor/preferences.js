@@ -3,6 +3,10 @@ import { readToolbar } from '../toolbar.js';
 import { appearanceDefaults, readAppearance } from './appearance.js';
 
 export const actions = [
+  { id: 'navigateFiles', idea: 'Mod-Shift-o', vscode: 'Mod-p', surface: true },
+  { id: 'navigateSymbols', idea: 'Mod-F12', vscode: 'Mod-Shift-o', surface: true },
+  { id: 'commandPalette', idea: 'Mod-Shift-p', vscode: 'Mod-Shift-p', surface: true },
+  { id: 'readingFocus', idea: 'Mod-Shift-Enter', vscode: 'Mod-Shift-Enter', surface: true },
   { id: 'close', idea: 'Escape', vscode: 'Escape', dialog: true },
   { id: 'definition', idea: 'Mod-b', vscode: 'F12' },
   { id: 'complete', idea: 'Ctrl-Space', vscode: 'Ctrl-Space' },
@@ -27,7 +31,7 @@ export const actions = [
   { id: 'wordRight', idea: 'Ctrl-ArrowRight', vscode: 'Ctrl-ArrowRight' },
   { id: 'deleteLine', idea: 'Mod-y', vscode: 'Mod-Shift-k' },
 ];
-export const defaults = () => ({ keymap: 'idea', palette: 'idea', shortcuts: {}, autoSave: 'manual', undoLimit: 1000, toolbar: readToolbar(), showToolbarShortcuts: true, showToolNames: true, windowMode: 'internal', followFile: true, previewTabs: true, quickReasoning: 'off', translationReasoning: 'off', ...appearanceDefaults });
+export const defaults = () => ({ keymap: 'idea', palette: 'idea', shortcuts: {}, autoSave: 'manual', undoLimit: 1000, toolbar: readToolbar(), showToolbarShortcuts: false, showToolNames: true, windowMode: 'internal', followFile: true, previewTabs: true, quickReasoning: 'off', translationReasoning: 'off', ...appearanceDefaults });
 const profiles = ['idea', 'vscode'];
 const knownKeys = /^((?:(?:Mod|Ctrl|Meta|Alt|Shift)-)*)([a-z0-9]|[\[\]\\/.,;='`-]|Space|Tab|Enter|Escape|Backspace|Delete|Home|End|PageUp|PageDown|ArrowLeft|ArrowRight|ArrowUp|ArrowDown|F(?:[1-9]|1\d|2[0-4]))$/;
 const modifierOrder = ['Mod', 'Ctrl', 'Meta', 'Alt', 'Shift'];
@@ -41,6 +45,7 @@ function normalize(key) {
   return [...modifierOrder.filter(value => modifiers.includes(value)), parsed[2]].join('-');
 }
 function identities(key) {
+  if (!key) return [];
   const normalized = normalize(key);
   return ['Ctrl', 'Meta'].map(modifier => normalize(normalized.replace(/^Mod-/, `${modifier}-`)));
 }
@@ -55,7 +60,7 @@ export function readPreferences(value) {
   });
   const autoSave = value.autoSave === undefined ? 'manual' : value.autoSave, undoLimit = value.undoLimit === undefined ? 1000 : value.undoLimit;
   if (!saveDelays.includes(autoSave) || !Number.isSafeInteger(undoLimit) || undoLimit < 1) throw new Error('WORKBENCH_PREFERENCES_INVALID');
-  const showToolbarShortcuts = value.showToolbarShortcuts === undefined ? true : value.showToolbarShortcuts;
+  const showToolbarShortcuts = value.showToolbarShortcuts === undefined ? false : value.showToolbarShortcuts;
   const showToolNames = value.showToolNames === undefined ? true : value.showToolNames;
   const windowMode = value.windowMode === undefined ? 'internal' : value.windowMode;
   const followFile = value.followFile === undefined ? true : value.followFile, previewTabs = value.previewTabs === undefined ? true : value.previewTabs;
@@ -75,7 +80,11 @@ export function readPreferences(value) {
   return result;
 }
 export function keyOf(preferences, id) {
-  return preferences.shortcuts[id] ?? actions.find(action => action.id === id)[preferences.keymap];
+  if (preferences.shortcuts[id]) return preferences.shortcuts[id];
+  const action = actions.find(action => action.id === id), key = action[preferences.keymap];
+  // 新增入口不能让已保存的自定义快捷键失效；冲突时仍可从工具栏打开或重新绑定。
+  if (action.surface && Object.values(preferences.shortcuts).some(value => identities(value).some(identity => identities(key).includes(identity)))) return '';
+  return key;
 }
 export function conflict(preferences, id, key) {
   const wanted = identities(key);
@@ -92,12 +101,12 @@ export function shortcutOf(event) {
   return normalize([...modifiers, key].join('-'));
 }
 export function bindingsOf(preferences, commands) {
-  const bindings = actions.filter(action => !action.dialog).map(action => ({ key: keyOf(preferences, action.id), run: commands[action.id], scope: action.global ? 'editor workbench' : 'editor', preventDefault: true }));
+  const bindings = actions.filter(action => !action.dialog && !action.surface).map(action => ({ key: keyOf(preferences, action.id), run: commands[action.id], scope: action.global ? 'editor workbench' : 'editor', preventDefault: true }));
   if (!preferences.shortcuts.definition && !bindings.some(binding => binding.key === 'F12')) bindings.push({ key: 'F12', run: commands.definition });
   for (const action of actions) {
     const key = keyOf(preferences, action.id);
     const alias = key.replace(/^Mod-/, 'Ctrl-');
-    if (!action.dialog && !preferences.shortcuts[action.id] && alias !== key && !bindings.some(binding => binding.key === alias)) bindings.push({ key: alias, run: commands[action.id], scope: action.global ? 'editor workbench' : 'editor', preventDefault: true });
+    if (!action.dialog && !action.surface && !preferences.shortcuts[action.id] && alias !== key && !bindings.some(binding => binding.key === alias)) bindings.push({ key: alias, run: commands[action.id], scope: action.global ? 'editor workbench' : 'editor', preventDefault: true });
   }
   return bindings;
 }
@@ -106,6 +115,7 @@ export function matchesShortcut(event, key) {
   return pressed !== null && identities(key).includes(pressed);
 }
 export function keyLabel(key, space = 'Space') {
+  if (!key) return '—';
   const parsed = knownKeys.exec(key);
   const parts = [...parsed[1].split('-').filter(Boolean), parsed[2]];
   const labels = { Mod: 'Ctrl/⌘', Meta: '⌘', ArrowLeft: '←', ArrowRight: '→', ArrowUp: '↑', ArrowDown: '↓', Space: space };

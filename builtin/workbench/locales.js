@@ -3,6 +3,20 @@ import { zh as readingZh, en as readingEn } from './reading/locales.js';
 export const NS = 'dsh-super-code-workbench';
 export const zh = {
   languageTag: 'zh',
+  navigate: '快速导航', navigateFiles: '快速打开文件', navigateSymbols: '当前文件符号', commandPalette: '所有操作',
+  navigateHint: '输入文件名 · @ 查符号 · > 查操作', navigateCount: '{count} 项', navigateClose: 'Esc 返回编辑区',
+  action_navigateFiles: '快速打开文件', action_navigateSymbols: '查找当前文件符号', action_commandPalette: '搜索所有操作', action_readingFocus: '切换专注阅读',
+
+  saveConflict: '比较并合并', conflictHint: '草稿和磁盘都已修改，请核对结果',
+  conflictResultChanged: '已应用点击时的结果；比较窗口中又有新编辑，已保留，请复制后重新比较。',
+  conflictDraft: '当前草稿', conflictDisk: '最新磁盘内容', conflictResult: '处理结果（可编辑）', conflictBase: '查看修改前的内容',
+  conflictMerged: '不重叠的修改已合并到预览，原草稿仍保留；高亮行表示相对原内容的变化。', conflictManual: '同一处内容有不同修改。请对照两侧编辑结果，或选择采用一侧的全部内容。',
+  conflictUseDraft: '采用全部草稿', conflictUseDisk: '采用全部磁盘内容', conflictApply: '应用到编辑区',
+  conflictApplyHint: '应用后可撤销；核对编辑区内容后再保存。两侧文本可选中复制。', conflictApplied: '处理结果已应用到编辑区，请核对后保存',
+  conflictReload: '重新比较', conflictReloadConfirm: '重新比较会替换这里的处理结果，原编辑区草稿仍保留。',
+  WORKBENCH_CONFLICT_STALE: '磁盘内容再次变化，处理结果已保留。请复制需要保留的内容后重新比较。',
+  WORKBENCH_DRAFT_CHANGED: '编辑区草稿已经变化，处理结果已保留。请复制需要保留的内容后重新比较。',
+
   foldCode: '折叠代码', unfoldCode: '展开代码',
   readingSettings: '阅读与字体', editorFont: '英文代码字体', chineseFont: '中文回退字体', chineseFontSystem: '系统自动选择', editorFontSize: '代码字号', editorLineHeight: '代码行距',
   editorFont_theme: '跟随主题', editorFont_system: '系统等宽字体', editorFont_jetbrains: 'JetBrains Mono（内置）', editorFont_cascadia: 'Cascadia Code', editorFont_menlo: 'Menlo', editorFont_consolas: 'Consolas',
@@ -115,6 +129,20 @@ export const zh = {
 };
 export const en = {
   languageTag: 'en',
+  navigate: 'Quick navigation', navigateFiles: 'Open file', navigateSymbols: 'File symbols', commandPalette: 'All actions',
+  navigateHint: 'File name · @ symbols · > actions', navigateCount: '{count} results', navigateClose: 'Esc returns to editor',
+  action_navigateFiles: 'Quick open file', action_navigateSymbols: 'Find file symbol', action_commandPalette: 'Search all actions', action_readingFocus: 'Toggle reading focus',
+
+  saveConflict: 'Compare and merge', conflictHint: 'Both the draft and the file on disk changed. Review the result.',
+  conflictResultChanged: 'The result at click time was applied. New edits in this comparison are kept; copy them before comparing again.',
+  conflictDraft: 'Current draft', conflictDisk: 'Latest on disk', conflictResult: 'Result (editable)', conflictBase: 'View original content',
+  conflictMerged: 'Non-overlapping changes are merged in the preview. Your original draft is kept; highlighted lines differ from the original.', conflictManual: 'Changes overlap. Edit the result using both versions, or choose all content from one side.',
+  conflictUseDraft: 'Use entire draft', conflictUseDisk: 'Use entire disk file', conflictApply: 'Apply to editor',
+  conflictApplyHint: 'You can undo after applying. Review the editor before saving. Select text on either side to copy.', conflictApplied: 'Result applied to editor. Review and save.',
+  conflictReload: 'Compare again', conflictReloadConfirm: 'Comparing again replaces this result. The draft in the editor is kept.',
+  WORKBENCH_CONFLICT_STALE: 'The file on disk changed again. Your result is kept. Copy anything you need before comparing again.',
+  WORKBENCH_DRAFT_CHANGED: 'The editor draft changed. Your result is kept. Copy anything you need before comparing again.',
+
   parameters: 'Parameter info', action_parameters: 'Show call parameters', parameterPosition: '{name} · Argument {count}',
   parameterMissing: 'No matching signature was found in this project.', parameterFailed: 'Could not read the signature. Open parameter info to retry.',
   foldCode: 'Fold code', unfoldCode: 'Unfold code',

@@ -7,7 +7,7 @@ export function createBuffer(file) {
   let separator = separatorOf(text);
   let checked = null, dirty = false;
   return {
-    path: file.path, version: file.version, writers: new Set(),
+    path: file.path, version: file.version, writers: new Set(), saveReview: false,
     get state() { return state; },
     set state(value) {
       if (value && !state && value.doc.eq(clean)) clean = value.doc;

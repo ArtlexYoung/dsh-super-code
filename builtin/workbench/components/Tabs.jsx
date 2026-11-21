@@ -16,6 +16,7 @@ export function CloseFile({ path, workbench, snapshot, Button, t, inline }) {
   const content = <>
     <p>{message(t, 'tabCloseQuestion', { path })}</p>
     {error && <p role="alert">{error}</p>}
+    {snapshot.saveConflict === path && <Button disabled={busy} onClick={() => { workbench.cancelCloseFile(); workbench.panel({ kind: 'saveConflict', path }); }}>{t('saveConflict')}</Button>}
     <footer><Button disabled={busy} onClick={close}>{t('fileCancel')}</Button>
       <Button disabled={busy} onClick={confirm('keep')}>{t('tabKeepAndClose')}</Button>
       <Button className="sc-wb-primary" disabled={busy} onClick={confirm('save')}>{t(busy ? 'working' : 'tabSaveAndClose')}</Button></footer>

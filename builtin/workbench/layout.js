@@ -5,7 +5,7 @@ const paneDefaults = { conversation: true, quick: false, changes: false, learnin
 export const sidebarMinimum = 70;
 
 export function readLayout(storage) {
-  const defaults = { explorer: 220, reading: 380, files: 280, filesOpen: true, outlineOpen: true, explorerOpen: true, rightOpen: true, right: { ...rightDefaults }, panes: { ...paneDefaults } };
+  const defaults = { explorer: 200, reading: 320, files: 280, filesOpen: true, outlineOpen: true, explorerOpen: true, rightOpen: true, right: { ...rightDefaults }, panes: { ...paneDefaults } };
   try {
     const value = JSON.parse(storage.getItem(KEY));
     if (!value || typeof value !== 'object') return defaults;

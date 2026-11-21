@@ -1,15 +1,12 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
-import { openSearchPanel } from '@codemirror/search';
-import { startCompletion } from '@codemirror/autocomplete';
-import { editingCommands } from '../editor/input.js';
 import { keyOf, keyLabel } from '../editor/preferences.js';
 import { toolbarActions } from '../toolbar.js';
 import { Icon } from './Icon.jsx';
-import { openCodeHistory } from '../git/history.js';
+import { workbenchCommands } from '../commands.js';
 
 const WHEEL_LINE_PIXELS = 16;
 
-export function Toolbar({ workbench, snapshot, current, Button, t }) {
+export function Toolbar({ workbench, snapshot, current, Button, t, toggleFocus }) {
   const scroll = useRef(null), [edges, setEdges] = useState({ overflow: false, start: true, end: true });
   useLayoutEffect(() => {
     const element = scroll.current;
@@ -28,29 +25,13 @@ export function Toolbar({ workbench, snapshot, current, Button, t }) {
     element.addEventListener('wheel', wheel, { passive: false });
     return () => { observer.disconnect(); element.removeEventListener('scroll', measure); element.removeEventListener('wheel', wheel); };
   }, []);
-  const withEditor = run => () => { const view = workbench.view(); if (view) { view.focus(); run(view); } };
-  const commands = {
-    back: { run: () => workbench.move(-1), disabled: !snapshot.back },
-    forward: { run: () => workbench.move(1), disabled: !snapshot.forward },
-    find: { run: withEditor(openSearchPanel), disabled: !current },
-    replace: { run: withEditor(editingCommands.replace), disabled: !current },
-    project: { run: () => workbench.panel({ kind: 'search' }) },
-    projectReplace: { run: () => workbench.panel({ kind: 'projectReplace' }) },
-    definition: { run: workbench.definition, disabled: !current },
-    complete: { run: withEditor(startCompletion), disabled: !current },
-    parameters: { run: withEditor(editingCommands.parameters), disabled: !current },
-    codeHistory: { run: () => openCodeHistory(workbench, t), disabled: !current },
-    refresh: { run: workbench.refresh, disabled: snapshot.indexing },
-    window: { run: workbench.external ? workbench.returnToHost : workbench.openWindow },
-    save: { run: () => { workbench.view()?.focus(); return workbench.save(); }, disabled: !current?.dirty },
-    git: { run: () => workbench.panel({ kind: 'git' }) },
-    settings: { run: () => workbench.panel({ kind: 'settings' }) },
-    undo: { run: () => workbench.undo() }, redo: { run: () => workbench.undo('redo') },
-  };
+  const commands = workbenchCommands(workbench, snapshot, t, toggleFocus, current);
   const shift = direction => scroll.current.scrollBy({ left: direction * Math.max(160, scroll.current.clientWidth * .7), behavior: 'smooth' });
   const renderAction = item => {
     const command = commands[item.id], label = item.id === 'window' && workbench.external ? 'windowReturn' : item.label;
-    return <Button key={item.id} data-toolbar-action={item.id} title={t(item.title || label)} disabled={command.disabled}
+    const shortcut = item.shortcut && keyOf(snapshot.preferences, item.shortcut);
+    const hint = [t(item.title || label), shortcut && keyLabel(shortcut, t('space'))].filter(Boolean).join(' · ');
+    return <Button key={item.id} data-toolbar-action={item.id} aria-label={hint} title={hint} disabled={command.disabled}
       onClick={() => { void Promise.resolve().then(command.run).catch(workbench.fail); }}>
       {item.icon && <Icon name={item.icon} />}<span className="sc-wb-toolbar-label">{t(label)}</span>{snapshot.preferences.showToolbarShortcuts && item.shortcut && <kbd>{keyLabel(keyOf(snapshot.preferences, item.shortcut), t('space'))}</kbd>}
     </Button>;

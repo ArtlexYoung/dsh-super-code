@@ -15,7 +15,7 @@ test('未打开编辑器的修改文件侧栏也读取已保存主题，不访�
   const api = new Proxy({}, { get: () => () => { assert.fail('仅显示主题不应访问工作目录或模型') } })
   const workbench = createWorkbench(api, (key: string) => key)
   t.after(() => workbench.dispose())
-  assert.deepEqual(workbench.snapshot().preferences, { ...saved, autoSave: 'manual', undoLimit: 1000, toolbar: readToolbar(), showToolbarShortcuts: true, showToolNames: true, windowMode: 'internal', followFile: true, previewTabs: true, fontFamily: 'jetbrains', chineseFontFamily: 'system', fontSize: 14, lineHeight: 1.5, readerMode: false, stickyScroll: true, quickReasoning: 'off', translationReasoning: 'off' })
+  assert.deepEqual(workbench.snapshot().preferences, { ...saved, autoSave: 'manual', undoLimit: 1000, toolbar: readToolbar(), showToolbarShortcuts: false, showToolNames: true, windowMode: 'internal', followFile: true, previewTabs: true, fontFamily: 'jetbrains', chineseFontFamily: 'system', fontSize: 14, lineHeight: 1.5, readerMode: false, stickyScroll: true, quickReasoning: 'off', translationReasoning: 'off' })
   assert.equal(reads, 2)
   assert.equal(workbench.view(), undefined)
   assert.equal(workbench.documents.size, 0)

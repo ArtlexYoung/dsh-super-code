@@ -4,11 +4,11 @@ import { readChange, readChanges } from './spec-files.js';
 import { skillAvailability } from './model.js';
 
 const actions = [
-  ['openspec-explore', '探索问题', 'Explore', '理清范围和约束，形成变更方向。', 'Clarify the scope, constraints and direction.'],
-  ['openspec-propose', '创建提案', 'Propose', '生成提案、规格与实施清单，完成后供审阅。', 'Prepare proposal, specs and tasks for review.'],
-  ['openspec-apply-change', '实施变更', 'Apply', '按选中变更的 tasks.md 实施，更新真实任务记录。', 'Implement the selected change and update its tasks.md.'],
-  ['openspec-verify-change', '核对实现', 'Verify', '对照规格、设计与任务检查实现，记录未解决的问题。', 'Check the implementation against specs, design and tasks.'],
-  ['openspec-archive-change', '归档变更', 'Archive', '检查尚未完成的事项，按项目约定归档。', 'Check remaining work and archive according to the project.'],
+  ['openspec-explore', '梳理想法', 'Explore an idea', '还不确定怎么做时，先让 AI 帮你检查现有代码，讨论范围和方案。', 'Ask AI to inspect the code and discuss the scope and approach before deciding what to build.'],
+  ['openspec-propose', '创建方案', 'Create a proposal', '说明要做什么，让 AI 写出方案、需求说明和任务清单，供你检查。', 'Describe what you want. AI prepares a proposal, requirements and task list for you to review.'],
+  ['openspec-apply-change', '按方案开发', 'Implement the change', '让 AI 按所选变更的任务清单修改代码，并更新完成情况。', 'Ask AI to implement the selected change’s tasks and update their status.'],
+  ['openspec-verify-change', '检查完成情况', 'Verify the result', '让 AI 对照需求、设计和任务清单检查代码，列出遗漏或不一致的地方。', 'Ask AI to check the code against requirements, design and tasks, and report gaps or inconsistencies.'],
+  ['openspec-archive-change', '归档变更', 'Archive the change', '先检查未完成事项，再按项目约定把本次变更移到归档目录。', 'Check unfinished work, then archive this change according to the project’s conventions.'],
 ];
 
 function Document({ api, path, revision, openFile, text, MarkdownText }) {
@@ -33,9 +33,9 @@ function Document({ api, path, revision, openFile, text, MarkdownText }) {
 
 function TaskSummary({ tasks, text }) {
   const done = tasks?.filter(task => task.completed).length;
-  return (<section className="sc-spec-task-summary" aria-label={text('实施清单', 'Implementation checklist')}><div><strong>{text('实施清单', 'Implementation checklist')}</strong><span>{tasks === null ? text('尚无 tasks.md', 'No tasks.md') : `${done} / ${tasks.length} ${text('已勾选', 'checked')}`}</span></div>
-      {tasks?.length > 0 && <><progress aria-label={text('文件中的任务进度', 'Task progress from file')} value={done} max={tasks.length} /><details><summary>{text('查看文件中的任务', 'View tasks from file')}</summary><ul>{tasks.map((task, index) => <li key={index} data-complete={task.completed}><span aria-label={text(task.completed ? '已勾选' : '未勾选', task.completed ? 'Checked' : 'Unchecked')}>{task.completed ? '☑' : '☐'}</span>{task.text}</li>)}</ul></details></>}
-      <p>{text('读取 tasks.md 的勾选记录；文档存在和任务勾选不代表实现已通过验证。', 'Reads checkboxes in tasks.md. Files and checked tasks do not prove that implementation is verified.')}</p>
+  return (<section className="sc-spec-task-summary" aria-label={text('任务进度', 'Task progress')}><div><strong>{text('任务进度', 'Task progress')}</strong><span>{tasks === null ? text('还没有任务清单', 'No task list yet') : `${done} / ${tasks.length} ${text('已勾选', 'checked')}`}</span></div>
+      {tasks?.length > 0 && <><progress aria-label={text('文件中的任务进度', 'Task progress from file')} value={done} max={tasks.length} /><details><summary>{text('查看任务清单', 'View the task list')}</summary><ul>{tasks.map((task, index) => <li key={index} data-complete={task.completed}><span aria-label={text(task.completed ? '已勾选' : '未勾选', task.completed ? 'Checked' : 'Unchecked')}>{task.completed ? '☑' : '☐'}</span>{task.text}</li>)}</ul></details></>}
+      <p>{text('进度来自 tasks.md 的勾选记录。任务全部勾选后，仍需检查代码是否符合要求。', 'Progress comes from tasks.md checkboxes. Even when all are checked, verify that the code meets the requirements.')}</p>
     </section>);
 }
 
@@ -47,26 +47,26 @@ function ChangeDocuments({ api, change, revision, openFile, text, MarkdownText }
       .catch(() => { if (!abort.signal.aborted) setState({ path: change.path, status: 'error' }); });
     return () => abort.abort();
   }, [api, change.path, revision]);
-  if (state.path !== change.path || state.status === 'loading') return <p role="status">{text('正在读取变更产物…', 'Reading change artifacts…')}</p>;
-  if (state.status === 'error') return <p role="alert">{text('未能读取变更产物，请刷新重试。', 'Could not read change artifacts. Refresh to retry.')}</p>;
+  if (state.path !== change.path || state.status === 'loading') return <p role="status">{text('正在读取变更文档…', 'Reading change documents…')}</p>;
+  if (state.status === 'error') return <p role="alert">{text('未能读取变更文档，请刷新重试。', 'Could not read change documents. Refresh to retry.')}</p>;
   const document = state.documents.find(file => file.path === selected) || state.documents.find(file => file.name === 'proposal.md') || state.documents[0];
   return <>
     <header className="sc-spec-change-heading"><div><span className="sc-flow-eyebrow">{text(change.archived ? '已归档变更' : '当前变更', change.archived ? 'ARCHIVED CHANGE' : 'CURRENT CHANGE')}</span><h2>{change.name}</h2></div><span>{state.documents.length} {text('份文档', 'documents')}</span></header>
     <TaskSummary tasks={state.tasks} text={text} />
     <nav className="sc-spec-document-tabs" aria-label={text('变更文档', 'Change documents')}>{state.documents.map(file => <button key={file.path} type="button" aria-pressed={document?.path === file.path} onClick={() => select(file.path)}>{file.path.slice(change.path.length + 1)}</button>)}</nav>
-    {document ? <Document api={api} path={document.path} revision={revision} openFile={openFile} text={text} MarkdownText={MarkdownText} /> : <p>{text('这个变更尚无 Markdown 产物。', 'This change has no Markdown artifacts yet.')}</p>}
+    {document ? <Document api={api} path={document.path} revision={revision} openFile={openFile} text={text} MarkdownText={MarkdownText} /> : <p>{text('这个变更还没有 Markdown 文档。', 'This change has no Markdown documents yet.')}</p>}
   </>;
 }
 
 function ChangeIndex({ state, changes, change, archived, showArchived, select, text }) {
   const messages = {
     loading: text('正在读取…', 'Reading…'), error: text('未能读取当前项目，请刷新重试。', 'Could not read the workspace. Refresh to retry.'),
-    ready: state.kind === 'missing' ? text('当前目录没有 openspec 项目。', 'No openspec project in this directory.') : text('这里还没有变更。', 'No changes here yet.'),
+    ready: state.kind === 'missing' ? text('当前项目还没有 OpenSpec 目录。', 'This workspace has no OpenSpec directory yet.') : text('这里还没有变更记录。', 'No changes recorded here yet.'),
   };
-  return (<aside className="sc-spec-index"><h3>{text('变更目录', 'Change index')}</h3><div className="sc-spec-scope">{[false, true].map(value => <button key={String(value)} type="button" aria-pressed={archived === value} onClick={() => showArchived(value)}>{text(value ? '已归档' : '进行中', value ? 'Archived' : 'Active')}</button>)}</div>
+  return (<aside className="sc-spec-index"><h3>{text('项目中的变更', 'Project changes')}</h3><div className="sc-spec-scope">{[false, true].map(value => <button key={String(value)} type="button" aria-pressed={archived === value} onClick={() => showArchived(value)}>{text(value ? '已归档' : '进行中', value ? 'Archived' : 'Active')}</button>)}</div>
       {!changes.length && <p role={state.status === 'error' ? 'alert' : 'status'}>{messages[state.status]}</p>}
-      <nav aria-label={text('选择变更', 'Select a change')}>{changes.map(item => <button key={item.path} type="button" aria-pressed={change?.path === item.path} onClick={() => select(item.path)}><span>{item.name}</span><small>{text(item.archived ? '归档目录' : '变更目录', item.archived ? 'Archive' : 'Change')}</small></button>)}</nav>
-      <details className="sc-spec-local-note"><summary>{text('浏览范围', 'Browsing scope')}</summary><p>{text('浏览当前项目 openspec/changes 下的文件。使用外部 store 的项目，请在会话中按其配置运行 OpenSpec。', 'Browses openspec/changes in this workspace. For an external store, use OpenSpec in the conversation with its configured store.')}</p></details>
+      <nav aria-label={text('选择变更', 'Select a change')}>{changes.map(item => <button key={item.path} type="button" aria-pressed={change?.path === item.path} onClick={() => select(item.path)}><span>{item.name}</span></button>)}</nav>
+      <details className="sc-spec-local-note"><summary>{text('找不到变更？', 'Missing a change?')}</summary><p>{text('这里只显示当前项目 openspec/changes 中的变更。若项目把变更存放在外部 store，请回到对话中使用 OpenSpec。', 'Only changes under this workspace’s openspec/changes appear here. If the project uses an external store, use OpenSpec in the conversation.')}</p></details>
     </aside>);
 }
 
@@ -86,8 +86,8 @@ function ChangeActions({ change, goal, run, openFile, t, text, skills, native, a
   const available = skill && !blocked ? skillAvailability(skill, native.skills) : 'unavailable';
   const reason = blocked ? text('请先选择一个进行中的变更。', 'Select an active change first.') : available === 'ready' ? '' : t(available);
   const context = changeInstruction({ t, text, current, goal, change, needsChange });
-  return (<aside className="sc-spec-actions"><h3>{text('按需要操作', 'Actions when needed')}</h3><p>{text('选择操作，准备指令后回到对话确认发送。', 'Choose an action, then review and send its instruction in the conversation.')}</p><nav aria-label={text('OpenSpec 操作', 'OpenSpec actions')}>{actions.map(item => <button key={item[0]} type="button" aria-pressed={action === item[0]} onClick={() => setAction(item[0])}>{text(item[1], item[2])}</button>)}</nav><p>{text(current[3], current[4])}</p><code>/{action}</code>
-      {skill && <Compose skill={skill} availability={available} api={api} sessionId={sessionId} useInput={useInput} inputActions={inputActions} openView={openView} context={context} onUsed={() => onUsed(skill.id)} t={name => name === 'use' ? text('准备此操作', 'Prepare this action') : t(name)} />}
+  return (<aside className="sc-spec-actions"><h3>{text('你想做什么？', 'What would you like to do?')}</h3><nav aria-label={text('OpenSpec 操作', 'OpenSpec actions')}>{actions.map(item => <button key={item[0]} type="button" aria-pressed={action === item[0]} onClick={() => setAction(item[0])}>{text(item[1], item[2])}</button>)}</nav><p>{text(current[3], current[4])}</p><code>/{action}</code>
+      {skill && <Compose skill={skill} availability={available} api={api} sessionId={sessionId} useInput={useInput} inputActions={inputActions} openView={openView} context={context} onUsed={() => onUsed(skill.id)} t={t} />}
       {reason && <p>{reason}</p>}
       <LegacyNotes run={run} openFile={openFile} text={text} />
     </aside>);
@@ -106,8 +106,8 @@ export function OpenSpec({ filesApi, sessionId, revision, goal, facts, run, open
   }, [filesApi, sessionId, version]);
   const changes = state.changes.filter(change => change.archived === archived), change = changes.find(item => item.path === selected) || changes[0];
   return <section className="sc-spec-desk" aria-label={text('变更与文档', 'Changes and documents')}>
-    <header className="sc-spec-heading"><div><span className="sc-flow-eyebrow">O / SPECIFICATIONS</span><h2>{text('让变更有据可查', 'Keep every change traceable')}</h2><p>{facts.cwd || text('当前会话的项目目录', 'Current conversation workspace')}</p></div><button type="button" onClick={() => setRefresh(value => value + 1)}>{text('刷新变更文件', 'Refresh change files')} ↻</button></header>
-    <div className="sc-spec-workspace"><ChangeIndex state={state} changes={changes} change={change} archived={archived} showArchived={showArchived} select={select} text={text} /><main className="sc-spec-content">{change ? <ChangeDocuments api={filesApi} change={change} revision={version} openFile={openFile} text={text} MarkdownText={MarkdownText} /> : <div className="sc-spec-empty"><span>∅</span><h2>{text('从一个要解决的问题开始', 'Start with a problem to solve')}</h2><p>{text('可以先探索问题，或在已配置 OpenSpec 的项目中创建提案。生成的变更产物会出现在这里。', 'Explore the problem or propose a change in an OpenSpec project. Its artifacts will appear here.')}</p></div>}</main>
+    <header className="sc-spec-heading"><p><span>{text('当前项目', 'Workspace')}</span>{facts.cwd || text('当前会话的项目目录', 'Current conversation workspace')}</p><button type="button" onClick={() => setRefresh(value => value + 1)}>{text('刷新变更文件', 'Refresh change files')} ↻</button></header>
+    <div className="sc-spec-workspace"><ChangeIndex state={state} changes={changes} change={change} archived={archived} showArchived={showArchived} select={select} text={text} /><main className="sc-spec-content">{change ? <ChangeDocuments api={filesApi} change={change} revision={version} openFile={openFile} text={text} MarkdownText={MarkdownText} /> : <div className="sc-spec-empty"><p>{text('选择一个变更，查看它的需求、方案和任务清单。还没有变更时，可以先选“梳理想法”或“创建方案”。', 'Select a change to read its requirements, proposal and tasks. To start a new one, choose “Explore an idea” or “Create a proposal”.')}</p></div>}</main>
     <ChangeActions onUsed={onUsed} change={change} goal={goal} run={run} openFile={openFile} t={t} text={text} skills={skills} native={native} api={api} sessionId={sessionId} useInput={useInput} inputActions={inputActions} openView={openView} /></div>
   </section>;
 }

@@ -21,6 +21,7 @@ function PreparedCommand({ skill, availability, api, sessionId, useInput, inputA
     finally { if (!lifetime.current.signal.aborted) setBusy(false); }
   };
   return <><button type="button" className="sc-flow-primary" disabled={availability !== 'ready' || locked || busy} onClick={insert}>{t('use')}</button>
+    <p className="sc-flow-note">{t('draftHint')}</p>
     {locked && <p className="sc-flow-note">{t('richDraft')}</p>}{error && <p role="alert">{error}</p>}</>;
 }
 

@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { localized } from './recipes.js';
 import { cardState } from './deck.js';
+import { usePageState } from './page-state.js';
 
 // Matt workflows organize independently verifiable work as cards.
 const layouts = {
-  'matt-feature': { caption: ['先选“澄清需求”，也可以打开已有任务。查看说明后，把指令带到对话中。', 'Start with “Clarify requirements” or open an existing task, then add its instruction to the conversation draft.'], sections: [['desk', '任务', 'Tasks']] },
+  'matt-feature': { caption: ['点卡面看说明，点“去对话处理”带上任务。完成后回来记录结果。', 'Inspect a card or take its task into the conversation. Return to record the result when the work is done.'], sections: [['desk', '任务', 'Tasks']] },
   'matt-small': { group: card => card.skill === 'implement' ? 'focus' : 'support', caption: ['需求已经清楚时，选择“实现与检查”。有不确定的地方，可以先澄清需求。', 'Choose “Implement and review” when requirements are clear, or clarify them first.'], sections: [['focus', '实现任务', 'Implementation'], ['support', '需要时使用', 'Use when needed']] },
   'matt-fix': { group: card => card.skill === 'diagnosing-bugs' ? 'investigate' : 'review', caption: ['先打开“复现、定位与修复”，说明报错和触发步骤；修好后再检查影响。', 'Open “Reproduce, diagnose and fix” with the error and steps to trigger it. Review the impact after the fix.'], sections: [['investigate', '调查与修复', 'Investigate and repair'], ['review', '检查与总结', 'Review and reflect']] },
   'matt-wayfinder': { group: (card, run) => run.stages[card.id]?.status === 'completed' ? 'decisions' : 'questions', caption: ['先写清要解决的问题，逐项记录决定。方案确定后，再编写需求说明。', 'Define the problem and record each decision. Write the specification once the approach is clear.'], sections: [['questions', '待解决的问题', 'Open questions'], ['decisions', '已确认的决定', 'Confirmed decisions']] },
 };
 
-function TaskCard({ card, index, state, record, selected, choose, start, edit, t }) {
+function TaskCard({ card, index, state, record, selected, choose, invoke, edit, t }) {
   const language = t('language');
   return <li data-state={state} data-complete={state === 'completed'} className="sc-flow-task-card">
     <div className="sc-flow-card-meta"><span>#{String(index + 1).padStart(2, '0')}</span><small>{card.skill}</small><span className="sc-flow-stamp">{t('stage.' + state)}</span></div>
@@ -21,12 +22,12 @@ function TaskCard({ card, index, state, record, selected, choose, start, edit, t
       {state === 'blocked' && <span className="sc-flow-card-blocker">{record.blocker}</span>}
       {card.dependsOn.length > 0 && <small className="sc-flow-card-dependencies">↳ {t('dependencies')} · {card.dependsOn.length}</small>}
     </button>
-    <footer><button type="button" className="sc-flow-card-action" onClick={state === 'pending' ? start : choose}>{t(state === 'pending' ? 'startTask' : state === 'completed' ? 'reviewOutcome' : 'openTask')} ↗</button><button type="button" aria-label={`${t('editTask')} ${localized(card.title, language)}`} onClick={edit}>···</button></footer>
+    <footer>{['completed', 'waiting'].includes(state) ? <button type="button" className="sc-flow-card-action" onClick={choose}>{t(state === 'completed' ? 'reviewOutcome' : 'openTask')} ↗</button> : invoke}<button type="button" aria-label={`${t('editTask')} ${localized(card.title, language)}`} onClick={edit}>···</button></footer>
   </li>;
 }
 
-export function Board({ recipe, cards, run, selected, choose, start, edit, add, chooseTool, t, notice }) {
-  const [filter, setFilter] = useState('all'), [query, setQuery] = useState('');
+export function Board({ memory, recipe, cards, run, selected, choose, invoke, edit, add, chooseTool, t, notice }) {
+  const [filter, setFilter] = usePageState(memory, `${recipe.id}/filter`, 'all'), [query, setQuery] = usePageState(memory, `${recipe.id}/query`, '');
   const language = t('language'), layout = layouts[recipe.id];
   const items = cards.map((card, index) => ({ card, index, state: cardState(card, run) }));
   const completed = items.filter(item => item.state === 'completed').length;
@@ -37,7 +38,7 @@ export function Board({ recipe, cards, run, selected, choose, start, edit, add, 
     <label className="sc-flow-task-search"><input type="search" aria-label={t('searchTasks')} placeholder={t('searchTasks')} value={query} onChange={event => setQuery(event.target.value)} /></label>
     <div className="sc-flow-board-sections">{layout.sections.map(([id, chinese, english]) => {
       const group = visible.filter(({ card, index }) => (layout.group ? layout.group(card, run) : layout.sections[0][0]) === id);
-      return <section key={id} className="sc-flow-board-section" data-section={id}>{layout.sections.length > 1 && <h3>{language === 'zh' ? chinese : english}<span>{group.length}</span></h3>}<ol className="sc-flow-steps">{group.map(({ card, index, state }) => <TaskCard key={card.id} card={card} index={index} state={state} record={run.stages[card.id]} selected={selected === index} choose={() => choose(index)} start={() => start(index)} edit={() => edit(card)} t={t} />)}</ol>{!group.length && <p className="sc-flow-empty-board">{t('emptyTasks')}</p>}</section>;
+      return <section key={id} className="sc-flow-board-section" data-section={id}>{layout.sections.length > 1 && <h3>{language === 'zh' ? chinese : english}<span>{group.length}</span></h3>}<ol className="sc-flow-steps">{group.map(({ card, index, state }) => <TaskCard key={card.id} card={card} index={index} state={state} record={run.stages[card.id]} selected={selected === index} choose={() => choose(index)} invoke={invoke(index)} edit={() => edit(card)} t={t} />)}</ol>{!group.length && <p className="sc-flow-empty-board">{t('emptyTasks')}</p>}</section>;
     })}</div>
     <p className="sc-flow-route-result" role="status" aria-live="polite">{completed === cards.length ? t('finish') : notice || t('progress')}</p>
     {recipe.tools?.length > 0 && <div className="sc-flow-tools" aria-label={t('tools')}><span>{t('tools')}</span>{recipe.tools.map(tool => <div key={tool.skill}><button type="button" title={localized(tool.when, language)} onClick={() => chooseTool(tool.skill)}>{localized(tool.label, language)} ↗</button><button type="button" aria-label={`${t('addBranch')} ${tool.skill}`} disabled={cards.length >= 64} onClick={() => add(tool)}>＋</button></div>)}</div>}

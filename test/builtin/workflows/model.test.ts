@@ -85,6 +85,13 @@ test('repeated use of one Skill updates the generated checkpoint and preserves u
   assert.equal(commandDraft({ name: 'poteto-mode' }, '/poteto-mode 我的独立指令', second), '/poteto-mode 我的独立指令');
 });
 
+test('paragraphs in workflow notes cannot become stale user text on the next invocation', () => {
+  const original = '保留用户的补充。\n\n以及第二段。';
+  const first = commandDraft({ name: 'poteto-mode' }, original, '本次流程步骤：设计方案\n第一段旧笔记\n\n第二段旧笔记');
+  const next = commandDraft({ name: 'poteto-mode' }, first, '本次流程步骤：设计方案\n新的设计决定');
+  assert.equal(next, '/poteto-mode 本次流程步骤：设计方案\n新的设计决定\n\n' + original);
+});
+
 
 test('stages require outcomes or blocking reasons and retain work when focus moves', () => {
   assert.throws(() => changeStage(emptyRoute(), 'to-spec', { ...emptyStage(), status: 'completed' }), /result/);

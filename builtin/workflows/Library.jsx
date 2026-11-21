@@ -12,6 +12,7 @@ import { TaskEditor } from './TaskEditor.jsx';
 import { Catalog } from './Catalog.jsx';
 import { Execution } from './Execution.jsx';
 import { executionFacts } from './execution.js';
+import { pageMemory, usePageState, usePageScroll } from './page-state.js';
 import { fileTarget, WORKBENCH_VIEW } from '../workbench/file-links.js';
 import stylesheet from './style.css';
 
@@ -20,26 +21,36 @@ const packTitles = Object.fromEntries(catalog.map(pack => [pack.id, pack.title])
 const savedRoute = (preferences, sessionId, recipeId) => preferences.runs[sessionId]?.routes[recipeId] || emptyRoute();
 const selectionFor = (recipe, card) => ({ id: `${recipe.pack}/${card.skill}`, cardId: card.id });
 
+function taskContext({ route, card, cards, run, goal, language, t }) {
+  const inputs = card.dependsOn.map(id => {
+    const record = run.stages[id];
+    if (!record?.result && !record?.files.length) return '';
+    return `\n${t('inputFrom')}：${localized(cards.find(item => item.id === id).title, language)}\n${[record.result, ...record.files].filter(Boolean).join('\n')}`;
+  }).join('');
+  return `${route.playbook ? `${t('playbookContext')}${route.playbook}\n` : ''}${t('draftContext')}${localized(route.title, language)} / ${localized(card.title, language)}\n${t('questGoal')}：${localized(card.goal, language)}\n${t('questOutput')}：${localized(card.output, language)}${goal ? `\n${t('goal')}：${goal}` : ''}${inputs}`;
+}
 
 export function WorkflowLibrary({ api, subscribe, sessionId, useSessions, useInput, inputActions, openView, inspectCall, hasWorkbench, packageState, page, filesApi, MarkdownText, t, storage = localStorage }) {
   const enabled = useSyncExternalStore(packageState.subscribe, packageState.snapshot);
+  const memory = pageMemory(api, sessionId, page);
   const availableSkills = allSkills.filter(skill => enabled.includes(skill.pack) || enabled.includes('grill-me') && ['grill-me', 'grilling'].includes(skill.name) && skill.pack === 'mattpocock');
   const view = page === 'skills' ? 'catalog' : 'map', pageRecipes = recipes.filter(item => item.pack === page);
   const [initial] = useState(() => initialPreferences(storage)), [preferences, setPreferences] = useState(initial.value);
   const [error, setError] = useState(initial.error ? t('storageFailed') : ''), [native, setNative] = useState({ status: 'loading', skills: [] });
   const [revision, refresh] = useState(0);
-  const [route, setRoute] = useState(() => {
+  const [route, setRoute] = usePageState(memory, 'route', () => {
     const visited = Object.keys(initial.value.runs[sessionId]?.routes || {}).reverse();
     return visited.map(id => recipes.find(item => item.id === id && item.pack === page)).find(Boolean) || recipes.find(item => item.pack === page) || recipes[0];
   });
-  const [pack, setPack] = useState(view === 'catalog' ? '' : route.pack), [notice, setNotice] = useState(''), [copied, setCopied] = useState(false), [drafts, setDrafts] = useState({}), [editing, setEditing] = useState(null);
-  const [selection, setSelection] = useState(() => {
+  const [pack, setPack] = useState(view === 'catalog' ? '' : route.pack), [notice, setNotice] = useState(''), [copied, setCopied] = useState(false), [drafts, setDrafts] = usePageState(memory, 'drafts', {}), [editing, setEditing] = useState(null);
+  const [selection, setSelection] = usePageState(memory, 'selection', () => {
     if (view === 'catalog') return null;
     const run = savedRoute(initial.value, sessionId, route.id), cards = cardsFor(route, run), next = nextStageIndex(route, run);
     return selectionFor(route, cards[next === -1 ? 0 : next]);
   });
   const sessions = useSessions(state => state), facts = executionFacts(sessions, sessionId);
   const container = useRef(null), latestPreferences = useRef(preferences);
+  usePageScroll(container, memory);
   const language = t('language'), persisted = savedRoute(preferences, sessionId, route.id), draft = drafts[route.id];
   const run = { ...persisted, goal: draft?.goal ?? persisted.goal }, cards = cardsFor(route, persisted);
   useEffect(() => subscribePreferences(storage, () => {
@@ -112,11 +123,8 @@ export function WorkflowLibrary({ api, subscribe, sessionId, useSessions, useInp
     if (!hasWorkbench()) { setError(t('enableWorkbench')); return; }
     openView(WORKBENCH_VIEW, JSON.stringify(fileTarget(path, {}, { cwd: facts.cwd })));
   };
-  const context = mission ? `${route.playbook ? `${t('playbookContext')}${route.playbook}\n` : ''}${t('draftContext')}${localized(route.title, language)} / ${localized(step.title, language)}\n${t('questGoal')}：${localized(step.goal, language)}\n${t('questOutput')}：${localized(step.output, language)}${run.goal || facts.goal ? `\n${t('goal')}：${run.goal || facts.goal}` : ''}${mission.dependencies.map(item => {
-    const record = persisted.stages[item.id];
-    if (!record?.result && !record?.files.length) return '';
-    return `\n${t('inputFrom')}：${localized(item.title, language)}\n${[record.result, ...record.files].filter(Boolean).join('\n')}`;
-  }).join('')}` : '';
+  const contextFor = card => taskContext({ route, card, cards, run: persisted, goal: run.goal || facts.goal, language, t });
+  const context = mission ? contextFor(step) : '';
   const recordUse = id => save(previous => ({ ...previous, recent: [id, ...previous.recent.filter(previousId => previousId !== id)].slice(0, 12) }));
   const nextIndex = nextStageIndex(route, persisted);
   const detail = skill && <SkillDetail key={`${skill.id}-${selection.cardId}`} skill={skill} pack={skillPack} availability={skillAvailability(skill, native.skills)} favorite={preferences.favorites.includes(skill.id)} t={t} mission={mission} backLabel={t(view === 'map' ? 'back' : 'backToCatalog')}
@@ -126,7 +134,7 @@ export function WorkflowLibrary({ api, subscribe, sessionId, useSessions, useInp
     nextQuest={mission?.record.status === 'completed' && nextIndex !== -1 ? () => choose(selectionFor(route, cards[nextIndex])) : null}
     compose={<>
       {useInput && inputActions && <Compose key={`${skill.id}-${selection.cardId}`} skill={skill} availability={skillAvailability(skill, native.skills)} api={api} sessionId={sessionId} useInput={useInput} inputActions={inputActions} openView={openView} context={context}
-        onUsed={() => recordUse(skill.id)} t={t} />}
+        beforeInsert={mission && mission.record.status !== 'completed' ? () => saveRecord('active') : undefined} onUsed={() => recordUse(skill.id)} t={t} />}
       <button type="button" className="sc-flow-copy" onClick={() => { void navigator.clipboard.writeText(commandDraft(skill, '', context)).then(() => setCopied(true)).catch(() => setError(t('copyFailed'))); }}>{t(copied ? 'copied' : 'copy')}</button>
       {mission && !['active', 'completed'].includes(mission.record.status) && <button type="button" className="sc-flow-focus" disabled={cardState(step, persisted) === 'waiting'} onClick={() => saveRecord('active')}>{t('focusStage')}</button>}
     </>} />;
@@ -138,14 +146,20 @@ export function WorkflowLibrary({ api, subscribe, sessionId, useSessions, useInp
     {error && <p className="sc-flow-alert" role="alert">{error}</p>}{native.status !== 'ready' && <p className="sc-flow-alert" role={native.status === 'failed' ? 'alert' : 'status'}>{t(native.status)}</p>}
     <main className="sc-flow-main">{view === 'map' ? <>
       <section className="sc-flow-goal"><div><span className="sc-flow-eyebrow">{t('goal')}</span><h2>{run.goal || facts.goal || t('noGoal')}</h2></div><details><summary>{t('editGoal')}</summary><form onSubmit={event => { event.preventDefault(); if (commitRun(run, 'goal')) setNotice(t('recordSaved')); }}><label>{t('goal')}<textarea aria-label={t('goal')} rows={2} maxLength={4000} value={run.goal} placeholder={facts.goal || t('goalHint')} onChange={event => setDrafts(previous => ({ ...previous, [route.id]: { ...previous[route.id], goal: event.target.value } }))} /></label><button type="submit">{t('saveRecord')}</button></form></details></section>
-      {page === 'pstack' ? <PStack onUsed={recordUse} recipe={route} run={persisted} goal={run.goal || facts.goal} facts={facts} openFile={openFile} inspectCall={inspectCall} openChat={() => openView('chat', '')} t={t}
-        saveNote={(id, note) => save(previous => {
+      {page === 'pstack' ? <PStack memory={memory} onUsed={recordUse} recipe={route} run={persisted} goal={run.goal || facts.goal} facts={facts} openFile={openFile} inspectCall={inspectCall} openChat={() => openView('chat', '')} t={t}
+        saveNotes={notes => save(previous => {
           const current = savedRoute(previous, sessionId, route.id);
-          return recordProgress(previous, sessionId, route.id, { ...current, stages: { ...current.stages, [id]: { ...(current.stages[id] || emptyStage()), ...note } } });
+          const stages = { ...current.stages };
+          for (const [id, note] of Object.entries(notes)) stages[id] = { ...(stages[id] || emptyStage()), result: note.result, files: note.files };
+          return recordProgress(previous, sessionId, route.id, { ...current, stages });
         })} skills={availableSkills} native={native} api={api} sessionId={sessionId} useInput={useInput} inputActions={inputActions} openView={openView} />
-      : page === 'openspec' ? <OpenSpec onUsed={recordUse} MarkdownText={MarkdownText} filesApi={filesApi} sessionId={sessionId} revision={revision} goal={run.goal || facts.goal} facts={facts} run={persisted} openFile={openFile} t={t}
+      : page === 'openspec' ? <OpenSpec memory={memory} onUsed={recordUse} MarkdownText={MarkdownText} filesApi={filesApi} sessionId={sessionId} revision={revision} goal={run.goal || facts.goal} facts={facts} run={persisted} openFile={openFile} t={t}
         skills={availableSkills} native={native} api={api} useInput={useInput} inputActions={inputActions} openView={openView} />
-      : <div className="sc-flow-workspace"><Board key={route.id} recipe={route} cards={cards} run={persisted} selected={index} choose={index => choose(selectionFor(route, cards[index]))} start={index => { if (saveRecord('active', index)) choose(selectionFor(route, cards[index])); }} edit={setEditing} add={add} t={t} notice={notice} chooseTool={name => choose({ id: `${route.pack}/${name}` })} />
+      : <div className="sc-flow-workspace"><Board memory={memory} key={route.id} recipe={route} cards={cards} run={persisted} selected={index} choose={index => choose(selectionFor(route, cards[index]))} invoke={cardIndex => {
+        const card = cards[cardIndex], skill = availableSkills.find(item => item.id === `${route.pack}/${card.skill}`);
+        return skill && <Compose skill={skill} availability={skillAvailability(skill, native.skills)} api={api} sessionId={sessionId} useInput={useInput} inputActions={inputActions} openView={openView} context={contextFor(card)} hint={false} label={t('handleTask')} className="sc-flow-card-action"
+          beforeInsert={() => { if (!saveRecord('active', cardIndex)) return false; choose(selectionFor(route, card), false); return true; }} onUsed={() => recordUse(skill.id)} t={t} />;
+      }} edit={setEditing} add={add} t={t} notice={notice} chooseTool={name => choose({ id: `${route.pack}/${name}` })} />
         <div className="sc-flow-inspector">{editing ? <TaskEditor key={editing.id} card={editing} cards={cards} skills={availableSkills.filter(skill => skill.pack === route.pack && skill.userInvocable)} save={saveCard} close={() => setEditing(null)} move={cards.some(card => card.id === editing.id) ? direction => commitRun(moveCard({ ...persisted, cards }, editing.id, direction), '__cards') : null} t={t} /> : detail}
           <Execution facts={facts} openFile={openFile} inspectCall={inspectCall} openChat={() => openView('chat', '')} t={t} attachFile={mission ? path => {
             if (mission.record.files.includes(path)) return;

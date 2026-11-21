@@ -1,5 +1,6 @@
 export const NS = 'dsh-super-code-workflows';
 export const zh = {
+  handleTask: '去对话处理',
   language: 'zh', title: '工作流', skills: 'Skill 目录', worlds: '作者与方法',
   all: '全部', favorites: '收藏', recent: '最近使用', collection: '按需使用', routes: '选择流程',
   search: '搜索 Skill、用途或包名', noResults: '没有匹配的 Skill', clear: '清除筛选', previous: '上一页', next: '下一页',
@@ -60,6 +61,7 @@ export const zh = {
   invalidDependencies: '任务未保存：请填写必填内容，并检查前置任务是否有效。任务不能互相等待。',
 };
 export const en = {
+  handleTask: 'Work on this in chat',
   language: 'en', title: 'Workflows', skills: 'Skill library', worlds: 'Authors and methods',
   all: 'All', favorites: 'Favorites', recent: 'Recently used', collection: 'Use when needed', routes: 'Choose a workflow',
   search: 'Search Skills, purposes or packages', noResults: 'No matching Skills', clear: 'Clear filters', previous: 'Previous', next: 'Next',

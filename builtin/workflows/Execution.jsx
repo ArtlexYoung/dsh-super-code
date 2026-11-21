@@ -3,6 +3,10 @@ import React from 'react';
 export function Execution({ facts, openFile, inspectCall, openChat, attachFile, t }) {
   const completed = facts.todos.filter(todo => todo.status === 'completed').length;
   const activities = facts.activities.slice(-4).reverse();
+  if (!facts.title && !facts.todos.length && !activities.length && !facts.files.length && !facts.next) return <section className="sc-flow-execution sc-flow-execution-empty" aria-label={t('execution')}>
+    <header><h2>{t('execution')}</h2><span className="sc-flow-state" data-state={facts.phase}>{t('execution.' + facts.phase)}</span></header>
+    <p className="sc-flow-empty">{t('noTasks')}</p><button type="button" className="sc-flow-chat" onClick={openChat}>{t('openChat')} →</button>
+  </section>;
   return <section className="sc-flow-execution" aria-label={t('execution')}>
     <header><h2>{t('execution')}</h2><span className="sc-flow-state" data-state={facts.phase}>{t('execution.' + facts.phase)}</span></header>
     <p className="sc-flow-source-note">{t('executionSource')}</p>

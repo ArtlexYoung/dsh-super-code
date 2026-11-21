@@ -16,6 +16,9 @@ export function filterSkills(skills, { query, pack, favorites, onlyFavorites }) 
 }
 
 export function commandDraft(skill, draft, context = '') {
+  // A blank line separates the generated instruction from the user's text.
+  // Keep paragraphs inside notes from being mistaken for that boundary.
+  context = context.replace(/\n\s*\n/g, '\n');
   const command = `/${skill.name}`;
   if (draft === command || draft.startsWith(command + ' ')) {
     const boundary = draft.indexOf('\n\n'), header = boundary === -1 ? draft : draft.slice(0, boundary);

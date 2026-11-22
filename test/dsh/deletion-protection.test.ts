@@ -459,6 +459,14 @@ test('new installations default to relaxed guidance and require no extra plugin 
   assert.equal(f.bodies(), 4, 'relaxed mode preserves host denials')
 })
 
+test('default guidance explains unavailable trash commands in both languages', async t => {
+  const f = await fixture(t)
+  f.configure({})
+  const prompt = await f.prompt()
+  assert.match(prompt, /trash 不可用时，改用其他可恢复的回收站方式或先停止/)
+  assert.match(prompt, /If trash is unavailable, use another recoverable trash mechanism or stop/)
+})
+
 test('mode changes and legacy boolean choices take effect on the next call', async t => {
   const f = await fixture(t)
   for (const value of ['off', false] as const) {

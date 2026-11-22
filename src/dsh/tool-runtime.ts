@@ -123,7 +123,9 @@ export async function apply(ctx: Context): Promise<void> {
   }
   ctx.systemPrompt.section({ name: 'super-code:tool-profile', order: 93, text: ({ agent }) => {
     const profile = runtime.profile(agent)
-    return `The applied tool profile uses ${profile.execution} execution and a ${profile.shell} shell. Only use currently provided tools. `
+    const execution = agent ? toolExecution(ctx, agent, profile.execution) : { execution: profile.execution }
+    if (execution.reason === 'remote') return 'The applied tool profile uses native execution. Commands and file changes use remote_bash on the remote machine; local shell settings do not apply. Only use currently provided tools.'
+    return `The applied tool profile uses ${execution.execution} execution and a ${profile.shell} shell. Only use currently provided tools. `
       + (profile.shell === 'persistent' ? 'Shell state persists for this agent; call the shell with only command, without ordinary-shell options.' : '')
   } })
   ctx.on('system-prompt/assemble', async (_assembly, { agent }, next) => {

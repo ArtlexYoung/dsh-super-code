@@ -16,7 +16,7 @@ import superCode from '../../src/dsh/super-code.js'
 import { installTaskMemory } from '../task-memory-fixture.js'
 import { installToolRuntime, selectToolPresentation } from '../../src/dsh/tool-access.js'
 import { ToolSelections } from '../../src/dsh/tool-runtime.js'
-import { builtinToolProfiles } from '../../src/dsh/tool-profiles.js'
+import { builtinToolProfiles, toolGroups } from '../../src/dsh/tool-profiles.js'
 
 interface CapturedExecutor {
   describe(tools: { name: string }[]): { schemas: { name: string }[] }
@@ -64,7 +64,7 @@ async function fixture(t: test.TestContext, existing = false, modern = false, br
   const preset = createScope(ctx, {})
   await preset.ctx.plugin(superCode)
   let localCalls = 0, remoteCalls = 0, disconnected = false, denied = false
-  for (const name of ['bash', 'subagent', 'subagent_fork', 'terminal', 'job_list', 'read_file', 'write', 'edit', 'str_replace_editor']) {
+  for (const name of ['bash', 'subagent', 'subagent_fork', 'terminal', 'job_list', 'read_file', 'workflow', 'write', 'edit', 'apply_patch', 'str_replace_editor']) {
     preset.ctx.get('tools')!.register(defineTool({ name, description: name, parameters: {},
       output: { schema: { type: 'string' }, render: (_args, value) => [{ type: 'text', text: value }] },
       execute: async () => { if (name === 'bash') localCalls++; return name },
@@ -74,6 +74,8 @@ async function fixture(t: test.TestContext, existing = false, modern = false, br
   preset.ctx.get('systemPrompt')!.section({ name: 'super-code:windows-shell', order: 94, text: 'Windows local environment' })
   preset.ctx.get('systemPrompt')!.section({ name: 'tool:write', order: 95, text: 'Native write guidance' })
   preset.ctx.get('systemPrompt')!.section({ name: 'tool:edit', order: 96, text: 'Native edit guidance' })
+  preset.ctx.get('systemPrompt')!.section({ name: 'tool:apply_patch', order: 97, text: 'Native patch guidance' })
+  preset.ctx.get('systemPrompt')!.section({ name: 'tool:workflow', order: 98, text: 'Local workflow guidance' })
   const make = (id: string, context = preset.ctx, cwd?: string) => {
     const agent = { id, session: ctx.get('sessions')!.create(SessionId(id), cwd === undefined ? {} : { meta: { cwd } }) } as Agent
     const scope = createScope(context, agent)
@@ -153,29 +155,34 @@ test('Windows long working directories use native tools without changing other s
   assert.deepEqual(await f.names(linux), ['run_code'])
 })
 
-test('Windows remote file changes use guarded remote commands while reads and local writes remain available', async t => {
+test('lightweight remote file changes use remote commands on every platform while local file tools remain available', async t => {
   const platform = process.platform
   Object.defineProperty(process, 'platform', { value: 'win32' })
   t.after(() => Object.defineProperty(process, 'platform', { value: platform }))
-  for (const modern of [false, true]) {
+  for (const modern of [false, true]) for (const operatingSystem of ['linux', 'darwin', 'win32']) {
+    Object.defineProperty(process, 'platform', { value: operatingSystem })
     const f = await fixture(t, false, modern), remote = f.make('remote-write-' + modern)
     const local = f.make('local-write-' + modern, f.preset.ctx, '/' + 'd'.repeat(258))
     await f.ctx.serial(scopeTarget(local, local), 'agent/created', { agent: local, source: 'fresh' as never })
+    selectToolPresentation(f.preset.ctx, local, 'native')
     const unbind = f.bind(remote)
     f.guard(remote)
     const assembly = await f.ctx.get('systemPrompt')!.assemble({ agent: remote, scope: remote })
-    const definitions = ['read_file', 'write', 'edit', 'str_replace_editor', 'remote_bash'].map(name => ({ name }))
+    const fileChanges = [...toolGroups.find(group => group.id === 'files')!.tools.filter(name => !['read', 'read_image'].includes(name)), 'str_replace_editor']
+    const definitions = ['read_file', ...fileChanges, 'workflow', 'remote_bash'].map(name => ({ name }))
     const names = modern ? f.executor().describe(definitions).schemas.map(tool => tool.name) : assembly.tools.map(tool => tool.name)
     assert.ok(names.includes('read_file'))
     assert.ok(names.includes('remote_bash'))
-    assert.ok(!assembly.sections.some(section => /Native (write|edit) guidance/.test(section.text)))
+    assert.ok(!assembly.sections.some(section => /Native (write|edit|patch) guidance|Local workflow guidance/.test(section.text)))
     assert.ok(assembly.sections.some(section => /file changes.*remote_bash/i.test(section.text)))
-    for (const name of ['write', 'edit', 'str_replace_editor']) {
+    assert.ok(assembly.sections.some(section => /gio trash|trash-put/.test(section.text)))
+    for (const name of [...fileChanges, 'workflow']) {
       assert.ok(!names.includes(name), name)
       const denied = await f.call(remote, name)
       assert.equal(denied.isError, true, '旧对话的原生写入调用也必须拒绝')
       assert.match(JSON.stringify(denied), /remote_bash/)
-      assert.equal((await f.call(local, name)).isError, false)
+      const localResult = await f.call(local, name)
+      assert.equal(localResult.isError, false, `${operatingSystem} ${name}: ${JSON.stringify(localResult)}`)
     }
     assert.equal((await f.call(remote, 'read_file')).isError, false)
     assert.equal((await f.call(remote, 'remote_bash')).isError, false)
@@ -187,12 +194,9 @@ test('Windows remote file changes use guarded remote commands while reads and lo
     assert.equal((await f.call(remote, 'remote_bash')).isError, true)
     assert.deepEqual(f.counts(), { local: 0, remote: 1 })
     f.disconnect(false)
-    Object.defineProperty(process, 'platform', { value: 'linux' })
-    for (const name of ['write', 'edit', 'str_replace_editor']) assert.equal((await f.call(remote, name)).isError, false)
-    Object.defineProperty(process, 'platform', { value: 'win32' })
     unbind()
     assert.deepEqual(modern ? f.executor().describe(definitions.filter(tool => tool.name !== 'remote_bash')).schemas.map(tool => tool.name) : await f.names(remote), ['run_code'])
-    for (const name of ['write', 'edit', 'str_replace_editor']) assert.ok(f.ctx.get('tools')!.get(name, remote))
+    for (const name of [...fileChanges, 'workflow']) assert.ok(f.ctx.get('tools')!.get(name, remote))
   }
 })
 

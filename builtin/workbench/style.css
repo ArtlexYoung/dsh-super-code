@@ -30,7 +30,7 @@
 }
 body[data-ds-dark-theme] .sc-workbench{
   --wb-bg:#1e1f22;--wb-chrome:#2b2d30;--wb-surface:#2b2d30;--wb-panel:#2b2d30;--wb-text:#bcbec4;--wb-muted:#868a91;--wb-line:#393b40;--wb-accent:#548af7;
-  --wb-input:#2b2d30;--wb-input-line:#4e5157;--wb-tab-bg:#24262b;--wb-tab-muted:#868a91;--wb-selected:#2e436e;--wb-selected-text:#dfe1e5;--wb-rail-selected:#3574f0;--wb-rail-selected-text:#fff;--wb-hover:#393b40;--wb-shadow:0 8px 28px #0006,0 2px 8px #0004;--wb-scrollbar:#8b8d9859;
+  --wb-input:#2b2d30;--wb-input-line:#4e5157;--wb-tab-bg:#24262b;--wb-tab-muted:#868a91;--wb-selected:#2e436e;--wb-selected-text:#dfe1e5;--wb-rail-selected:var(--wb-selected);--wb-rail-selected-text:var(--wb-selected-text);--wb-hover:#393b40;--wb-shadow:0 8px 28px #0006,0 2px 8px #0004;--wb-scrollbar:#8b8d9859;
   --wb-find-match:#3e3524;--wb-find-current:#514023;--wb-find-outline:#d3a853;
   --wb-selection:#214283;--wb-keyword:#cf8e6d;--wb-control:#cf8e6d;--wb-string:#6aab73;--wb-number:#2aacb8;--wb-type:#c7cee1;--wb-comment:#969da8;--wb-function:#56a8f5;--wb-variable:#bcbec4;--wb-property:#c77dbb;--wb-constant:#c77dbb;--wb-operator:#bcbec4;
   --wb-declaration-line:#3a3f49;

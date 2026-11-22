@@ -37,7 +37,7 @@
 
 [![代码工作台：文件树、文件结构与编辑器](docs/images/workbench-zh-display.svg)](docs/images/workbench-zh.png)
 
-**工作流**：会话顶部集中浏览四套内置 Skill，按路线查看步骤、准备内容与预期产物，支持搜索、收藏、手动记录进度和把真实命令放入草稿。代码工作台可用 `Ctrl/Cmd+Shift+P` 搜索所有操作与已打开的文件。[使用与自动维护说明](docs/Workflows.md)。
+**工作流**：启用后可打开 Matt 任务卡、PStack 工作笔记和 OpenSpec 变更文档，在各自页面准备指令、发送消息和查看回复。Skill 目录支持搜索与收藏；切页后保留未完成的笔记和阅读位置。代码工作台可用 `Ctrl/Cmd+Shift+P` 搜索所有操作与已打开的文件。[使用与自动维护说明](docs/Workflows.md)。
 
 **工具方案**：五套预置与最多 25 套自定义方案，按任务选择工具、调用方式和 Shell；各会话完成当前轮后应用，切换时保留持久 Shell 状态。在「设置 → Super Code 模式 → 工具」查看和自定义。
 

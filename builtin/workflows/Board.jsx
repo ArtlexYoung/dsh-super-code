@@ -5,7 +5,7 @@ import { usePageState } from './page-state.js';
 
 // Matt workflows organize independently verifiable work as cards.
 const layouts = {
-  'matt-feature': { caption: ['点卡面看说明，点“去对话处理”带上任务。完成后回来记录结果。', 'Inspect a card or take its task into the conversation. Return to record the result when the work is done.'], sections: [['desk', '任务', 'Tasks']] },
+  'matt-feature': { caption: ['点卡面看说明，点“处理这张任务”准备指令。检查并发送后，继续记录结果。', 'Inspect a card or choose “Work on this task” to prepare its instruction. Review and send it, then record the result.'], sections: [['desk', '任务', 'Tasks']] },
   'matt-small': { group: card => card.skill === 'implement' ? 'focus' : 'support', caption: ['需求已经清楚时，选择“实现与检查”。有不确定的地方，可以先澄清需求。', 'Choose “Implement and review” when requirements are clear, or clarify them first.'], sections: [['focus', '实现任务', 'Implementation'], ['support', '需要时使用', 'Use when needed']] },
   'matt-fix': { group: card => card.skill === 'diagnosing-bugs' ? 'investigate' : 'review', caption: ['先打开“复现、定位与修复”，说明报错和触发步骤；修好后再检查影响。', 'Open “Reproduce, diagnose and fix” with the error and steps to trigger it. Review the impact after the fix.'], sections: [['investigate', '调查与修复', 'Investigate and repair'], ['review', '检查与总结', 'Review and reflect']] },
   'matt-wayfinder': { group: (card, run) => run.stages[card.id]?.status === 'completed' ? 'decisions' : 'questions', caption: ['先写清要解决的问题，逐项记录决定。方案确定后，再编写需求说明。', 'Define the problem and record each decision. Write the specification once the approach is clear.'], sections: [['questions', '待解决的问题', 'Open questions'], ['decisions', '已确认的决定', 'Confirmed decisions']] },

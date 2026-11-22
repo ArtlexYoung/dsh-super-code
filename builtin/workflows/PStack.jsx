@@ -40,7 +40,7 @@ export function PStack({ memory, recipe, run, goal, facts, saveNotes, openFile, 
           {record.blocker && <p className="sc-flow-blocked">{record.blocker}</p>}
           <footer className="sc-pstack-launch"><div><span>{text(tool === 'poteto-mode' ? '完整工作流 · 带上各主题的最新笔记' : '本次使用的工具', tool === 'poteto-mode' ? 'Full workflow · includes the latest notes' : 'Selected tool')}</span><strong>{tool === 'poteto-mode' ? localized(recipe.title, language) : tool}</strong></div>
             <div className="sc-pstack-note-actions"><button type="button" onClick={() => save()}>{text('保存笔记', 'Save notes')}</button>
-              {skill && <Compose key={`${recipe.id}/${skill.id}`} skill={skill} availability={skillAvailability(skill, native.skills)} api={api} sessionId={sessionId} useInput={useInput} inputActions={inputActions} openView={openView} context={context} beforeInsert={() => save(pending)} label={text('保存笔记并去对话', 'Save notes and open chat')} hint={false} onUsed={() => onUsed(skill.id)} t={t} />}
+              {skill && <Compose key={`${recipe.id}/${skill.id}`} skill={skill} availability={skillAvailability(skill, native.skills)} api={api} sessionId={sessionId} useInput={useInput} inputActions={inputActions} openView={openView} context={context} beforeInsert={() => save(pending)} label={t('notesToChat')} hint={false} onUsed={() => onUsed(skill.id)} t={t} />}
             </div><p className="sc-flow-note">{t('draftHint')}</p><span role="status">{notice}</span>
           </footer>
         </article>

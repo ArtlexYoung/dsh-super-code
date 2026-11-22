@@ -10,17 +10,17 @@ import { chromium } from 'playwright';
 
 const root = fileURLToPath(new URL('../../../', import.meta.url));
 const fixture = `import React,{useSyncExternalStore} from 'react';import{createRoot}from'react-dom/client';
-import{WorkflowLibrary}from'./builtin/workflows/Library.jsx';import{zh,en}from'./builtin/workflows/locales.js';import catalog from './builtin/workflows/catalog.json';
+import{WorkflowLibrary}from'./builtin/workflows/Library.jsx';import{WorkflowWorkspace}from'./builtin/workflows/Workspace.jsx';import{zh,en}from'./builtin/workflows/locales.js';import catalog from './builtin/workflows/catalog.json';
 import{SafeMarkdown}from'./builtin/workbench/windows/markdown.jsx';import{fixtureFileApi,specFixtureFiles}from'./test/builtin/workflows/fixture-files.js';const files={...specFixtureFiles},baseFilesApi=fixtureFileApi(files);let fileFailure=false;const filesApi={list:async(...args)=>{if(fileFailure)throw Error('offline');return baseFilesApi.list(...args)},read:async(...args)=>{if(fileFailure)throw Error('offline');return baseFilesApi.read(...args)}};
-const root=createRoot(document.getElementById('root'));let workflowPage=localStorage.getItem('fixture-page')||'mattpocock',enabled=['mattpocock','pstack','openspec','oil-ui'];const packageListeners=new Set();const packageState={snapshot:()=>enabled,subscribe:fn=>{packageListeners.add(fn);return()=>packageListeners.delete(fn)}};let language='zh',sessionId='sample',count=0,fail=false,failWrites=false,notify=()=>{},draft={draft:'修复订单金额',phase:'plain',attachmentIds:[],occurrences:[]};const listeners=new Set();
+const root=createRoot(document.getElementById('root'));let inline=false;function Conversation({useInput,inputActions}){const input=useInput(value=>value);return <form onSubmit={event=>{event.preventDefault();window.sentDraft=input.draft;inputActions.setDraft('')}}><textarea aria-label='本页对话输入' value={input.draft} onChange={event=>inputActions.setDraft(event.target.value)}/><button type='submit'>发送</button></form>}let workflowPage=localStorage.getItem('fixture-page')||'mattpocock',enabled=['mattpocock','pstack','openspec','oil-ui'];const packageListeners=new Set();const packageState={snapshot:()=>enabled,subscribe:fn=>{packageListeners.add(fn);return()=>packageListeners.delete(fn)}};let language='zh',sessionId='sample',count=0,fail=false,failWrites=false,notify=()=>{},draft={draft:'修复订单金额',phase:'plain',attachmentIds:[],occurrences:[]};const listeners=new Set();
 const source=catalog.flatMap(pack=>pack.skills).filter(skill=>skill.id!=='pstack/tdd'&&skill.id!=='pstack/teach').map(skill=>({...skill,path:'/demo/builtin/skills/'+skill.path}));let skills=source;
 let holdNextList=false,releaseList=null;const api={async list(){count++;if(holdNextList){holdNextList=false;await new Promise(resolve=>{releaseList=resolve})}if(fail)throw Error('offline');return{ok:true,value:{skills}}}};const subscribe=fn=>{notify=fn;return()=>{notify=()=>{}}};
 const useInput=select=>select(useSyncExternalStore(fn=>{listeners.add(fn);return()=>listeners.delete(fn)},()=>draft));
 let sessions={byId:{sample:{cwd:'/demo',projectionValues:{superCodeFeedback:{phase:'running',request:'让订单导出保留编号前导零，并验证金额排序',todos:[{content:'复现编号 007 导出后变成 7',status:'completed'},{content:'修改 CSV 导出的字段处理',status:'in_progress'},{content:'验证编号与金额的导出结果',status:'pending'}],activities:[{callId:'edit-1',tool:'edit',description:'修改导出字段的格式',status:'succeeded'}],files:[{path:'/demo/src/export.ts',operation:'edit',seq:1}]} }}}};const sessionListeners=new Set();let workbench=true;
 const useSessions=select=>select(useSyncExternalStore(fn=>{sessionListeners.add(fn);return()=>sessionListeners.delete(fn)},()=>sessions));
 const inputActions={setDraft(value){draft={...draft,draft:value};listeners.forEach(fn=>fn())}};
-function render(){root.render(<WorkflowLibrary filesApi={filesApi} MarkdownText={SafeMarkdown} key={language+'-'+sessionId+'-'+workflowPage} packageState={packageState} page={workflowPage} sessionId={sessionId} api={api} subscribe={subscribe} useSessions={useSessions} useInput={useInput} inputActions={inputActions} openView={(view,request)=>{window.lastView=view;window.lastRequest=request}} inspectCall={id=>{window.lastCall=id}} hasWorkbench={()=>workbench} storage={{getItem:key=>localStorage.getItem(key),setItem:(key,value)=>{if(failWrites)throw Error('quota');localStorage.setItem(key,value)}}} t={key=>(language==='zh'?zh:en)[key]||key}/>)}render();
-window.fixture={hold:()=>{holdNextList=true},pending:()=>Boolean(releaseList),release:()=>{releaseList?.();releaseList=null},leave:()=>root.render(null),files,filesFail:value=>{fileFailure=value},page:value=>{workflowPage=value;localStorage.setItem('fixture-page',value);render()},enabled:value=>{enabled=value;packageListeners.forEach(fn=>fn())},feedback:value=>{sessions={byId:{...sessions.byId,[sessionId]:{...sessions.byId[sessionId],projectionValues:{superCodeFeedback:value}}}};sessionListeners.forEach(fn=>fn())},workbench:value=>{workbench=value},count:()=>count,draft:()=>draft,disable:()=>{skills=[];notify()},restore:()=>{skills=source;notify()},offline:()=>{fail=true;notify()},online:()=>{fail=false;notify()},locale:value=>{language=value;render()},session:value=>{sessionId=value;render()},rich:()=>{draft={...draft,attachmentIds:['file']};listeners.forEach(fn=>fn())},plain:()=>{draft={...draft,attachmentIds:[]};listeners.forEach(fn=>fn())},failWrites:value=>{failWrites=value},store:()=>JSON.parse(localStorage.getItem('dsh-super-code.workflows.v4'))};`;
+function render(){const Component=inline?WorkflowWorkspace:WorkflowLibrary;root.render(<Component Conversation={Conversation} filesApi={filesApi} MarkdownText={SafeMarkdown} key={language+'-'+sessionId+'-'+workflowPage} packageState={packageState} page={workflowPage} sessionId={sessionId} api={api} subscribe={subscribe} useSessions={useSessions} useInput={useInput} inputActions={inputActions} openView={(view,request)=>{window.lastView=view;window.lastRequest=request}} inspectCall={id=>{window.lastCall=id}} hasWorkbench={()=>workbench} storage={{getItem:key=>localStorage.getItem(key),setItem:(key,value)=>{if(failWrites)throw Error('quota');localStorage.setItem(key,value)}}} t={key=>(language==='zh'?zh:en)[key]||key}/>)}render();
+window.fixture={inline:value=>{inline=value;render()},hold:()=>{holdNextList=true},pending:()=>Boolean(releaseList),release:()=>{releaseList?.();releaseList=null},leave:()=>root.render(null),files,filesFail:value=>{fileFailure=value},page:value=>{workflowPage=value;localStorage.setItem('fixture-page',value);render()},enabled:value=>{enabled=value;packageListeners.forEach(fn=>fn())},feedback:value=>{sessions={byId:{...sessions.byId,[sessionId]:{...sessions.byId[sessionId],projectionValues:{superCodeFeedback:value}}}};sessionListeners.forEach(fn=>fn())},workbench:value=>{workbench=value},count:()=>count,draft:()=>draft,disable:()=>{skills=[];notify()},restore:()=>{skills=source;notify()},offline:()=>{fail=true;notify()},online:()=>{fail=false;notify()},locale:value=>{language=value;render()},session:value=>{sessionId=value;render()},rich:()=>{draft={...draft,attachmentIds:['file']};listeners.forEach(fn=>fn())},plain:()=>{draft={...draft,attachmentIds:[]};listeners.forEach(fn=>fn())},failWrites:value=>{failWrites=value},store:()=>JSON.parse(localStorage.getItem('dsh-super-code.workflows.v4'))};`;
 const app = await build({ stdin: { contents: fixture, loader: 'jsx', resolveDir: root }, bundle: true, write: false, format: 'esm', platform: 'browser', minify: true, loader: { '.css': 'text' }, define: { 'process.env.NODE_ENV': '"production"' } });
 const server = createServer((req, res) => {
   if (req.url === '/app.js') { res.setHeader('content-type', 'text/javascript'); res.end(app.outputFiles[0].contents); return; }
@@ -46,19 +46,19 @@ try {
       assert.equal(await note.inputValue(), '还没保存的设计决定。');
       const original = await page.evaluate(() => window.fixture.draft().draft);
       await page.evaluate(() => window.fixture.failWrites(true));
-      await page.getByRole('button', {name:'保存笔记并去对话',exact:true}).click();
+      await page.getByRole('button', {name:'保存并准备指令',exact:true}).click();
       await page.getByRole('alert').getByText(/记录未能保存/).waitFor();
       assert.equal(await page.evaluate(() => window.fixture.draft().draft), original);
       assert.equal(await note.inputValue(), '还没保存的设计决定。');
       await page.evaluate(() => window.fixture.failWrites(false));
-      await page.getByRole('button', {name:'保存笔记并去对话',exact:true}).click();
+      await page.getByRole('button', {name:'保存并准备指令',exact:true}).click();
       await page.waitForFunction(() => window.lastView === 'chat');
       assert.match(await page.evaluate(() => window.fixture.draft().draft), /还没保存的现状记录[\s\S]*还没保存的设计决定/);
       assert.equal(Object.values(await page.evaluate(() => window.fixture.store().runs.sample.routes['pstack-feature'].stages)).filter(record => record.result).length, 2);
       await leave(); await open('pstack');
       assert.equal(await note.inputValue(), '还没保存的设计决定。');
       await page.evaluate(() => window.fixture.hold());
-      await page.getByRole('button', {name:'保存笔记并去对话',exact:true}).click();
+      await page.getByRole('button', {name:'保存并准备指令',exact:true}).click();
       await page.waitForFunction(() => window.fixture.pending());
       await note.fill('等待可用性检查时补写的决定。');
       await page.evaluate(() => window.fixture.release());
@@ -66,7 +66,7 @@ try {
       await page.getByRole('button', {name:'配置模型与角色',exact:true}).click();
       const beforeCancel = await page.evaluate(() => window.fixture.draft().draft);
       await page.evaluate(() => window.fixture.hold());
-      await page.getByRole('button', {name:'保存笔记并去对话',exact:true}).click();
+      await page.getByRole('button', {name:'保存并准备指令',exact:true}).click();
       await page.waitForFunction(() => window.fixture.pending());
       await page.getByRole('button', {name:'使用完整工作流',exact:true}).click();
       await page.evaluate(() => window.fixture.release());
@@ -77,7 +77,7 @@ try {
       await page.evaluate(() => window.fixture.session('sample'));
       assert.equal(await note.inputValue(), '还没保存的设计决定。');
       await open('mattpocock');
-      await page.locator('.sc-flow-task-card').first().getByRole('button', {name:'去对话处理',exact:true}).click();
+      await page.locator('.sc-flow-task-card').first().getByRole('button', {name:'处理这张任务',exact:true}).click();
       await page.waitForFunction(() => window.fixture.store().runs.sample.routes['matt-feature'].stages['grill-with-docs']?.status === 'active');
       assert.match(await page.evaluate(() => window.fixture.draft().draft), /^\/grill-with-docs /);
       await page.getByLabel('做了什么，如何检查的', {exact:true}).fill('返回后继续补充的成果。');
@@ -103,6 +103,53 @@ try {
       assert.equal(await page.locator('.sc-spec-action-buttons>details').getAttribute('open'), null);
       await leave(); await open('openspec');
       await page.getByRole('heading', {name:'2026-11-19-sort-amounts',exact:true}).waitFor();
+    } finally { await page.close(); }
+  });
+  await test('workflow pages prepare and send through the same draft without navigating away', async () => {
+    const page = await browser.newPage({viewport:{width:1440,height:1000}});
+    page.setDefaultTimeout(7000);
+    try {
+      await page.goto(`http://127.0.0.1:${server.address().port}`);
+      await page.locator('.sc-flows').waitFor();
+      await page.evaluate(() => window.fixture.inline(true));
+      await page.locator('.sc-flow-task-card').first().getByRole('button',{name:'处理这张任务',exact:true}).click();
+      await page.getByRole('complementary',{name:'当前对话',exact:true}).waitFor();
+      assert.equal(await page.locator('.sc-flows').getAttribute('data-page'),'mattpocock');
+      assert.equal(await page.evaluate(() => window.lastView),undefined);
+      assert.match(await page.getByLabel('本页对话输入').inputValue(), /^\/grill-with-docs /);
+      await page.getByLabel('本页对话输入').fill('检查这个任务的实现');
+      assert.equal(await page.evaluate(() => window.fixture.draft().draft),'检查这个任务的实现');
+      await page.getByRole('button',{name:'发送',exact:true}).click();
+      assert.equal(await page.evaluate(() => window.sentDraft),'检查这个任务的实现');
+      await page.getByRole('button',{name:'收起对话',exact:true}).click();
+      assert.equal(await page.locator('.sc-flow-chat-panel').count(),0);
+      const conversationButton = page.locator('.sc-flow-header-actions').getByRole('button',{name:'当前对话',exact:true});
+      assert.equal(await conversationButton.evaluate(node => node === document.activeElement),true);
+      await conversationButton.click();
+      await page.getByLabel('本页对话输入').fill('继续核对已完成的修改');
+      await page.getByRole('button',{name:'收起对话',exact:true}).click();
+      await conversationButton.click();
+      assert.equal(await page.getByLabel('本页对话输入').inputValue(),'继续核对已完成的修改');
+      assert.equal(await conversationButton.getAttribute('aria-expanded'),'true');
+      assert.equal(await page.evaluate(() => window.lastView),undefined);
+      for (const author of ['pstack','openspec']) {
+        await page.evaluate(value => window.fixture.page(value),author);
+        await page.locator('.sc-flows[data-page='+author+']').waitFor();
+        if (author === 'pstack') {
+          await page.getByLabel('想法、决定和检查结果',{exact:true}).fill('这条笔记应进入本页草稿。');
+          await page.getByRole('button',{name:'保存并准备指令',exact:true}).click();
+        } else {
+          await page.getByRole('button',{name:'按方案开发',exact:true}).click();
+        }
+        await page.locator('.sc-flow-chat-panel').waitFor();
+        assert.equal(await page.locator('.sc-flows').getAttribute('data-page'),author);
+        assert.equal(await page.evaluate(() => window.lastView),undefined);
+        for (const width of [1440,720,390]) {
+          await page.setViewportSize({width,height:1000});
+          assert.equal(await page.locator('.sc-flow-layout').evaluate(node => node.scrollWidth <= node.clientWidth),true);
+          assert.ok((await page.locator('.sc-flow-chat-panel').boundingBox()).height >= 250);
+        }
+      }
     } finally { await page.close(); }
   });
   await test('productive workflows preserve author methods, real conversation facts, outcome records and native invocation', async context => {
@@ -138,7 +185,7 @@ try {
     assert.equal(first.status, 'completed');
     assert.match(first.result, /007/);
     assert.deepEqual(first.files, ['/demo/src/export.ts']);
-    await page.getByRole('button', { name: '写入对话草稿' }).click();
+    await page.getByRole('button', { name: '准备指令' }).click();
     assert.equal(await page.evaluate(() => window.lastView), 'chat');
     assert.match(await page.evaluate(() => window.fixture.draft().draft), /^\/grill-with-docs .*澄清需求[\s\S]*修复订单金额$/);
     assert.equal(await page.evaluate(() => window.fixture.count()), 2, 'fetch only at mount and invocation');
@@ -153,7 +200,7 @@ try {
     await page.locator('.sc-flow-filters').getByRole('button', { name: '全部', exact: true }).click();
     await page.getByRole('searchbox').fill('tdd');
     await page.locator('.sc-flow-skills button').click();
-    assert.equal(await page.getByRole('button', { name: '写入对话草稿' }).isDisabled(), true);
+    assert.equal(await page.getByRole('button', { name: '准备指令' }).isDisabled(), true);
     await page.getByText('同名 Skill 来自其他包或项目', { exact: true }).waitFor();
     await page.getByRole('searchbox').fill('architect');
     await page.locator('.sc-flow-skills').getByRole('button', { name: 'architect PStack 可使用', exact: true }).click();
@@ -162,13 +209,13 @@ try {
     await page.locator('.sc-flow-skills').getByRole('button', { name: 'architect PStack 可使用', exact: true }).click();
     await page.evaluate(() => window.fixture.disable());
     await page.getByText('未启用或当前预设不可用', { exact: true }).waitFor();
-    assert.equal(await page.getByRole('button', { name: '写入对话草稿' }).isDisabled(), true);
+    assert.equal(await page.getByRole('button', { name: '准备指令' }).isDisabled(), true);
     await page.evaluate(() => window.fixture.offline());
     await page.getByText('未能读取当前会话的 Skill，请刷新重试。').waitFor();
     await page.evaluate(() => { window.fixture.online(); window.fixture.restore(); });
     await page.getByText('可使用', { exact: true }).waitFor();
     await page.evaluate(() => window.fixture.rich());
-    assert.equal(await page.getByRole('button', { name: '写入对话草稿' }).isDisabled(), true);
+    assert.equal(await page.getByRole('button', { name: '准备指令' }).isDisabled(), true);
     const timings = [];
     for (let index = 0; index < 20; index++) {
       timings.push(await page.evaluate(async index => {
@@ -188,7 +235,7 @@ try {
     await page.getByLabel('想法、决定和检查结果', {exact:true}).fill('已确认入口、导出字段与测试条件。');
     await page.getByRole('button', { name: '保存笔记', exact: true }).click();
     await page.getByRole('button', { name: '设计方案', exact: false }).click();
-    await page.getByRole('button', { name: '保存笔记并去对话', exact: true }).click();
+    await page.getByRole('button', { name: '保存并准备指令', exact: true }).click();
     assert.match(await page.evaluate(() => window.fixture.draft().draft), /^\/poteto-mode [\s\S]*playbook：feature[\s\S]*设计方案/);
     assert.match(await page.evaluate(() => window.fixture.draft().draft), /已确认入口、导出字段与测试条件/);
     await selectPack('Matt Pocock');
@@ -278,7 +325,7 @@ try {
     await page.setViewportSize({ width: 1440, height: 1000 });
     await page.evaluate(() => { document.body.style.zoom = '2'; });
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
-    if (artifacts) { await page.screenshot({ path: join(artifacts, 'workflow-200-percent.png'), animations: 'disabled' }); await writeFile(join(artifacts, 'workflow-timing.json'), JSON.stringify({ samples: timings, max: Math.max(...timings), median: timings.toSorted((a,b)=>a-b)[10], scope: 'Production React browser fixture; actual input events to verified results through two animation frames; not a competitor comparison' }, null, 2)); }
+    if (artifacts) { await page.screenshot({ path: join(artifacts, 'workflow-200-percent.png'), animations: 'disabled' }); await writeFile(join(artifacts, 'workflow-timing.json'), JSON.stringify({ samples: timings, max: Math.max(...timings), median: (timings.toSorted((a,b)=>a-b)[9] + timings.toSorted((a,b)=>a-b)[10]) / 2, scope: 'Production React browser fixture; actual input events to verified results through two animation frames; not a competitor comparison' }, null, 2)); }
     assert.deepEqual(errors, []);
     await page.close();
   });
@@ -403,13 +450,13 @@ try {
     assert.equal(await notes.inputValue(), '明确数据结构，并保留行为基线。');
     assert.equal(await page.locator('.sc-flow-attachments li').count(), 1);
     await page.evaluate(()=>window.fixture.rich());
-    assert.equal(await page.getByRole('button',{name:'保存笔记并去对话',exact:true}).isDisabled(),true);
+    assert.equal(await page.getByRole('button',{name:'保存并准备指令',exact:true}).isDisabled(),true);
     await page.evaluate(()=>window.fixture.plain());
-    await page.getByRole('button',{name:'保存笔记并去对话',exact:true}).click();
+    await page.getByRole('button',{name:'保存并准备指令',exact:true}).click();
     assert.match(await page.evaluate(()=>window.fixture.draft().draft), /^\/poteto-mode .*完整工作流[\s\S]*明确数据结构/);
     assert.equal(await page.evaluate(()=>window.fixture.store().recent[0]), 'pstack/poteto-mode');
     await page.getByRole('button',{name:'配置模型与角色',exact:true}).click();
-    await page.getByRole('button',{name:'保存笔记并去对话',exact:true}).click();
+    await page.getByRole('button',{name:'保存并准备指令',exact:true}).click();
     assert.match(await page.evaluate(()=>window.fixture.draft().draft), /^\/setup-pstack [\s\S]*本次仅执行所选工具[\s\S]*明确数据结构/);
     assert.doesNotMatch(await page.evaluate(()=>window.fixture.draft().draft.split('\n\n')[0]), /使用 poteto-mode 完整工作流/);
     assert.equal(await page.evaluate(()=>window.fixture.store().recent[0]), 'pstack/setup-pstack');

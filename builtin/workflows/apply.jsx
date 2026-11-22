@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { WorkflowLibrary } from './Library.jsx';
+import { WorkflowWorkspace } from './Workspace.jsx';
 import { workspaceApi } from '../workbench/remote.js';
 import { NS, zh, en } from './locales.js';
 import { featureView } from '../ui/boundary.js';
@@ -14,12 +14,12 @@ const pages = [
 
 function WorkflowPage({ filesRemote, ...props }) {
   const filesApi = useMemo(() => workspaceApi(filesRemote, props.sessionId), [filesRemote, props.sessionId]);
-  return featureView(WorkflowLibrary, { ...props, filesApi, MarkdownText: require('super-code-workbench').SafeMarkdown });
+  return featureView(WorkflowWorkspace, { ...props, filesApi, MarkdownText: require('super-code-workbench').SafeMarkdown });
 }
 
-export function applyWorkflows(ctx, hasWorkbench) {
+export function applyWorkflows(ctx, hasWorkbench, Conversation) {
   ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'super-code: workflow locale');
-  ctx.inject(['remote.skills', 'remote.superCodeBudgets', 'remote.superCodeWorkbench'], ready => {
+  ctx.inject(['remote.skills', 'remote.superCodeBudgets', 'remote.superCodeWorkbench', 'remote.session'], ready => {
     const subscribe = listener => {
       const off = ready.remote.$on('settings/document-updated', listener);
       const reset = ready.on('connection/reset', listener);
@@ -37,7 +37,7 @@ export function applyWorkflows(ctx, hasWorkbench) {
           registered.set(page.id, ready.slots.register({
             name: 'conversation.view', id: `super-code-${page.id}`, order: 30 + pages.indexOf(page), locale: NS,
             label: () => ctx.locale.bind(NS)('language') === 'zh' ? page.label : page.en,
-            inject: () => ({ api: ready.remote.skills, subscribe, hasWorkbench, packageState, page: page.id }),
+            inject: () => ({ api: ready.remote.skills, subscribe, hasWorkbench, packageState, page: page.id, Conversation, conversationRemote: ready.remote, detailT: ctx.locale.bind('dshSuperCode') }),
           }, props => <WorkflowPage {...props} key={`${page.id}-${props.sessionId}`} filesRemote={ready.remote.superCodeWorkbench} t={ctx.locale.bind(NS)} />));
         }
       };

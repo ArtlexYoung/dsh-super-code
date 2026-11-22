@@ -37,7 +37,7 @@ The **Code Workbench** lets you browse, edit, and understand project code while 
 
 [![Code workbench: files, outline and editor](docs/images/workbench-en-display.svg)](docs/images/workbench-en.png)
 
-**Workflows**: Browse all four bundled Skill packages from a conversation. Routes explain steps, inputs and outcomes, with search, favorites, manual progress and commands added to your draft. In the code workbench, `Ctrl/Cmd+Shift+P` searches commands and open files. [Usage and automatic maintenance](docs/en/Workflows.md).
+**Workflows**: Enable Matt task cards, PStack working notes or OpenSpec change documents to open their own pages. Prepare instructions, send messages and read replies beside your work. Search and favorite Skills in the library; unfinished notes and reading positions survive page switches. In the code workbench, `Ctrl/Cmd+Shift+P` searches commands and open files. [Usage and automatic maintenance](docs/en/Workflows.md).
 
 **Tool profiles**: Five built-ins and up to 25 custom profiles let you choose tools, execution mode, and shell for each task. Conversations apply changes after their current turn, preserving persistent-shell state across switches. Open **Settings → Super Code → Tools** to browse and customize profiles.
 

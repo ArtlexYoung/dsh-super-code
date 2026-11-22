@@ -57,7 +57,7 @@ function apply(ctx) {
   let workbenchValue = null
   const workbenchListeners = new Set()
   const workbenchState = { snapshot: () => workbenchValue, subscribe: listener => { workbenchListeners.add(listener); return () => workbenchListeners.delete(listener) } }
-  applyWorkflows(ctx, () => workbenchState.snapshot()?.preference.snapshot().enabled === true)
+  applyWorkflows(ctx, () => workbenchState.snapshot()?.preference.snapshot().enabled === true, WorkbenchConversation)
   const updateWorkbench = value => { workbenchValue = value; for (const listener of workbenchListeners) listener() }
   const workbenchRemote = connectRemote(ctx, { descriptors: workbenchDescriptors })
   ctx.inject(['sessions', 'sidebarRightTabs'], ready => {

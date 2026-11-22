@@ -18,6 +18,7 @@ import { createProject } from './editing/project.js';
 import { asText, textChanges } from './editing/history.js';
 import { createAutosave } from './editing/autosave.js';
 import { undoEdit, replaceFiles } from './editing/actions.js';
+import { readReplacement, remainingReplacements } from './editing/replace.js';
 import { readSaveConflict, applySaveConflict } from './editing/save-conflict.js';
 import { createWorkspaceRecovery } from './recovery.js';
 import { createTabs } from './tabs.js';
@@ -769,12 +770,26 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
     cancelCloseFile() { publish({ closingFile: null }); },
     keepTab(path) { fileTabs.keep(path); publish({ tabs: tabs() }); },
     moveTab(path, target, after) { fileTabs.move(path, target, after); publish({ tabs: tabs() }); },
-    async replaceProject(matches, query, progress, signal) {
+    async previewReplacement(match, query, signal) {
+      const target = project, ready = binding;
+      const result = await readReplacement(api, target, match, query, signal);
+      if (project !== target || binding !== ready) throw new Error('WORKBENCH_PROJECT_CHANGED');
+      const before = result.before.toString(), after = result.after.toString();
+      return compareText(match.path, before, after, diffLines(before, after, { timeout: 500, maxEditLength: MAX_DIFF_LINES }));
+    },
+    async replaceProject(matches, query, progress, signal, previewId) {
       if (!project || operation) throw new Error('WORKBENCH_FILE_BUSY');
       const target = project, ready = binding;
       await saving;
       if (project !== target || binding !== ready) throw new Error('WORKBENCH_PROJECT_CHANGED');
-      try { return await replaceFiles(editing, matches, query, progress, signal); }
+      const report = result => {
+        const panel = snapshot.panel, state = panel?.state;
+        if (previewId && state?.replacePreview?.id === previewId) {
+          controller.panel({ ...panel, state: { ...state, replacePreview: remainingReplacements(state.replacePreview, result.changed), replaceResult: result } });
+        }
+        progress(result);
+      };
+      try { return await replaceFiles(editing, matches, query, report, signal); }
       finally { if (project === target && binding === ready) { changes.invalidate(); publish({ tabs: tabs() }); void updateIndex().catch(fail); } }
     },
     async openConversation(row) {

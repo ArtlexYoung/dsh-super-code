@@ -107,7 +107,7 @@ File-comparison targets, Git file selections, and commit-file lists stay synchro
 
 Changing a tool's file or query hides read errors for the previous target. Completing staging, a commit, or hunk restoration preserves later file selections in other windows. Function history keeps its current list when window synchronization sends unchanged content; diff editors preserve search, selection, and scroll position as well.
 
-Repeated replacement previews use the latest scan, even with identical search conditions. Applying or stopping a replacement clears only the preview it used, preserving any newer preview. Incomplete or failed scans cannot be applied and can be retried after the problem is corrected.
+Repeated replacement previews use the latest scan, even with identical search conditions. An earlier replacement updates only its own preview, preserving any newer preview. Incomplete or failed new scans cannot be applied.
 
 An uninitialized separate window can close immediately. Navigating to another file in the main page leaves separate windows on their own files; edits to the same file synchronize. Closing one window leaves the others open. Late errors from a closed window cannot close a newly opened one. Switching projects stops selection requests from the previous project; late replies cannot modify same-named files in the new project. After a file creation or undo succeeds, a later read or folder-refresh failure is reported separately without asking you to repeat the completed file action.
 
@@ -145,7 +145,13 @@ Queued saves, undo, replacement, and Git file switching check their originating 
 
 Ctrl/⌘+F opens file search. The IDEA theme uses a full-width bar and the VS Code theme uses a compact bar aligned to the right. Results update after typing, pasting, or committing an input method composition. Press Enter or Shift+Enter to move between matches and Esc to return to the source. Ordinary text searches show the result count and current position, with `1000+` for dense results. Large files and regular expressions support highlighting and navigation with the count omitted.
 
-Ctrl/⌘+R expands file replacement. Ctrl/⌘+Shift+R opens project replacement with a preview of files and match counts before writing. Changing the search text, replacement text, or case setting in any window invalidates the previous preview and requires a new one. Project replacement walks editable text independently, excluding dependency and build folders. Binary files and files over 2 MiB are counted as skipped. Unsaved matching files, stale previews, and write failures are reported individually. Stopping cancels subsequent files, and completed replacements remain undoable. Original CRLF or LF line endings are preserved.
+Ctrl/⌘+R expands file replacement. Ctrl/⌘+Shift+R opens project replacement. Choose **Preview matches**, check the files to change, then choose a file name to compare its complete contents before and after replacement. The diff arrows move between changes. Reviewing a diff does not write the file. **Replace in N files** writes only checked files and records undo history for each successful replacement. Checked files and the file under review stay synchronized between embedded and separate windows; Tab, Space and Enter are supported.
+
+Project replacement walks editable text independently, excluding dependency and build folders. Binary files and files over 2 MiB are counted as skipped. Unsaved files, stale versions and write failures are reported individually. Stopping cancels subsequent files. Successful files leave the pending list and remain undoable; unfinished and unchecked files stay available. **Recheck remaining files** reads their latest versions for another review without adding successful files back. A failed or stopped recheck preserves the previous scope and selection. Original CRLF or LF line endings are preserved.
+
+Closing the separate project replacement window also stops subsequent files. Successfully written files still leave the pending list, so you can continue with the remaining files from the main page.
+
+Changing the search text, replacement text or case setting in any window invalidates the previous preview. **Preview matches** starts a new scan of the whole project.
 
 Toolbar actions display names, with configured shortcuts in hover hints. IDEA and VS Code themes also distinguish icon shapes, fonts, corners, selections, and syntax colors. Gutter spacing and conversation text are more compact. The whole Changed files heading toggles its panel, with centered graphic arrows.
 

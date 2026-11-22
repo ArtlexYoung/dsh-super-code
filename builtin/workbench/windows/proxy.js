@@ -133,13 +133,14 @@ export function createWindowProxy(send, t, { child, initial, canSplit = false } 
     git: (value, signal) => call('git', [value], { signal }),
     compareFiles: (left, right, signal) => call('compareFiles', [left, right], { signal }),
     readSaveConflict: (path, signal) => call('readSaveConflict', [path], { signal }),
+    previewReplacement: (match, query, signal) => call('previewReplacement', [match, query], { signal }),
     applySaveConflict: (entry, text) => call('applySaveConflict', [entry, text]),
     list: (path, signal) => call('list', [path], { signal }),
     models: signal => call('models', [], { signal }),
     fonts: signal => call('fonts', [], { signal }),
     environmentPaths: value => call('environmentPaths', [value]),
     environments: signal => call('environments', [], { signal }),
-    replaceProject: (matches, query, progress, signal) => call('replaceProject', [matches, query], { signal, progress }),
+    replaceProject: (matches, query, progress, signal, previewId) => call('replaceProject', [matches, query, previewId], { signal, progress, waitForCompletion: true }),
     async *searchProject(query, signal) {
       const values = []; let wake, done = false, failure;
       const work = call('searchProject', [query], { signal, progress(value) { values.push(value); wake?.(); } })

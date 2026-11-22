@@ -38,8 +38,9 @@ function createHost(workbench, transmit, close, metadata, onReady) {
     git: (args, signal) => workbench.git(args[0], signal),
     compareFiles: (args, signal) => workbench.compareFiles(args[0], args[1], signal),
     readSaveConflict: (args, signal) => workbench.readSaveConflict(args[0], signal),
+    previewReplacement: (args, signal) => workbench.previewReplacement(args[0], args[1], signal),
     'changes.diff': (args, signal) => workbench.changes.diff(args[0], signal),
-    replaceProject: (args, signal, progress) => workbench.replaceProject(...args, progress, signal),
+    replaceProject: ([matches, query, previewId], signal, progress) => workbench.replaceProject(matches, query, progress, signal, previewId),
     async searchProject(args, signal, progress) { for await (const value of workbench.searchProject(args[0], signal)) progress(value); },
     openFileWindow([file, editorKind, markdownSplit]) {
       if (typeof file !== 'string' || !file || !['file', 'markdown'].includes(editorKind)) throw new Error('WORKBENCH_WINDOW_PROTOCOL');

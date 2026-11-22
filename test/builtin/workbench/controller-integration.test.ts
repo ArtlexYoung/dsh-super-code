@@ -640,6 +640,61 @@ test('真实磁盘：全局替换保留换行风格，已保存修改可跨文�
   await controller.undo('redo'); assert.equal(await read('other.py'), 'new three\n')
 })
 
+test('替换审阅只读取文件，完整差异与选定文件保存一致并保留换行', async t => {
+  const { create, read, files } = await fixture(t, { 'main.ts': 'Old one\r\nold two\r\n', 'other.ts': 'old three\n' }), controller = await create()
+  const match = { path: 'main.ts', version: (await files.read('demo', 'main.ts')).version }
+  const query = { search: 'old', replace: 'new\nline', caseSensitive: false }, signal = new AbortController().signal
+  const diff = await controller.previewReplacement(match, query, signal)
+  assert.equal(diff.before, 'Old one\nold two\n'); assert.equal(diff.after, 'new\nline one\nnew\nline two\n')
+  assert.equal(await read(), 'Old one\r\nold two\r\n'); assert.equal(controller.snapshot().file, null)
+  const result = await controller.replaceProject([match], query, () => {}, signal)
+  assert.deepEqual(result.changed, ['main.ts']); assert.deepEqual(result.failed, [])
+  assert.equal((await read()).replaceAll('\r\n', '\n'), diff.after)
+  assert.equal(await read('other.ts'), 'old three\n')
+  await controller.undo(); assert.equal(await read(), 'Old one\r\nold two\r\n')
+})
+
+test('替换审阅拒绝扫描后的磁盘变化和未保存缓冲，旧预览不能写盘', async t => {
+  const { create, read, write, files } = await fixture(t, { 'main.ts': 'old one\n' }), controller = await create()
+  const match = { path: 'main.ts', version: (await files.read('demo', 'main.ts')).version }
+  const query = { search: 'old', replace: '', caseSensitive: true }, signal = new AbortController().signal
+  assert.equal((await controller.previewReplacement(match, query, signal)).after, ' one\n')
+  await write('main.ts', 'old outside\n')
+  await assert.rejects(controller.previewReplacement(match, query, signal), /WORKBENCH_CONFLICT/)
+  const result = await controller.replaceProject([match], query, () => {}, signal)
+  assert.equal(result.failed.length, 1); assert.equal(await read(), 'old outside\n')
+  await controller.visit({ file: 'main.ts' }); edit(controller, 0, 0, '// draft\n')
+  await assert.rejects(controller.previewReplacement({ ...match, version: (await files.read('demo', 'main.ts')).version }, query, signal), /WORKBENCH_CONFLICT/)
+  assert.equal(text(controller), '// draft\nold outside\n'); assert.equal(await read(), 'old outside\n')
+})
+
+for (const newerPreview of [false, true]) test(`真实磁盘：停止替换后${newerPreview ? '晚到结果不改动新预览' : '原控制器记录已完成写入并保留剩余文件'}`, async t => {
+  const { create, read, api } = await fixture(t, { 'main.ts': 'old one\n', 'other.ts': 'old two\n' })
+  const started = Promise.withResolvers<void>(), pending = Promise.withResolvers<void>()
+  const controller = await create({ save: async (input: Parameters<typeof api.save>[0]) => { started.resolve(); await pending.promise; return api.save(input) } })
+  const rows = await Promise.all(['main.ts', 'other.ts'].map(async path => ({ path, version: (await api.read(path)).version })))
+  const query = { search: 'old', replace: 'old new', caseSensitive: true }
+  const preview = { id: 'original', query, rows, selected: rows.map(row => row.path), active: 'main.ts', scanned: 2, skipped: 0 }
+  controller.panel({ kind: 'projectReplace', id: 'review', state: { replaceRead: preview.id, replacePreview: preview } })
+  const abort = new AbortController(), applying = controller.replaceProject(rows, query, () => {}, abort.signal, preview.id)
+  const stopped = assert.rejects(applying, { name: 'AbortError' })
+  const next = { replaceRead: 'newer', replacePreview: { ...preview, id: 'newer', selected: ['other.ts'] }, replaceResult: null }
+  try {
+    await started.promise
+    if (newerPreview) controller.panel({ kind: 'projectReplace', id: 'review', state: next })
+    abort.abort(); pending.resolve(); await stopped
+    assert.equal(await read(), 'old new one\n'); assert.equal(await read('other.ts'), 'old two\n')
+    const state = controller.snapshot().panel.state
+    if (newerPreview) assert.deepEqual(state, next)
+    if (!newerPreview) {
+      assert.deepEqual(state.replacePreview.rows.map((row: { path: string }) => row.path), ['other.ts'])
+      assert.deepEqual(state.replacePreview.selected, ['other.ts']); assert.equal(state.replacePreview.active, null)
+      assert.deepEqual(state.replaceResult, { changed: ['main.ts'], failed: [] })
+    }
+    await controller.undo(); assert.equal(await read(), 'old one\n')
+  } finally { pending.resolve(); await stopped }
+})
+
 test('真实磁盘：新建、编辑、保存后按步骤撤销并重做，文件记录和文本记录一致', async t => {
   const { create, root, read } = await fixture(t), controller = await create()
   controller.panel({ kind: 'fileAction', id: 'new', action: 'createFile', parent: '', name: '中文 文件.ts' })

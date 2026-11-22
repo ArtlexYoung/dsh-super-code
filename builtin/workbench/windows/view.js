@@ -28,6 +28,8 @@ export async function createWindowView(view, source, presentation) {
       ...view, reading: source.reading.forView({ currentFile: () => view.snapshot().file, visit: view.visit }),
       // 定向工具窗没有可见的代码区，定位结果应在原工作台中打开。
       visit: presentation.kind === 'panel' ? source.visit : view.visit,
+      // 工具窗关闭后，原控制器继续记录已经开始写入的替换结果。
+      replaceProject: presentation.kind === 'panel' ? source.replaceProject : view.replaceProject,
       openFileWindow: (presentation, native) => source.openFileWindow(presentation, native),
       createPane() {
         const pane = view.createPane();

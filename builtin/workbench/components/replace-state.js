@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { errorText } from '../locales.js';
 import { usePanelState } from './panel-state.js';
 import { uniqueId } from '../id.js';
 import { remainingReplacements } from '../editing/replace.js';
+import { searchQueryKey } from '../../../src/workbench/search-query.ts';
 
-const sameQuery = (first, second) => first && second && ['search', 'replace', 'caseSensitive'].every(key => first[key] === second[key]);
+const sameQuery = (first, second) => first && second && searchQueryKey(first) === searchQueryKey(second);
 
 async function scanMatches(workbench, query, signal, paths) {
   const rows = []; let completion;
@@ -20,7 +21,7 @@ async function scanMatches(workbench, query, signal, paths) {
 
 /** 查询、选择和结果随工具窗口共享；在途操作只更新它开始时的那份预览。 */
 export function useReplacement(workbench, t) {
-  const [query, setQuery] = usePanelState(workbench, 'replaceQuery', { search: '', replace: '', caseSensitive: true });
+  const { searchQuery: query } = useSyncExternalStore(workbench.subscribe, workbench.snapshot);
   const [savedPreview, setPreview] = usePanelState(workbench, 'replacePreview', null), [read, setRead] = usePanelState(workbench, 'replaceRead', null);
   const [applied, setApplied] = usePanelState(workbench, 'replaceResult', null);
   const [busy, setBusy] = useState(false), [error, setError] = useState(null), pending = useRef(null);
@@ -29,7 +30,7 @@ export function useReplacement(workbench, t) {
   useEffect(() => () => pending.current?.abort.abort(), []);
   const current = id => workbench.snapshot().panel?.state?.replaceRead === id;
   const update = (id, change) => setPreview(previous => previous?.id === id ? change(previous) : previous);
-  const change = patch => { setRead(null); setQuery({ ...query, ...patch }); setPreview(null); setApplied(null); setError(null); };
+  const change = patch => { setRead(null); workbench.setSearchQuery(patch); setPreview(null); setApplied(null); setError(null); };
   function start(id, kind) {
     pending.current?.abort.abort();
     const abort = new AbortController(); pending.current = { abort, id, kind };

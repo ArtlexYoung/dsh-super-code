@@ -28,7 +28,7 @@ import { createWindowView } from './windows/view.js';
 import { diffLines } from 'diff';
 import { compareText, MAX_DIFF_LINES } from '../../src/workbench/git/text-diff.ts';
 import { uniqueId } from './id.js';
-import { locationBatches } from '../../src/workbench/search-query.ts';
+import { locationBatches, projectSearchDefaults } from '../../src/workbench/search-query.ts';
 import { externalDefinitions } from './analysis/environment.js';
 import { createEnvironmentPreference } from './environment-preference.js';
 
@@ -65,7 +65,7 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
   // 同会话窗口共用撤销记录，编辑通知仍按视图区分，保证其他窗口收到修改。
   const owner = historyOwner || Symbol('workbench'), origin = Symbol('workbench-view');
   let project, unsubscribeProject = () => {}, synchronizing = false, receiving = false;
-  let snapshot = { file: null, editorKind: 'file', tabs: [], canReopenTab: Boolean(closedTabs.peek()), recentFiles: [], saveConflict: null, directories, symbols: [], cursor: null, status: t('ready'), error: '', preferences, environmentPaths: {}, panel: null, assistant: null, indexing: false, indexed: 0, back: false, forward: false, fileMenu: null, fileClipboard: null, closingFile: null };
+  let snapshot = { searchQuery: { ...projectSearchDefaults }, file: null, editorKind: 'file', tabs: [], canReopenTab: Boolean(closedTabs.peek()), recentFiles: [], saveConflict: null, directories, symbols: [], cursor: null, status: t('ready'), error: '', preferences, environmentPaths: {}, panel: null, assistant: null, indexing: false, indexed: 0, back: false, forward: false, fileMenu: null, fileClipboard: null, closingFile: null };
   const publish = patch => { if (disposed) return; snapshot = { ...snapshot, ...patch }; for (const listener of subscribers) listener(); };
   const fail = error => { if (error.name !== 'AbortError') publish({ error: errorText(error, t) }); };
   const fileTabs = createTabs(documents), tabs = fileTabs.list;
@@ -684,7 +684,7 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
       const paths = [...documents.keys()]; projectViews.get(previous)?.delete(documents); documents.clear(); collectBuffers(previous, paths);
       states.clear(); locations.clear(); fileTabs.clear(); closedTabs.clear(); pendingClose = null; directories.clear(); listings.clear(); current = null; history = []; at = -1; editor?.dispose();
       changes.reset();
-      publish({ file: null, recentFiles: [], tabs: [], symbols: [], cursor: null, closingFile: null, fileClipboard: null, fileMenu: null, panel: null, saveConflict: null, directories: new Map(directories), error: '', status: t('ready') });
+      publish({ file: null, searchQuery: { ...projectSearchDefaults }, recentFiles: [], tabs: [], symbols: [], cursor: null, closingFile: null, fileClipboard: null, fileMenu: null, panel: null, saveConflict: null, directories: new Map(directories), error: '', status: t('ready') });
     }
     if (!projectViews.has(project)) projectViews.set(project, new Set());
     projectViews.get(project).add(documents);
@@ -711,7 +711,7 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
       signal?.throwIfAborted();
       if (project !== target) return;
       if (event.kind !== 'matches' || !buffers.has(event.path)) yield event;
-      else for (const matches of locationBatches(buffers.get(event.path), query.search, query.caseSensitive)) {
+      else for (const matches of locationBatches(buffers.get(event.path), query.search, query.caseSensitive, query)) {
         signal?.throwIfAborted();
         yield { ...event, matches };
       }
@@ -816,6 +816,10 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
       const values = await Promise.all([left, right].map(async path => project?.documents.get(path)?.text ?? (await api.read(path, signal)).text));
       signal?.throwIfAborted();
       return compareText(left, values[0], values[1], diffLines(values[0], values[1], { timeout: 500, maxEditLength: MAX_DIFF_LINES }));
+    },
+    setSearchQuery(patch) {
+      const panel = snapshot.panel?.kind === 'projectReplace' ? { ...snapshot.panel, state: { ...snapshot.panel.state, replaceRead: null, replacePreview: null, replaceResult: null } } : snapshot.panel;
+      publish({ searchQuery: { ...snapshot.searchQuery, ...patch }, panel });
     },
     cancelCloseFile() { pendingClose = null; publish({ closingFile: null }); },
     keepTab(path) { fileTabs.keep(path); publish({ tabs: tabs() }); },

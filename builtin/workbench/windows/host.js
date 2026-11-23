@@ -15,7 +15,7 @@ function createHost(workbench, transmit, close, metadata, onReady) {
   const push = value => { if (!stopped && initialized) void transmit(value).catch(close); };
   const edits = createEditHost(workbench.view, push);
   const calls = Object.fromEntries(['visit', 'move', 'list', 'refresh', 'save', 'settings', 'environmentPaths', 'definition', 'fileOperation', 'undo', 'closeFile', 'closeTabs', 'reopenTab', 'cancelCloseFile',
-    'moveTab', 'keepTab', 'openConversation', 'menu', 'copyFile', 'pinFile', 'panel', 'submitFileAction', 'applySaveConflict'].map(name => [name, args => workbench[name](...args)]));
+    'moveTab', 'keepTab', 'setSearchQuery', 'openConversation', 'menu', 'copyFile', 'pinFile', 'panel', 'submitFileAction', 'applySaveConflict'].map(name => [name, args => workbench[name](...args)]));
   for (const [name, target, methods] of [
     ['assistant', workbench.assistant, ['open', 'select', 'close', 'send', 'stop', 'remove', 'draft', 'mode', 'pin']],
     ['reading', workbench.reading, ['goal', 'plan', 'file', 'retry', 'step', 'stop', 'open', 'verify']],

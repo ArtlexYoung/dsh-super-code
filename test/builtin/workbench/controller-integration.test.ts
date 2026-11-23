@@ -165,6 +165,34 @@ test('未保存缓冲的分批搜索保留取消语义，磁盘上的旧匹配�
   assert.equal(await read(), 'disk needle')
 })
 
+test('全局搜索在指定目录内使用最新草稿和相同正则全词选项，替换预览拒绝范围外文件', async t => {
+  const { create, read, files } = await fixture(t, { 'src/main.ts': 'disk 123', 'src/skip.ts': 'disk 123', 'outside.ts': 'disk 123' })
+  const first = await create(), second = await create()
+  await second.visit({ file: 'src/main.ts' }); edit(second, 0, 8, 'draft abc12 abc123tail')
+  first.setSearchQuery({ search: 'abc\\d+', regexp: true, wholeWord: true, directory: 'src', exclude: 'skip.ts' })
+  first.panel({ kind: 'search' }); const query = first.snapshot().searchQuery
+  const rows = []
+  for await (const event of first.searchProject({ ...query, locations: true }, new AbortController().signal)) if (event.kind === 'matches') rows.push(event)
+  assert.equal(rows.length, 1); assert.equal(rows[0].path, 'src/main.ts')
+  assert.deepEqual(rows[0].matches.map((item: { character: number; length: number }) => [item.character, item.length]), [[6, 5]])
+  first.panel({ kind: 'projectReplace' }); assert.deepEqual(first.snapshot().searchQuery, query)
+  const outside = await files.read('demo', 'outside.ts')
+  await assert.rejects(first.previewReplacement({ path: outside.path, version: outside.version }, query, new AbortController().signal), /WORKBENCH_SEARCH_SCOPE/)
+  assert.equal(await read('src/main.ts'), 'disk 123')
+})
+
+test('真实磁盘：正则替换预览与写入相同捕获组结果，撤销恢复原文', async t => {
+  const { create, files, read } = await fixture(t, { 'main.ts': 'const count = 12;\r\nconst other = 34;\r\n' }), controller = await create()
+  const source = await files.read('demo', 'main.ts'), query = { search: '(\\d+)', replace: 'Number($1)', caseSensitive: true, regexp: true }
+  const match = { path: 'main.ts', version: source.version }
+  const preview = await controller.previewReplacement(match, query, new AbortController().signal)
+  assert.match(preview.after, /Number\(12\)/)
+  await controller.replaceProject([match], query, () => {}, new AbortController().signal)
+  assert.equal(await read(), preview.after.replace(/\n/g, '\r\n'))
+  await controller.undo(); await controller.save()
+  assert.equal(await read(), source.text)
+})
+
 test('切回已有干净标签读取最新磁盘内容，未保存标签保持草稿', async t => {
   const { create, write } = await fixture(t, { 'main.ts': 'original', 'other.ts': 'other' }), controller = await create()
   await controller.visit({ file: 'main.ts' }); controller.keepTab('main.ts')

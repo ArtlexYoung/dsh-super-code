@@ -12,6 +12,7 @@ import { createEditorGroups } from '../editor/groups.js';
 export function createWindowProxy(send, t, { child, initial, canSplit = false } = {}) {
   let editor, current, loading, receiving = false, disposed = false, turn = 0, threads = [], draftRevision = 0, pendingDraft, panelRevision = 0, pendingPanel;
   let settingsRevision = 0, pendingSettings, confirmedPreferences;
+  let searchRevision = 0, pendingSearch, confirmedSearch;
   let readOnly = false, editingFailed = false, navigation = 0;
   const requests = createRequests(send), documents = new Map(), states = new Map();
   const panes = new Map();
@@ -117,6 +118,14 @@ export function createWindowProxy(send, t, { child, initial, canSplit = false } 
         throw error;
       }).finally(() => { if (pendingSettings?.revision === revision) pendingSettings = null; });
     },
+    setSearchQuery(patch) {
+      const value = { ...stores.snapshot.snapshot().searchQuery, ...patch }, revision = ++searchRevision;
+      pendingSearch = { value, revision }; stores.snapshot.publish({ ...stores.snapshot.snapshot(), searchQuery: value });
+      return call('setSearchQuery', [patch]).catch(error => {
+        if (pendingSearch?.revision === revision) stores.snapshot.publish({ ...stores.snapshot.snapshot(), searchQuery: confirmedSearch });
+        fail(error);
+      }).finally(() => { if (pendingSearch?.revision === revision) pendingSearch = null; });
+    },
     panel(value) {
       if (value) value = { ...value, id: value.id ?? uniqueId() };
       const revision = ++panelRevision; pendingPanel = { value, revision };
@@ -193,7 +202,9 @@ export function createWindowProxy(send, t, { child, initial, canSplit = false } 
         if (pendingPanel && patch.snapshot) patch.snapshot = { ...patch.snapshot, panel: pendingPanel.value };
         if (patch.snapshot) {
           confirmedPreferences = patch.snapshot.preferences;
+          confirmedSearch = patch.snapshot.searchQuery;
           if (pendingSettings) patch.snapshot = { ...patch.snapshot, preferences: pendingSettings.preferences };
+          if (pendingSearch) patch.snapshot = { ...patch.snapshot, searchQuery: pendingSearch.value };
         }
         for (const name of Object.keys(stores)) if (Object.hasOwn(patch, name)) stores[name].publish(patch[name]);
         if (patch.editor) { proxy.initialEditor = patch.editor; await show(patch.editor); }

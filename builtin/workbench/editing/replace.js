@@ -1,13 +1,16 @@
 import { ChangeSet } from '@codemirror/state';
-import { literalMatches } from '../../../src/workbench/search-query.ts';
+import { searchMatches, replacementText, searchPathFilter } from '../../../src/workbench/search-query.ts';
 import { asText } from './history.js';
 
 export function replacementChange(text, query) {
-  return ChangeSet.of([...literalMatches(text.toString(), query.search, query.caseSensitive)].map(match => ({ ...match, insert: query.replace })), text.length);
+  const source = text.toString();
+  return ChangeSet.of([...searchMatches(source, query)].map(match => ({ from: match.index, to: match.index + match[0].length,
+    insert: query.regexp ? replacementText(source, match, query.replace) : query.replace })), text.length);
 }
 
 /** 预览与写入使用同一份版本检查和替换计算，预览本身不修改缓冲。 */
 export async function readReplacement(api, project, match, query, signal) {
+  if (!searchPathFilter(query).file(match.path)) throw new Error('WORKBENCH_SEARCH_SCOPE');
   const loaded = await api.read(match.path, signal);
   signal.throwIfAborted();
   if (loaded.version !== match.version || project.documents.get(match.path)?.dirty) throw new Error('WORKBENCH_CONFLICT');

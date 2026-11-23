@@ -7,9 +7,9 @@ import { chromium, webkit } from 'playwright';
 
 const repo = fileURLToPath(new URL('../../../../', import.meta.url));
 const fixture = `import React from 'react';import{createRoot}from'react-dom/client';
-import{Replace}from'./builtin/workbench/components/Replace.jsx';
-let state={panel:{id:'shared',kind:'projectReplace'}},waiting=[],held=true,holdApply=false,applying=[],stream='normal';const listeners=new Set(),applied=[],scanned=[];
-const workbench={snapshot:()=>state,subscribe:fn=>{listeners.add(fn);return()=>listeners.delete(fn)},panel(panel){state={...state,panel};for(const listener of listeners)listener()},
+import{Replace}from'./builtin/workbench/components/Replace.jsx';import{projectSearchDefaults}from'./src/workbench/search-query.ts';
+let state={searchQuery:{...projectSearchDefaults},panel:{id:'shared',kind:'projectReplace'}},waiting=[],held=true,holdApply=false,applying=[],stream='normal';const listeners=new Set(),applied=[],scanned=[];
+const workbench={setSearchQuery(patch){state={...state,searchQuery:{...state.searchQuery,...patch}};for(const listener of listeners)listener()},snapshot:()=>state,subscribe:fn=>{listeners.add(fn);return()=>listeners.delete(fn)},panel(panel){state={...state,panel};for(const listener of listeners)listener()},
 async *searchProject(query,signal){const version='v'+scanned.push(query);if(held)await new Promise((resolve,reject)=>waiting.push({resolve,reject}));signal.throwIfAborted();yield{kind:'file',path:query.search+'.ts',count:1,version,sample:query.search+' '+version};if(stream==='no-done')return;yield{kind:'done',scanned:1,skipped:0};if(stream==='after-done')throw new Error('stream failed')},
 async replaceProject(rows,query,progress){applied.push({rows,query});if(holdApply)await new Promise((resolve,reject)=>applying.push({resolve,reject}));const result={changed:rows.map(row=>row.path),failed:[]};progress(result);return result}};
 function Button({children,...props}){return <button {...props}>{children}</button>}
@@ -44,7 +44,7 @@ try {
     for (const changed of ['replacement', 'case']) await t.test(`另一个视图修改${changed === 'replacement' ? '替换内容' : '大小写条件'}后，旧预览不能复活`, async () => {
       await field('a').fill('same'); await preview('a').click(); await page.waitForFunction(() => window.test.waiting() === 1);
       if (changed === 'replacement') await page.locator('#b textarea').fill('different');
-      else await page.locator('#b input[type=checkbox]').uncheck();
+      else await page.locator('#b').getByRole('checkbox', { name: 'caseSensitive', exact: true }).check();
       await page.evaluate(() => window.test.release()); await page.waitForFunction(() => !document.querySelector('#a button[type=submit]').disabled);
       assert.equal(await page.locator('.sc-wb-replace-row').count(), 0);
       assert.equal(await page.locator('#b').getByRole('button', { name: 'replaceApply', exact: true }).isDisabled(), true);

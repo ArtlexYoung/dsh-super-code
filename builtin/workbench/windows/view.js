@@ -8,6 +8,7 @@ export async function createWindowView(view, source, presentation) {
   try {
     const snapshot = source.snapshot();
     await view.attach(parent, tooltips);
+    view.setSearchQuery(snapshot.searchQuery);
     const target = presentation.kind === 'file' ? { file: presentation.file, kind: presentation.editorKind } : snapshot.cursor || (snapshot.file ? { file: snapshot.file, kind: snapshot.editorKind } : null);
     if (presentation.kind === 'workbench') for (const tab of snapshot.tabs) { await view.visit({ file: tab.path, kind: tab.kind }); view.keepTab(tab.path); }
     if (target) { await view.visit(target); view.keepTab(target.file); }
@@ -28,6 +29,7 @@ export async function createWindowView(view, source, presentation) {
       ...view, reading: source.reading.forView({ currentFile: () => view.snapshot().file, visit: view.visit }),
       // 定向工具窗没有可见的代码区，定位结果应在原工作台中打开。
       visit: presentation.kind === 'panel' ? source.visit : view.visit,
+      setSearchQuery: presentation.kind === 'panel' ? source.setSearchQuery : view.setSearchQuery,
       // 工具窗关闭后，原控制器继续记录已经开始写入的替换结果。
       replaceProject: presentation.kind === 'panel' ? source.replaceProject : view.replaceProject,
       openFileWindow: (presentation, native) => source.openFileWindow(presentation, native),
@@ -37,7 +39,8 @@ export async function createWindowView(view, source, presentation) {
       },
       snapshot() {
         const next = view.snapshot(), { indexed, indexing } = source.snapshot();
-        if (previous !== next || cached.indexed !== indexed || cached.indexing !== indexing) { previous = next; cached = { ...next, indexed, indexing }; }
+        const searchQuery = presentation.kind === 'panel' ? source.snapshot().searchQuery : next.searchQuery;
+        if (previous !== next || cached.indexed !== indexed || cached.indexing !== indexing || cached.searchQuery !== searchQuery) { previous = next; cached = { ...next, indexed, indexing, searchQuery }; }
         return cached;
       },
       subscribe(listener) { const offView = view.subscribe(listener), offSource = source.subscribe(listener); return () => { offView(); offSource(); }; },

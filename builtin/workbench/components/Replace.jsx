@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { FileList } from '../git/FileList.jsx';
 import { errorText, message } from '../locales.js';
 import { useReplacement } from './replace-state.js';
+import { SearchOptions } from './SearchOptions.jsx';
 import { ReplacementPreview } from './ReplacementPreview.jsx';
 
 function ReplaceFiles({ review, workbench, palette, Button, t }) {
@@ -27,7 +28,8 @@ export function Replace({ workbench, Button, t, palette }) {
     <form onSubmit={event => { event.preventDefault(); void scan(); }}>
       <label className="sc-wb-search-row"><span>{t('replaceSearch')}</span><input autoFocus required aria-label={t('replaceSearch')} value={query.search} disabled={busy} onChange={event => change({ search: event.target.value })} /></label>
       <label className="sc-wb-search-row"><span>{t('replaceWith')}</span><textarea rows={2} aria-label={t('replaceWith')} value={query.replace} disabled={busy} onChange={event => change({ replace: event.target.value })} /></label>
-      <label className="sc-wb-replace-case"><input type="checkbox" checked={query.caseSensitive} disabled={busy} onChange={event => change({ caseSensitive: event.target.checked })} />{t('caseSensitive')}</label>
+      <SearchOptions query={query} change={change} workbench={workbench} disabled={busy} Button={Button} t={t} />
+      {query.regexp && <small className="sc-wb-search-regexp-hint">{t('searchReplacementHint')}</small>}
       <nav><Button type="submit" disabled={busy || !query.search}>{t('replacePreview')}</Button><Button type="button" className="sc-wb-primary" disabled={busy || !count} onClick={() => { void apply(); }}>{message(t, 'replaceApply', { count })}</Button>{busy && <Button type="button" onClick={stop}>{t('stop')}</Button>}</nav>
     </form>
     {busy && <p role="status">{t('working')}</p>}

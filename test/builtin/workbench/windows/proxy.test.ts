@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { createWindowProxy } from '../../../../builtin/workbench/windows/proxy.js'
+import { projectSearchDefaults } from '../../../../src/workbench/search-query.js'
 
 test('独立窗口表单连续输入立即显示，延迟的宿主状态不能覆盖较新的输入', async () => {
   const sent: any[] = []
@@ -120,5 +121,24 @@ test('独立窗口语言路径通过工作区专用调用保存，不写全局�
     await proxy.accept({ kind: 'result', id: sent[0].id }); await pending
     assert.deepEqual(proxy.snapshot().environmentPaths, { python: '/next' })
     assert.equal(Object.hasOwn(proxy.snapshot().preferences, 'environmentPaths'), false)
+  } finally { proxy.dispose() }
+})
+
+test('独立窗口快速输入搜索范围时保留最新输入，旧回执不回退查询', async () => {
+  const sent: { id: number; method: string; args: unknown[] }[] = []
+  const proxy = createWindowProxy(async (message: { id: number; method: string; args: unknown[] }) => { sent.push(message) }, (key: string) => key)
+  const original = { file: null, preferences: {}, searchQuery: { ...projectSearchDefaults } }
+  try {
+    await proxy.accept({ kind: 'state', patch: { snapshot: original } })
+    const first = proxy.setSearchQuery({ directory: 's' }), second = proxy.setSearchQuery({ directory: 'src' })
+    assert.equal(proxy.snapshot().searchQuery.directory, 'src')
+    await new Promise(resolve => setImmediate(resolve))
+    assert.equal(sent[0].method, 'setSearchQuery')
+    await proxy.accept({ kind: 'state', patch: { snapshot: { ...original, searchQuery: { ...original.searchQuery, directory: 's' } } } })
+    await proxy.accept({ kind: 'result', id: sent[0].id }); await first
+    assert.equal(proxy.snapshot().searchQuery.directory, 'src')
+    await proxy.accept({ kind: 'state', patch: { snapshot: { ...original, searchQuery: { ...original.searchQuery, directory: 'src' } } } })
+    await proxy.accept({ kind: 'result', id: sent[1].id }); await second
+    assert.equal(proxy.snapshot().searchQuery.directory, 'src')
   } finally { proxy.dispose() }
 })

@@ -443,7 +443,7 @@ try {
         assert.notEqual(await controller(() => window.test.controller.snapshot().panel.id), id);
         await controller(() => window.test.releaseSearch());
         await page.waitForFunction(() => window.test.controller.snapshot().panel.state === undefined);
-        assert.equal(await page.getByRole('textbox', { name: '查找文本', exact: true }).inputValue(), '');
+        assert.equal(await page.getByRole('textbox', { name: '查找文本', exact: true }).inputValue(), 'old');
         assert.equal(await page.locator('.sc-wb-replace-row').count(), 0); await closePanel();
       });
       await t.test('拖出文件标签只显示该文件，编辑保存返回后内容一致', async () => {

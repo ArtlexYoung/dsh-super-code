@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { errorText } from '../locales.js';
+import { Setting, useSettings } from './Setting.jsx';
 
 export function ModelSettings({ workbench, preferences, apply, Select, Button, t }) {
+  const { entries } = useSettings();
   const [models, setModels] = useState([]), [error, setError] = useState(''), [loading, setLoading] = useState(true), [revision, retry] = useState(0);
   useEffect(() => {
     const abort = new AbortController(); setLoading(true); setError('');
@@ -21,14 +23,14 @@ export function ModelSettings({ workbench, preferences, apply, Select, Button, t
     const unavailable = !efforts.some(([id]) => id === reasoning);
     if (unavailable) efforts.push([reasoning, t(reasoning === 'off' ? 'reasoningOffUnavailable' : 'reasoningUnavailable')]);
     if (missing) choices.push([identity(selected), t('modelUnavailable')]);
-    return <section key={kind} className="sc-wb-model-setting">
-      <div className="sc-wb-setting"><span>{t(modelKey)}</span><Select label={t(modelKey)} value={selected ? identity(selected) : ''} choices={choices} onChange={value => {
+    return <section key={kind} className="sc-wb-model-setting" hidden={!entries.get(modelKey).visible && !entries.get(reasoningKey).visible}>
+      <Setting id={modelKey}><Select label={t(modelKey)} value={selected ? identity(selected) : ''} choices={choices} onChange={value => {
         const next = { ...preferences, [reasoningKey]: 'off' }; delete next[modelKey];
         if (value) { const [provider, model] = JSON.parse(value); next[modelKey] = { provider, model }; }
         apply(next);
-      }} /></div>
-      <div className="sc-wb-setting"><span>{t(reasoningKey)}</span><Select label={t(reasoningKey)} value={reasoning} choices={efforts} disabled={loading || !!error}
-        onChange={value => apply({ ...preferences, [reasoningKey]: value })} /></div>
+      }} /></Setting>
+      <Setting id={reasoningKey}><Select label={t(reasoningKey)} value={reasoning} choices={efforts} disabled={loading || !!error}
+        onChange={value => apply({ ...preferences, [reasoningKey]: value })} /></Setting>
       {!loading && !error && (unavailable || missing) && <p role="status" className="sc-wb-setting-note">{t('modelSettingsUnavailable')}</p>}
       {!loading && !error && capability && !supportsOff && reasoning === 'off' && <p role="status" className="sc-wb-setting-note">{t('modelThinkingConfiguration')}</p>}
     </section>;

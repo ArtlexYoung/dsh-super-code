@@ -358,7 +358,8 @@
 .sc-flow-reply-source strong{color:var(--wb-text);font-weight:500}
 .sc-flow-reply-source button,.sc-flow-chat-panel .sc-wb-reply-action{font:inherit;line-height:1.5;cursor:pointer;border:1px solid var(--wb-line);border-radius:var(--wb-radius);background:var(--wb-bg);color:var(--wb-accent);padding:4px 8px;transition:background .12s}
 .sc-flow-reply-source button{flex-shrink:0}
-.sc-flow-chat-panel .sc-wb-reply-action{font-size:12px;min-height:28px;margin-top:8px;max-width:100%;white-space:normal}
+.sc-flow-chat-panel .sc-wb-reply-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.sc-flow-chat-panel .sc-wb-reply-action{font-size:12px;min-height:28px;max-width:100%;white-space:normal;overflow-wrap:anywhere}
 .sc-flow-reply-source button:hover,.sc-flow-chat-panel .sc-wb-reply-action:hover{background:var(--wb-hover)}
 .sc-flow-reply-source button:focus-visible,.sc-flow-chat-panel .sc-wb-reply-action:focus-visible{outline:2px solid var(--wb-accent);outline-offset:2px}
 .sc-flow-chat-panel .sc-wb-reply-action:disabled{opacity:.55;cursor:default}

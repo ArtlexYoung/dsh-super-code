@@ -1,13 +1,16 @@
 import React from 'react';
 import { localized } from './recipes.js';
+import { useReplyDestination } from './ReplyDestination.jsx';
 
 function StageRecord({ mission, update, save, openFile, t }) {
   const record = mission.record;
+  const { field, notice } = useReplyDestination({ id: mission.step.id, title: localized(mission.step.title, t('language')), value: record.result, update: result => update({ ...record, result }), t });
   const canComplete = Boolean(record.result.trim() || record.files.length);
   const canSave = record.status === 'blocked' ? Boolean(record.blocker.trim()) : record.status !== 'completed' || canComplete;
   return <section className="sc-flow-record" aria-label={t('record')}>
     <div className="sc-flow-record-heading"><h3>{t('record')}</h3><span>{t(mission.unsaved ? 'unsaved' : record.legacy ? 'legacyRecord' : 'manualRecord')}</span></div>
-    <label>{t('result')}<textarea aria-label={t('result')} value={record.result} maxLength={4000} rows={3} placeholder={t('resultHint')} onChange={event => update({ ...record, result: event.target.value })} /></label>
+    <label>{t('result')}<textarea ref={field} aria-label={t('result')} value={record.result} maxLength={4000} rows={5} placeholder={t('resultHint')} onChange={event => update({ ...record, result: event.target.value })} /></label>
+    {mission.unsaved && notice && <p className="sc-flow-note" role="status">{notice}</p>}
     {record.files.length > 0 && <ul className="sc-flow-attachments">{record.files.map(path => <li key={path}><button type="button" onClick={() => openFile(path)} title={path}>{path.replaceAll('\\', '/').split('/').at(-1)}</button><button type="button" aria-label={`${t('detach')} ${path}`} onClick={() => update({ ...record, files: record.files.filter(file => file !== path) })}>×</button></li>)}</ul>}
     <details open={record.status === 'blocked' || undefined}><summary>{t('blocker')}</summary><label>{t('blockerReason')}<textarea aria-label={t('blockerReason')} value={record.blocker} maxLength={4000} rows={2} onChange={event => update({ ...record, blocker: event.target.value })} /></label><button type="button" disabled={!record.blocker.trim()} onClick={() => save('blocked')}>{t('markBlocked')}</button></details>
     <div className="sc-flow-record-actions"><button type="button" disabled={!canSave} onClick={() => save(record.status)}>{t('saveRecord')}</button>{record.status === 'completed' ? <button type="button" onClick={() => save('pending')}>{t('reopen')}</button> : <button type="button" className="sc-flow-complete" disabled={!canComplete} onClick={() => save('completed')}>{t('complete')} ✓</button>}</div>

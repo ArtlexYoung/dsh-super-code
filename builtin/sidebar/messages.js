@@ -4,7 +4,7 @@ import { ActionButton, Glyph, icons } from '../ui/controls.js'
 
 const normalizedRecords = new WeakMap()
 
-function AgentMessage({ record, saved, t, toolName, compact = false, fileMentions, replyAction }) {
+function AgentMessage({ record, saved, t, toolName, compact = false, fileMentions, replyActions = [] }) {
   const item = useMemo(() => record.entry ? presentDetail(normalizedRecords.get(record) || normalizeDetail(record.entry), t) : record, [record, t])
   const eventType = record.entry?.event?.type
   const kind = eventType === 'user/message' ? 'user' : eventType === 'assistant/message' ? 'agent'
@@ -14,14 +14,14 @@ function AgentMessage({ record, saved, t, toolName, compact = false, fileMention
     React.createElement('span', null, compact && kind === 'user' ? text(t, 'workbench.question') : compact && kind === 'agent' && !record.entry?.event?.data?.interrupted ? text(t, 'workbench.reply') : item.label, toolName && !item.toolName ? ' · ' + toolName : ''), React.createElement('time', { dateTime: new Date(item.time).toISOString() }, time))
   const body = React.createElement(React.Fragment, null,
     React.createElement(DetailText, { text: item.text, format: item.format, fileMentions, t }),
-    kind === 'agent' && replyAction && item.text.trim() && React.createElement(ActionButton, {
-      type: 'button', className: 'sc-wb-reply-action', disabled: replyAction.disabled, title: replyAction.title,
+    kind === 'agent' && replyActions.length > 0 && item.text.trim() && React.createElement('div', { className: 'sc-wb-reply-actions' }, replyActions.map(action => React.createElement(ActionButton, {
+      key: action.id, type: 'button', className: 'sc-wb-reply-action', disabled: action.disabled, title: action.title,
       onPointerDown: event => event.preventDefault(),
       onClick: event => {
         const content = event.currentTarget.closest('.dsh-super-code-detail-message').querySelector('.dsh-super-code-detail-content')
-        replyAction.run({ seq: item.seq, text: selectedReplyText(content, item.text) })
+        action.run({ seq: item.seq, text: selectedReplyText(content, item.text) })
       },
-    }, replyAction.label))
+    }, action.label))))
   return React.createElement('article', { className: 'dsh-super-code-detail-entry ' + kind, 'data-event-type': eventType, 'data-message-seq': item.seq, tabIndex: compact ? -1 : undefined },
     React.createElement('span', { className: 'dsh-super-code-detail-avatar', 'aria-hidden': true }, React.createElement(Glyph, { type: kind })),
     React.createElement('div', { className: 'dsh-super-code-detail-message' },

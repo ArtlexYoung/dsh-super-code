@@ -5,6 +5,7 @@ import { emptyStage, skillAvailability } from './model.js';
 import { Compose } from './Compose.jsx';
 import { Execution } from './Execution.jsx';
 import { usePageState } from './page-state.js';
+import { useReplyDestination } from './ReplyDestination.jsx';
 
 function playbookContext({ recipe, topic, topics, run, goal, tool, t, text }) {
   const language = t('language');
@@ -14,6 +15,19 @@ function playbookContext({ recipe, topic, topics, run, goal, tool, t, text }) {
 
 function JournalTopics({ topics, run, topic, text, language, choose }) {
   return <nav aria-label={text('笔记主题', 'Note topics')}><span>{text('选择要记录的内容', 'Choose a topic')}</span>{topics.map(item => <button key={item.id} type="button" aria-pressed={topic.id === item.id} onClick={() => choose(item.id)}><strong>{localized(item.title, language)}</strong><small>{run.stages[item.id]?.result || run.stages[item.id]?.files.length ? text('有笔记', 'Has notes') : text('还没有笔记', 'No notes yet')}</small></button>)}</nav>;
+}
+
+function JournalNote({ id, topic, note, unsaved, update, openFile, t, children }) {
+  const language = t('language'), text = (zh, en) => language === 'zh' ? zh : en;
+  const { field, notice } = useReplyDestination({ id, title: localized(topic.title, language), value: note.result, update: result => update({ result }), t });
+  return <article className="sc-pstack-note">
+    <div className="sc-pstack-note-heading"><span>{text('随手记录，带到对话中继续', 'Keep notes and continue in the conversation')}</span><small>{unsaved ? t('unsaved') : text('保存在当前浏览器中', 'Stored in this browser')}</small></div><h3>{localized(topic.title, language)}</h3><p>{localized(topic.goal, language)}</p><blockquote>{text('需要留下：', 'Keep a record of: ')}{localized(topic.output, language)}</blockquote>
+    <label>{text('想法、决定和检查结果', 'Decisions and check results')}<textarea ref={field} aria-label={text('想法、决定和检查结果', 'Decisions and check results')} rows={5} maxLength={4000} value={note.result} placeholder={text('例如：采用了哪个方案，为什么这样选；哪些检查已通过，还有什么问题。', 'For example: which approach you chose and why, which checks passed, and what remains unresolved.')} onChange={event => update({ result: event.target.value })} /></label>
+    {unsaved && notice && <p className="sc-flow-note" role="status">{notice}</p>}
+    <ul className="sc-flow-attachments">{note.files.map(path => <li key={path}><button type="button" title={path} onClick={() => openFile(path)}>{path.replaceAll('\\', '/').split('/').at(-1)}</button><button type="button" aria-label={`${t('detach')} ${path}`} onClick={() => update({ files: note.files.filter(file => file !== path) })}>×</button></li>)}</ul>
+    {note.blocker && <p className="sc-flow-blocked">{note.blocker}</p>}
+    {children}
+  </article>;
 }
 
 export function PStack({ memory, recipe, run, goal, facts, saveNotes, openFile, inspectCall, openChat, skills, native, api, sessionId, useInput, inputActions, openView, t, onUsed }) {
@@ -34,16 +48,13 @@ export function PStack({ memory, recipe, run, goal, facts, saveNotes, openFile, 
   return <div className="sc-pstack-workspace">
     <section className="sc-pstack-journal" aria-label={text('工作笔记', 'Working notes')}>
       <div className="sc-pstack-notebook"><JournalTopics topics={topics} run={workingRun} topic={topic} text={text} language={language} choose={id => { setSelected(previous => ({ ...previous, [recipe.id]: id })); setNotice(''); }} />
-        <article className="sc-pstack-note"><div className="sc-pstack-note-heading"><span>{text('随手记录，带到对话中继续', 'Keep notes and continue in the conversation')}</span><small>{drafts[key] ? t('unsaved') : text('保存在当前浏览器中', 'Stored in this browser')}</small></div><h3>{localized(topic.title, language)}</h3><p>{localized(topic.goal, language)}</p><blockquote>{text('需要留下：', 'Keep a record of: ')}{localized(topic.output, language)}</blockquote>
-          <label>{text('想法、决定和检查结果', 'Decisions and check results')}<textarea aria-label={text('想法、决定和检查结果', 'Decisions and check results')} rows={5} maxLength={4000} value={note.result} placeholder={text('例如：采用了哪个方案，为什么这样选；哪些检查已通过，还有什么问题。', 'For example: which approach you chose and why, which checks passed, and what remains unresolved.')} onChange={event => update({ result: event.target.value })} /></label>
-          <ul className="sc-flow-attachments">{note.files.map(path => <li key={path}><button type="button" title={path} onClick={() => openFile(path)}>{path.replaceAll('\\', '/').split('/').at(-1)}</button><button type="button" aria-label={`${t('detach')} ${path}`} onClick={() => update({ files: note.files.filter(file => file !== path) })}>×</button></li>)}</ul>
-          {record.blocker && <p className="sc-flow-blocked">{record.blocker}</p>}
+        <JournalNote id={key} topic={topic} note={note} unsaved={Boolean(drafts[key])} update={update} openFile={openFile} t={t}>
           <footer className="sc-pstack-launch"><div><span>{text(tool === 'poteto-mode' ? '完整工作流 · 带上各主题的最新笔记' : '本次使用的工具', tool === 'poteto-mode' ? 'Full workflow · includes the latest notes' : 'Selected tool')}</span><strong>{tool === 'poteto-mode' ? localized(recipe.title, language) : tool}</strong></div>
             <div className="sc-pstack-note-actions"><button type="button" onClick={() => save()}>{text('保存笔记', 'Save notes')}</button>
               {skill && <Compose key={`${recipe.id}/${skill.id}`} skill={skill} availability={skillAvailability(skill, native.skills)} api={api} sessionId={sessionId} useInput={useInput} inputActions={inputActions} openView={openView} context={context} beforeInsert={() => save(pending)} label={t('notesToChat')} hint={false} onUsed={() => onUsed(skill.id)} t={t} />}
             </div><p className="sc-flow-note">{t('draftHint')}</p><span role="status">{notice}</span>
           </footer>
-        </article>
+        </JournalNote>
       </div>
       <div className="sc-pstack-tools"><span>{text('需要时使用', 'Use when needed')}</span><button type="button" aria-pressed={tool === 'poteto-mode'} onClick={() => setTool('poteto-mode')}>{text('使用完整工作流', 'Use the full workflow')}</button>{recipe.tools.map(item => <button key={item.skill} type="button" title={localized(item.when, language)} aria-pressed={tool === item.skill} onClick={() => setTool(item.skill)}>{localized(item.label, language)}</button>)}</div>
       <details className="sc-flow-method"><summary>{recipe.source.label}<span>{t('authorMethod')}</span></summary><p>{localized(recipe.guidance, language)}</p><a href={recipe.source.url} target="_blank" rel="noreferrer">{t('readMethod')} ↗</a></details>

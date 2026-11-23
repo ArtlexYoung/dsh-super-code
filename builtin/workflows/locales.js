@@ -1,5 +1,7 @@
 export const NS = 'dsh-super-code-workflows';
 export const zh = {
+  excerptTo: '摘录到「{title}」', excerptHint: '选中文字可只摘录这一段；不选则摘录整条回复。先放入草稿，检查后保存。', excerptSource: '摘录来源：', excerptAdded: '已放入草稿，请检查后保存。',
+  excerptTooLong: '记录放不下这段内容了。请缩短摘录或现有记录后重试（含来源最多 4,000 字）。',
   expandConversation: '放大对话', restoreWorkflow: '返回工作流', findAgentKeys: '输入名称后按 Enter 打开，按向下键进入匹配列表。',
   quoteReply: '引用到当前对话', quoteHint: '先选中文字可只引用这一段；不选则引用整条回复。', quoteSource: '引用来源：', quotedFrom: '刚才引用了 ', returnToReply: '返回原文', dismissQuoteSource: '关闭引用来源提示',
   quoteTooLong: '这条回复较长，请选中需要的部分后再引用。', quoteLocked: '当前草稿含附件或引用，或正在处理输入。请先打开完整对话处理，再引用回复。',
@@ -70,6 +72,8 @@ export const zh = {
   invalidDependencies: '任务未保存：请填写必填内容，并检查前置任务是否有效。任务不能互相等待。',
 };
 export const en = {
+  excerptTo: 'Add to “{title}”', excerptHint: 'Select text to keep a passage, or add the whole reply. Review the draft before saving.', excerptSource: 'Excerpt from: ', excerptAdded: 'Added to the draft. Review it before saving.',
+  excerptTooLong: 'This excerpt does not fit. Shorten the excerpt or existing record and try again (4,000 characters including the source).',
   expandConversation: 'Expand conversation', restoreWorkflow: 'Back to workflow', findAgentKeys: 'Type a name and press Enter to open it, or Down to focus the matching list.',
   quoteReply: 'Quote in current conversation', quoteHint: 'Select text to quote a passage, or quote the whole reply.', quoteSource: 'Quoted from: ', quotedFrom: 'Last quote: ', returnToReply: 'Back to reply', dismissQuoteSource: 'Dismiss quote source',
   quoteTooLong: 'This reply is long. Select the part you need, then quote it.', quoteLocked: 'The current draft has attachments or references, or input is busy. Open the full conversation to resolve this before quoting.',

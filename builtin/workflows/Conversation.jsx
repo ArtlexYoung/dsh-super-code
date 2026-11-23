@@ -10,7 +10,7 @@ export function WorkflowConversation(props) {
   </div>;
 }
 
-function QuotedConversation({ Conversation, memory, agents, selectAgent, ...props }) {
+function QuotedConversation({ Conversation, memory, agents, selectAgent, replyActions = [], ...props }) {
   const { sessionId, agent, useInput, inputActions, t } = props;
   const input = useInput(value => value), panel = useRef(null);
   const [source, setSource] = usePageState(memory, 'replySource', null), [error, setError] = useState('');
@@ -28,7 +28,7 @@ function QuotedConversation({ Conversation, memory, agents, selectAgent, ...prop
   return <div ref={panel} className="sc-flow-conversation">
     {current && <ReplySource source={source} agents={agents} selectAgent={selectAgent} panel={panel} clear={() => setSource(null)} t={t} />}
     {error && !current && <p role="alert">{error}</p>}
-    <Conversation {...props} replyAction={current ? undefined : { label: t('quoteReply'), title: t(locked ? 'quoteLocked' : 'quoteHint'), disabled: locked, run: quote }} />
+    <Conversation {...props} replyActions={current ? replyActions : [{ id: 'quote', label: t('quoteReply'), title: t(locked ? 'quoteLocked' : 'quoteHint'), disabled: locked, run: quote }, ...replyActions]} />
     {!current && <footer className="sc-flow-agent-return"><p>{t(locked ? 'quoteLocked' : 'agentReadOnly')}</p><button type="button" onClick={() => locked ? props.openView('chat', '') : selectAgent(sessionId, true)}>{t(locked ? 'openConversation' : 'returnToConversation')}</button></footer>}
   </div>;
 }

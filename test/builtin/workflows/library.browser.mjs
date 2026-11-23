@@ -12,7 +12,7 @@ const root = fileURLToPath(new URL('../../../', import.meta.url));
 const fixture = `import React,{useSyncExternalStore} from 'react';import{createRoot}from'react-dom/client';
 import{WorkflowLibrary}from'./builtin/workflows/Library.jsx';import{WorkflowWorkspace}from'./builtin/workflows/Workspace.jsx';import{zh,en}from'./builtin/workflows/locales.js';import catalog from './builtin/workflows/catalog.json';
 import workbenchStyle from './builtin/workbench/style.css';import uiStyle from './builtin/ui/style.css';for(const content of [uiStyle,workbenchStyle]){const style=document.createElement('style');style.textContent=content;document.head.appendChild(style)}import{AgentMessage,detailRecord}from'./builtin/sidebar/messages.js';import{icons}from'./builtin/ui/controls.js';import{zh as detailZh}from'./builtin/ui/locale.js';import{SafeMarkdown}from'./builtin/workbench/windows/markdown.jsx';icons.MarkdownText=SafeMarkdown;import{fixtureFileApi,specFixtureFiles}from'./test/builtin/workflows/fixture-files.js';const files={...specFixtureFiles},baseFilesApi=fixtureFileApi(files);let fileFailure=false;const filesApi={list:async(...args)=>{if(fileFailure)throw Error('offline');return baseFilesApi.list(...args)},read:async(...args)=>{if(fileFailure)throw Error('offline');return baseFilesApi.read(...args)}};
-const root=createRoot(document.getElementById('root'));let inline=false;let replyText='编号 007 保留为文本。金额按数值排序。',draftFailure=false;const replySaved={open:new Set()};function Conversation({useInput,inputActions,sessionId,agent,replyAction}){const input=useInput(value=>value);if(agent&&agent.id!==sessionId)return <section className='sc-wb-conversation' data-conversation-agent={agent.id}><div className='dsh-super-code-detail-log'>{[17,18].map(seq=><AgentMessage key={seq} record={detailRecord({event:{type:'assistant/message',seq,time:1,data:{message:{content:[{type:'text',text:seq===17?replyText:'另外一条回复。'}]}}}})} saved={replySaved} t={key=>detailZh[key]||key} compact replyAction={replyAction}/>)}</div></section>;return <form onSubmit={event=>{event.preventDefault();window.sentDraft=input.draft;inputActions.setDraft('')}}><textarea aria-label='本页对话输入' value={input.draft} onChange={event=>inputActions.setDraft(event.target.value)}/><button type='submit'>发送</button></form>}let workflowPage=localStorage.getItem('fixture-page')||'mattpocock',enabled=['mattpocock','pstack','openspec','oil-ui'];const packageListeners=new Set();const packageState={snapshot:()=>enabled,subscribe:fn=>{packageListeners.add(fn);return()=>packageListeners.delete(fn)}};let language='zh',sessionId='sample',count=0,fail=false,failWrites=false,notify=()=>{},draft={draft:'修复订单金额',phase:'plain',attachmentIds:[],occurrences:[]};const listeners=new Set();
+const root=createRoot(document.getElementById('root'));let inline=false;let replyText='编号 007 保留为文本。金额按数值排序。',draftFailure=false;const replySaved={open:new Set()};function Conversation({useInput,inputActions,sessionId,agent,replyActions}){const input=useInput(value=>value);return <section className='sc-wb-conversation' data-conversation-agent={agent.id}><div className='dsh-super-code-detail-log'>{[17,18].map(seq=><AgentMessage key={seq} record={detailRecord({event:{type:'assistant/message',seq,time:1,data:{message:{content:[{type:'text',text:seq===17?replyText:'另外一条回复。'}]}}}})} saved={replySaved} t={key=>detailZh[key]||key} compact replyActions={replyActions}/>)}</div>{agent.id===sessionId&&<form onSubmit={event=>{event.preventDefault();window.sentDraft=input.draft;inputActions.setDraft('')}}><textarea aria-label='本页对话输入' value={input.draft} onChange={event=>inputActions.setDraft(event.target.value)}/><button type='submit'>发送</button></form>}</section>}let workflowPage=localStorage.getItem('fixture-page')||'mattpocock',enabled=['mattpocock','pstack','openspec','oil-ui'];const packageListeners=new Set();const packageState={snapshot:()=>enabled,subscribe:fn=>{packageListeners.add(fn);return()=>packageListeners.delete(fn)}};let language='zh',sessionId='sample',count=0,fail=false,failWrites=false,notify=()=>{},draft={draft:'修复订单金额',phase:'plain',attachmentIds:[],occurrences:[]};const listeners=new Set();
 const source=catalog.flatMap(pack=>pack.skills).filter(skill=>skill.id!=='pstack/tdd'&&skill.id!=='pstack/teach').map(skill=>({...skill,path:'/demo/builtin/skills/'+skill.path}));let skills=source;
 let holdNextList=false,releaseList=null;const api={async list(){count++;if(holdNextList){holdNextList=false;await new Promise(resolve=>{releaseList=resolve})}if(fail)throw Error('offline');return{ok:true,value:{skills}}}};const subscribe=fn=>{notify=fn;return()=>{notify=()=>{}}};
 const useInput=select=>select(useSyncExternalStore(fn=>{listeners.add(fn);return()=>listeners.delete(fn)},()=>draft));
@@ -279,6 +279,153 @@ try {
       assert.equal(await page.getByRole('button',{name:'Back to reply',exact:true}).count(),0);
       assert.deepEqual(errors,[]);
     } finally { await page.close(); }
+  });
+  await test('reply excerpts go to the visible record without saving, accepting or changing the conversation draft', async () => {
+    const page = await browser.newPage({viewport:{width:1440,height:1000}});
+    page.setDefaultTimeout(5000);
+    const errors=[];page.on('pageerror',error=>errors.push(error.message));
+    try {
+      await page.goto(`http://127.0.0.1:${server.address().port}`);
+      await page.evaluate(()=>{
+        window.fixture.agents({byId:{sample:{id:'sample',title:'当前任务',projectionValues:{superCodeFeedback:{files:[{path:'/demo/src/export.ts',operation:'edit',seq:1}]}}}},subagentsByParent:{sample:{state:'ready',entries:[{id:'designer',label:'方案设计',mode:'continuable',kind:'child',activity:'inactive'}]}}});
+        window.fixture.inline(true);
+        window.fixture.input({draft:'  保留主草稿及附件  ',attachmentIds:['file'],phase:'sending'});
+      });
+      const agents=page.getByRole('navigation',{name:'会话中的 Agent',exact:true}),pane=page.locator('.sc-flow-chat-panel');
+      for(const author of ['mattpocock','pstack']) {
+        await page.evaluate(value=>window.fixture.page(value),author);
+        const matt=author==='mattpocock',field=page.getByLabel(matt?'做了什么，如何检查的':'想法、决定和检查结果',{exact:true});
+        const topics=matt?page.locator('.sc-flow-step'):page.getByRole('navigation',{name:'笔记主题',exact:true}).getByRole('button');
+        const original='  原有记录\n保留末尾空白。  ';
+        await field.fill(original);
+        await page.getByRole('button',{name:(matt?'关联到当前任务':'关联到当前笔记')+' /demo/src/export.ts',exact:true}).click();
+        if(matt){await page.getByText('遇到问题？',{exact:true}).click();await page.getByLabel('什么问题挡住了进度',{exact:true}).fill('需要人工复核。');await page.getByRole('button',{name:'标记为遇到阻碍',exact:true}).click();await field.fill(original);}
+        await agents.getByRole('button',{name:/方案设计/}).click();
+        assert.equal(await pane.getByRole('button',{name:'引用到当前对话',exact:true}).first().isDisabled(),true);
+        const target=await page.locator(matt?'.sc-flow-detail>h2':'.sc-pstack-note>h3').innerText();
+        const excerpt=pane.getByRole('button',{name:`摘录到「${target}」`,exact:true}).first();
+        const stored=await page.evaluate(()=>window.fixture.store()),draft=await page.evaluate(()=>window.fixture.draft());
+        await pane.getByRole('button',{name:'放大对话',exact:true}).click();
+        await excerpt.click();
+        await page.waitForFunction(label=>{const field=document.querySelector(`textarea[aria-label="${label}"]`);return document.activeElement===field&&field.selectionStart===field.value.length},matt?'做了什么，如何检查的':'想法、决定和检查结果');
+        const appended=original+'\n\n摘录来源：方案设计 [designer #17]\n> 编号 007 保留为文本。金额按数值排序。\n\n';
+        assert.equal(await field.inputValue(),appended);
+        assert.equal(await page.locator('.sc-flow-layout').getAttribute('data-layout'),'split');
+        assert.equal(await pane.locator('[data-conversation-agent=designer]').count(),1);
+        assert.equal(await page.locator('.sc-flow-attachments li').count(),1);
+        if(matt)assert.equal(await page.getByLabel('什么问题挡住了进度',{exact:true}).inputValue(),'需要人工复核。');
+        assert.deepEqual(await page.evaluate(()=>window.fixture.store()),stored);
+        assert.deepEqual(await page.evaluate(()=>window.fixture.draft()),draft);
+        assert.equal(await page.evaluate(()=>window.sentDraft),undefined);
+        await topics.nth(1).click();await field.fill('另一个目标。');
+        const second=await page.locator(matt?'.sc-flow-detail>h2':'.sc-pstack-note>h3').innerText();
+        assert.notEqual(second,target);
+        await pane.locator('[data-message-seq="17"] .dsh-super-code-detail-content').evaluate(node=>{
+          const text=node.querySelector('p').firstChild,range=document.createRange();range.setStart(text,0);range.setEnd(text,6);
+          window.getSelection().removeAllRanges();window.getSelection().addRange(range);
+        });
+        await pane.getByRole('button',{name:`摘录到「${second}」`,exact:true}).first().click();
+        assert.equal(await field.inputValue(),'另一个目标。\n\n摘录来源：方案设计 [designer #17]\n> 编号 007\n\n');
+        await topics.first().click();assert.equal(await field.inputValue(),appended);
+        await page.evaluate(()=>window.fixture.failWrites(true));
+        await page.getByRole('button',{name:matt?'保存记录':'保存笔记',exact:true}).click();
+        await page.getByRole('alert').getByText(/记录未能保存/).waitFor();
+        assert.equal(await field.inputValue(),appended);assert.deepEqual(await page.evaluate(()=>window.fixture.store()),stored);
+        await page.evaluate(()=>window.fixture.failWrites(false));
+        await page.getByRole('button',{name:matt?'保存记录':'保存笔记',exact:true}).click();
+        const route=await page.evaluate(id=>window.fixture.store().runs.sample.routes[id],matt?'matt-feature':'pstack-feature');
+        const saved=Object.values(route.stages).find(record=>record.result===(matt?appended.trim():appended));
+        assert.ok(saved,author);assert.deepEqual(saved.files,['/demo/src/export.ts']);assert.notEqual(saved.status,'completed');
+        if(matt)assert.equal(saved.blocker,'需要人工复核。');
+        assert.equal(Object.values(route.stages).some(record=>record.result.startsWith('另一个目标。')),false);
+      }
+      await page.reload();await page.getByLabel('想法、决定和检查结果',{exact:true}).waitFor();
+      assert.match(await page.getByLabel('想法、决定和检查结果',{exact:true}).inputValue(),/摘录来源：方案设计/);
+      assert.deepEqual(errors,[]);
+    } finally {await page.close();}
+  });
+  await test('reply excerpts respect limits, source selections and pages without records', async () => {
+    const page=await browser.newPage({viewport:{width:1440,height:1000}});page.setDefaultTimeout(5000);
+    const errors=[];page.on('pageerror',error=>errors.push(error.message));
+    try {
+      await page.goto(`http://127.0.0.1:${server.address().port}`);
+      await page.evaluate(()=>{
+        window.fixture.agents({byId:{sample:{id:'sample',title:'当前任务'}},subagentsByParent:{sample:{state:'ready',entries:[{id:'designer',label:'方案设计',mode:'continuable',kind:'child',activity:'inactive'}]}}});
+        window.fixture.inline(true);
+      });
+      const agents=page.getByRole('navigation',{name:'会话中的 Agent',exact:true}),pane=page.locator('.sc-flow-chat-panel');
+      await agents.getByRole('button',{name:/方案设计/}).click();
+      const field=page.getByLabel('做了什么，如何检查的',{exact:true}),excerpt=pane.getByRole('button',{name:/^摘录到/}).first();
+      await page.evaluate(()=>window.fixture.reply('长'.repeat(4001)));
+      await field.fill('已有记录');await excerpt.click();
+      await page.getByRole('alert').getByText(/最多 4,000 字/).waitFor();assert.equal(await field.inputValue(),'已有记录');
+      await page.evaluate(()=>window.fixture.reply('短内容'));
+      const citation='摘录来源：方案设计 [designer #17]\n> 短内容\n\n',base='原'.repeat(4000-citation.length-2);
+      await field.fill(base+'多');await excerpt.click();assert.equal(await field.inputValue(),base+'多');
+      await field.fill(base);await excerpt.click();assert.equal((await field.inputValue()).length,4000);
+      await field.fill('');
+      await pane.locator('[data-message-seq="17"] .dsh-super-code-detail-content').evaluate(node=>{
+        const range=document.createRange();range.selectNodeContents(node);window.getSelection().removeAllRanges();window.getSelection().addRange(range);
+      });
+      await pane.getByRole('button',{name:/^摘录到/}).nth(1).click();
+      assert.equal(await field.inputValue(),'摘录来源：方案设计 [designer #18]\n> 另外一条回复。\n\n');
+      await page.locator('.sc-flow-edit-task').click();
+      assert.equal(await pane.getByRole('button',{name:/^摘录到/}).count(),0);
+      await page.getByRole('button',{name:'关闭编辑',exact:true}).click();
+      await excerpt.waitFor();
+      await page.locator('.sc-flow-edit-task').click();
+      await page.getByLabel('任务名称',{exact:true}).fill('核对 $& 的字段格式');
+      await page.getByRole('button',{name:'保存任务',exact:true}).click();
+      await pane.getByRole('button',{name:'摘录到「核对 $& 的字段格式」',exact:true}).first().waitFor();
+      await agents.getByRole('button',{name:/当前对话/}).click();
+      await field.fill('主会话也可摘录。');
+      await excerpt.click();
+      assert.match(await field.inputValue(),/摘录来源：当前任务 \[sample #17\]/);
+      assert.equal(await pane.getByRole('button',{name:'引用到当前对话',exact:true}).count(),0);
+      await page.evaluate(()=>window.fixture.page('skills'));await page.locator('.sc-flows[data-page=skills]').waitFor();
+      await agents.getByRole('button',{name:/方案设计/}).click();assert.equal(await pane.getByRole('button',{name:/^摘录到/}).count(),0);
+      await page.evaluate(()=>window.fixture.page('openspec'));await page.locator('.sc-flows[data-page=openspec]').waitFor();
+      await agents.getByRole('button',{name:/方案设计/}).click();assert.equal(await pane.getByRole('button',{name:/^摘录到/}).count(),0);
+      await page.evaluate(()=>{window.fixture.page('pstack');window.fixture.locale('en')});
+      await page.getByRole('navigation',{name:'Agents in this conversation',exact:true}).getByRole('button',{name:/方案设计/}).click();
+      const english=pane.getByRole('button',{name:/^Add to “/}).first();await english.focus();await page.keyboard.press('Enter');
+      assert.match(await page.getByLabel('Decisions and check results',{exact:true}).inputValue(),/Excerpt from: 方案设计 \[designer #17\]/);
+      for(const width of [390,720]){await page.setViewportSize({width,height:850});assert.equal(await pane.evaluate(node=>node.scrollWidth<=node.clientWidth),true);assert.equal(await english.evaluate(node=>node.scrollWidth<=node.clientWidth),true);}
+      assert.deepEqual(errors,[]);
+    } finally {await page.close();}
+  });
+  await test('short windows make room for the excerpt editor and retain the selected agent', async () => {
+    const page=await browser.newPage({viewport:{width:720,height:600}});page.setDefaultTimeout(5000);
+    const errors=[];page.on('pageerror',error=>errors.push(error.message));
+    try {
+      await page.goto(`http://127.0.0.1:${server.address().port}`);
+      await page.evaluate(()=>{
+        window.fixture.agents({byId:{sample:{id:'sample',title:'当前任务'}},subagentsByParent:{sample:{state:'ready',entries:[{id:'designer',label:'方案设计',mode:'continuable',kind:'child',activity:'inactive'}]}}});
+        window.fixture.inline(true);
+      });
+      for(const zoom of [1,2]) {
+        await page.setViewportSize({width:720*zoom,height:600*zoom});
+        await page.evaluate(value=>document.body.style.zoom=String(value),zoom);
+        for(const author of ['mattpocock','pstack']) {
+          await page.evaluate(value=>window.fixture.page(value),author);
+          const field=page.getByLabel(author==='mattpocock'?'做了什么，如何检查的':'想法、决定和检查结果',{exact:true});
+          await page.getByRole('navigation',{name:'会话中的 Agent',exact:true}).getByRole('button',{name:/方案设计/}).click();
+          await page.getByRole('button',{name:'放大对话',exact:true}).click();
+          await page.getByRole('button',{name:/^摘录到/}).first().click();
+          await page.waitForFunction(()=>document.activeElement?.matches('.sc-flow-record textarea,.sc-pstack-note textarea'));
+          await page.locator('.sc-flow-chat-panel').waitFor({state:'detached'});
+          assert.equal(await field.evaluate(node=>{
+            const work=node.closest('.sc-flows').getBoundingClientRect(),nav=node.closest('.sc-flows').querySelector('.sc-flow-agents').getBoundingClientRect(),rect=node.getBoundingClientRect();
+            return rect.top>=nav.bottom&&rect.bottom<=work.bottom;
+          }),true);
+          await page.keyboard.type('继续补充检查结果。');assert.ok((await field.inputValue()).endsWith('继续补充检查结果。'));
+          await page.getByRole('navigation',{name:'会话中的 Agent',exact:true}).getByRole('button',{name:/方案设计/}).click();
+          await page.locator('[data-conversation-agent=designer]').waitFor();
+          assert.equal(await page.getByRole('navigation',{name:'会话中的 Agent',exact:true}).getByRole('button',{name:/方案设计/}).getAttribute('aria-pressed'),'true');
+        }
+      }
+      assert.deepEqual(errors,[]);
+    } finally {await page.close();}
   });
   await test('expanded conversations keep agents accessible and restore work, drafts and reading positions', async () => {
     const page = await browser.newPage({viewport:{width:1440,height:650}});

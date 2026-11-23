@@ -106,7 +106,7 @@ function workbenchConversationRows(records) {
   return rows.map(row => row.kind === 'tools' ? { kind: row.kind, key: row.key, items: row.items, tools: feedbackToolSummary(row.calls) } : row)
 }
 
-function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, createInspector, detailStates, openMemory, compact = false, fileMentions, replyAction, t = key => zh[key] || key }) {
+function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, createInspector, detailStates, openMemory, compact = false, fileMentions, replyActions, t = key => zh[key] || key }) {
   const { tab } = useTabInfo()
   const catalog = useSessions(s => s)
   const statuses = useSessionStatus ? useSessionStatus(s => s) : undefined
@@ -188,7 +188,7 @@ function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, cre
     const data = record.entry?.event?.data
     const key = JSON.stringify([data?.turn, data?.step, record.parentCallId, record.callId])
     if (record.toolName && record.callId) toolNames.set(key, record.toolName)
-    return React.createElement(AgentMessage, { key: record.seq, record, saved, t, compact, replyAction, fileMentions: fileMentions?.get(record.seq), toolName: toolNames.get(key) })
+    return React.createElement(AgentMessage, { key: record.seq, record, saved, t, compact, replyActions, fileMentions: fileMentions?.get(record.seq), toolName: toolNames.get(key) })
   }
   const task = tasks?.current?.kind === 'task' ? tasks.current : undefined
   const title = node?.title || node?.displayTitle || text(t, 'detail.title')

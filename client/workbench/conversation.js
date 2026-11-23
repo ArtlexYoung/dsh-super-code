@@ -3,7 +3,7 @@ import { ActionButton, icons } from '../../builtin/ui/controls.js'
 import { AgentDetail, createAgentInspector } from '../../builtin/sidebar/detail.js'
 import { agentDetailAddress } from '../../builtin/sidebar/address.js'
 
-function WorkbenchConversation({ sessionId, agent = { id: sessionId }, readingStates, replyAction, visible = true, useSessions, useSessionStatus, useInput, inputActions, remote, detailT, openView, openFile, useChat, useConversation, fileMentions, t }) {
+function WorkbenchConversation({ sessionId, agent = { id: sessionId }, readingStates, replyActions, visible = true, useSessions, useSessionStatus, useInput, inputActions, remote, detailT, openView, openFile, useChat, useConversation, fileMentions, t }) {
   // 订阅官方 Chat target，使冷启动直接进入工作台时也加载文件提及。
   const useMessages = useChat || (select => useConversation?.(value => select(value.views?.get('chat'))));
   const chat = useMessages(value => value);
@@ -18,7 +18,7 @@ function WorkbenchConversation({ sessionId, agent = { id: sessionId }, readingSt
     t('conversationUnavailable'), React.createElement(ActionButton, { onClick: () => openView('chat', '') }, t('openConversation')))
   const content = React.createElement('div', { className: 'sc-wb-conversation' },
     React.createElement(AgentDetail, { key: address, useTabInfo: () => ({ tab }), useSessions, useSessionStatus, sessionId, createInspector, detailStates,
-      openMemory: () => openView('chat', ''), compact: true, replyAction, fileMentions: mentions, t: detailT }),
+      openMemory: () => openView('chat', ''), compact: true, replyActions, fileMentions: mentions, t: detailT }),
     current && React.createElement(WorkbenchInput, { useInput, inputActions, openView, t }))
   return icons.MarkdownDelegateProvider ? React.createElement(icons.MarkdownDelegateProvider, { openFile }, content) : content
 }

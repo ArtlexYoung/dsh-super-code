@@ -28,7 +28,7 @@ test('工作台独立初始化、工作流随真实开关登记，并在卸载�
     effect(callback: () => unknown) { const dispose = callback(); if (typeof dispose === 'function') effects.push(dispose as () => void) },
     inject(names: string[], callback: (ctx: any) => void) {
       if (names.join(',') === 'sessions,sidebarRightTabs') activateWorkbench = callback
-      else if (names.every(name => ['remote.superCodeWorkbench', 'remote.session', 'remote.skills', 'remote.superCodeBudgets'].includes(name))) callback(this)
+      else if (names.every(name => ['remote.superCodeWorkbench', 'remote.session', 'remote.skills', 'remote.superCodeBudgets', 'sessions'].includes(name))) callback(this)
     },
   }
   runInNewContext(readFileSync(new URL('../../dist/client.js', import.meta.url), 'utf8'), {

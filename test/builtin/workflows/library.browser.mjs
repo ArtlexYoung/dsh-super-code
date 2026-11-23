@@ -12,7 +12,7 @@ const root = fileURLToPath(new URL('../../../', import.meta.url));
 const fixture = `import React,{useSyncExternalStore} from 'react';import{createRoot}from'react-dom/client';
 import{WorkflowLibrary}from'./builtin/workflows/Library.jsx';import{WorkflowWorkspace}from'./builtin/workflows/Workspace.jsx';import{zh,en}from'./builtin/workflows/locales.js';import catalog from './builtin/workflows/catalog.json';
 import{SafeMarkdown}from'./builtin/workbench/windows/markdown.jsx';import{fixtureFileApi,specFixtureFiles}from'./test/builtin/workflows/fixture-files.js';const files={...specFixtureFiles},baseFilesApi=fixtureFileApi(files);let fileFailure=false;const filesApi={list:async(...args)=>{if(fileFailure)throw Error('offline');return baseFilesApi.list(...args)},read:async(...args)=>{if(fileFailure)throw Error('offline');return baseFilesApi.read(...args)}};
-const root=createRoot(document.getElementById('root'));let inline=false;function Conversation({useInput,inputActions}){const input=useInput(value=>value);return <form onSubmit={event=>{event.preventDefault();window.sentDraft=input.draft;inputActions.setDraft('')}}><textarea aria-label='本页对话输入' value={input.draft} onChange={event=>inputActions.setDraft(event.target.value)}/><button type='submit'>发送</button></form>}let workflowPage=localStorage.getItem('fixture-page')||'mattpocock',enabled=['mattpocock','pstack','openspec','oil-ui'];const packageListeners=new Set();const packageState={snapshot:()=>enabled,subscribe:fn=>{packageListeners.add(fn);return()=>packageListeners.delete(fn)}};let language='zh',sessionId='sample',count=0,fail=false,failWrites=false,notify=()=>{},draft={draft:'修复订单金额',phase:'plain',attachmentIds:[],occurrences:[]};const listeners=new Set();
+const root=createRoot(document.getElementById('root'));let inline=false;function Conversation({useInput,inputActions,sessionId,agent}){const input=useInput(value=>value);if(agent&&agent.id!==sessionId)return <section data-conversation-agent={agent.id}>{agent.title} 的独立记录</section>;return <form onSubmit={event=>{event.preventDefault();window.sentDraft=input.draft;inputActions.setDraft('')}}><textarea aria-label='本页对话输入' value={input.draft} onChange={event=>inputActions.setDraft(event.target.value)}/><button type='submit'>发送</button></form>}let workflowPage=localStorage.getItem('fixture-page')||'mattpocock',enabled=['mattpocock','pstack','openspec','oil-ui'];const packageListeners=new Set();const packageState={snapshot:()=>enabled,subscribe:fn=>{packageListeners.add(fn);return()=>packageListeners.delete(fn)}};let language='zh',sessionId='sample',count=0,fail=false,failWrites=false,notify=()=>{},draft={draft:'修复订单金额',phase:'plain',attachmentIds:[],occurrences:[]};const listeners=new Set();
 const source=catalog.flatMap(pack=>pack.skills).filter(skill=>skill.id!=='pstack/tdd'&&skill.id!=='pstack/teach').map(skill=>({...skill,path:'/demo/builtin/skills/'+skill.path}));let skills=source;
 let holdNextList=false,releaseList=null;const api={async list(){count++;if(holdNextList){holdNextList=false;await new Promise(resolve=>{releaseList=resolve})}if(fail)throw Error('offline');return{ok:true,value:{skills}}}};const subscribe=fn=>{notify=fn;return()=>{notify=()=>{}}};
 const useInput=select=>select(useSyncExternalStore(fn=>{listeners.add(fn);return()=>listeners.delete(fn)},()=>draft));
@@ -20,7 +20,7 @@ let sessions={byId:{sample:{cwd:'/demo',projectionValues:{superCodeFeedback:{pha
 const useSessions=select=>select(useSyncExternalStore(fn=>{sessionListeners.add(fn);return()=>sessionListeners.delete(fn)},()=>sessions));
 const inputActions={setDraft(value){draft={...draft,draft:value};listeners.forEach(fn=>fn())}};
 function render(){const Component=inline?WorkflowWorkspace:WorkflowLibrary;root.render(<Component Conversation={Conversation} filesApi={filesApi} MarkdownText={SafeMarkdown} key={language+'-'+sessionId+'-'+workflowPage} packageState={packageState} page={workflowPage} sessionId={sessionId} api={api} subscribe={subscribe} useSessions={useSessions} useInput={useInput} inputActions={inputActions} openView={(view,request)=>{window.lastView=view;window.lastRequest=request}} inspectCall={id=>{window.lastCall=id}} hasWorkbench={()=>workbench} storage={{getItem:key=>localStorage.getItem(key),setItem:(key,value)=>{if(failWrites)throw Error('quota');localStorage.setItem(key,value)}}} t={key=>(language==='zh'?zh:en)[key]||key}/>)}render();
-window.fixture={inline:value=>{inline=value;render()},hold:()=>{holdNextList=true},pending:()=>Boolean(releaseList),release:()=>{releaseList?.();releaseList=null},leave:()=>root.render(null),files,filesFail:value=>{fileFailure=value},page:value=>{workflowPage=value;localStorage.setItem('fixture-page',value);render()},enabled:value=>{enabled=value;packageListeners.forEach(fn=>fn())},feedback:value=>{sessions={byId:{...sessions.byId,[sessionId]:{...sessions.byId[sessionId],projectionValues:{superCodeFeedback:value}}}};sessionListeners.forEach(fn=>fn())},workbench:value=>{workbench=value},count:()=>count,draft:()=>draft,disable:()=>{skills=[];notify()},restore:()=>{skills=source;notify()},offline:()=>{fail=true;notify()},online:()=>{fail=false;notify()},locale:value=>{language=value;render()},session:value=>{sessionId=value;render()},rich:()=>{draft={...draft,attachmentIds:['file']};listeners.forEach(fn=>fn())},plain:()=>{draft={...draft,attachmentIds:[]};listeners.forEach(fn=>fn())},failWrites:value=>{failWrites=value},store:()=>JSON.parse(localStorage.getItem('dsh-super-code.workflows.v4'))};`;
+window.fixture={agents:value=>{sessions=value;sessionListeners.forEach(fn=>fn())},inline:value=>{inline=value;render()},hold:()=>{holdNextList=true},pending:()=>Boolean(releaseList),release:()=>{releaseList?.();releaseList=null},leave:()=>root.render(null),files,filesFail:value=>{fileFailure=value},page:value=>{workflowPage=value;localStorage.setItem('fixture-page',value);render()},enabled:value=>{enabled=value;packageListeners.forEach(fn=>fn())},feedback:value=>{sessions={byId:{...sessions.byId,[sessionId]:{...sessions.byId[sessionId],projectionValues:{superCodeFeedback:value}}}};sessionListeners.forEach(fn=>fn())},workbench:value=>{workbench=value},count:()=>count,draft:()=>draft,disable:()=>{skills=[];notify()},restore:()=>{skills=source;notify()},offline:()=>{fail=true;notify()},online:()=>{fail=false;notify()},locale:value=>{language=value;render()},session:value=>{sessionId=value;render()},rich:()=>{draft={...draft,attachmentIds:['file']};listeners.forEach(fn=>fn())},plain:()=>{draft={...draft,attachmentIds:[]};listeners.forEach(fn=>fn())},failWrites:value=>{failWrites=value},store:()=>JSON.parse(localStorage.getItem('dsh-super-code.workflows.v4'))};`;
 const app = await build({ stdin: { contents: fixture, loader: 'jsx', resolveDir: root }, bundle: true, write: false, format: 'esm', platform: 'browser', minify: true, loader: { '.css': 'text' }, define: { 'process.env.NODE_ENV': '"production"' } });
 const server = createServer((req, res) => {
   if (req.url === '/app.js') { res.setHeader('content-type', 'text/javascript'); res.end(app.outputFiles[0].contents); return; }
@@ -123,7 +123,7 @@ try {
       assert.equal(await page.evaluate(() => window.sentDraft),'检查这个任务的实现');
       await page.getByRole('button',{name:'收起对话',exact:true}).click();
       assert.equal(await page.locator('.sc-flow-chat-panel').count(),0);
-      const conversationButton = page.locator('.sc-flow-header-actions').getByRole('button',{name:'当前对话',exact:true});
+      const conversationButton = page.locator('.sc-flow-header-actions').getByRole('button',{name:'对话',exact:true});
       assert.equal(await conversationButton.evaluate(node => node === document.activeElement),true);
       await conversationButton.click();
       await page.getByLabel('本页对话输入').fill('继续核对已完成的修改');
@@ -150,6 +150,51 @@ try {
           assert.ok((await page.locator('.sc-flow-chat-panel').boundingBox()).height >= 250);
         }
       }
+    } finally { await page.close(); }
+  });
+  await test('agent selection stays within the conversation tree and never reuses the main input for a child', async () => {
+    const page = await browser.newPage({viewport:{width:1440,height:1000}});
+    try {
+      await page.goto(`http://127.0.0.1:${server.address().port}`);
+      await page.evaluate(() => {
+        window.fixture.agents({current:'sample',byId:{sample:{id:'sample',title:'当前任务',cwd:'/demo',running:false},other:{id:'other',title:'无关会话'}},subagentsByParent:{
+          sample:{state:'ready',entries:[{id:'designer',label:'方案设计',mode:'continuable',kind:'child',activity:'inactive',hasChildren:true},{id:'reviewer',label:'实现检查',mode:'one-shot',kind:'child',activity:'running'},{id:'unavailable',label:'不可读取',mode:'unknown',kind:'diagnostic'}]},
+          designer:{state:'ready',entries:[{id:'researcher',label:'接口调研',mode:'one-shot',kind:'child',activity:'inactive'}]},
+          other:{state:'ready',entries:[{id:'unrelated',label:'无关 Agent',mode:'one-shot',kind:'child'}]},
+        }});
+        window.fixture.inline(true);
+      });
+      const agents = page.getByRole('navigation',{name:'会话中的 Agent',exact:true});
+      await agents.getByRole('button',{name:/方案设计/}).waitFor();
+      assert.equal(await agents.getByRole('button',{name:/无关/}).count(),0);
+      assert.equal(await agents.getByRole('button',{name:/不可读取/}).isDisabled(),true);
+      const original = await page.evaluate(() => window.fixture.draft().draft);
+      for (const author of ['mattpocock','pstack','openspec']) {
+        await page.evaluate(value => window.fixture.page(value),author);
+        await agents.getByRole('button',{name:/接口调研/}).click();
+        await page.getByRole('complementary',{name:'接口调研',exact:true}).waitFor();
+        assert.equal(await page.locator('[data-conversation-agent=researcher]').count(),1);
+        assert.equal(await page.getByLabel('本页对话输入').count(),0);
+        assert.equal(await page.evaluate(() => window.fixture.draft().draft),original);
+        await agents.getByRole('button',{name:/实现检查/}).click();
+        assert.equal(await page.locator('[data-conversation-agent=reviewer]').count(),1);
+        assert.equal(await page.locator('[data-conversation-agent=researcher]').count(),0);
+        await page.getByRole('button',{name:'返回当前对话',exact:true}).click();
+        assert.equal(await page.getByLabel('本页对话输入').inputValue(),original);
+        assert.equal(await page.evaluate(() => window.lastView),undefined);
+      }
+      await agents.getByRole('button',{name:/方案设计/}).click();
+      await page.getByRole('button',{name:'按方案开发',exact:true}).click();
+      await page.getByRole('complementary',{name:'当前对话',exact:true}).waitFor();
+      assert.match(await page.getByLabel('本页对话输入').inputValue(),/^\/openspec-apply-change /);
+      await agents.getByRole('button',{name:/方案设计/}).click();
+      await page.evaluate(() => window.fixture.leave());
+      await page.locator('.sc-flows').waitFor({state:'detached'});
+      await page.evaluate(() => window.fixture.page('openspec'));
+      await page.getByRole('complementary',{name:'方案设计',exact:true}).waitFor();
+      await page.evaluate(() => window.fixture.session('different'));
+      await page.getByRole('complementary',{name:'方案设计',exact:true}).waitFor({state:'detached'});
+      assert.equal(await page.getByRole('navigation',{name:'会话中的 Agent',exact:true}).count(),0);
     } finally { await page.close(); }
   });
   await test('productive workflows preserve author methods, real conversation facts, outcome records and native invocation', async context => {

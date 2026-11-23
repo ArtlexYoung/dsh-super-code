@@ -2,7 +2,7 @@
 
 Enable a package in Settings → Super Code → Preset Skills to reveal its independent conversation page: Matt Workflows, PStack Workflows or OpenSpec. Narrow windows may place the entry under More conversation views. Disabling the package hides the entry and preserves saved tasks and outcomes. oil-ui appears only in the Skill Library. The library lists enabled packages; the conversation preset must also allow Skills.
 
-To get started, set a goal and choose what to work on. The page opens Current conversation beside the workflow and prepares a draft in the same session. Edit and send it, read recorded replies, and continue taking notes without switching pages. The pane sits below the workflow in narrow windows. Use Current conversation in the header to open or close it. AI runs the instruction only after you send it. Each page follows its author’s working model:
+To get started, set a goal and choose what to work on. The page opens Current conversation beside the workflow and prepares a draft in the same session. Edit and send it, read recorded replies, and continue taking notes without switching pages. The pane sits below the workflow in narrow windows. Use Conversation in the header to open or close it. AI runs the instruction only after you send it. Each page follows its author’s working model:
 
 - **Matt** uses warm paper task cards, forest-green ink, task numbers and status stamps. Separate layouts support multi-ticket builds, small changes, investigations and exploratory decisions. Click a card to inspect it, or use Work on this task to prepare its instruction and make it the current task.
 - **PStack** uses a handwritten working journal. Choose the complete Feature or Refactoring playbook, record decisions and verification evidence by topic, and attach conversation files. Topics remain open for revisiting, without card-by-card acceptance. Save and prepare instruction saves all edited topics in the current playbook together and includes the latest notes in the draft. Save notes also remains available for saving just the current topic.
@@ -18,7 +18,13 @@ Matt's multi-session guidance uses fresh context for each implementation ticket;
 
 Preparing an instruction places the real /skill-name, goal and context in the native draft and preserves existing text for review and sending. Matt also includes the expected output and saved prerequisite outcomes. Rich drafts and sending are protected. Conflicting higher-priority Skills are identified and cannot be invoked through the bundled entry.
 
-The pane shares the full conversation’s draft, messages and send actions. Closing it preserves the draft. It displays replies and tool records written to the session log; use Open full conversation for streaming output, approvals, attachments and references. Returning from the full conversation or workbench restores the workflow and the pane’s open state.
+Current conversation in the pane shares the full conversation’s draft, messages and send actions. Closing it preserves the draft. It displays replies and tool records written to the session log; use Open full conversation for streaming output, approvals, attachments and references. Returning from the full conversation or workbench restores the workflow and the pane’s open state.
+
+Matt methods such as `code-review` and PStack’s `poteto-mode` workflows include delegation to multiple agents. OpenSpec manages specifications and changes; it does not dispatch agents itself. Its page can display child agents created by the host during execution.
+
+Once the conversation has child agents, Agents in this conversation appears on the left. Select a name to read that agent’s own messages and tool records on the right while keeping tasks, notes or documents in place. The list follows the current conversation’s parent and child relationships, including nested agents, and excludes unrelated conversations. It stays hidden when there are no child agents. Tasks and topics are not automatically assigned to agents.
+
+Other agents’ records are currently read-only. Use Return to current conversation to continue typing; your draft is preserved. Preparing an instruction also returns to the current conversation before filling its draft. Closing and reopening the pane, or leaving and returning to the page, restores the selected agent. Use Show more agents for longer lists and Refresh if the list fails to update.
 
 Conversation progress reads actual current tasks, next actions, todos, tool calls and file operations. Default Super Code PTC tasks are supported; native todo availability depends on tool configuration. Open recorded files in the enabled code workbench or attach them to a task. These records do not replace Git diffs or content verification.
 

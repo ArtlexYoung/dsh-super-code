@@ -12,7 +12,7 @@ test('workflow conversation declares the session API and recovers when it reconn
   runInNewContext(`(function(require,module,exports){${result.outputFiles[0].text}\n})`, { AbortController })(createRequire(import.meta.url), module, module.exports);
   const ctx = new Context();
   t.after(() => ctx.fiber.dispose());
-  type Contribution = { id: string; inject: () => { conversationRemote: { session: { page: () => string } }; Conversation: string } };
+  type Contribution = { id: string; inject: () => { conversationRemote: { session: { page: () => string } }; Conversation: string; agentActions: { watch: (id: string, open: boolean) => void; refresh: (id: string) => Promise<void> } } };
   const active = new Map<string, Contribution>();
   class Slots extends Service {
     constructor() { super(ctx, 'slots'); }
@@ -32,14 +32,26 @@ test('workflow conversation declares the session API and recovers when it reconn
   ctx.provide('remote.skills', {});
   ctx.provide('remote.superCodeWorkbench', {});
   ctx.provide('remote.superCodeBudgets', { readConfig: async () => ({ ok: true, value: { configuration: { mattpocockSkills: true } } }) });
+  const catalogCalls: unknown[][] = [];
+  const sessions = ctx.plugin({ apply(owner: Context) { owner.provide('sessions', {
+    list: {},
+    setSubagentCatalogOpen: (id: string, open: boolean) => catalogCalls.push([id, open]),
+    refreshSubagents: async (id: string) => { catalogCalls.push([id]); },
+  }); } });
+  await sessions;
   const mountSession = () => ctx.plugin({ apply(owner: Context) { owner.provide('remote.session', { page: () => 'history' }); } });
   const session = mountSession(); await session;
   await ctx.plugin({ inject: ['slots', 'remote', 'locale'], apply(owner) { module.exports.applyWorkflows(owner, () => false, 'native-conversation'); } });
   await waitFor(() => active.has('super-code-mattpocock'));
   assert.equal(active.get('super-code-mattpocock')!.inject().conversationRemote.session.page(), 'history');
   assert.equal(active.get('super-code-mattpocock')!.inject().Conversation, 'native-conversation');
+  const actions = active.get('super-code-mattpocock')!.inject().agentActions;
+  actions.watch('root', true); actions.watch('root', false); await actions.refresh('root');
+  assert.deepEqual(catalogCalls, [['root', true], ['root', false], ['root']]);
   await session.dispose();
   assert.equal(active.has('super-code-mattpocock'), false);
   await mountSession(); await waitFor(() => active.has('super-code-mattpocock'));
   assert.equal(active.get('super-code-mattpocock')!.inject().conversationRemote.session.page(), 'history');
+  await sessions.dispose();
+  assert.equal(active.has('super-code-mattpocock'), false);
 });

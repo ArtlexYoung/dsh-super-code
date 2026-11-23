@@ -1,5 +1,7 @@
 export const NS = 'dsh-super-code-workflows';
 export const zh = {
+  showConversation: '对话', agents: '会话中的 Agent', selectAgent: '选择一个，查看它的对话', refreshAgents: '刷新', moreAgents: '显示更多 Agent', agentsFailed: 'Agent 列表未能更新，请刷新重试。',
+  agentReadOnly: '这里显示所选 Agent 的执行记录。要补充任务要求，请回到当前对话。', returnToConversation: '返回当前对话',
   notesToChat: '保存并准备指令', inlineChat: '当前对话', closeChat: '收起对话',
   conversationInput: '继续当前对话…', conversationRichDraft: '草稿包含引用或附件，请打开完整对话发送。',
   conversationFailed: '消息未能发送，草稿已保留，请重试。', conversationUnavailable: '暂时无法显示对话，请打开完整对话继续。', openConversation: '打开完整对话', send: '发送',
@@ -64,6 +66,8 @@ export const zh = {
   invalidDependencies: '任务未保存：请填写必填内容，并检查前置任务是否有效。任务不能互相等待。',
 };
 export const en = {
+  showConversation: 'Conversation', agents: 'Agents in this conversation', selectAgent: 'Select an agent to read its conversation', refreshAgents: 'Refresh', moreAgents: 'Show more agents', agentsFailed: 'Could not update the agent list. Refresh to retry.',
+  agentReadOnly: 'These are the selected agent’s execution records. Return to the current conversation to add instructions.', returnToConversation: 'Return to current conversation',
   notesToChat: 'Save and prepare instruction', inlineChat: 'Current conversation', closeChat: 'Close conversation pane',
   conversationInput: 'Continue this conversation…', conversationRichDraft: 'Open the full conversation to send attachments or references.',
   conversationFailed: 'The message was not sent. Your draft is preserved; try again.', conversationUnavailable: 'The conversation cannot be displayed here. Open the full conversation to continue.', openConversation: 'Open full conversation', send: 'Send',

@@ -1,25 +1,27 @@
 import React, { useMemo, useState, useEffect } from '../../builtin/ui/react.js'
 import { ActionButton, icons } from '../../builtin/ui/controls.js'
 import { AgentDetail, createAgentInspector } from '../../builtin/sidebar/detail.js'
+import { agentDetailAddress } from '../../builtin/sidebar/address.js'
 
-function WorkbenchConversation({ sessionId, visible = true, useSessions, useSessionStatus, useInput, inputActions, remote, detailT, openView, openFile, useChat, useConversation, fileMentions, t }) {
+function WorkbenchConversation({ sessionId, agent = { id: sessionId }, visible = true, useSessions, useSessionStatus, useInput, inputActions, remote, detailT, openView, openFile, useChat, useConversation, fileMentions, t }) {
   // 订阅官方 Chat target，使冷启动直接进入工作台时也加载文件提及。
   const useMessages = useChat || (select => useConversation?.(value => select(value.views?.get('chat'))));
   const chat = useMessages(value => value);
-  const mentions = useMemo(() => fileMentions?.(chat, openFile), [chat, openFile, fileMentions]);
-  const [lifetime] = useState(() => new AbortController())
-  const tab = useMemo(() => ({ signal: lifetime.signal, visible, contentId: 'dsh-resource://super-agent/' + encodeURIComponent(sessionId) }), [sessionId, lifetime, visible])
+  const current = agent.id === sessionId, address = agentDetailAddress(agent);
+  const mentions = useMemo(() => current ? fileMentions?.(chat, openFile) : undefined, [current, chat, openFile, fileMentions]);
+  const lifetime = useMemo(() => new AbortController(), [address])
+  const tab = useMemo(() => ({ signal: lifetime.signal, visible, contentId: address }), [address, lifetime, visible])
   const detailStates = useMemo(() => new WeakMap(), [])
   const createInspector = useMemo(() => (address, initial) => createAgentInspector(
     (target, options) => new (require('@deepseek-ai/dsh-api-session-controller').SessionEventStream)(remote, target, options), address,
     (request, signal) => remote.session.page(request, signal), initial, detailT), [remote, detailT])
   useEffect(() => () => lifetime.abort(), [lifetime])
-  if (!useInput || !inputActions || !useSessions) return React.createElement('div', { className: 'sc-wb-conversation-fallback' },
+  if (!useSessions || current && (!useInput || !inputActions)) return React.createElement('div', { className: 'sc-wb-conversation-fallback' },
     t('conversationUnavailable'), React.createElement(ActionButton, { onClick: () => openView('chat', '') }, t('openConversation')))
   const content = React.createElement('div', { className: 'sc-wb-conversation' },
-    React.createElement(AgentDetail, { useTabInfo: () => ({ tab }), useSessions, useSessionStatus, sessionId, createInspector, detailStates,
+    React.createElement(AgentDetail, { key: address, useTabInfo: () => ({ tab }), useSessions, useSessionStatus, sessionId, createInspector, detailStates,
       openMemory: () => openView('chat', ''), compact: true, fileMentions: mentions, t: detailT }),
-    React.createElement(WorkbenchInput, { useInput, inputActions, openView, t }))
+    current && React.createElement(WorkbenchInput, { useInput, inputActions, openView, t }))
   return icons.MarkdownDelegateProvider ? React.createElement(icons.MarkdownDelegateProvider, { openFile }, content) : content
 }
 

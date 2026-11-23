@@ -56,6 +56,22 @@ function findElement(value: any, predicate: (element: any) => boolean): any {
   return predicate(value) ? value : findElement(value.props?.children, predicate)
 }
 
+test('切换子 Agent 使用父子地址且隐藏主会话输入，返回后仍使用原输入动作', () => {
+  const inputActions = { submit: () => assert.fail('Rendering must not send') };
+  const props = { sessionId: 'root', remote: {}, t: (key: string) => key, useInput: () => {}, inputActions, useSessions: () => {}, detailT: (key: string) => key };
+  for (const mode of ['one-shot', 'continuable']) {
+    const view = plugin.workbenchControls.Conversation({ ...props, agent: {id:'child',parentId:'parent',mode}, fileMentions: () => assert.fail('Do not attach root file mentions to child records') });
+    const detail = findElement(view, element => element.type?.name === 'AgentDetail');
+    const target = new URL(detail.props.useTabInfo().tab.contentId);
+    assert.equal(target.pathname, '/child');
+    assert.equal(target.searchParams.get('parent'), 'parent');
+    assert.equal(target.searchParams.get('mode'), mode);
+    assert.equal(findElement(view, element => element.type?.name === 'WorkbenchInput'), undefined);
+  }
+  const main = plugin.workbenchControls.Conversation(props);
+  assert.equal(findElement(main, element => element.type?.name === 'WorkbenchInput').props.inputActions, inputActions);
+});
+
 test('普通回复和展开的折叠回复均把官方文件提及交给 Markdown 渲染器', () => {
   const resolver = { resolve: () => undefined }
   for (const collapsed of [false, true]) {

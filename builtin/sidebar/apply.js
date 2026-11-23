@@ -6,6 +6,7 @@ import { SuperCodeWorkspace } from './workspace.js'
 import { memoryRemoteContribution } from '../settings/remote.js'
 import { LOCALE_NS, LocalizedTabTitle } from '../ui/locale.js'
 import { connectRemote } from '../ui/remote.js'
+import { watchAgentCatalog } from './catalog.js'
 
 function applySidebar(ctx, t, state) {
   const { memoryStates, workspaceStates, treeStates, detailStates, workbenchState, workbenchRemote } = state
@@ -26,10 +27,7 @@ function applySidebar(ctx, t, state) {
   const treeActions = {
     treeStates,
     refresh: id => ctx.sessions.refreshSubagents ? ctx.sessions.refreshSubagents(id) : ctx.sessions.refreshProjections(id),
-    watchCatalog: (id, open) => {
-      if (ctx.sessions.setSubagentCatalogOpen) ctx.sessions.setSubagentCatalogOpen(id, open)
-      else if (open) void ctx.sessions.refreshProjections(id).catch(error => console.warn('Super Code projections:', error))
-    },
+    watchCatalog: (id, open) => watchAgentCatalog(ctx.sessions, id, open),
     openDetail: child => ctx.sidebarRight.openResource(agentDetailAddress(child), { kind: 'super-agent-detail' }),
   }
   const disposeDetailType = ctx.sidebarRightTabs.register({

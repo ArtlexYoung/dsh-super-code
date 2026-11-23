@@ -22,15 +22,27 @@ function AgentMessage({ record, saved, t, toolName, compact = false, fileMention
         replyAction.run({ seq: item.seq, text: selectedReplyText(content, item.text) })
       },
     }, replyAction.label))
-  return React.createElement('article', { className: 'dsh-super-code-detail-entry ' + kind, 'data-event-type': eventType, 'data-message-seq': item.seq },
+  return React.createElement('article', { className: 'dsh-super-code-detail-entry ' + kind, 'data-event-type': eventType, 'data-message-seq': item.seq, tabIndex: compact ? -1 : undefined },
     React.createElement('span', { className: 'dsh-super-code-detail-avatar', 'aria-hidden': true }, React.createElement(Glyph, { type: kind })),
-    React.createElement('div', { className: 'dsh-super-code-detail-message' }, item.collapsed
-      ? React.createElement('details', { open: saved.open.has(item.seq), onToggle: event => {
-          if (event.currentTarget.open) saved.open.add(item.seq); else saved.open.delete(item.seq)
-        } },
-        React.createElement('summary', null, label, React.createElement(Glyph, { type: 'chevron' })),
-        body)
-      : React.createElement(React.Fragment, null, label, body)))
+    React.createElement('div', { className: 'dsh-super-code-detail-message' },
+      messageContent({ item, kind, compact, saved, label, body, t })))
+}
+
+function messageContent({ item, kind, compact, saved, label, body, t }) {
+  const question = compact && kind === 'user' && (item.text.length > 280 || item.text.split('\n').length > 6)
+  if (!question && !item.collapsed) return React.createElement(React.Fragment, null, label, body)
+  const preview = question ? item.text.replace(/\s+/g, ' ').trim() : ''
+  return React.createElement('details', { className: question ? 'sc-wb-question' : undefined, open: saved.open.has(item.seq), onToggle: event => {
+    if (event.target !== event.currentTarget) return
+    if (event.currentTarget.open) saved.open.add(item.seq); else saved.open.delete(item.seq)
+  } },
+    React.createElement('summary', null, label,
+      question && React.createElement(React.Fragment, null,
+        React.createElement('span', { className: 'sc-wb-question-preview' }, preview.slice(0, 160), preview.length > 160 ? '…' : ''),
+        React.createElement('span', { className: 'sc-wb-question-toggle' },
+          React.createElement('span', { className: 'sc-wb-question-expand' }, text(t, 'workbench.expandQuestion')),
+          React.createElement('span', { className: 'sc-wb-question-collapse' }, text(t, 'workbench.collapseQuestion')))),
+      React.createElement(Glyph, { type: 'chevron' })), body)
 }
 
 function selectedReplyText(content, original) {

@@ -1,4 +1,4 @@
-import { selectionThread, selectionSnapshot, mapThread, applyReplacement, hasMark } from './selection-state.js';
+import { selectionThread, selectionSnapshot, mapThread, applyReplacement, verifyReplacement, hasMark } from './selection-state.js';
 import { refreshMarks } from './selection-extension.js';
 import { errorText, message } from '../locales.js';
 import { createConversationStore } from './conversations.js';
@@ -67,6 +67,7 @@ export function createSelectionAssistant({ editor, api, changed, t, modelOptions
   }
   async function send() {
     if (!active || active.status === 'running' || !active.draft.trim()) return;
+    if (active.proposal?.state === 'pending') { active.note = t('editReviewFirst'); refresh(); return; }
     const thread = active, origin = store, view = editor.view(), instruction = thread.draft.trim(), selectedMode = mode;
     let snapshot, source;
     try { if (selectedMode !== 'translate') { if (thread.file !== editor.file() || !view) throw new Error(); snapshot = selectionSnapshot(thread, view.state); source = selectionContext(view.state.doc, thread.from, thread.to); } }
@@ -82,17 +83,44 @@ export function createSelectionAssistant({ editor, api, changed, t, modelOptions
       abort.signal.throwIfAborted();
       if (selectedMode !== 'translate' && thread.file !== editor.file()) throw new Error(t('stopped'));
       if (result.kind === 'edit') {
-        applying = thread.id;
-        try { Object.assign(thread, applyReplacement(editor.view(), thread, snapshot, result.replacement)); }
-        finally { applying = null; }
-        thread.messages.push({ role: 'assistant', text: result.replacement || t('deleted') }); thread.note = t('edited');
+        thread.proposal = { id: uniqueId(), state: 'pending', before: snapshot.original, after: result.replacement, snapshot };
+        thread.messages.push({ role: 'assistant', text: result.replacement || t('editDeleteProposal'), proposalId: thread.proposal.id });
       } else thread.messages.push({ role: 'assistant', text: result.text });
       thread.status = 'idle';
     } catch (error) { thread.status = abort.signal.aborted ? 'stopped' : 'error'; thread.note = abort.signal.aborted ? t('stopped') : errorText(error, t); }
     finally { origin.pending.delete(thread.id); owned.delete(thread.id); origin.publish(); }
   }
+  function changeProposal(thread, proposal, view, undo) {
+    applying = thread.id;
+    try { Object.assign(thread, applyReplacement(view, thread, proposal.snapshot, undo ? proposal.before : proposal.after)); }
+    finally { applying = null; }
+    proposal.state = undo ? 'undone' : 'applied';
+    proposal.snapshot = { revision: thread.revision, original: thread.original, version: thread.version };
+    thread.note = t(undo ? 'editUndone' : 'editApplied');
+  }
+  function proposalView(thread) {
+    const view = editor.view();
+    if (thread.file !== editor.file() || !view) throw new Error('WORKBENCH_EDIT_FILE');
+    if (view.state.readOnly) throw new Error('WORKBENCH_EDIT_READONLY');
+    verifyReplacement(view.state, thread, thread.proposal.snapshot);
+    return view;
+  }
+  function review(id, action) {
+    const thread = active, proposal = thread?.proposal;
+    if (!proposal || proposal.id !== id || thread.status === 'running' || !['pending', 'applied'].includes(proposal.state)) return;
+    const expected = { apply: 'pending', undo: 'applied', discard: 'pending', recheck: proposal.state }[action];
+    if (proposal.state !== expected) return;
+    if (action === 'discard') { proposal.state = 'discarded'; thread.note = t('editDiscarded'); refresh(); return; }
+    try {
+      const view = proposalView(thread);
+      if (action === 'recheck') { proposal.snapshot = { ...proposal.snapshot, version: thread.version }; thread.note = t('editRechecked'); return; }
+      if (proposal.snapshot.version !== thread.version) throw new Error('WORKBENCH_EDIT_RECHECK');
+      changeProposal(thread, proposal, view, action === 'undo');
+    } catch (error) { thread.note = errorText(error, t); }
+    finally { refresh(); }
+  }
   return {
-    threads, open, select, close, send, stop, remove, bind,
+    threads, open, select, close, send, stop, remove, bind, review,
     draft(value) { if (active) { active.draft = value; refresh(); } },
     mode(value) { mode = value; publish(); },
     pin() { if (active) { active.pinned = !active.pinned; refresh(); } },

@@ -656,6 +656,13 @@ body[data-ds-dark-theme] .sc-workbench[data-palette=vscode]{
 .sc-wb-messages article[data-role=user]{margin:10px 0 2px;padding:10px 12px;border:1px solid var(--wb-line);border-radius:var(--wb-radius);background:var(--wb-surface)}
 .sc-wb-messages strong{font-size:10px;font-weight:500;color:var(--wb-muted)}
 .sc-wb-messages pre{font-family:inherit;font-size:12px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere;margin:4px 0}
+.sc-wb-edit-review{margin-top:8px;border:1px solid var(--wb-line);border-radius:var(--wb-radius);overflow:hidden}
+.sc-wb-edit-actions{display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:8px;background:var(--wb-surface)}
+.sc-wb-edit-actions>strong{margin-right:auto;color:var(--wb-text);font-size:12px}
+.sc-wb-edit-actions>button{font-size:12px}
+.sc-wb-edit-review>p{font-size:12px;line-height:1.6;margin:8px;overflow-wrap:anywhere}
+.sc-wb-edit-diff{height:260px;min-height:180px;display:flex}
+.sc-wb-edit-diff .sc-wb-git-diff>header>strong{font-size:11px}
 .sc-wb-assistant form{padding:10px 14px 12px;flex:none}
 .sc-wb-mode{display:flex;gap:4px;margin-bottom:6px}
 .sc-wb-assistant textarea{resize:vertical;min-height:70px;max-height:160px;width:100%;padding:9px 11px;border:1px solid var(--wb-input-line);border-radius:var(--wb-radius);background:var(--wb-input);color:inherit;font-family:inherit;font-size:12px;line-height:1.65}

@@ -45,7 +45,7 @@ test('离开选区保留有草稿、已固定和已发送的记录，重新打�
   }
 })
 
-test('大文件选区助手发送摘取上下文，响应仍只修改完整文档中的原选区', async () => {
+test('大文件选区助手发送摘取上下文，审阅后只修改完整文档中的原选区', async () => {
   const calls: any[] = [], current = assistant(createConversationStore(), { assist: async (input: any) => {
     calls.push(parseAssistant(input)); return { kind: 'edit', replacement: '替换结果' }
   } })
@@ -56,6 +56,9 @@ test('大文件选区助手发送摘取上下文，响应仍只修改完整文�
     assert.equal(calls.length, 1)
     assert.equal(calls[0].text.slice(calls[0].from, calls[0].to), 'selected')
     assert.ok(calls[0].text.length < before.length)
+    assert.equal(current.text, before)
+    assert.equal(current.snapshot.thread.proposal.state, 'pending')
+    current.value.review(current.snapshot.thread.proposal.id, 'apply')
     assert.equal(current.text, before.slice(0, 300000) + '替换结果' + before.slice(300008))
     assert.equal(current.snapshot.thread.status, 'idle')
     current.setSource(before, 0, 300000); current.value.select(); current.value.draft('解释过大选区')

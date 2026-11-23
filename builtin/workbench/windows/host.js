@@ -17,7 +17,7 @@ function createHost(workbench, transmit, close, metadata, onReady) {
   const calls = Object.fromEntries(['visit', 'move', 'list', 'refresh', 'save', 'settings', 'environmentPaths', 'definition', 'fileOperation', 'undo', 'closeFile', 'closeTabs', 'reopenTab', 'cancelCloseFile',
     'moveTab', 'keepTab', 'setSearchQuery', 'openConversation', 'menu', 'copyFile', 'pinFile', 'panel', 'submitFileAction', 'applySaveConflict'].map(name => [name, args => workbench[name](...args)]));
   for (const [name, target, methods] of [
-    ['assistant', workbench.assistant, ['open', 'select', 'close', 'send', 'stop', 'remove', 'draft', 'mode', 'pin']],
+    ['assistant', workbench.assistant, ['open', 'select', 'close', 'send', 'stop', 'remove', 'draft', 'mode', 'pin', 'review']],
     ['reading', workbench.reading, ['goal', 'plan', 'file', 'retry', 'step', 'stop', 'open', 'verify']],
     ['changes', workbench.changes, ['refresh', 'invalidate', 'visible', 'forget']],
     ['files', workbench.files, ['activate', 'reset']],

@@ -27,6 +27,7 @@ export function GitDiff({ diff, palette, t, Button, labels, open, loading, resto
   const left = useRef(null), right = useRef(null), views = useRef([]), [at, setAt] = useState(-1);
   const [arrows, setArrows] = useState([]);
   const { path, binary, before, after, beforeStart, afterStart } = diff || {};
+  const beforeLabel = t('gitBefore'), afterLabel = t('gitAfter');
   // 外窗快照会复制对象；原文、路径和行号不变时保留搜索、选区与滚动位置。
   const blocks = useMemo(() => diff ? diffBlocks(diff.lines) : [], [path, binary, before, after, beforeStart, afterStart]);
   useEffect(() => {
@@ -37,7 +38,7 @@ export function GitDiff({ diff, palette, t, Button, labels, open, loading, resto
       const state = EditorState.create({ doc: side ? diff.after : diff.before, extensions: [
         EditorState.readOnly.of(true), EditorView.editable.of(false), editorTheme(palette), lineNumbers({ formatNumber: number => String(number + (side ? diff.afterStart || 1 : diff.beforeStart || 1) - 1) }), drawSelection(), search(), keymap.of(searchKeymap),
         EditorView.theme({ '.cm-scroller': { lineHeight: `${LINE_HEIGHT}px` }, '.cm-line': { padding: '0 8px' } }),
-        EditorView.contentAttributes.of({ 'aria-label': `${side ? t('gitAfter') : t('gitBefore')} ${diff.path}` }),
+        EditorView.contentAttributes.of({ 'aria-label': `${side ? afterLabel : beforeLabel} ${diff.path}` }),
       ] });
       const marks = [];
       for (const block of blocks) {
@@ -68,7 +69,7 @@ export function GitDiff({ diff, palette, t, Button, labels, open, loading, resto
     pair.forEach((view, index) => view.scrollDOM.addEventListener('scroll', handlers[index]));
     void loadLanguage(diff.path).then(language => { if (!disposed) pair.forEach(view => view.dispatch({ effects: StateEffect.appendConfig.of(language) })); });
     return () => { disposed = true; pair.forEach((view, index) => { view.scrollDOM.removeEventListener('scroll', handlers[index]); view.destroy(); }); views.current = []; };
-  }, [blocks, palette, t, !!restore]);
+  }, [blocks, palette, t, beforeLabel, afterLabel, !!restore]);
   const move = direction => {
     const next = at < 0 ? (direction > 0 ? 0 : blocks.length - 1) : (at + direction + blocks.length) % blocks.length; setAt(next);
     views.current.forEach((view, side) => { const block = blocks[next], line = Math.min(view.state.doc.lines, side ? block.after : block.before); view.dispatch({ effects: EditorView.scrollIntoView(view.state.doc.line(line).from, { y: 'center' }) }); });

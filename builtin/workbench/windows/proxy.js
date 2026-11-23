@@ -68,7 +68,7 @@ export function createWindowProxy(send, t, { child, initial, canSplit = false } 
     const view = editor?.view;
     if (view && (file !== current || !selection.eq(view.state.selection))) view.dispatch({ effects: EditorView.scrollIntoView(view.state.selection.main, { y: 'center' }) });
   }
-  const assistant = Object.fromEntries(['open', 'select', 'close', 'send', 'stop', 'remove', 'draft', 'mode', 'pin'].map(method => [method, (...args) => call(`assistant.${method}`, args).catch(fail)]));
+  const assistant = Object.fromEntries(['open', 'select', 'close', 'send', 'stop', 'remove', 'draft', 'mode', 'pin', 'review'].map(method => [method, (...args) => call(`assistant.${method}`, args).catch(fail)]));
   Object.assign(assistant, { threads: () => threads, update() {} });
   assistant.draft = value => {
     const state = stores.snapshot.snapshot(), thread = state.assistant?.thread;

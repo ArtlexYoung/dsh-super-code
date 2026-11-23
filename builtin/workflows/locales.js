@@ -1,8 +1,10 @@
 export const NS = 'dsh-super-code-workflows';
 export const zh = {
+  quoteReply: '引用到当前对话', quoteHint: '先选中文字可只引用这一段；不选则引用整条回复。', quoteSource: '引用来源：', quotedFrom: '刚才引用了 ', returnToReply: '返回原文', dismissQuoteSource: '关闭引用来源提示',
+  quoteTooLong: '这条回复较长，请选中需要的部分后再引用。', quoteLocked: '当前草稿含附件或引用，或正在处理输入。请先打开完整对话处理，再引用回复。',
   findAgent: '查找 Agent', noMatchingAgent: '没有找到匹配的 Agent', resizeConversation: '调整对话栏宽度', resetConversationWidth: '恢复默认宽度',
   showConversation: '对话', agents: '会话中的 Agent', selectAgent: '选择一个，查看它的对话', refreshAgents: '刷新', moreAgents: '显示更多 Agent', agentsFailed: 'Agent 列表未能更新，请刷新重试。',
-  agentReadOnly: '这里显示所选 Agent 的执行记录。要补充任务要求，请回到当前对话。', returnToConversation: '返回当前对话',
+  agentReadOnly: '可先选中文字，只引用需要的部分。引用后在当前对话中补充要求。', returnToConversation: '返回当前对话',
   notesToChat: '保存并准备指令', inlineChat: '当前对话', closeChat: '收起对话',
   conversationInput: '继续当前对话…', conversationRichDraft: '草稿包含引用或附件，请打开完整对话发送。',
   conversationFailed: '消息未能发送，草稿已保留，请重试。', conversationUnavailable: '暂时无法显示对话，请打开完整对话继续。', openConversation: '打开完整对话', send: '发送',
@@ -67,9 +69,11 @@ export const zh = {
   invalidDependencies: '任务未保存：请填写必填内容，并检查前置任务是否有效。任务不能互相等待。',
 };
 export const en = {
+  quoteReply: 'Quote in current conversation', quoteHint: 'Select text to quote a passage, or quote the whole reply.', quoteSource: 'Quoted from: ', quotedFrom: 'Last quote: ', returnToReply: 'Back to reply', dismissQuoteSource: 'Dismiss quote source',
+  quoteTooLong: 'This reply is long. Select the part you need, then quote it.', quoteLocked: 'The current draft has attachments or references, or input is busy. Open the full conversation to resolve this before quoting.',
   findAgent: 'Find an agent', noMatchingAgent: 'No matching agents', resizeConversation: 'Resize conversation pane', resetConversationWidth: 'Reset conversation width',
   showConversation: 'Conversation', agents: 'Agents in this conversation', selectAgent: 'Select an agent to read its conversation', refreshAgents: 'Refresh', moreAgents: 'Show more agents', agentsFailed: 'Could not update the agent list. Refresh to retry.',
-  agentReadOnly: 'These are the selected agent’s execution records. Return to the current conversation to add instructions.', returnToConversation: 'Return to current conversation',
+  agentReadOnly: 'Select text to quote just the part you need, then add instructions in the current conversation.', returnToConversation: 'Return to current conversation',
   notesToChat: 'Save and prepare instruction', inlineChat: 'Current conversation', closeChat: 'Close conversation pane',
   conversationInput: 'Continue this conversation…', conversationRichDraft: 'Open the full conversation to send attachments or references.',
   conversationFailed: 'The message was not sent. Your draft is preserved; try again.', conversationUnavailable: 'The conversation cannot be displayed here. Open the full conversation to continue.', openConversation: 'Open full conversation', send: 'Send',

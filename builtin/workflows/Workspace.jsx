@@ -4,6 +4,7 @@ import { pageMemory, usePageState } from './page-state.js';
 import { fileTarget, WORKBENCH_VIEW } from '../workbench/file-links.js';
 import { WorkflowAgents, useWorkflowAgents } from './Agents.jsx';
 import { Splitter } from '../workbench/components/Splitter.jsx';
+import { WorkflowConversation } from './Conversation.jsx';
 
 export function WorkflowWorkspace({ Conversation, conversationRemote, detailT, ...props }) {
   const { api, sessionId, page, t, openView } = props;
@@ -21,10 +22,13 @@ export function WorkflowWorkspace({ Conversation, conversationRemote, detailT, .
     setChatOpen(true);
     if (!focus) return;
     requestAnimationFrame(() => {
-      (panel.current?.querySelector('textarea') || panel.current?.querySelector('h2'))?.focus({ preventScroll: true });
+      const target = panel.current?.querySelector('textarea') || panel.current?.querySelector('h2');
+      target?.focus({ preventScroll: true });
+      if (target?.tagName === 'TEXTAREA') { target.setSelectionRange(target.value.length, target.value.length); target.scrollTop = target.scrollHeight; }
       panel.current?.scrollIntoView({ block: 'nearest' });
     });
   };
+  const selectAgent = (id, focus = false) => { agents.select(id); reveal(focus); };
   const navigate = (view, request) => {
     if (view !== 'chat') { openView(view, request); return; }
     agents.select(sessionId); reveal();
@@ -41,9 +45,8 @@ export function WorkflowWorkspace({ Conversation, conversationRemote, detailT, .
     {chatOpen && <aside ref={panel} className="sc-workbench sc-flow-chat-panel" aria-label={title}>
       <header><h2 tabIndex={-1}>{title}</h2><div><button type="button" className="sc-flow-reset-width" onClick={() => setChatWidth(390)} aria-label={t('resetConversationWidth')} title={t('resetConversationWidth')}>↔</button><button type="button" onClick={closeChat} aria-label={t('closeChat')}>×</button></div></header>
       {fileError && <p role="alert">{fileError}</p>}
-      <Conversation sessionId={sessionId} agent={agents.agent} readingStates={readingStates} visible useSessions={props.useSessions} useSessionStatus={props.useSessionStatus} useInput={props.useInput} inputActions={props.inputActions}
+      <WorkflowConversation Conversation={Conversation} memory={memory} agents={agents.view} selectAgent={selectAgent} sessionId={sessionId} agent={agents.agent} readingStates={readingStates} visible useSessions={props.useSessions} useSessionStatus={props.useSessionStatus} useInput={props.useInput} inputActions={props.inputActions}
         remote={conversationRemote} detailT={detailT} openView={openView} openFile={openFile} useChat={props.useChat} useConversation={props.useConversation} t={t} />
-      {!current && <footer className="sc-flow-agent-return"><p>{t('agentReadOnly')}</p><button type="button" onClick={() => navigate('chat', '')}>{t('returnToConversation')}</button></footer>}
     </aside>}
   </div></div>;
 }

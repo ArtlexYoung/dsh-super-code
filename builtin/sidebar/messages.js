@@ -4,7 +4,7 @@ import { ActionButton, Glyph, icons } from '../ui/controls.js'
 
 const normalizedRecords = new WeakMap()
 
-function AgentMessage({ record, saved, t, toolName, compact = false, fileMentions }) {
+function AgentMessage({ record, saved, t, toolName, compact = false, fileMentions, replyAction }) {
   const item = useMemo(() => record.entry ? presentDetail(normalizedRecords.get(record) || normalizeDetail(record.entry), t) : record, [record, t])
   const eventType = record.entry?.event?.type
   const kind = eventType === 'user/message' ? 'user' : eventType === 'assistant/message' ? 'agent'
@@ -12,6 +12,16 @@ function AgentMessage({ record, saved, t, toolName, compact = false, fileMention
   const time = new Date(item.time).toLocaleTimeString(localeCode(t), { hour12: false })
   const label = React.createElement('div', { className: 'dsh-super-code-detail-entry-label' },
     React.createElement('span', null, compact && kind === 'user' ? text(t, 'workbench.question') : compact && kind === 'agent' && !record.entry?.event?.data?.interrupted ? text(t, 'workbench.reply') : item.label, toolName && !item.toolName ? ' · ' + toolName : ''), React.createElement('time', { dateTime: new Date(item.time).toISOString() }, time))
+  const body = React.createElement(React.Fragment, null,
+    React.createElement(DetailText, { text: item.text, format: item.format, fileMentions, t }),
+    kind === 'agent' && replyAction && item.text.trim() && React.createElement(ActionButton, {
+      type: 'button', className: 'sc-wb-reply-action', disabled: replyAction.disabled, title: replyAction.title,
+      onPointerDown: event => event.preventDefault(),
+      onClick: event => {
+        const content = event.currentTarget.closest('.dsh-super-code-detail-message').querySelector('.dsh-super-code-detail-content')
+        replyAction.run({ seq: item.seq, text: selectedReplyText(content, item.text) })
+      },
+    }, replyAction.label))
   return React.createElement('article', { className: 'dsh-super-code-detail-entry ' + kind, 'data-event-type': eventType, 'data-message-seq': item.seq },
     React.createElement('span', { className: 'dsh-super-code-detail-avatar', 'aria-hidden': true }, React.createElement(Glyph, { type: kind })),
     React.createElement('div', { className: 'dsh-super-code-detail-message' }, item.collapsed
@@ -19,8 +29,16 @@ function AgentMessage({ record, saved, t, toolName, compact = false, fileMention
           if (event.currentTarget.open) saved.open.add(item.seq); else saved.open.delete(item.seq)
         } },
         React.createElement('summary', null, label, React.createElement(Glyph, { type: 'chevron' })),
-        React.createElement(DetailText, { text: item.text, format: item.format, fileMentions, t }))
-      : React.createElement(React.Fragment, null, label, React.createElement(DetailText, { text: item.text, format: item.format, fileMentions, t }))))
+        body)
+      : React.createElement(React.Fragment, null, label, body)))
+}
+
+function selectedReplyText(content, original) {
+  const selection = content.ownerDocument.getSelection()
+  if (!selection?.rangeCount || selection.isCollapsed) return original
+  const range = selection.getRangeAt(0)
+  if (!content.contains(range.startContainer) || !content.contains(range.endContainer)) return original
+  return selection.toString().trim() ? selection.toString() : original
 }
 
 function contentText(blocks, t) {

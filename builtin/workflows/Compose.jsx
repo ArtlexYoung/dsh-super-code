@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { commandDraft, skillAvailability } from './model.js';
 
-const draftLocked = input => input.phase !== 'plain' || input.attachmentIds?.length > 0 || input.occurrences?.length > 0;
+export const draftLocked = input => input.phase !== 'plain' || input.attachmentIds?.length > 0 || input.occurrences?.length > 0;
 
 function PreparedCommand({ skill, availability, api, sessionId, useInput, inputActions, openView, context, beforeInsert, onUsed, t, label = t('use'), hint = true, className = 'sc-flow-primary' }) {
   const input = useInput(state => state), [error, setError] = useState(''), [busy, setBusy] = useState(false);

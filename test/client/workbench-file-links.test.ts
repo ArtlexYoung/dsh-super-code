@@ -88,3 +88,21 @@ test('普通回复和展开的折叠回复均把官方文件提及交给 Markdow
     assert.equal(markdown.props.fileMentions, resolver, `collapsed=${collapsed}`)
   }
 })
+
+test('引用操作仅在调用方启用后出现在 Agent 回复中，不改变普通工作台和工具记录', () => {
+  const replyAction = { label: '引用', run: () => assert.fail('Rendering must not quote') }
+  for (const enabled of [false, true]) {
+    const view = plugin.workbenchControls.Conversation({ sessionId: 'root', agent: { id: 'child', parentId: 'root', mode: 'continuable' },
+      remote: {}, t: (key: string) => key, detailT: (key: string) => key,
+      useSessions: (select: (value: unknown) => unknown) => select({ byId: {} }), replyAction: enabled ? replyAction : undefined,
+    })
+    const detail = findElement(view, element => element.type?.name === 'AgentDetail')
+    for (const kind of ['agent', 'user', 'tool']) {
+      const snapshot = { items: [{ seq: 5, time: 1, kind, label: kind, text: '编号 007', format: 'text' }], projections: {}, status: 'ready' }
+      const tree = detail.type({ ...detail.props, createInspector: () => ({ subscribe: () => () => {}, getSnapshot: () => snapshot }) })
+      const message = findElement(tree, element => element.type?.name === 'AgentMessage')
+      const action = findElement(message.type(message.props), element => element.props?.className === 'sc-wb-reply-action')
+      assert.equal(Boolean(action), enabled && kind === 'agent')
+    }
+  }
+})

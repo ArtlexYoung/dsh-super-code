@@ -2,6 +2,15 @@ import { zh as gitZh, en as gitEn } from './git/locales.js';
 import { zh as readingZh, en as readingEn } from './reading/locales.js';
 export const NS = 'dsh-super-code-workbench';
 export const zh = {
+  saveAll: '保存全部', action_saveAll: '保存全部', drafts: '未保存文件与恢复副本', draftCount: '{count} 个未保存文件', draftAvailable: '有可恢复副本',
+  draftSaving: '正在保存 {completed}/{total} 个文件…', draftSaveFinished: '已处理 {completed}/{total} 个文件；失败或后来编辑的文件仍在列表中', draftReview: '等待手动保存', draftClean: '项目中没有未保存文件',
+  draftRecovery: '恢复副本', draftBackingUp: '正在备份草稿…', draftBackedUp: '最近一次备份已写入当前客户端', draftNoBackup: '尚无备份记录', draftNoCandidate: '没有等待恢复的副本',
+  draftRestore: '恢复为草稿', draftDownload: '下载副本', draftDiscard: '删除副本', draftDiscardConfirm: '确认删除副本',
+  draftPendingCollision: '同一文件还有上次的副本，当前新编辑暂未备份。请先下载或处理旧副本；恢复不会覆盖当前新草稿。',
+  draftStorageHint: '副本保存在当前客户端的 IndexedDB，按会话和项目隔离。每组最多 100 个文件、16 MiB，恢复库总计 64 MiB。恢复只进入草稿，需手动保存；意外退出可能来不及备份最后一次输入。清除客户端站点数据会清除副本。',
+  WORKBENCH_DRAFT_INVALID: '恢复副本格式无法识别，原记录已保留', WORKBENCH_DRAFT_SIZE: '恢复副本达到容量上限，原记录已保留。请先保存文件或下载并删除不需要的副本。',
+  WORKBENCH_DRAFT_STORAGE: '无法读取或写入恢复副本，请重试并检查客户端存储空间', WORKBENCH_RECOVERY_CHANGED: '另一个页面已更新恢复副本，请重试读取最新记录', WORKBENCH_RECOVERY_DIRTY: '当前文件已有未保存编辑，请先保存或导出，恢复不会覆盖这些编辑',
+
   languageTag: 'zh',
   resumeWorkspace: '继续上次工作 · {count} 个标签', resumeHint: '上次打开的文件和阅读位置已保留',
   resumeMetadata: '恢复时读取最新文件内容；此记录不包含未保存的正文。', resumeWorking: '正在恢复文件和阅读位置…',
@@ -146,6 +155,15 @@ export const zh = {
   WORKBENCH_SELECTION_SIZE: '选区过大，请缩小后重试',
 };
 export const en = {
+  saveAll: 'Save all', action_saveAll: 'Save all', drafts: 'Unsaved files and recovery copies', draftCount: '{count} unsaved files', draftAvailable: 'Recovery copies available',
+  draftSaving: 'Saving {completed}/{total} files…', draftSaveFinished: 'Processed {completed}/{total} files; failures and newer edits remain listed', draftReview: 'Manual save required', draftClean: 'No unsaved files in this project',
+  draftRecovery: 'Recovery copies', draftBackingUp: 'Backing up drafts…', draftBackedUp: 'The latest backup was stored in this client', draftNoBackup: 'No backup recorded yet', draftNoCandidate: 'No copies waiting for recovery',
+  draftRestore: 'Restore as draft', draftDownload: 'Download copy', draftDiscard: 'Delete copy', draftDiscardConfirm: 'Confirm deletion',
+  draftPendingCollision: 'An earlier copy exists for a file with new unsaved edits. Download or resolve the earlier copy first; new edits to that file are not backed up yet. Recovery will not overwrite them.',
+  draftStorageHint: 'Copies use this client’s IndexedDB, separated by session and project. Limits: 100 files and 16 MiB per group, 64 MiB for the recovery database. Recovery only changes drafts and requires a manual save. An unexpected exit may lose the last input before backup. Clearing site data removes the copies.',
+  WORKBENCH_DRAFT_INVALID: 'The recovery record is invalid and has been kept.', WORKBENCH_DRAFT_SIZE: 'Recovery storage reached its limit. Existing records are kept. Save files or download and delete copies you no longer need.',
+  WORKBENCH_DRAFT_STORAGE: 'Could not read or write recovery copies. Retry and check client storage.', WORKBENCH_RECOVERY_CHANGED: 'Another page updated these copies. Retry to read the latest record.', WORKBENCH_RECOVERY_DIRTY: 'This file has unsaved edits. Save or export them first; recovery will not overwrite them.',
+
   languageTag: 'en',
   resumeWorkspace: 'Continue previous work · {count} tabs', resumeHint: 'Your previous files and reading positions are available',
   resumeMetadata: 'Restoring reads the latest files. This record does not include unsaved text.', resumeWorking: 'Restoring files and reading positions…',

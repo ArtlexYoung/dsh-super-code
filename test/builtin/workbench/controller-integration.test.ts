@@ -1131,3 +1131,15 @@ test('恢复过程中主动打开文件会取消剩余恢复，不覆盖新导�
   assert.equal(view.snapshot().tabs.some((tab: { path: string }) => tab.path === 'other.ts'), false)
   assert.equal(await read(), 'main')
 })
+
+test('保存全部覆盖共享项目的关闭标签，保存期间新输入继续标为未保存', async t => {
+  const { create, read } = await fixture(t, { 'main.ts': 'one', 'other.ts': 'two' })
+  const controller = await create(), peer = await create()
+  await controller.visit({ file: 'main.ts' }); edit(controller, 0, 0, 'draft ')
+  await controller.closeFile('main.ts', 'keep')
+  await peer.visit({ file: 'other.ts' }); edit(peer, 0, 0, 'peer ')
+  assert.equal(controller.snapshot().unsaved.length, 2)
+  await controller.saveAll()
+  assert.equal(await read('main.ts'), 'draft one'); assert.equal(await read('other.ts'), 'peer two')
+  assert.equal(controller.snapshot().unsaved.length, 0); assert.equal(peer.snapshot().unsaved.length, 0)
+})

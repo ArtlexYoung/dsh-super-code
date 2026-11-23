@@ -105,7 +105,7 @@ export function createWindowProxy(send, t, { child, initial, canSplit = false } 
   }
   const proxy = {
     ...stores.snapshot, documents, index, assistant, t, external: true,
-    ...Object.fromEntries(['visit', 'move', 'list', 'refresh', 'save', 'fileOperation', 'submitFileAction', 'undo', 'closeFile', 'closeTabs', 'reopenTab', 'openConversation', 'pinFile'].map(method => [method, (...args) => call(method, args)])),
+    ...Object.fromEntries(['visit', 'move', 'list', 'refresh', 'save', 'saveAll', 'recoverDraft', 'discardDraft', 'draftText', 'retryDrafts', 'fileOperation', 'submitFileAction', 'undo', 'closeFile', 'closeTabs', 'reopenTab', 'openConversation', 'pinFile'].map(method => [method, (...args) => call(method, args)])),
     definition,
     ...Object.fromEntries(['cancelCloseFile', 'moveTab', 'keepTab', 'menu', 'copyFile'].map(method => [method, (...args) => invoke(method, args)])),
     openFileWindow: ({ file, editorKind, markdownSplit }) => invoke('openFileWindow', [file, editorKind, markdownSplit]),

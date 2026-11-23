@@ -10,6 +10,7 @@ import fontStyles from './fonts/style.js';
 import { createWorkbenchPreference, createEditorPreference } from './preference.js';
 import { createLayoutPreference } from './layout.js';
 import { createWorkspaceSession } from './session.js';
+import { createDraftStore } from './draft-store.js';
 import { Settings } from './components/Settings.jsx';
 import { FileChanges } from './git/Changes.jsx';
 import { closingFileMentions, registerFileNavigation } from './file-links.js';
@@ -34,7 +35,7 @@ export function apply(ctx, { Button, Select, MarkdownText, Conversation, prefere
   };
   function workspace(remote, sessionId) {
     let workbench = workspaces.get(sessionId);
-    if (!workbench) { workbench = createWorkbench(workspaceApi(remote, sessionId), t, { projects, translationLanguage, settings: editorPreference, layout: layoutPreference, session: createWorkspaceSession(localStorage, sessionId) }); workspaces.set(sessionId, workbench); }
+    if (!workbench) { workbench = createWorkbench(workspaceApi(remote, sessionId), t, { projects, translationLanguage, settings: editorPreference, layout: layoutPreference, session: createWorkspaceSession(localStorage, sessionId), draftStore: createDraftStore(sessionId) }); workspaces.set(sessionId, workbench); }
     return workbench;
   }
   function Changes({ remote, sessionId, revision }) {

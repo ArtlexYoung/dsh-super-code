@@ -13,6 +13,7 @@ import { searchQueryKey } from '../../../src/workbench/search-query.ts';
 import { FileCompare } from './FileCompare.jsx';
 import { LibrarySource } from './LibrarySource.jsx';
 import { SaveConflict } from './SaveConflict.jsx';
+import { Drafts } from './Drafts.jsx';
 import { Navigator } from './Navigator.jsx';
 
 const emptyResults = { matches: [] };
@@ -89,7 +90,7 @@ export function Locations({ data, search, workbench, Button, t }) {
 }
 
 
-const panelComponents = new Map([['git', GitPanel], ['projectReplace', Replace], ['lineHistory', CodeHistory], ['fileCompare', FileCompare], ['saveConflict', SaveConflict], ['navigate', Navigator]]);
+const panelComponents = new Map([['drafts', Drafts], ['git', GitPanel], ['projectReplace', Replace], ['lineHistory', CodeHistory], ['fileCompare', FileCompare], ['saveConflict', SaveConflict], ['navigate', Navigator]]);
 
 export function PanelContent({ panel, workbench, Button, Select, t, toggleFocus }) {
   const { preferences } = useSyncExternalStore(workbench.subscribe, workbench.snapshot);

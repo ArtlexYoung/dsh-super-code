@@ -25,6 +25,8 @@ export function workbenchCommands(workbench, snapshot, t, toggleFocus, current =
     codeHistory: { run: () => openCodeHistory(workbench, t), disabled: !current },
     refresh: { run: workbench.refresh, disabled: snapshot.indexing },
     window: { run: workbench.external ? workbench.returnToHost : workbench.openWindow },
+    drafts: { run: () => workbench.panel({ kind: 'drafts' }) },
+    saveAll: { run: () => { workbench.panel({ kind: 'drafts' }); return workbench.saveAll(); }, disabled: !snapshot.unsaved?.length || snapshot.saveBatch?.busy },
     save: { run: () => { workbench.view()?.focus(); return workbench.save(); }, disabled: !current?.dirty },
     git: { run: () => workbench.panel({ kind: 'git' }) },
     settings: { run: () => workbench.panel({ kind: 'settings' }) },

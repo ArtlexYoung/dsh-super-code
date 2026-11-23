@@ -21,6 +21,8 @@ import { undoEdit, replaceFiles } from './editing/actions.js';
 import { readReplacement, remainingReplacements } from './editing/replace.js';
 import { readSaveConflict, applySaveConflict } from './editing/save-conflict.js';
 import { createWorkspaceRecovery } from './recovery.js';
+import { createDraftRecovery } from './draft-recovery.js';
+import { restoreDraft } from './editing/drafts.js';
 import { createTabs, createClosedTabs, tabsToClose } from './tabs.js';
 import { createEditorGroups } from './editor/groups.js';
 import { createWindowRoute } from './windows/route.js';
@@ -43,7 +45,7 @@ function collectBuffers(project, paths) {
   }
 }
 
-export function createWorkbench(api, t, { projects = new Map(), translationLanguage, settings: preference = createEditorPreference(localStorage), layout = createLayoutPreference(localStorage), sharedIndex, historyOwner, pane = false, session, stopRecovery, closedTabs = createClosedTabs() } = {}) {
+export function createWorkbench(api, t, { projects = new Map(), translationLanguage, settings: preference = createEditorPreference(localStorage), layout = createLayoutPreference(localStorage), sharedIndex, historyOwner, pane = false, session, draftStore, draftRecovery, stopRecovery, closedTabs = createClosedTabs() } = {}) {
   const analyzer = createAnalyzer(), documents = new Map(), states = new Map(), subscribers = new Set(), directories = new Map(), listings = new Map();
   const index = sharedIndex || new SymbolIndex(analyzer.analyze, { read: async (file, signal) => project.documents.get(file)?.text ?? (await api.read(file, signal)).text,
     external: async (file, name, offset, source, signal) => {
@@ -66,8 +68,10 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
   const owner = historyOwner || Symbol('workbench'), origin = Symbol('workbench-view');
   let project, unsubscribeProject = () => {}, synchronizing = false, receiving = false;
   let snapshot = { searchQuery: { ...projectSearchDefaults }, file: null, editorKind: 'file', tabs: [], canReopenTab: Boolean(closedTabs.peek()), recentFiles: [], saveConflict: null, directories, symbols: [], cursor: null, status: t('ready'), error: '', preferences, environmentPaths: {}, panel: null, assistant: null, indexing: false, indexed: 0, back: false, forward: false, fileMenu: null, fileClipboard: null, closingFile: null };
-  const publish = patch => { if (disposed) return; snapshot = { ...snapshot, ...patch }; for (const listener of subscribers) listener(); };
+  const publish = patch => { if (disposed) return; snapshot = { ...snapshot, unsaved: [...(project?.documents.values() || [])].filter(doc => doc.dirty).map(doc => ({ path: doc.path, review: doc.saveReview })), ...patch }; for (const listener of subscribers) listener(); };
   const fail = error => { if (error.name !== 'AbortError') publish({ error: errorText(error, t) }); };
+  const drafts = draftRecovery || (draftStore ? createDraftRecovery(draftStore, t) : null);
+  const unsubscribeDrafts = drafts?.subscribe(() => publish({ drafts: drafts.snapshot(projectPath) }));
   const fileTabs = createTabs(documents), tabs = fileTabs.list;
   const unsubscribeClosedTabs = closedTabs.subscribe(() => publish({ canReopenTab: Boolean(closedTabs.peek()) }));
   const assistant = createSelectionAssistant({ editor: { file: () => current, view: () => editor?.view }, api, t, changed: value => publish({ assistant: value }),
@@ -448,6 +452,19 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
     }); saving = result;
     try { await result; } finally { if (saving === result) saving = null; }
   }
+  async function saveAll() {
+    if (!project || snapshot.saveBatch?.busy) return;
+    const target = project, ready = binding, paths = [...target.documents.values()].filter(doc => doc.dirty).map(doc => doc.path), failures = [];
+    const active = () => project === target && binding === ready;
+    publish({ saveBatch: { busy: true, completed: 0, total: paths.length, failures } });
+    try {
+      for (const [index, path] of paths.entries()) {
+        if (!active()) throw new Error('WORKBENCH_PROJECT_CHANGED');
+        try { await save(path); } catch (error) { failures.push({ path, error: errorText(error, t), conflict: error.message.includes('WORKBENCH_CONFLICT') }); }
+        if (active()) publish({ saveBatch: { busy: true, completed: index + 1, total: paths.length, failures: [...failures] } });
+      }
+    } finally { if (active()) publish({ saveBatch: { ...snapshot.saveBatch, busy: false } }); }
+  }
   async function syncGitFile(target, path) {
     const ready = binding;
     try {
@@ -684,7 +701,7 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
       const paths = [...documents.keys()]; projectViews.get(previous)?.delete(documents); documents.clear(); collectBuffers(previous, paths);
       states.clear(); locations.clear(); fileTabs.clear(); closedTabs.clear(); pendingClose = null; directories.clear(); listings.clear(); current = null; history = []; at = -1; editor?.dispose();
       changes.reset();
-      publish({ file: null, searchQuery: { ...projectSearchDefaults }, recentFiles: [], tabs: [], symbols: [], cursor: null, closingFile: null, fileClipboard: null, fileMenu: null, panel: null, saveConflict: null, directories: new Map(directories), error: '', status: t('ready') });
+      publish({ file: null, searchQuery: { ...projectSearchDefaults }, recentFiles: [], tabs: [], symbols: [], cursor: null, closingFile: null, fileClipboard: null, fileMenu: null, panel: null, saveConflict: null, saveBatch: null, directories: new Map(directories), error: '', status: t('ready') });
     }
     if (!projectViews.has(project)) projectViews.set(project, new Set());
     projectViews.get(project).add(documents);
@@ -693,6 +710,7 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
     for (const path of documents.keys()) { const doc = project.documents.get(path); if (doc) documents.set(path, doc); else documents.delete(path); }
     assistant.bind(project.conversations); reading.bind(project.documents); configureSettings(preferences);
     projectPath = root.path; recovery?.bind(root.path);
+    drafts?.bind(root.path, project, owner); publish({ drafts: drafts?.snapshot(root.path) });
   }
   async function restoreTab(item, signal) {
     await visit({ ...item.location, file: item.path, kind: item.kind }, true);
@@ -773,12 +791,31 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
     },
     dispose() {
       recovery?.dispose();
+      unsubscribeDrafts?.(); if (!historyOwner) drafts?.dispose();
       this.groups?.reset();
       windowRoute.dispose(); kept = false; this.detach(); autosave.dispose(); unsubscribeProject(); unsubscribeSettings(); unsubscribeClosedTabs(); disposed = true; assistant.dispose(); reading.dispose(); changes.dispose(); files.dispose();
       const paths = [...documents.keys()]; projectViews.get(project)?.delete(documents); documents.clear(); if (project) collectBuffers(project, paths);
       states.clear(); subscribers.clear(); editorSubscribers.clear(); locationSubscribers.clear();
     },
-    visit, move, list, refresh, save, settings, definition, fail, fileOperation, submitFileAction, undo, closeFile, closeTabs, reopenTab, models: api.models, fonts: api.fonts, searchProject,
+    visit, move, list, refresh, save, saveAll, settings, definition, fail, fileOperation, submitFileAction, undo, closeFile, closeTabs, reopenTab, models: api.models, fonts: api.fonts, searchProject,
+    async recoverDraft(path) {
+      const root = projectPath, target = project, entry = drafts?.entry(root, path);
+      if (!entry) throw new Error('WORKBENCH_RECOVERY_CHANGED');
+      await restoreDraft(editing, entry);
+      await drafts.consume(root, path, entry);
+      if (project === target) await visit({ file: path });
+    },
+    async discardDraft(path) {
+      const entry = drafts?.entry(projectPath, path);
+      if (!entry) throw new Error('WORKBENCH_RECOVERY_CHANGED');
+      await drafts.consume(projectPath, path, entry);
+    },
+    draftText(path) {
+      const entry = drafts?.entry(projectPath, path);
+      if (!entry) throw new Error('WORKBENCH_RECOVERY_CHANGED');
+      return entry.text;
+    },
+    retryDrafts: () => drafts?.retry(projectPath),
     async readSaveConflict(path, signal) {
       await binding;
       if (!project) throw new Error('WORKBENCH_WORKSPACE');
@@ -878,7 +915,7 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
         return failures;
       } finally { signal.removeEventListener('abort', cancel); if (resuming === abort) resuming = null; }
     },
-    createPane: () => createWorkbench(api, t, { projects, translationLanguage, settings: preference, layout, sharedIndex: index, historyOwner: owner, closedTabs, pane: true, stopRecovery: () => recovery?.stop() }),
+    createPane: () => createWorkbench(api, t, { projects, translationLanguage, settings: preference, layout, sharedIndex: index, historyOwner: owner, draftRecovery: drafts, closedTabs, pane: true, stopRecovery: () => recovery?.stop() }),
     hasUnsavedFiles: () => project && [...project.documents.values()].some(doc => doc.dirty),
     keepPaneEdits(pane) {
       for (const [path, doc] of pane.documents) if (doc.dirty && project?.documents.get(path) === doc) autosave.change(path);
@@ -896,6 +933,6 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
   const recovery = session && !pane ? createWorkspaceRecovery(controller, session, patch => publish(patch), t) : null;
   controller.recovery = recovery;
   const windowRoute = createWindowRoute(controller, api.windows, t, presentation => presentation.kind === 'closeFile' ? { workbench: controller, dispose() {} } : createWindowView(
-    createWorkbench(api, t, { projects, translationLanguage, settings: preference, layout, sharedIndex: index, historyOwner: owner }), controller, presentation));
+    createWorkbench(api, t, { projects, translationLanguage, settings: preference, layout, sharedIndex: index, historyOwner: owner, draftRecovery: drafts }), controller, presentation));
   return controller;
 }

@@ -10,6 +10,8 @@ export const toolbarActions = [
   { id: 'complete', label: 'complete', icon: 'complete', shortcut: 'complete', secondary: true },
   { id: 'parameters', label: 'parameters', icon: 'function', shortcut: 'parameters', secondary: true },
   { id: 'codeHistory', label: 'codeHistory', icon: 'git', secondary: true },
+  { id: 'saveAll', label: 'saveAll', icon: 'save', shortcut: 'saveAll', secondary: true },
+  { id: 'drafts', label: 'drafts', icon: 'files', secondary: true },
   { id: 'save', label: 'save', icon: 'save', shortcut: 'save', fixed: true },
   { id: 'git', label: 'git', icon: 'git', fixed: true },
   { id: 'refresh', label: 'refreshShort', title: 'refresh', icon: 'refresh', fixed: true },

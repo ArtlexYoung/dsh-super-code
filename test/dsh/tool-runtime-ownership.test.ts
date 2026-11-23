@@ -9,9 +9,10 @@ import { createScope, bindScopeParent, scopeTarget, scopeOf } from '@deepseek-ai
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import * as runtime from '../../src/dsh/tool-runtime.js'
 import { builtinToolProfiles } from '../../src/dsh/tool-profiles.js'
+import { toolAllowed } from '../../src/dsh/tool-access.js'
 import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
 
-test('tool profiles defer only pending child ownership until the first step and inherit the direct parent', async t => {
+test('tool profiles inherit published child ownership before first-step tool admission', async t => {
   const directory = await mkdtemp(join(tmpdir(), 'super-code-tool-ownership-')), ctx = new Context()
   t.after(async () => { await ctx.fiber.dispose(); await rm(directory, { recursive: true, force: true }) })
   ctx.baseUrl = pathToFileURL(directory + '/').href
@@ -58,7 +59,11 @@ test('tool profiles defer only pending child ownership until the first step and 
   const child = make('child'); await created(child)
   assert(!status!().some(item => item.sessionId === 'child'))
   await assert.rejects(step(child), error => error instanceof Error && error.cause === pending)
-  active.add(child); await step(child)
+  active.add(child)
+  ctx.emit(scopeTarget(parent, parent), 'subagent/start' as never, { id: child.id, local: true } as never)
+  assert.equal(toolAllowed(preset.ctx, child, 'bash'), true, 'the host resolves the first tool set before pre-step')
+  assert.equal(toolAllowed(preset.ctx, child, 'workflow'), true, 'inherit Standard from the parent, not the new Minimal default')
+  await step(child)
   assert.equal(status!().find(item => item.sessionId === 'child')!.profileId, 'builtin:standard')
   failure = Object.assign(new Error('ownership storage failed'), { code: 'EIO' })
   await assert.rejects(created(make('broken')), error => error === failure)

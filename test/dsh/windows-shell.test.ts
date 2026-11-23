@@ -282,7 +282,7 @@ test('lightweight remote sessions do not prepare or validate a local Windows Bas
   }
 })
 
-test('rc.2 child creation waits for live ownership before freezing the inherited shell choice', async t => {
+test('rc.2 child publication selects the inherited shell before first-step tool admission', async t => {
   for (const options of [{}, { customProvider: true }, { official: 'standard' }]) {
     const f = await fixture(t, { ...options, sharedGeneration: true, modernOwnership: true })
     f.policy.windowsBash = false
@@ -293,6 +293,8 @@ test('rc.2 child creation waits for live ownership before freezing the inherited
     const child = f.make('modern-pending-child', parent.agent)
     await child.ready()
     f.activate(child.agent)
+    f.ctx.emit(scopeTarget(parent.agent, parent.agent), 'subagent/start' as never, { id: child.agent.id, local: true } as never)
+    assert.deepEqual(await f.names(child.agent), ['pwsh'], 'the first tool snapshot must inherit the parent shell before pre-step')
     await child.step()
     assert.deepEqual(await f.names(child.agent), ['pwsh'])
     assert.equal((await f.call(child.agent, 'pwsh')).isError, false)

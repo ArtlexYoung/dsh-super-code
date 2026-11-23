@@ -3,19 +3,17 @@ import { ActionButton, icons } from '../../builtin/ui/controls.js'
 import { AgentDetail, createAgentInspector } from '../../builtin/sidebar/detail.js'
 import { agentDetailAddress } from '../../builtin/sidebar/address.js'
 
-function WorkbenchConversation({ sessionId, agent = { id: sessionId }, visible = true, useSessions, useSessionStatus, useInput, inputActions, remote, detailT, openView, openFile, useChat, useConversation, fileMentions, t }) {
+function WorkbenchConversation({ sessionId, agent = { id: sessionId }, readingStates, visible = true, useSessions, useSessionStatus, useInput, inputActions, remote, detailT, openView, openFile, useChat, useConversation, fileMentions, t }) {
   // 订阅官方 Chat target，使冷启动直接进入工作台时也加载文件提及。
   const useMessages = useChat || (select => useConversation?.(value => select(value.views?.get('chat'))));
   const chat = useMessages(value => value);
   const current = agent.id === sessionId, address = agentDetailAddress(agent);
   const mentions = useMemo(() => current ? fileMentions?.(chat, openFile) : undefined, [current, chat, openFile, fileMentions]);
-  const lifetime = useMemo(() => new AbortController(), [address])
+  const { lifetime, detailStates } = useConversationReading(address, readingStates)
   const tab = useMemo(() => ({ signal: lifetime.signal, visible, contentId: address }), [address, lifetime, visible])
-  const detailStates = useMemo(() => new WeakMap(), [])
   const createInspector = useMemo(() => (address, initial) => createAgentInspector(
     (target, options) => new (require('@deepseek-ai/dsh-api-session-controller').SessionEventStream)(remote, target, options), address,
     (request, signal) => remote.session.page(request, signal), initial, detailT), [remote, detailT])
-  useEffect(() => () => lifetime.abort(), [lifetime])
   if (!useSessions || current && (!useInput || !inputActions)) return React.createElement('div', { className: 'sc-wb-conversation-fallback' },
     t('conversationUnavailable'), React.createElement(ActionButton, { onClick: () => openView('chat', '') }, t('openConversation')))
   const content = React.createElement('div', { className: 'sc-wb-conversation' },
@@ -23,6 +21,25 @@ function WorkbenchConversation({ sessionId, agent = { id: sessionId }, visible =
       openMemory: () => openView('chat', ''), compact: true, fileMentions: mentions, t: detailT }),
     current && React.createElement(WorkbenchInput, { useInput, inputActions, openView, t }))
   return icons.MarkdownDelegateProvider ? React.createElement(icons.MarkdownDelegateProvider, { openFile }, content) : content
+}
+
+function useConversationReading(address, readingStates) {
+  const local = useMemo(() => new Map(), []), records = readingStates || local;
+  const lifetime = useMemo(() => new AbortController(), [address]);
+  const detailStates = useMemo(() => {
+    const states = new WeakMap();
+    if (records.has(address)) states.set(lifetime.signal, records.get(address));
+    return states;
+  }, [records, address, lifetime]);
+  useEffect(() => () => {
+    const saved = detailStates.get(lifetime.signal);
+    if (saved) {
+      records.delete(address); records.set(address, saved);
+      if (records.size > 12) records.delete(records.keys().next().value);
+    }
+    lifetime.abort();
+  }, [records, address, lifetime, detailStates]);
+  return { lifetime, detailStates };
 }
 
 function WorkbenchInput({ useInput, inputActions, openView, t }) {

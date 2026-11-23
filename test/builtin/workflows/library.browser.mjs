@@ -197,6 +197,59 @@ try {
       assert.equal(await page.getByRole('navigation',{name:'会话中的 Agent',exact:true}).count(),0);
     } finally { await page.close(); }
   });
+  await test('agent navigation remains reachable, searches the full catalog and resizes the conversation without losing context', async () => {
+    const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+    page.setDefaultTimeout(3000);
+    try {
+      await page.goto(`http://127.0.0.1:${server.address().port}`);
+      await page.evaluate(() => {
+        window.fixture.agents({ byId: { sample: { id: 'sample', cwd: '/demo' } }, subagentsByParent: { sample: { state: 'ready', entries: Array.from({ length: 35 }, (_, index) => ({ id: 'agent-' + index, label: '代码检查 ' + index, mode: 'continuable', kind: 'child', activity: 'inactive' })) } } });
+        window.fixture.inline(true);
+      });
+      const surface = page.locator('.sc-flows'), navigation = page.getByRole('navigation', { name: '会话中的 Agent', exact: true });
+      const search = page.getByRole('searchbox', { name: '查找 Agent', exact: true });
+      await search.waitFor();
+      assert.equal(await navigation.getByRole('button').count(), 12, 'Long catalogs do not render every agent at once');
+      await search.fill('代码检查 34');
+      assert.equal(await navigation.getByRole('button').count(), 2, 'Current conversation remains reachable while filtering');
+      await navigation.getByRole('button', { name: /代码检查 34/ }).click();
+      await page.getByRole('complementary', { name: '代码检查 34', exact: true }).waitFor();
+      assert.equal(await navigation.getByRole('button', { name: /代码检查 34/ }).evaluate(node => node === document.activeElement), true);
+      await search.fill('不存在');
+      await page.getByText('没有找到匹配的 Agent', { exact: true }).waitFor();
+      await search.press('Escape');
+      assert.equal(await search.inputValue(), '');
+      assert.equal(await navigation.locator('[aria-pressed=true]').count(), 1, 'Selected agent stays visible beyond the initial catalog limit');
+      const chosen = await navigation.locator('[aria-pressed=true]').boundingBox(), viewport = await navigation.boundingBox();
+      assert.ok(chosen.x >= viewport.x - 1 && chosen.x + chosen.width <= viewport.x + viewport.width + 1);
+      await navigation.getByRole('button').first().focus();
+      await page.keyboard.press('ArrowRight');
+      await page.keyboard.press('Enter');
+      assert.equal(await page.locator('.sc-flow-chat-panel').getByRole('heading').innerText(), '代码检查 0');
+      await surface.evaluate(node => { node.scrollTop = 700; });
+      const bar = await page.locator('.sc-flow-agents').boundingBox(), body = await surface.boundingBox();
+      assert.ok(bar.y >= body.y && bar.y + bar.height < body.y + body.height);
+      const separator = page.getByRole('separator', { name: '调整对话栏宽度', exact: true });
+      await separator.focus();
+      await page.keyboard.press('End');
+      const wide = (await page.locator('.sc-flow-chat-panel').boundingBox()).width;
+      assert.ok(wide > 700);
+      await page.getByRole('button', { name: '收起对话', exact: true }).click();
+      assert.equal(await navigation.locator('[aria-pressed=true]').evaluate(node => node === document.activeElement), true);
+      await surface.locator('.sc-flow-header-actions').getByRole('button', { name: '对话', exact: true }).click();
+      assert.ok(Math.abs((await page.locator('.sc-flow-chat-panel').boundingBox()).width - wide) < 2);
+      await page.getByRole('button', { name: '恢复默认宽度', exact: true }).click();
+      assert.ok((await page.locator('.sc-flow-chat-panel').boundingBox()).width < 500);
+      await page.setViewportSize({ width: 390, height: 1000 });
+      assert.equal(await separator.isVisible(), false);
+      assert.equal(await page.getByRole('button', { name: '恢复默认宽度', exact: true }).isVisible(), false);
+      assert.equal(await page.locator('.sc-flow-layout').evaluate(node => node.scrollWidth <= node.clientWidth), true);
+      await page.evaluate(() => window.fixture.locale('en'));
+      await page.getByRole('searchbox', { name: 'Find an agent', exact: true }).fill('代码检查 34');
+      await page.getByRole('navigation', { name: 'Agents in this conversation', exact: true }).getByRole('button', { name: /代码检查 34/ }).click();
+      await page.getByRole('complementary', { name: '代码检查 34', exact: true }).waitFor();
+    } finally { await page.close(); }
+  });
   await test('productive workflows preserve author methods, real conversation facts, outcome records and native invocation', async context => {
     const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
     page.setDefaultTimeout(10000);

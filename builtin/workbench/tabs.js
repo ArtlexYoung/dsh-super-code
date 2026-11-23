@@ -41,6 +41,11 @@ export function createTabs(documents) {
       if (preview && affected(preview)) preview = null;
       order = order.filter(id => !affected(JSON.parse(id)[1]));
     },
+    rename(from, to) {
+      for (const set of [closed, rendered]) if (set.delete(from)) set.add(to);
+      if (preview === from) preview = to;
+      order = order.map(id => { const [kind, path] = JSON.parse(id); return idOf(path === from ? to : path, kind); });
+    },
     clear() { closed.clear(); rendered.clear(); preview = null; order = []; },
   };
 }
@@ -83,6 +88,7 @@ export function createClosedTabs() {
     record(entry) { entries = entries.filter(item => item.file !== entry.file || item.kind !== entry.kind); entries.push(entry); entries = entries.slice(-20); publish(); },
     remove(entry) { entries = entries.filter(item => item !== entry); publish(); },
     forget(affected) { entries = entries.filter(item => !affected(item.file)); publish(); },
+    rename(from, to) { entries = entries.map(entry => entry.file === from ? { ...entry, file: to } : entry); publish(); },
     clear() { entries = []; publish(); },
   };
 }

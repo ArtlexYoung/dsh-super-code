@@ -17,7 +17,8 @@ import { createFileSearch } from './file-search.js';
 import { createProject } from './editing/project.js';
 import { asText, textChanges } from './editing/history.js';
 import { createAutosave } from './editing/autosave.js';
-import { undoEdit, replaceFiles } from './editing/actions.js';
+import { undoEdit, replaceFiles, operateFiles } from './editing/actions.js';
+import { moveMapEntry } from './editing/move.js';
 import { readReplacement, remainingReplacements } from './editing/replace.js';
 import { readSaveConflict, applySaveConflict } from './editing/save-conflict.js';
 import { createWorkspaceRecovery } from './recovery.js';
@@ -550,9 +551,10 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
     update({ busy: true, error: '' });
     try {
       const { name } = dialog;
-      const path = dialog.action === 'trash' ? dialog.path : [dialog.parent, name].filter(Boolean).join('/');
-      if (dialog.action !== 'trash' && (!name.trim() || /[/\\\0]/.test(name) || ['.', '..'].includes(name))) throw new Error('WORKBENCH_FILE_NAME');
-      const input = dialog.action === 'copy' ? { action: 'copy', path: dialog.source.path, destination: path } : { action: dialog.action, path };
+      const path = dialog.action === 'trash' ? dialog.path : dialog.action === 'move' ? name : [dialog.parent, name].filter(Boolean).join('/');
+      if (!['trash', 'move'].includes(dialog.action) && (!name.trim() || /[/\\\0]/.test(name) || ['.', '..'].includes(name))) throw new Error('WORKBENCH_FILE_NAME');
+      const input = ['rename', 'move'].includes(dialog.action) ? { action: 'move', path: dialog.path, destination: path }
+        : dialog.action === 'copy' ? { action: 'copy', path: dialog.source.path, destination: path } : { action: dialog.action, path };
       const result = await fileOperation(input);
       if (snapshot.panel?.id === dialog.id) publish({ panel: null });
       if (dialog.action === 'createFile') { await visit({ file: result.path }); controller.keepTab(result.path); }
@@ -585,40 +587,73 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
   }
   async function fileOperation(input) {
     if (input.action === 'absolutePath') return api.fileOperation(input);
-    await binding;
+    const ready = binding;
+    await ready;
+    if (binding !== ready) throw new Error('WORKBENCH_PROJECT_CHANGED');
     if (operation) throw new Error('WORKBENCH_FILE_BUSY');
     let finish;
     const abort = new AbortController(), finished = new Promise(resolve => { finish = resolve; });
     operation = { abort, finished };
-    const target = input.action === 'copy' ? input.destination : input.path;
+    const target = project, destination = 'destination' in input ? input.destination : input.path;
     let attempted = false;
     try {
       await navigation; await saving; abort.signal.throwIfAborted();
-      const affected = path => path === input.path || path.startsWith(`${input.path}/`);
-      if (input.action === 'trash' && [...project.documents].some(([path, doc]) => affected(path) && doc.dirty)) throw new Error('WORKBENCH_FILE_UNSAVED');
-      if (input.action === 'trash') {
+      if (project !== target || binding !== ready) throw new Error('WORKBENCH_PROJECT_CHANGED');
+      if (['trash', 'move'].includes(input.action)) {
         scanning?.abort(); clearTimeout(timer); publish({ indexing: false });
         assistant.switchFile(); editor?.readonly(true);
       }
       attempted = true;
-      const result = await project.exclusive(async () => {
-        if (input.action === 'trash' && [...project.documents].some(([path, doc]) => affected(path) && doc.dirty)) throw new Error('WORKBENCH_FILE_UNSAVED');
-        return api.fileOperation(input, abort.signal);
-      });
-      if (result.token) project.history.record(owner, { kind: 'file', path: result.path, token: result.token });
-      if (input.action === 'trash') { for (const path of project.documents.keys()) if (affected(path)) project.documents.delete(path); project.publish({ kind: 'files', path: input.path, source: origin }); forgetFiles(input.path); }
-      return result;
+      return await operateFiles(editing, input, abort.signal);
     } finally {
-      if (attempted && !abort.signal.aborted) {
-        try { await list(target.split('/').slice(0, -1).join('/'), abort.signal); } catch (error) { fail(error); }
-        project.publish({ kind: 'directory', path: target.split('/').slice(0, -1).join('/'), source: origin });
+      if (attempted && !abort.signal.aborted && project === target && binding === ready) {
+        for (const path of new Set([input.path, destination].map(path => path.split('/').slice(0, -1).join('/')))) {
+          try { await list(path, abort.signal); } catch (error) { fail(error); }
+          if (input.action !== 'move') target.publish({ kind: 'directory', path, source: origin });
+        }
         files.reset(); changes.invalidate();
       }
       operation = null;
-      if (editor?.view) editor.readonly(project.locked);
+      if (editor?.view) editor.readonly(project?.locked);
       publish({ tabs: tabs(), back: at > 0, forward: at < history.length - 1 });
       finish();
     }
+  }
+  async function reconfigureMovedEditor(path) {
+    const attached = editor, view = editor?.view, target = project, doc = documents.get(path);
+    if (!view || !doc) return;
+    const state = await attached.state(path, () => ({ text: doc.text, saved: states.get(path) }), preferences);
+    if (current !== path || documents.get(path) !== doc || project !== target || editor?.view !== view) return;
+    states.set(path, state); doc.state = state; attached.show(state); attached.readonly(project.locked);
+    cursor();
+  }
+  async function reindexMovedFile(path) {
+    if (project.documents.has(path)) { await updateIndex(path); publish({ indexed: index.files.size }); return; }
+    const target = project, ready = binding, marker = Symbol();
+    index.versions.set(path, marker);
+    let text;
+    try { text = (await api.read(path)).text; }
+    catch (error) { if (/WORKBENCH_NOT_TEXT|WORKBENCH_FILE_SIZE/.test(error.message)) return; throw error; }
+    if (project !== target || binding !== ready || index.versions.get(path) !== marker) return;
+    await index.change(path, text);
+    if (project === target) publish({ indexed: index.files.size, symbols: index.declarations(current) });
+  }
+  function moveViewFile(from, to) {
+    stopRestoring(); scanning?.abort(); opening?.controller.abort(); clearTimeout(timer); generation++;
+    rememberEditor();
+    for (const map of [documents, states, locations]) moveMapEntry(map, from, to);
+    fileTabs.rename(from, to); closedTabs.rename(from, to); autosave.cancel(from);
+    history = history.map(item => item.file === from ? { ...item, file: to } : item);
+    if (pendingClose) pendingClose.items = pendingClose.items.map(item => item.path === from ? { ...item, path: to } : item);
+    if (current === from) { current = to; void reconfigureMovedEditor(to).catch(fail); }
+    index.remove(from); void reindexMovedFile(to).catch(fail);
+    reading.stop(); reading.changed(from);
+    const remap = path => path === from ? to : path;
+    publish({ file: current, tabs: tabs(), recentFiles: snapshot.recentFiles.map(remap), indexing: false, symbols: index.declarations(current),
+      saveConflict: remap(snapshot.saveConflict), closingFile: remap(snapshot.closingFile), fileMenu: null,
+      fileClipboard: snapshot.fileClipboard && { ...snapshot.fileClipboard, path: remap(snapshot.fileClipboard.path) } });
+    if (documents.get(to)?.dirty) autosave.change(to);
+    cursor();
   }
   function applyText(path, changes, target = project) {
     const doc = target.documents.get(path), attached = project === target;
@@ -648,6 +683,8 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
     }
   }
   function projectChanged(event) {
+    if (event.kind === 'beforeMove') { scanning?.abort(); clearTimeout(timer); publish({ indexing: false }); return; }
+    if (event.kind === 'move') { moveViewFile(event.from, event.to); return; }
     if (event.kind === 'environment') { publish({ environmentPaths: project.environment.snapshot().paths }); return; }
     if (event.kind === 'lock') { if (event.locked) assistant.switchFile(); editor?.readonly(event.locked); return; }
     if (event.source === origin) return;

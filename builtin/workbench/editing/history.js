@@ -66,6 +66,9 @@ export function createHistory(release = () => {}) {
       if (position < 0) throw new Error('WORKBENCH_UNDO_CONFLICT');
       source.splice(position, 1); history[direction === 'undo' ? 'redo' : 'undo'].push(reverse); trim(history);
     },
+    rename(from, to) {
+      for (const history of owners.values()) for (const entry of [...history.undo, ...history.redo]) if (entry.kind === 'text' && entry.path === from) entry.path = to;
+    },
     dispose() { for (const history of owners.values()) discard([...history.undo, ...history.redo]); owners.clear(); },
   };
 }

@@ -7,12 +7,14 @@ import { pathSchema } from './files.js'
 import type { WorkbenchRoot } from './files.js'
 import { containsPath } from './git/filesystem.js'
 import { moveToTrash } from './trash.js'
+import { moveFile, sameFileContent } from './file-move.js'
 
 const entryPath = pathSchema.min(1).refine(path => !path.endsWith('/') && !path.includes('//'), 'WORKBENCH_PATH')
-export type FileOperation = { action: 'createFile' | 'createDirectory' | 'trash'; path: string } | { action: 'copy'; path: string; destination: string } | { action: 'absolutePath'; path: string }
+export type FileOperation = { action: 'createFile' | 'createDirectory' | 'trash'; path: string } | { action: 'copy'; path: string; destination: string } | { action: 'move'; path: string; destination: string; version?: string } | { action: 'absolutePath'; path: string }
 export const operationSchema: z.ZodType<FileOperation> = z.discriminatedUnion('action', [
   z.object({ action: z.enum(['createFile', 'createDirectory', 'trash']), path: entryPath }).strict(),
   z.object({ action: z.literal('copy'), path: entryPath, destination: entryPath }).strict(),
+  z.object({ action: z.literal('move'), path: entryPath, destination: entryPath, version: z.string().min(1).max(4096).optional() }).strict(),
   z.object({ action: z.literal('absolutePath'), path: pathSchema }).strict(),
 ])
 
@@ -34,7 +36,7 @@ async function copy(source: string, destination: string, signal: AbortSignal): P
   } catch (error) { throw new Error('WORKBENCH_COPY_PARTIAL', { cause: error }) }
 }
 
-export async function operateFile(fs: FileSystem, root: WorkbenchRoot, value: unknown, signal: AbortSignal): Promise<{ path: string }> {
+export async function operateFile(fs: FileSystem, root: WorkbenchRoot, value: unknown, signal: AbortSignal): Promise<{ path: string; previousPath?: string; version?: string; previousVersion?: string }> {
   const input = operationSchema.parse(value)
   signal.throwIfAborted()
   const base = await fs.resolve(root.cwd, { signal })
@@ -47,16 +49,29 @@ export async function operateFile(fs: FileSystem, root: WorkbenchRoot, value: un
   if (input.action === 'absolutePath') return { path: fs.processPath(target) }
   const local = await native.realpath(fs.processPath(base))
   if (fs.processPathFromHostPath && fs.processPathFromHostPath(local) !== local) throw new Error('WORKBENCH_FILES_LOCAL')
-  if ((input.action === 'copy' || input.action === 'trash') && (await native.lstat(join(local, input.path))).isSymbolicLink()) throw new Error('WORKBENCH_FILE_LINK')
+  if (['copy', 'trash', 'move'].includes(input.action) && (await native.lstat(join(local, input.path))).isSymbolicLink()) throw new Error('WORKBENCH_FILE_LINK')
   const writable = async (target: FsTarget): Promise<void> => {
     if (root.policy?.mode === 'read-only') throw new Error('WORKBENCH_FILES_READONLY')
     if (root.policy?.mode === 'workspace-write' && !fs.contains(await fs.resolve(root.policy.workspaceRoot, { signal }), target)) throw new Error('WORKBENCH_FILES_READONLY')
   }
-  const destination = input.action === 'copy' ? await resolve(input.destination) : target
+  const destination = 'destination' in input ? await resolve(input.destination) : target
   await writable(destination)
   signal.throwIfAborted()
   try {
     const path = fs.processPath(target)
+    if (input.action === 'move') {
+      await writable(target)
+      const to = fs.processPath(destination)
+      if (!containsPath(local, await native.realpath(dirname(path))) || !containsPath(local, await native.realpath(dirname(to)))) throw new Error('WORKBENCH_PATH')
+      const before = await native.lstat(path, { bigint: true })
+      const previousVersion = (await fs.stat(target, signal))?.version
+      if (input.version && previousVersion !== input.version) throw new Error('WORKBENCH_CONFLICT')
+      await moveFile(path, to, signal, before)
+      const moved = await fs.stat(destination, new AbortController().signal)
+      // 移动末尾有外部写入时保留旧版本，让草稿的下一次保存仍进入冲突核对。
+      const unchanged = sameFileContent(before, await native.lstat(to, { bigint: true }))
+      return { path: input.destination, previousPath: input.path, previousVersion, version: unchanged ? moved?.version : previousVersion }
+    }
     if (input.action === 'createFile') await fs.writeText(target, '', { kind: 'createIfAbsent' }, signal, root.policy)
     else if (input.action === 'createDirectory') await native.mkdir(path)
     else if (input.action === 'copy') {

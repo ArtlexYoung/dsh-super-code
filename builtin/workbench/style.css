@@ -222,7 +222,7 @@ body[data-ds-dark-theme] .sc-workbench[data-palette=vscode]{
 .sc-wb-file-dialog :is(p,small){margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
 .sc-wb-file-dialog label{display:flex;flex-direction:column;gap:5px}
 .sc-wb-file-dialog input{width:100%;min-width:0;padding:7px 9px;color:var(--wb-text);background:var(--wb-input);border:1px solid var(--wb-input-line);border-radius:var(--wb-radius);font:inherit}
-.sc-wb-file-dialog [role=alert]{color:var(--dsw-color-text-error,#bb4545);font-size:11px}
+.sc-wb-file-dialog [role=alert]{color:var(--wb-error,#c42b32);font-size:11px}
 .sc-wb-file-dialog footer{display:flex;justify-content:flex-end;gap:8px}
 .sc-wb-outline{--wb-outline-indent:18px;--wb-outline-branch:color-mix(in srgb,var(--wb-muted) 44%,var(--wb-panel));flex:1;min-height:0;overflow:auto;padding:0 5px 8px}
 .sc-workbench[data-palette=vscode] .sc-wb-outline{--wb-outline-indent:13px;padding-inline:4px}
@@ -839,4 +839,4 @@ body[data-ds-dark-theme] .sc-workbench[data-palette=vscode]{
 .sc-wb-draft-backups{margin-top:20px}.sc-wb-drafts small,.sc-wb-draft-hint{color:var(--wb-muted)}
 .sc-wb-drafts li>div{display:flex;flex-wrap:wrap;gap:4px}
 
-body[data-ds-dark-theme] .sc-wb-drafts [role=alert]{color:#f28b82}
+body[data-ds-dark-theme] :is(.sc-wb-drafts,.sc-wb-file-dialog) [role=alert]{color:#f28b82}

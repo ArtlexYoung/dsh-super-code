@@ -12,11 +12,12 @@ import { moveToTrash } from './trash.js'
 
 const tokenSchema = z.string().uuid()
 const schema = z.union([operationSchema,
-  z.object({ action: z.enum(['undo', 'redo']), token: tokenSchema }).strict(),
+  z.object({ action: z.enum(['undo', 'redo']), token: tokenSchema, version: z.string().min(1).max(4096).optional() }).strict(),
   z.object({ action: z.literal('releaseHistory'), tokens: z.array(tokenSchema).max(100) }).strict(),
 ])
 interface FileRecord { root: string; path: string; backup: string; before: string | null; after: string | null; undone: boolean }
-export interface FileOperationResult { path: string; token?: string }
+interface MoveRecord { root: string; path: string; destination: string; version: string | undefined; undone: boolean }
+export interface FileOperationResult { path: string; previousPath?: string; version?: string; previousVersion?: string; token?: string }
 
 /** 内容指纹不依赖复制后的时间戳，也覆盖二进制、空目录和权限变化。 */
 async function fingerprint(path: string, signal: AbortSignal): Promise<string | null> {
@@ -69,7 +70,7 @@ async function copyExclusive(source: string, target: string, signal: AbortSignal
 
 /** 恢复令牌只在本次宿主进程内有效，备份放在项目之外。 */
 export class FileHistory {
-  private readonly records = new Map<string, FileRecord>()
+  private readonly records = new Map<string, FileRecord | MoveRecord>()
   private pending: Promise<unknown> = Promise.resolve()
   private closed = false
   constructor(private readonly fs: FileSystem, private readonly storage: string = tmpdir(), private readonly trash: typeof moveToTrash = moveToTrash) {}
@@ -86,6 +87,12 @@ export class FileHistory {
       }
       if ('token' in input) return this.restore(root, base.path, input, signal)
       if (input.action === 'absolutePath') return operateFile(this.fs, root, input, signal)
+      if (input.action === 'move') {
+        const result = await operateFile(this.fs, root, input, signal), token = randomUUID()
+        this.moved(base.path, result)
+        this.records.set(token, { root: base.path, path: input.path, destination: input.destination, version: result.version, undone: false })
+        return { ...result, token }
+      }
       return this.record(root, base.path, input, signal)
     })
     this.pending = result.catch(() => {})
@@ -130,9 +137,15 @@ export class FileHistory {
     return result
   }
 
-  private async restore(root: WorkbenchRoot, base: string, input: { action: 'undo' | 'redo'; token: string }, signal: AbortSignal): Promise<FileOperationResult> {
+  private async restore(root: WorkbenchRoot, base: string, input: { action: 'undo' | 'redo'; token: string; version?: string }, signal: AbortSignal): Promise<FileOperationResult> {
     const entry = this.records.get(input.token)
     if (!entry || entry.root !== base || entry.undone === (input.action === 'undo')) throw new Error('WORKBENCH_UNDO_EXPIRED')
+    if ('destination' in entry) {
+      const result = await operateFile(this.fs, root, { action: 'move', path: entry.undone ? entry.path : entry.destination, destination: entry.undone ? entry.destination : entry.path, version: input.version || entry.version }, signal)
+      this.moved(base, result)
+      entry.undone = !entry.undone; entry.version = result.version
+      return { ...result, token: input.token }
+    }
     const target = await this.writable(root, base, entry.path, signal)
     const expected = entry.undone ? entry.before : entry.after, next = entry.undone ? entry.after : entry.before
     if (await fingerprint(target, signal) !== expected) throw new Error('WORKBENCH_UNDO_CONFLICT')
@@ -153,9 +166,17 @@ export class FileHistory {
     return { path: entry.path, token: input.token }
   }
 
+  private moved(root: string, result: FileOperationResult): void {
+    // 硬链接移动会更新 ctime；同一份内容的旧移动记录也跟随新版本。
+    if (!result.previousVersion) return
+    for (const entry of this.records.values()) {
+      if ('destination' in entry && entry.root === root && entry.version === result.previousVersion) entry.version = result.version
+    }
+  }
+
   private async release(token: string): Promise<void> {
     const record = this.records.get(token)
-    if (record) { await native.rm(record.backup, { recursive: true, force: true }); this.records.delete(token) }
+    if (record) { if ('backup' in record) await native.rm(record.backup, { recursive: true, force: true }); this.records.delete(token) }
   }
   async dispose(): Promise<void> { this.closed = true; await this.pending; for (const token of this.records.keys()) await this.release(token) }
 }

@@ -131,7 +131,7 @@ export function createReading({ api, documents, currentFile, visit, t, locale })
       for (const [key, saved] of cache) if (saved.value.sources.some(source => source.file === file)) cache.delete(key);
       if (![...snapshot.sources, ...snapshot.planSources].some(source => source.file === file)) return;
       const doc = documents.get(file);
-      if (doc) publish(rebaseReading(snapshot, new Map([[file, doc.text]])));
+      publish(doc ? rebaseReading(snapshot, new Map([[file, doc.text]])) : { stale: true });
     },
     async verify() {
       const before = snapshot;

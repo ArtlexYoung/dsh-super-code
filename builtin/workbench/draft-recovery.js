@@ -21,6 +21,23 @@ export function createDraftRecovery(store, t) {
     clearTimeout(tracker.timer);
     tracker.timer = setTimeout(() => { void flush(tracker); }, 350);
   }
+  function projectChanged(tracker, event) {
+    if (event.kind === 'beforeMove') {
+      if (!tracker.loaded || tracker.state.loading || tracker.state.blocked) throw new Error('WORKBENCH_MOVE_RECOVERY');
+      if (tracker.candidates.has(event.to)) throw new Error('WORKBENCH_MOVE_RECOVERY');
+      return;
+    }
+    if (event.kind === 'move') {
+      const entry = tracker.candidates.get(event.from);
+      if (entry) {
+        tracker.candidates.delete(event.from);
+        tracker.candidates.set(event.to, { ...entry, path: event.to, diskVersion: entry.diskVersion === event.previousVersion ? event.version : entry.diskVersion });
+        publish(tracker, { candidates: [...tracker.candidates.keys()] });
+      }
+      void flush(tracker); return;
+    }
+    if (['text', 'saved', 'files'].includes(event.kind)) schedule(tracker);
+  }
   function capture(tracker) {
     const entries = new Map(tracker.candidates);
     if (tracker.finalEntries) {
@@ -59,7 +76,7 @@ export function createDraftRecovery(store, t) {
       if (trackers.has(root)) return;
       const tracker = { root, project, owner, candidates: new Map(), loaded: false, revision: 0,
         state: { candidates: [], updatedAt: 0, busy: false, loading: true, error: '', blocked: false } };
-      tracker.unsubscribe = project.subscribe(event => { if (['text', 'saved', 'files'].includes(event.kind)) schedule(tracker); });
+      tracker.unsubscribe = project.subscribe(event => projectChanged(tracker, event));
       trackers.set(root, tracker); void load(tracker);
     },
     snapshot: root => trackers.get(root)?.state,

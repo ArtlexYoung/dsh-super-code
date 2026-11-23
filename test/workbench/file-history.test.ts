@@ -154,3 +154,72 @@ if (process.platform === 'darwin') test('macOS 系统回收站与文件历史联
   await history.run({ cwd: root }, { action: 'redo', token: deleted.token }, signal)
   await assert.rejects(stat(join(root, path)), { code: 'ENOENT' })
 })
+
+test('普通文件改名移动不覆盖目标，保留内容和权限，可反复撤销重做', async t => {
+  const { root, run } = await fixture(t)
+  await mkdir(join(root, 'folder')); await writeFile(join(root, '原名.ts'), 'original', { mode: 0o640 })
+  const moved = await run({ action: 'move', path: '原名.ts', destination: 'folder/renamed.ts' })
+  assert.equal(moved.path, 'folder/renamed.ts'); assert.equal(moved.previousPath, '原名.ts'); assert.ok(moved.token)
+  await assert.rejects(stat(join(root, '原名.ts')), { code: 'ENOENT' })
+  assert.equal(await readFile(join(root, moved.path), 'utf8'), 'original')
+  assert.equal((await stat(join(root, moved.path))).mode & 0o777, 0o640)
+  const undone = await run({ action: 'undo', token: moved.token })
+  assert.equal(undone.path, '原名.ts'); assert.equal(await readFile(join(root, '原名.ts'), 'utf8'), 'original')
+  await run({ action: 'redo', token: moved.token }); assert.equal(await readFile(join(root, moved.path), 'utf8'), 'original')
+  await writeFile(join(root, 'occupied.ts'), 'keep')
+  await assert.rejects(run({ action: 'move', path: moved.path, destination: 'occupied.ts' }), /WORKBENCH_FILE_EXISTS/)
+  assert.equal(await readFile(join(root, 'occupied.ts'), 'utf8'), 'keep')
+})
+
+test('文件移动与撤销核对版本、访问模式和普通文件类型', async t => {
+  const { root, run } = await fixture(t)
+  await mkdir(join(root, 'folder')); await writeFile(join(root, 'a.ts'), 'before')
+  await assert.rejects(run({ action: 'move', path: 'a.ts', destination: 'b.ts', version: 'old' }), /WORKBENCH_CONFLICT/)
+  await assert.rejects(async () => run({ action: 'move', path: 'a.ts', destination: '../out.ts' }))
+  await assert.rejects(run({ action: 'move', path: 'a.ts', destination: 'b.ts' }, root, { mode: 'read-only' }), /WORKBENCH_FILES_READONLY/)
+  await assert.rejects(run({ action: 'move', path: 'folder', destination: 'other' }), /WORKBENCH_MOVE_FILE/)
+  await symlink('a.ts', join(root, 'link.ts'))
+  await assert.rejects(run({ action: 'move', path: 'link.ts', destination: 'b.ts' }), /WORKBENCH_FILE_LINK/)
+  const moved = await run({ action: 'move', path: 'a.ts', destination: 'b.ts' })
+  await writeFile(join(root, 'b.ts'), 'external')
+  await assert.rejects(run({ action: 'undo', token: moved.token }), /WORKBENCH_CONFLICT/)
+  assert.equal(await readFile(join(root, 'b.ts'), 'utf8'), 'external')
+})
+
+for (const stage of ['beforeLink', 'afterMove']) test(`文件移动期间外部写入不被新版本掩盖：${stage}`, async t => {
+  const { root, run, fs, signal } = await fixture(t)
+  await writeFile(join(root, 'a.ts'), 'before')
+  const source = await fs.resolve('a.ts', { cwd: root, signal }), version = (await fs.stat(source, signal))?.version
+  const originalStat = fs.stat.bind(fs)
+  let changed = false
+  t.mock.method(fs, 'stat', async (...args: Parameters<typeof originalStat>) => {
+    const path = fs.processPath(args[0]), match = path === join(root, stage === 'beforeLink' ? 'a.ts' : 'b.ts')
+    if (match && !changed) {
+      changed = true
+      if (stage === 'beforeLink') { const previous = await originalStat(...args); await writeFile(path, 'external'); return previous }
+      await writeFile(path, 'external')
+    }
+    return originalStat(...args)
+  })
+  if (stage === 'beforeLink') {
+    await assert.rejects(run({ action: 'move', path: 'a.ts', destination: 'b.ts', version }), /WORKBENCH_MOVE_PARTIAL/)
+    assert.equal(await readFile(join(root, 'a.ts'), 'utf8'), 'external')
+  }
+  if (stage === 'afterMove') {
+    const result = await run({ action: 'move', path: 'a.ts', destination: 'b.ts', version })
+    assert.equal(result.version, version)
+    await assert.rejects(run({ action: 'undo', token: result.token, version: result.version }), /WORKBENCH_CONFLICT/)
+  }
+  assert.equal(changed, true); assert.equal(await readFile(join(root, 'b.ts'), 'utf8'), 'external')
+})
+
+test('连续移动未打开文件后逐项撤销与重做，不因移动产生的版本变化失效', async t => {
+  const { root, run } = await fixture(t)
+  await writeFile(join(root, 'a.ts'), 'same content')
+  const first = await run({ action: 'move', path: 'a.ts', destination: 'b.ts' })
+  const second = await run({ action: 'move', path: 'b.ts', destination: 'c.ts' })
+  await run({ action: 'undo', token: second.token }); await run({ action: 'undo', token: first.token })
+  assert.equal(await readFile(join(root, 'a.ts'), 'utf8'), 'same content')
+  await run({ action: 'redo', token: first.token }); await run({ action: 'redo', token: second.token })
+  assert.equal(await readFile(join(root, 'c.ts'), 'utf8'), 'same content')
+})

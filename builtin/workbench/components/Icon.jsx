@@ -9,6 +9,7 @@ const paths = {
   stop: 'M5 5h10v10H5Z', diff: 'M3 3h6v14H3Zm8 0h6v14h-6M5 7h2m-2 3h2m6-3h2m-2 3h2m-2 3h2',
   newFile: 'M4 2h8l4 4v4M12 2v5h4M4 2v16h5m5-6v6m-3-3h6', folder: 'M2 4h6l2 2h8v11H2Z',
   copy: 'M7 7h10v11H7ZM4 14H2V2h11v2', paste: 'M7 4H4v14h12V4h-3M7 2h6v4H7Zm0 7h6m-6 3h6m-6 3h4',
+  edit: 'm12 3 5 5-9 9-5 1 1-5Zm-7 9 5 5M10 5l5 5',
   link: 'm8 12 4-4m-6 5-1 1a3 3 0 0 1-4-4l4-4a3 3 0 0 1 4 0m2 1 1-1a3 3 0 0 1 4 4l-4 4a3 3 0 0 1-4 0',
   trash: 'M3 5h14M7 5V2h6v3M5 5l1 13h8l1-13M8 8v7m4-7v7',
   files: 'M3 3h6l2 2h6v12H3Zm3 6h8m-8 4h6', conversation: 'M3 3h14v10H8l-5 4Zm3 4h8m-8 3h5',

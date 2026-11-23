@@ -14,6 +14,7 @@ import { FileCompare } from './FileCompare.jsx';
 import { LibrarySource } from './LibrarySource.jsx';
 import { SaveConflict } from './SaveConflict.jsx';
 import { Drafts } from './Drafts.jsx';
+import { MatchText, ResultFiles, SearchContext, useResultGroups } from './SearchResults.jsx';
 import { Navigator } from './Navigator.jsx';
 
 const emptyResults = { matches: [] };
@@ -53,11 +54,17 @@ export function Locations({ data, search, workbench, Button, t }) {
     return () => { clearTimeout(timer); abort.abort(); };
   }, [queryKey, search, workbench, t]);
   const result = search ? found.query === queryKey ? found : emptyResults : data;
-  const rows = useMemo(() => search ? result.matches || [] : (result.matches || []).map((item, index) => ({ ...item, key: `location:${index}` })), [result.matches, search]);
+  const hits = useMemo(() => search ? result.matches || [] : (result.matches || []).map((item, index) => ({ ...item, key: `location:${index}` })), [result.matches, search]);
   const scope = search ? queryKey : data.id;
-  const index = selection && selection.scope === scope ? Math.min(selection.index, rows.length - 1) : 0, active = rows[index];
+  const grouped = useResultGroups(search ? hits : emptyResults.matches, scope), rows = search ? grouped.rows : hits;
+  const [context, setContext] = useState(false);
+  const index = selection?.scope === scope ? Math.max(0, rows.findIndex(row => row.key === selection.key)) : 0, active = rows[index];
   const activeId = visible.some(item => item.key === active?.key) ? `${id}-${index}` : undefined;
-  const choose = next => setSelection({ scope, index: Math.max(0, Math.min(rows.length - 1, next)) });
+  const choose = next => setSelection({ scope, key: rows[Math.max(0, Math.min(rows.length - 1, next))]?.key });
+  const jump = group => {
+    if (grouped.closed.has(group.key)) grouped.toggle(group.key);
+    setSelection({ scope, key: group.hits[0].key }); list.current?.focus();
+  };
   const visit = item => {
     const panel = workbench.snapshot().panel;
     void workbench.visit(item).then(() => {
@@ -77,14 +84,16 @@ export function Locations({ data, search, workbench, Button, t }) {
       aria-expanded={true} aria-autocomplete="list" aria-controls={id} aria-activedescendant={activeId} value={text} onChange={event => setText(event.target.value)} onKeyDown={keydown} />
       {text && <Button title={t('clearFileSearch')} aria-label={t('clearFileSearch')} onClick={() => { setText(''); input.current.focus(); }}><Icon name="close" /></Button>}</label>
       <SearchOptions query={searchQuery} change={workbench.setSearchQuery} workbench={workbench} Button={Button} t={t} />
-      <span role="status">{busy ? `${t('working')} · ${count} ${t('searchMatches')}` : `${rows.length} ${t('searchMatches')}`}</span></div>}
+      <span role="status">{busy ? `${t('working')} · ${count} ${t('searchMatches')}` : `${hits.length} ${t('searchMatches')}`}</span><Button aria-pressed={context} onClick={() => setContext(!context)}>{t('searchContext')}</Button></div>}
     {error && <p role="alert">{error}</p>}{busy && <p role="status">{t('working')}</p>}
+    <div className="sc-wb-result-body">{search && grouped.groups.length > 0 && <ResultFiles {...grouped} active={active?.file} jump={jump} Button={Button} t={t} />}
     <div ref={list} id={id} role="listbox" aria-label={t('locationResults')} aria-busy={busy} aria-activedescendant={activeId} tabIndex={0} className="sc-wb-location-list" onKeyDown={keydown}>
     {!!rows.length && <FileList key={scope} className="sc-wb-results" items={rows} rowHeight={36} focusKey={active?.key} visible={setVisible}>{(item, row) => <Button id={`${id}-${row}`} role="option" aria-selected={row === index} aria-posinset={row + 1} aria-setsize={rows.length} tabIndex={-1}
       onClick={() => { choose(row); visit(item); }} title={`${item.file}:${item.line + 1}`}>
-      <span className="sc-wb-result-path">{item.file}<small>{item.line + 1}</small></span><code>{item.lineText || item.declaration || item.name}</code>
-    </Button>}</FileList>}{!rows.length && !busy && !error && <div className="sc-wb-location-empty" role="status"><span>{t('noResults')}</span>{!search && <small>{t('definitionEnvironmentHint')}</small>}</div>}</div>
-    <footer>{rows.length} · {search ? result.scanned === undefined ? '' : message(t, 'replaceScope', { count: result.scanned, skipped: result.skipped }) : t('usageNote')}{result.truncated && <span>{t('searchLimit')}</span>}
+      <span className="sc-wb-result-path">{item.file}<small>{item.line + 1}</small></span><code>{search ? <MatchText item={item} /> : item.lineText || item.declaration || item.name}</code>
+    </Button>}</FileList>}{!rows.length && !busy && !error && <div className="sc-wb-location-empty" role="status"><span>{t(hits.length ? 'searchFilesFolded' : 'noResults')}</span>{!search && <small>{t('definitionEnvironmentHint')}</small>}</div>}</div>
+    </div>{search && context && <SearchContext item={active} workbench={workbench} t={t} />}
+    <footer>{hits.length} · {search ? result.scanned === undefined ? '' : message(t, 'replaceScope', { count: result.scanned, skipped: result.skipped }) : t('usageNote')}{result.truncated && <span>{t('searchLimit')}</span>}
       {!!rows.length && <span className="sc-wb-location-keys">{t('locationKeys')}</span>}</footer>
   </div>;
 }

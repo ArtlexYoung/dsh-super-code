@@ -37,6 +37,7 @@ function createHost(workbench, transmit, close, metadata, onReady) {
     fonts: (_args, signal) => workbench.fonts(signal),
     environments: (_args, signal) => workbench.environments(signal),
     git: (args, signal) => workbench.git(args[0], signal),
+    searchContext: (args, signal) => workbench.searchContext(args[0], signal),
     compareFiles: (args, signal) => workbench.compareFiles(args[0], args[1], signal),
     readSaveConflict: (args, signal) => workbench.readSaveConflict(args[0], signal),
     previewReplacement: (args, signal) => workbench.previewReplacement(args[0], args[1], signal),

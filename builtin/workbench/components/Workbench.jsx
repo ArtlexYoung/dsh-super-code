@@ -88,8 +88,9 @@ export function Workbench({ workbench: primary, Button, Select, MarkdownText, Co
   const toggleRight = key => {
     changeLayout({ panes: { [key]: !rightOpen[key] } }); persistLayout();
   };
+  const searchDocked = !focused && panel?.kind === 'search' && !!panel.docked;
   const action = callback => () => { Promise.resolve().then(callback).catch(workbench.fail); };
-  return <section className="sc-workbench sc-wb-main" lang={t('languageTag')} tabIndex={-1} data-conversation-composer-overlay="" data-palette={snapshot.preferences.palette} data-tool-names={snapshot.preferences.showToolNames} aria-label={t('title')}
+  return <section className="sc-workbench sc-wb-main" lang={t('languageTag')} tabIndex={-1} data-conversation-composer-overlay="" data-palette={snapshot.preferences.palette} data-search-docked={searchDocked} data-tool-names={snapshot.preferences.showToolNames} aria-label={t('title')}
     style={{ '--wb-explorer-width': `${layout.explorer}px`, '--wb-reading-width': `${layout.reading}px`, '--wb-files-height': `${layout.files}px` }}
     onKeyDownCapture={event => {
       if (event.defaultPrevented || event.nativeEvent.isComposing || event.target.closest('.sc-wb-conversation,[data-workbench-dialog]')) return;
@@ -120,7 +121,7 @@ export function Workbench({ workbench: primary, Button, Select, MarkdownText, Co
       <Button onClick={workbench.returnToHost}><Icon name="back" />{t('windowReturn')}</Button></nav></header>
       : <Toolbar workbench={workbench} snapshot={snapshot} current={current} Button={Button} t={t} toggleFocus={toggleFocus} />}
     <RecoveryNotice workbench={primary} state={base.recovery} Button={Button} t={t} />
-    <div className="sc-wb-body" data-focused={focused} data-reading-focus={readingFocusActive} data-left-open={explorerOpen} data-right-open={rightVisible} hidden={panelOnly || selectionOnly || closeOnly}>
+    <div className="sc-wb-body" data-focused={focused} data-reading-focus={readingFocusActive || searchDocked} data-left-open={explorerOpen} data-right-open={rightVisible} hidden={panelOnly || selectionOnly || closeOnly}>
       {!focused && <nav className="sc-wb-side-rail" aria-label={t('explorerBar')}>{[{ key: 'filesOpen', label: 'files', icon: 'files' }, { key: 'outlineOpen', label: 'symbols', icon: 'outline' }].map(item =>
         <Button key={item.key} aria-pressed={explorerOpen && layout[item.key]} title={t(item.label)} onClick={() => toggleExplorer(item.key)}><Icon name={item.icon} /><span>{t(item.label)}</span></Button>)}</nav>}
       {!focused && <aside className="sc-wb-explorer" hidden={!explorerOpen} data-files-open={layout.filesOpen} data-outline-open={layout.outlineOpen}>
@@ -157,6 +158,7 @@ export function Workbench({ workbench: primary, Button, Select, MarkdownText, Co
       {snapshot.saveConflict && <Button className="sc-wb-conflict-link" onClick={() => workbench.panel({ kind: 'saveConflict', path: snapshot.saveConflict })}>{t('saveConflict')}</Button>}
       {snapshot.cursor && <span>{message(t, 'position', { line: snapshot.cursor.line + 1, column: snapshot.cursor.character + 1 })}{snapshot.cursor.length > 0 && ` · ${message(t, 'selected', { count: snapshot.cursor.length })}`}</span>}</footer>
     {panel && (!focused || fileOnly) && !(panel.kind === 'diff' && panel.origin === 'sidebar' && !workbench.external) && <Floating key={panel.id || panel.kind} openWindow={workbench.openWindow ? () => workbench.openWindow({ kind: 'panel' }) : undefined} title={panel.title || panel.path || t(panel.kind)} close={() => { if (panel.busy) return; workbench.panel(null); if (panel.kind === 'navigate') workbench.view()?.focus(); }} t={t} Button={Button} palette={snapshot.preferences.palette}
+      docked={searchDocked} toggleDock={!focused && panel.kind === 'search' ? () => workbench.panel({ ...panel, docked: !searchDocked }) : undefined}
       className={['git', 'diff', 'lineHistory', 'fileCompare', 'saveConflict'].includes(panel.kind) ? 'sc-wb-git-window' : panel.kind === 'fileAction' ? 'sc-wb-file-dialog' : ''}
       initialSize={['git', 'diff', 'lineHistory', 'fileCompare', 'saveConflict'].includes(panel.kind) ? { width: 1180, height: 720 } : panel.kind === 'settings' ? { width: 920, height: 680 } : panel.kind === 'fileAction' ? { width: 470, height: 260 } : undefined}>
       <PanelContent panel={panel} workbench={workbench} Button={Button} Select={Select} t={t} toggleFocus={!focused ? toggleFocus : undefined} />

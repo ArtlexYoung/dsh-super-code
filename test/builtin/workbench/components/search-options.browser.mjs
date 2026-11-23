@@ -59,6 +59,37 @@ try {
     });
     t.afterEach(async () => { await page.evaluate(() => window.test?.dispose()); await page.close(); assert.deepEqual(errors, []); });
 
+    await t.test('1201 处命中按文件折叠、定位，长行上下文与编辑器并排', async () => {
+      await page.evaluate(() => {
+        window.test.external('many.txt', Array.from({ length: 1200 }, (_, i) => `row ${i} amber`).join('\n'));
+        window.test.external('last.txt', 'before line\n' + 'x'.repeat(420) + 'amber\nafter line');
+      });
+      const panel = search(page), results = panel.getByRole('listbox');
+      await panel.getByRole('combobox').fill('amber');
+      await panel.getByRole('button', { name: 'many.txt (1200)', exact: true }).waitFor();
+      await panel.getByRole('button', { name: '折叠 many.txt', exact: true }).click();
+      await results.getByRole('option', { selected: true }).filter({ hasText: 'last.txt' }).waitFor();
+      assert.equal(await results.locator('mark').innerText(), 'amber');
+      await panel.getByRole('button', { name: '上下文', exact: true }).click();
+      const context = panel.getByRole('region', { name: '上下文' });
+      await context.getByText('after line', { exact: true }).waitFor();
+      assert.match(await context.innerText(), /before line/);
+      await page.getByRole('button', { name: '与编辑器并排' }).click();
+      await results.getByRole('option', { selected: true }).click();
+      await page.waitForFunction(() => window.test.controller.snapshot().file === 'last.txt');
+      const tool = await page.locator('.sc-wb-dialog[data-mode=docked]').boundingBox();
+      const code = await page.locator('.sc-wb-editor-group:visible .cm-editor').boundingBox();
+      assert.ok(tool.x + tool.width <= code.x + 1);
+      await page.locator('.sc-wb-editor-group:visible .cm-content').click();
+      assert.equal(await panel.isVisible(), true);
+      await panel.getByRole('button', { name: 'many.txt (1200)', exact: true }).click();
+      await results.focus(); await results.press('End');
+      await results.locator('[aria-selected=true][aria-posinset="1201"]').waitFor();
+      assert.ok(await results.getByRole('option').count() < 40);
+      await capture(page, 'search-beside-editor');
+      await page.getByRole('button', { name: '恢复浮动窗口' }).click();
+      assert.equal(await panel.getByRole('combobox').inputValue(), 'amber');
+    });
     await t.test('目录范围、大小写和正则全词一致传给替换，预览与写入使用相同捕获组', async () => {
       await search(page).getByRole('combobox', { name: '全局搜索', exact: true }).fill('token(\\d+)');
       await search(page).getByRole('checkbox', { name: '正则表达式', exact: true }).check();

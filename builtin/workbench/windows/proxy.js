@@ -141,6 +141,7 @@ export function createWindowProxy(send, t, { child, initial, canSplit = false } 
     files: { ...stores.files, activate: (...args) => invoke('files.activate', args), reset: () => invoke('files.reset') },
     layout: { ...stores.layout, change: patch => invoke('layout.change', [patch]), save: () => call('layout.save') },
     git: (value, signal) => call('git', [value], { signal }),
+    searchContext: (item, signal) => call('searchContext', [item], { signal }),
     compareFiles: (left, right, signal) => call('compareFiles', [left, right], { signal }),
     readSaveConflict: (path, signal) => call('readSaveConflict', [path], { signal }),
     previewReplacement: (match, query, signal) => call('previewReplacement', [match, query], { signal }),

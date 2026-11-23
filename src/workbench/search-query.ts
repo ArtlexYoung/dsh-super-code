@@ -72,7 +72,7 @@ export function searchPathFilter(scope: SearchScope): { file: (path: string) => 
   }
 }
 
-export interface SearchLocation { line: number; character: number; length: number; lineText: string }
+export interface SearchLocation { line: number; character: number; length: number; lineText: string; sampleStart?: number }
 const LOCATION_BATCH_SIZE = 256, LOCATION_CONTEXT_BEFORE = 80, LOCATION_SAMPLE_CHARS = 240
 
 /** 返回编辑器的行列与选区长度，CRLF在编辑器中只占一个换行。 */
@@ -86,7 +86,7 @@ export function* locationBatches(text: string, search: string, caseSensitive: bo
       start = next.index + next[0].length; line++; next = breaks.exec(text)
     }
     const end = next?.index ?? text.length, character = Math.min(end - start, from - start), sample = start + Math.max(0, character - LOCATION_CONTEXT_BEFORE)
-    batch.push({ line, character, length: text.slice(from, to).replace(/\r\n/g, '\n').length, lineText: text.slice(sample, Math.min(end, sample + LOCATION_SAMPLE_CHARS)) })
+    batch.push({ line, character, length: text.slice(from, to).replace(/\r\n/g, '\n').length, ...(sample > start ? { sampleStart: sample - start } : {}), lineText: text.slice(sample, Math.min(end, sample + LOCATION_SAMPLE_CHARS)) })
     if (batch.length === LOCATION_BATCH_SIZE) { yield batch; batch = [] }
   }
   if (batch.length) yield batch

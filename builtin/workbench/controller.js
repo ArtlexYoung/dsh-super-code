@@ -889,6 +889,17 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
       if (target !== project || state !== target.environment.snapshot()) throw new DOMException('Workspace changed', 'AbortError');
       return result;
     },
+    async searchContext(item, signal) {
+      const buffer = project.documents.get(item.file);
+      const doc = buffer?.state?.doc ?? asText(buffer?.text ?? (await api.read(item.file, signal)).text);
+      signal?.throwIfAborted();
+      if (item.line >= doc.lines) return null;
+      const number = item.line + 1, start = item.sampleStart || 0;
+      if (doc.line(number).text.slice(start, start + item.lineText.length) !== item.lineText) return null;
+      const lines = [];
+      for (let n = Math.max(1, number - 2); n <= Math.min(doc.lines, number + 2); n++) lines.push({ number: n, text: doc.line(n).text.slice(0, 240) });
+      return lines;
+    },
     async compareFiles(left, right, signal) {
       if (left === right) throw new Error('WORKBENCH_COMPARE_SAME');
       const values = await Promise.all([left, right].map(async path => project?.documents.get(path)?.text ?? (await api.read(path, signal)).text));

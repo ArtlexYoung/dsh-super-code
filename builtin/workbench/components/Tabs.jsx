@@ -3,6 +3,7 @@ import { FileIcon } from './FileIcon.jsx';
 import { Icon } from './Icon.jsx';
 import { Floating } from './Floating.jsx';
 import { errorText, message } from '../locales.js';
+import { tabDirectories } from '../tabs.js';
 
 export function CloseFile({ path, workbench, snapshot, Button, t, inline }) {
   const [busy, setBusy] = useState(false), [error, setError] = useState('');
@@ -28,6 +29,7 @@ export function CloseFile({ path, workbench, snapshot, Button, t, inline }) {
 
 export function Tabs({ snapshot, workbench, Button, t, onlyFile = false, drag }) {
   const container = useRef(null), gesture = useRef(null), suppressClick = useRef(false), [drop, setDrop] = useState(null);
+  const directories = tabDirectories(snapshot.tabs);
   useLayoutEffect(() => {
     const nav = container.current;
     const reveal = () => {
@@ -87,7 +89,7 @@ export function Tabs({ snapshot, workbench, Button, t, onlyFile = false, drag })
         onContextMenu={event => { event.preventDefault(); workbench.menu({ path: item.path, kind: item.kind, type: 'file', source: 'tab', x: event.clientX, y: event.clientY }); }}
         onAuxClick={event => { if (event.button === 1) { event.preventDefault(); close(item); } }}>
         <Button aria-current={snapshot.file === item.path && (snapshot.editorKind || 'file') === item.kind ? 'page' : undefined} title={item.kind === 'markdown' ? `${item.path} · ${t('markdownPreview')}` : item.path} onClick={act(() => workbench.visit({ file: item.path, kind: item.kind }))}>
-          <FileIcon path={item.path} /><span className="sc-wb-tab-name">{item.path.split('/').at(-1)}</span>{item.kind === 'markdown' && <small>{t('markdownPreview')}</small>}{item.pinned && <span aria-label={t('filePinned')}><FileIcon pinned /></span>}{item.dirty && <i aria-label={t('unsaved')}>•</i>}
+          <FileIcon path={item.path} /><span className="sc-wb-tab-name">{item.path.split('/').at(-1)}</span>{directories.has(item.path) && <small className="sc-wb-tab-directory">{directories.get(item.path)}</small>}{item.kind === 'markdown' && <small>{t('markdownPreview')}</small>}{item.pinned && <span aria-label={t('filePinned')}><FileIcon pinned /></span>}{item.dirty && <i aria-label={t('unsaved')}>•</i>}
         </Button>
         <Button className="sc-wb-tab-close" title={t('closeFile')} aria-label={message(t, 'tabCloseLabel', { path: item.path })} onClick={event => { event.stopPropagation(); close(item); }}><Icon name="close" /></Button>
       </div>)}

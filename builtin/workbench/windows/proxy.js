@@ -45,7 +45,7 @@ export function createWindowProxy(send, t, { child, initial, canSplit = false } 
   }
   async function call(method, args = [], options) {
     const target = args[0];
-    if (['visit', 'move', 'closeFile'].includes(method)) {
+    if (['visit', 'move', 'closeFile', 'closeTabs', 'reopenTab'].includes(method)) {
       navigation++;
       rememberReadingPosition(method, target);
     }
@@ -104,7 +104,7 @@ export function createWindowProxy(send, t, { child, initial, canSplit = false } 
   }
   const proxy = {
     ...stores.snapshot, documents, index, assistant, t, external: true,
-    ...Object.fromEntries(['visit', 'move', 'list', 'refresh', 'save', 'fileOperation', 'submitFileAction', 'undo', 'closeFile', 'openConversation', 'pinFile'].map(method => [method, (...args) => call(method, args)])),
+    ...Object.fromEntries(['visit', 'move', 'list', 'refresh', 'save', 'fileOperation', 'submitFileAction', 'undo', 'closeFile', 'closeTabs', 'reopenTab', 'openConversation', 'pinFile'].map(method => [method, (...args) => call(method, args)])),
     definition,
     ...Object.fromEntries(['cancelCloseFile', 'moveTab', 'keepTab', 'menu', 'copyFile'].map(method => [method, (...args) => invoke(method, args)])),
     openFileWindow: ({ file, editorKind, markdownSplit }) => invoke('openFileWindow', [file, editorKind, markdownSplit]),

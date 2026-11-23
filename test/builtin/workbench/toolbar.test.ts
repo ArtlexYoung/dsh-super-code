@@ -5,7 +5,7 @@ import { defaults, readPreferences } from '../../../builtin/workbench/editor/pre
 
 test('原有编辑设置自动补齐工具栏，固定操作不参与显示隐藏和排序', () => {
   const value = readPreferences({ keymap: 'idea', palette: 'idea', shortcuts: {} })
-  assert.deepEqual(value.toolbar.map((item: { id: string }) => item.id), ['back', 'forward', 'navigateFiles', 'find', 'replace', 'project', 'projectReplace', 'definition', 'complete', 'parameters', 'codeHistory', 'undo', 'redo', 'navigateSymbols', 'readingFocus', 'saveConflict'])
+  assert.deepEqual(value.toolbar.map((item: { id: string }) => item.id), ['back', 'forward', 'navigateFiles', 'find', 'replace', 'project', 'projectReplace', 'definition', 'complete', 'parameters', 'codeHistory', 'undo', 'redo', 'navigateSymbols', 'readingFocus', 'saveConflict', 'reopenTab'])
   assert.deepEqual(value.toolbar.filter((item: { visible: boolean }) => item.visible).map((item: { id: string }) => item.id), ['back', 'forward', 'navigateFiles', 'find', 'project'])
   for (const id of ['refresh', 'window', 'save', 'git', 'reading', 'settings']) assert.equal(value.toolbar.some((item: any) => item.id === id), false)
 })
@@ -27,7 +27,7 @@ test('工具栏顺序、隐藏和空显示状态可保存恢复，不影响快�
 test('排序保留动作和隐藏状态，越界移动不丢失项目', () => {
   const items = readToolbar().map((item: any) => ({ ...item, visible: item.id !== 'forward' }))
   assert.equal(moveToolbar(items, 'back', -1), items)
-  assert.equal(moveToolbar(items, 'saveConflict', 1), items)
+  assert.equal(moveToolbar(items, 'reopenTab', 1), items)
   assert.equal(moveToolbar(items, 'missing', 1), items)
   const moved = moveToolbar(items, 'forward', -1)
   assert.deepEqual(moved[0], { id: 'forward', visible: false })

@@ -21,7 +21,7 @@ import { undoEdit, replaceFiles } from './editing/actions.js';
 import { readReplacement, remainingReplacements } from './editing/replace.js';
 import { readSaveConflict, applySaveConflict } from './editing/save-conflict.js';
 import { createWorkspaceRecovery } from './recovery.js';
-import { createTabs } from './tabs.js';
+import { createTabs, createClosedTabs, tabsToClose } from './tabs.js';
 import { createEditorGroups } from './editor/groups.js';
 import { createWindowRoute } from './windows/route.js';
 import { createWindowView } from './windows/view.js';
@@ -43,7 +43,7 @@ function collectBuffers(project, paths) {
   }
 }
 
-export function createWorkbench(api, t, { projects = new Map(), translationLanguage, settings: preference = createEditorPreference(localStorage), layout = createLayoutPreference(localStorage), sharedIndex, historyOwner, pane = false, session, stopRecovery } = {}) {
+export function createWorkbench(api, t, { projects = new Map(), translationLanguage, settings: preference = createEditorPreference(localStorage), layout = createLayoutPreference(localStorage), sharedIndex, historyOwner, pane = false, session, stopRecovery, closedTabs = createClosedTabs() } = {}) {
   const analyzer = createAnalyzer(), documents = new Map(), states = new Map(), subscribers = new Set(), directories = new Map(), listings = new Map();
   const index = sharedIndex || new SymbolIndex(analyzer.analyze, { read: async (file, signal) => project.documents.get(file)?.text ?? (await api.read(file, signal)).text,
     external: async (file, name, offset, source, signal) => {
@@ -56,7 +56,7 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
     } });
   let editor, current = null, generation = 0, opening, scanning, timer, preferences = defaults(), disposed = false;
   let history = [], at = -1, moving = false, navigation = Promise.resolve(), binding = Promise.resolve(), requested = 0;
-  let saving, operation;
+  let saving, operation, pendingClose;
   let projectPath, resuming;
   const locations = new Map();
   let kept = false, retainedParent, retainedHost;
@@ -65,10 +65,11 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
   // 同会话窗口共用撤销记录，编辑通知仍按视图区分，保证其他窗口收到修改。
   const owner = historyOwner || Symbol('workbench'), origin = Symbol('workbench-view');
   let project, unsubscribeProject = () => {}, synchronizing = false, receiving = false;
-  let snapshot = { file: null, editorKind: 'file', tabs: [], recentFiles: [], saveConflict: null, directories, symbols: [], cursor: null, status: t('ready'), error: '', preferences, environmentPaths: {}, panel: null, assistant: null, indexing: false, indexed: 0, back: false, forward: false, fileMenu: null, fileClipboard: null, closingFile: null };
+  let snapshot = { file: null, editorKind: 'file', tabs: [], canReopenTab: Boolean(closedTabs.peek()), recentFiles: [], saveConflict: null, directories, symbols: [], cursor: null, status: t('ready'), error: '', preferences, environmentPaths: {}, panel: null, assistant: null, indexing: false, indexed: 0, back: false, forward: false, fileMenu: null, fileClipboard: null, closingFile: null };
   const publish = patch => { if (disposed) return; snapshot = { ...snapshot, ...patch }; for (const listener of subscribers) listener(); };
   const fail = error => { if (error.name !== 'AbortError') publish({ error: errorText(error, t) }); };
   const fileTabs = createTabs(documents), tabs = fileTabs.list;
+  const unsubscribeClosedTabs = closedTabs.subscribe(() => publish({ canReopenTab: Boolean(closedTabs.peek()) }));
   const assistant = createSelectionAssistant({ editor: { file: () => current, view: () => editor?.view }, api, t, changed: value => publish({ assistant: value }),
     modelOptions: kind => ({ ...(preferences[`${kind}Model`] ? { model: preferences[`${kind}Model`] } : {}), reasoningEffort: preferences[`${kind}Reasoning`] }), translationLanguage });
   const reading = createReading({ api, documents, currentFile: () => current, visit, t, locale: () => t('readingLanguage') });
@@ -260,38 +261,87 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
     });
     navigation = work.catch(fail); return work;
   }
-  function closeFile(path, mode = 'check', kind = 'file') {
+  async function selectNeighbor(items, index) {
+    const next = items[index + 1] || items[index - 1];
+    if (next) {
+      moving = true;
+      try {
+        if (!await display({ file: next.path, kind: next.kind })) return false;
+        history.splice(at + 1); history.push(position()); at++;
+      } finally { moving = false; }
+      return true;
+    }
+    rememberEditor();
+    assistant.switchFile(); current = null; editor?.dispose(); clearTimeout(timer);
+    publish({ file: null, editorKind: 'file', cursor: null, symbols: [], status: t('ready') });
+    return true;
+  }
+  async function confirmClose(path, mode) {
+    const doc = documents.get(path);
+    if (mode === 'check' && doc.dirty) { publish({ closingFile: path }); return false; }
+    if (mode === 'save') { await save(path); if (doc.dirty) throw new Error('WORKBENCH_TAB_CHANGED'); }
+    return true;
+  }
+  async function removeTab({ path, kind }, mode, ready) {
+    const items = tabs(), index = items.findIndex(item => item.path === path && item.kind === kind);
+    if (index < 0) return true;
+    rememberEditor();
+    const location = locations.get(path), doc = documents.get(path);
+    if (current === path && snapshot.editorKind === kind && !await selectNeighbor(items, index)) return false;
+    if (binding !== ready || disposed) return false;
+    fileTabs.close(path, kind);
+    if (mode !== 'move') closedTabs.record({ file: path, kind, location });
+    publish({ tabs: tabs(), closingFile: null, status: doc.dirty ? t('tabClosedWithEdits') : snapshot.status, error: '' });
+    cursor(); return true;
+  }
+  async function closeTab(item, mode, preservePinned) {
+    const ready = binding, currentTab = tabs().find(tab => tab.path === item.path && tab.kind === item.kind);
+    if (!currentTab || preservePinned && currentTab.pinned) return true;
+    if (item.kind === 'file' && !await confirmClose(item.path, mode)) return false;
+    if (binding !== ready || disposed) return false;
+    return removeTab(item, mode, ready);
+  }
+  function runClose(request, mode = 'check') {
     stopRestoring();
+    const ready = binding;
+    if (pendingClose !== request) { pendingClose = request; publish({ closingFile: null }); }
     const work = navigation.then(async () => {
-      await saving;
-      if (operation || project?.locked) throw new Error('WORKBENCH_FILE_BUSY');
-      let items = tabs(), atTab = items.findIndex(item => item.path === path && item.kind === kind);
-      if (atTab < 0) return;
-      const doc = documents.get(path);
-      if (kind === 'file' && mode === 'check' && doc.dirty) { publish({ closingFile: path }); return; }
-      if (mode === 'save') { await save(path); if (doc.dirty) throw new Error('WORKBENCH_TAB_CHANGED'); }
-      items = tabs(); atTab = items.findIndex(item => item.path === path && item.kind === kind);
-      if (atTab < 0) return;
-      if (current === path && snapshot.editorKind === kind) {
-        const next = items[atTab + 1] || items[atTab - 1];
-        if (next) {
-          moving = true;
-          try {
-            if (!await display({ file: next.path, kind: next.kind })) return;
-            history.splice(at + 1); history.push(position()); at++;
-          } finally { moving = false; }
-        } else {
-          rememberEditor();
-          assistant.switchFile(); current = null; editor?.dispose(); clearTimeout(timer);
-          publish({ file: null, editorKind: 'file', cursor: null, symbols: [] });
-        }
+      await ready; await saving;
+      while (pendingClose === request && request.items.length && binding === ready && !disposed) {
+        if (operation || project?.locked) throw new Error('WORKBENCH_FILE_BUSY');
+        if (!await closeTab(request.items[0], mode, request.preservePinned)) return;
+        request.items.shift(); mode = 'check';
       }
-      fileTabs.close(path, kind);
-      let status = current ? documents.get(current).dirty ? 'unsaved' : 'saved' : 'ready';
-      if (doc.dirty) status = 'tabClosedWithEdits';
-      publish({ tabs: tabs(), closingFile: snapshot.closingFile === path ? null : snapshot.closingFile,
-        status: t(status), error: '' });
-      cursor();
+    });
+    navigation = work.catch(fail); return work;
+  }
+  function closeFile(path, mode = 'check', kind = 'file') {
+    const head = pendingClose?.items[0];
+    const request = mode !== 'check' && head?.path === path && head.kind === kind ? pendingClose : { items: [{ path, kind }], preservePinned: false };
+    return runClose(request, mode);
+  }
+  function closeTabs(mode, path, kind) {
+    return runClose({ items: tabsToClose(tabs(), mode, path, kind), preservePinned: true });
+  }
+  function reopenTab() {
+    stopRestoring();
+    const ready = binding;
+    const work = navigation.then(async () => {
+      await ready;
+      const entry = closedTabs.peek();
+      if (!entry || disposed || binding !== ready) return;
+      const previous = position(true); if (at >= 0 && previous) history[at] = previous;
+      const sourceOpen = tabs().some(item => item.path === entry.file && item.kind === 'file');
+      const location = states.has(entry.file) ? undefined : entry.location;
+      moving = true;
+      try {
+        if (!await display({ ...location, file: entry.file, kind: entry.kind })) return;
+        if (entry.kind === 'markdown' && !sourceOpen) fileTabs.close(entry.file);
+        fileTabs.keep(entry.file); closedTabs.remove(entry);
+        history.splice(at + 1); history.push(position()); at++;
+        await editor.restoreViewport?.(location?.viewport);
+        publish({ tabs: tabs() });
+      } finally { moving = false; cursor(); }
     });
     navigation = work.catch(fail); return work;
   }
@@ -496,7 +546,7 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
     const affected = value => value === path || value.startsWith(`${path}/`);
     const cancelled = opening && affected(opening.file);
     if (cancelled) { opening.controller.abort(); generation++; }
-    fileTabs.forget(affected);
+    fileTabs.forget(affected); closedTabs.forget(affected);
     for (const path of [...documents.keys()]) if (affected(path)) { documents.delete(path); autosave.cancel(path); }
     for (const path of states.keys()) if (affected(path)) states.delete(path);
     for (const path of locations.keys()) if (affected(path)) locations.delete(path);
@@ -632,7 +682,7 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
     if (previous && previous !== project) {
       controller.groups?.reset();
       const paths = [...documents.keys()]; projectViews.get(previous)?.delete(documents); documents.clear(); collectBuffers(previous, paths);
-      states.clear(); locations.clear(); fileTabs.clear(); directories.clear(); listings.clear(); current = null; history = []; at = -1; editor?.dispose();
+      states.clear(); locations.clear(); fileTabs.clear(); closedTabs.clear(); pendingClose = null; directories.clear(); listings.clear(); current = null; history = []; at = -1; editor?.dispose();
       changes.reset();
       publish({ file: null, recentFiles: [], tabs: [], symbols: [], cursor: null, closingFile: null, fileClipboard: null, fileMenu: null, panel: null, saveConflict: null, directories: new Map(directories), error: '', status: t('ready') });
     }
@@ -724,11 +774,11 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
     dispose() {
       recovery?.dispose();
       this.groups?.reset();
-      windowRoute.dispose(); kept = false; this.detach(); autosave.dispose(); unsubscribeProject(); unsubscribeSettings(); disposed = true; assistant.dispose(); reading.dispose(); changes.dispose(); files.dispose();
+      windowRoute.dispose(); kept = false; this.detach(); autosave.dispose(); unsubscribeProject(); unsubscribeSettings(); unsubscribeClosedTabs(); disposed = true; assistant.dispose(); reading.dispose(); changes.dispose(); files.dispose();
       const paths = [...documents.keys()]; projectViews.get(project)?.delete(documents); documents.clear(); if (project) collectBuffers(project, paths);
       states.clear(); subscribers.clear(); editorSubscribers.clear(); locationSubscribers.clear();
     },
-    visit, move, list, refresh, save, settings, definition, fail, fileOperation, submitFileAction, undo, closeFile, models: api.models, fonts: api.fonts, searchProject,
+    visit, move, list, refresh, save, settings, definition, fail, fileOperation, submitFileAction, undo, closeFile, closeTabs, reopenTab, models: api.models, fonts: api.fonts, searchProject,
     async readSaveConflict(path, signal) {
       await binding;
       if (!project) throw new Error('WORKBENCH_WORKSPACE');
@@ -767,7 +817,7 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
       signal?.throwIfAborted();
       return compareText(left, values[0], values[1], diffLines(values[0], values[1], { timeout: 500, maxEditLength: MAX_DIFF_LINES }));
     },
-    cancelCloseFile() { publish({ closingFile: null }); },
+    cancelCloseFile() { pendingClose = null; publish({ closingFile: null }); },
     keepTab(path) { fileTabs.keep(path); publish({ tabs: tabs() }); },
     moveTab(path, target, after) { fileTabs.move(path, target, after); publish({ tabs: tabs() }); },
     async previewReplacement(match, query, signal) {
@@ -824,7 +874,7 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
         return failures;
       } finally { signal.removeEventListener('abort', cancel); if (resuming === abort) resuming = null; }
     },
-    createPane: () => createWorkbench(api, t, { projects, translationLanguage, settings: preference, layout, sharedIndex: index, historyOwner: owner, pane: true, stopRecovery: () => recovery?.stop() }),
+    createPane: () => createWorkbench(api, t, { projects, translationLanguage, settings: preference, layout, sharedIndex: index, historyOwner: owner, closedTabs, pane: true, stopRecovery: () => recovery?.stop() }),
     hasUnsavedFiles: () => project && [...project.documents.values()].some(doc => doc.dirty),
     keepPaneEdits(pane) {
       for (const [path, doc] of pane.documents) if (doc.dirty && project?.documents.get(path) === doc) autosave.change(path);

@@ -14,7 +14,7 @@ function createHost(workbench, transmit, close, metadata, onReady) {
   let stopped = false, scheduled = false, editorFile, ready = false, initialized = false;
   const push = value => { if (!stopped && initialized) void transmit(value).catch(close); };
   const edits = createEditHost(workbench.view, push);
-  const calls = Object.fromEntries(['visit', 'move', 'list', 'refresh', 'save', 'settings', 'environmentPaths', 'definition', 'fileOperation', 'undo', 'closeFile', 'cancelCloseFile',
+  const calls = Object.fromEntries(['visit', 'move', 'list', 'refresh', 'save', 'settings', 'environmentPaths', 'definition', 'fileOperation', 'undo', 'closeFile', 'closeTabs', 'reopenTab', 'cancelCloseFile',
     'moveTab', 'keepTab', 'openConversation', 'menu', 'copyFile', 'pinFile', 'panel', 'submitFileAction', 'applySaveConflict'].map(name => [name, args => workbench[name](...args)]));
   for (const [name, target, methods] of [
     ['assistant', workbench.assistant, ['open', 'select', 'close', 'send', 'stop', 'remove', 'draft', 'mode', 'pin']],

@@ -732,6 +732,83 @@ test('真实磁盘：关闭未保存标签不丢缓冲与历史，重开后仍�
   await controller.save(); assert.equal(await read(), original)
 })
 
+test('批量关闭遇到草稿逐个确认，取消停止后续关闭，固定标签保留', async t => {
+  const { create, read } = await fixture(t, { 'pin.ts': 'p', 'a.ts': 'a', 'b.ts': 'b', 'c.ts': 'c' }), controller = await create()
+  await controller.settings({ ...controller.snapshot().preferences, previewTabs: false })
+  await controller.pinFile('pin.ts')
+  await controller.visit({ file: 'a.ts' }); edit(controller, 0, 0, 'draft ')
+  await controller.visit({ file: 'b.ts' }); edit(controller, 0, 0, 'draft ')
+  await controller.visit({ file: 'c.ts' })
+  await controller.closeTabs('others', 'c.ts', 'file')
+  assert.equal(controller.snapshot().closingFile, 'a.ts')
+  await controller.closeFile('a.ts', 'keep')
+  assert.equal(controller.snapshot().closingFile, 'b.ts')
+  controller.cancelCloseFile()
+  assert.equal(controller.snapshot().closingFile, null)
+  assert.deepEqual(controller.snapshot().tabs.map(({ path }: { path: string }) => path), ['pin.ts', 'b.ts', 'c.ts'])
+  assert.equal(await read('a.ts'), 'a')
+  await controller.reopenTab()
+  assert.equal(controller.snapshot().file, 'a.ts'); assert.equal(text(controller), 'draft a')
+  assert.equal(controller.snapshot().tabs.find(({ path }: { path: string }) => path === 'a.ts').preview, false)
+  await controller.undo(); assert.equal(text(controller), 'a')
+})
+
+test('批量保存并关闭失败时保留确认和后续标签，处理冲突前不继续', async t => {
+  const { create, write, read } = await fixture(t, { 'a.ts': 'a', 'b.ts': 'b', 'c.ts': 'c' }), controller = await create()
+  await controller.settings({ ...controller.snapshot().preferences, previewTabs: false })
+  await controller.visit({ file: 'a.ts' })
+  await controller.visit({ file: 'b.ts' }); edit(controller, 0, 0, 'draft ')
+  await controller.visit({ file: 'c.ts' })
+  await write('b.ts', 'external b')
+  await controller.closeTabs('right', 'a.ts', 'file')
+  await assert.rejects(controller.closeFile('b.ts', 'save'), /WORKBENCH_CONFLICT/)
+  assert.equal(controller.snapshot().closingFile, 'b.ts')
+  assert.deepEqual(controller.snapshot().tabs.map(({ path }: { path: string }) => path), ['a.ts', 'b.ts', 'c.ts'])
+  await controller.closeFile('b.ts', 'keep')
+  assert.deepEqual(controller.snapshot().tabs.map(({ path }: { path: string }) => path), ['a.ts'])
+  assert.equal(await read('b.ts'), 'external b')
+  await controller.reopenTab(); assert.equal(controller.snapshot().file, 'c.ts')
+  await controller.reopenTab(); assert.equal(text(controller), 'draft b')
+})
+
+test('关闭历史不记录预览替换和标签搬移，保存项关闭后可恢复 Markdown 和光标', async t => {
+  const { create } = await fixture(t, { 'a.ts': 'line 1\nline 2\n', 'b.ts': 'b', 'doc.md': '# title' }), controller = await create()
+  await controller.visit({ file: 'a.ts' }); await controller.visit({ file: 'b.ts' })
+  assert.equal(controller.snapshot().canReopenTab, false)
+  await controller.closeFile('b.ts', 'move')
+  assert.equal(controller.snapshot().canReopenTab, false)
+  await controller.visit({ file: 'a.ts', line: 1, character: 2 }); controller.keepTab('a.ts')
+  await controller.visit({ file: 'doc.md', kind: 'markdown' })
+  await controller.closeTabs('saved')
+  assert.equal(controller.snapshot().tabs.length, 0)
+  await controller.reopenTab(); assert.equal(controller.snapshot().editorKind, 'markdown')
+  await controller.reopenTab(); assert.equal(controller.snapshot().editorKind, 'file')
+  await controller.reopenTab()
+  assert.equal(controller.snapshot().file, 'a.ts')
+  assert.equal(controller.snapshot().cursor.line, 1); assert.equal(controller.snapshot().cursor.character, 2)
+})
+
+test('关闭分栏后仍可从主栏恢复刚关闭的草稿', async t => {
+  const { create } = await fixture(t), controller = await create(), pane = controller.createPane()
+  try {
+    await pane.attach({}, {}); await pane.visit({ file: 'main.ts' }); edit(pane, 0, 0, '// pane draft\n')
+    await pane.closeFile('main.ts', 'keep')
+  } finally { pane.dispose() }
+  assert.equal(controller.snapshot().canReopenTab, true)
+  await controller.reopenTab()
+  assert.ok(text(controller).startsWith('// pane draft\n'))
+  assert.equal(controller.snapshot().canReopenTab, false)
+})
+
+test('恢复关闭标签使用已跟随其他视图修改的光标，不跳回旧的行号', async t => {
+  const { create } = await fixture(t), first = await create(), second = await create()
+  await first.visit({ file: 'main.ts', line: 1, character: 3 })
+  await first.closeFile('main.ts')
+  await second.visit({ file: 'main.ts' }); edit(second, 0, 0, '// inserted\n')
+  await first.reopenTab()
+  assert.equal(first.snapshot().cursor.line, 2); assert.equal(first.snapshot().cursor.character, 3)
+})
+
 for (const closed of [false, true]) {
   test(`真实磁盘：全局替换${closed ? '已关闭' : '非当前'}文件时快速对话标记跟随原选区，撤销后还原`, async t => {
     const original = '// old\nconst selected = 1;\n'

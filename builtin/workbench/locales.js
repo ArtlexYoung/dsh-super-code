@@ -48,6 +48,7 @@ export const zh = {
   WORKBENCH_WINDOW_FALLBACK: '独立窗口未能打开或已断开，内容仍保留在 DSH 中。',
   WORKBENCH_WINDOW_CONFLICT: '窗口中有尚未确认或冲突的修改，请保留当前内容后返回 DSH 检查。',
 
+  closeOtherTabs: '关闭其他标签', closeRightTabs: '关闭右侧标签', closeSavedTabs: '关闭已保存标签', reopenTab: '恢复刚关闭的标签', action_reopenTab: '恢复刚关闭的标签',
   tabCloseLabel: '关闭文件 {path}', tabSaveAndClose: '保存并关闭', tabKeepAndClose: '保留修改并关闭',
   tabCloseQuestion: '「{path}」有未保存的修改。关闭后仍可重新打开恢复；退出应用前请保存。',
   tabClosedWithEdits: '标签已关闭，未保存修改仍保留，可重新打开继续编辑',
@@ -182,6 +183,7 @@ export const en = {
   WORKBENCH_WINDOW_FALLBACK: 'The window could not open or disconnected. Your content remains in DSH.',
   WORKBENCH_WINDOW_CONFLICT: 'Window edits are unconfirmed or conflict with other changes. Keep your current text and check the original view in DSH.',
 
+  closeOtherTabs: 'Close other tabs', closeRightTabs: 'Close tabs to the right', closeSavedTabs: 'Close saved tabs', reopenTab: 'Reopen closed tab', action_reopenTab: 'Reopen closed tab',
   tabCloseLabel: 'Close file {path}', tabSaveAndClose: 'Save and close', tabKeepAndClose: 'Keep edits and close',
   tabCloseQuestion: '“{path}” has unsaved changes. Reopen the file to restore them; save before exiting the app.',
   tabClosedWithEdits: 'Tab closed; unsaved edits are kept and can be reopened',

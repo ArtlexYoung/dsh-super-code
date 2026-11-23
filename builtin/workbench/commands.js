@@ -12,6 +12,7 @@ export function workbenchCommands(workbench, snapshot, t, toggleFocus, current =
     commandPalette: { run: () => workbench.panel({ kind: 'navigate', query: '>' }) },
     readingFocus: { run: toggleFocus, disabled: !current || !toggleFocus },
     saveConflict: { run: () => workbench.panel({ kind: 'saveConflict', path: snapshot.saveConflict || snapshot.file }), disabled: !current },
+    reopenTab: { run: () => workbench.reopenTab(), disabled: !snapshot.canReopenTab },
     back: { run: () => workbench.move(-1), disabled: !snapshot.back },
     forward: { run: () => workbench.move(1), disabled: !snapshot.forward },
     find: { run: withEditor(openSearchPanel), disabled: !current },

@@ -7,6 +7,7 @@ export const actions = [
   { id: 'navigateSymbols', idea: 'Mod-F12', vscode: 'Mod-Shift-o', surface: true },
   { id: 'commandPalette', idea: 'Mod-Shift-p', vscode: 'Mod-Shift-p', surface: true },
   { id: 'readingFocus', idea: 'Mod-Shift-Enter', vscode: 'Mod-Shift-Enter', surface: true },
+  { id: 'reopenTab', idea: 'Mod-Shift-t', vscode: 'Mod-Shift-t', surface: true },
   { id: 'close', idea: 'Escape', vscode: 'Escape', dialog: true },
   { id: 'definition', idea: 'Mod-b', vscode: 'F12' },
   { id: 'complete', idea: 'Ctrl-Space', vscode: 'Ctrl-Space' },

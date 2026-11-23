@@ -44,3 +44,45 @@ export function createTabs(documents) {
     clear() { closed.clear(); rendered.clear(); preview = null; order = []; },
   };
 }
+
+export function tabsToClose(items, mode, path, kind = 'file') {
+  const at = items.findIndex(item => item.path === path && item.kind === kind);
+  if (mode !== 'saved' && at < 0) return [];
+  return items.filter((item, index) => !item.pinned && (
+    mode === 'saved' ? !item.dirty : mode === 'others' ? index !== at : mode === 'right' && index > at
+  ));
+}
+
+/** 同路径的源码和渲染仍用类型区分；目录只用于区分不同路径的同名文件。 */
+export function tabDirectories(items) {
+  const groups = new Map(), result = new Map();
+  for (const path of new Set(items.map(item => item.path))) {
+    const parts = path.split('/'), name = parts.pop();
+    if (!groups.has(name)) groups.set(name, []);
+    groups.get(name).push({ path, parts });
+  }
+  for (const entries of groups.values()) {
+    if (entries.length < 2) continue;
+    for (const entry of entries) {
+      let depth = 1;
+      while (depth < entry.parts.length && entries.some(other => other !== entry && other.parts.slice(-depth).join('/') === entry.parts.slice(-depth).join('/'))) depth++;
+      result.set(entry.path, entry.parts.slice(-depth).join('/') || '.');
+    }
+  }
+  return result;
+}
+
+/** 历史在一个工作台的分栏之间共享，不复制正文；分栏收起后仍可恢复。 */
+export function createClosedTabs() {
+  const listeners = new Set();
+  let entries = [];
+  const publish = () => { for (const listener of listeners) listener(); };
+  return {
+    subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); },
+    peek: () => entries.at(-1),
+    record(entry) { entries = entries.filter(item => item.file !== entry.file || item.kind !== entry.kind); entries.push(entry); entries = entries.slice(-20); publish(); },
+    remove(entry) { entries = entries.filter(item => item !== entry); publish(); },
+    forget(affected) { entries = entries.filter(item => !affected(item.file)); publish(); },
+    clear() { entries = []; publish(); },
+  };
+}

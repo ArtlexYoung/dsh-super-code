@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { createTabs } from '../../../builtin/workbench/tabs.js'
+import { createTabs, createClosedTabs, tabDirectories, tabsToClose } from '../../../builtin/workbench/tabs.js'
 import { createBuffer } from '../../../builtin/workbench/buffer.js'
 
 function fixture() {
@@ -120,4 +120,39 @@ test('源码路径和标签ID指向同一标签时不改变排序', () => {
   const before = tabs.list(), target = before.find(item => item.path === 'a.ts')
   tabs.move('a.ts', target.id, true)
   assert.deepEqual(tabs.list(), before)
+})
+
+test('批量关闭范围依照显示顺序，保留固定项并区分源码和渲染标签', () => {
+  const { tabs, documents } = fixture()
+  documents.get('a.ts').pinned = true
+  documents.get('b.ts').text = 'draft'
+  tabs.render('b.ts')
+  assert.deepEqual(tabsToClose(tabs.list(), 'others', 'b.ts', 'file').map(item => [item.path, item.kind]), [['b.ts', 'markdown'], ['c.ts', 'file']])
+  assert.deepEqual(tabsToClose(tabs.list(), 'right', 'b.ts', 'markdown').map(item => item.path), ['c.ts'])
+  assert.deepEqual(tabsToClose(tabs.list(), 'saved').map(item => [item.path, item.kind]), [['b.ts', 'markdown'], ['c.ts', 'file']])
+  assert.deepEqual(tabsToClose(tabs.list(), 'right', 'missing.ts', 'file'), [])
+})
+
+test('同名标签只显示最短区别目录，根目录、相同尾部和渲染标签均能区分', () => {
+  const paths = ['index.ts', 'src/index.ts', 'test/index.ts', 'packages/a/src/index.ts', 'packages/b/src/index.ts', 'only.ts', 'src/index.ts']
+  const directories = tabDirectories(paths.map(path => ({ path })))
+  assert.deepEqual([...directories], [
+    ['index.ts', '.'], ['src/index.ts', 'src'], ['test/index.ts', 'test'],
+    ['packages/a/src/index.ts', 'a/src'], ['packages/b/src/index.ts', 'b/src'],
+  ])
+  assert.equal(tabDirectories([{ path: 'only.ts' }, { path: 'only.ts' }]).size, 0)
+})
+
+test('关闭历史限制最近20项，删除文件和切换项目清除记录，失败重开不会提前丢记录', () => {
+  const closed = createClosedTabs()
+  for (let i = 0; i < 25; i++) closed.record({ file: `${i}.ts`, kind: 'file' })
+  const last = closed.peek()
+  assert.equal(closed.peek(), last)
+  closed.record({ file: '24.ts', kind: 'markdown' })
+  closed.forget(path => path === '24.ts')
+  const paths = []
+  while (closed.peek()) { paths.push(closed.peek().file); closed.remove(closed.peek()) }
+  assert.deepEqual(paths, Array.from({ length: 18 }, (_, index) => `${23 - index}.ts`))
+  closed.record({ file: 'other.ts', kind: 'file' }); closed.clear()
+  assert.equal(closed.peek(), undefined)
 })

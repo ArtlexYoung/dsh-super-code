@@ -213,10 +213,10 @@ body[data-ds-dark-theme] .sc-workbench[data-palette=vscode]{
 .sc-wb-file-icon[data-kind=web],.sc-wb-file-icon[data-kind=image]{color:var(--wb-icon-purple)}
 .sc-wb-file-icon[data-kind=shell],.sc-wb-file-icon[data-kind=text]{color:var(--wb-icon-green)}
 .sc-wb-file-icon[data-kind=pin]{width:12px;height:12px;color:var(--wb-accent)}
-.sc-wb-file-menu{position:fixed;z-index:2000000;display:flex;flex-direction:column;min-width:210px;padding:5px;background:var(--wb-bg);border:1px solid var(--wb-line);border-radius:var(--wb-popup-radius);box-shadow:var(--wb-shadow)}
+.sc-wb-file-menu{box-sizing:border-box;max-height:calc(100vh - 16px);overflow-y:auto;position:fixed;z-index:2000000;display:flex;flex-direction:column;min-width:210px;padding:5px;background:var(--wb-bg);border:1px solid var(--wb-line);border-radius:var(--wb-popup-radius);box-shadow:var(--wb-shadow)}
 .sc-wb-file-menu>button{position:relative;justify-content:flex-start;gap:10px;border-radius:var(--wb-row-radius);min-height:30px;text-align:left;padding-inline:10px;font-size:12px}
-.sc-wb-file-menu>button:is([data-action=closeFile],[data-action=fileNewDirectory],[data-action=filePaste],[data-action=fileCompare],[data-action=fileAbsolutePath]){margin-bottom:5px}
-.sc-wb-file-menu>button:is([data-action=closeFile],[data-action=fileNewDirectory],[data-action=filePaste],[data-action=fileCompare],[data-action=fileAbsolutePath]):after{content:'';position:absolute;left:0;right:0;bottom:-3px;height:1px;background:var(--wb-line);pointer-events:none}
+.sc-wb-file-menu>button:is([data-action=reopenTab],[data-action=fileNewDirectory],[data-action=filePaste],[data-action=fileCompare],[data-action=fileAbsolutePath]){margin-bottom:5px}
+.sc-wb-file-menu>button:is([data-action=reopenTab],[data-action=fileNewDirectory],[data-action=filePaste],[data-action=fileCompare],[data-action=fileAbsolutePath]):after{content:'';position:absolute;left:0;right:0;bottom:-3px;height:1px;background:var(--wb-line);pointer-events:none}
 .sc-wb-file-menu>button:focus-visible{outline:0;background:var(--wb-selected);color:var(--wb-selected-text)}
 .sc-workbench .sc-wb-danger{color:var(--dsw-color-text-error,#bb4545)}
 .sc-wb-file-dialog form{padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
@@ -372,6 +372,7 @@ body[data-ds-dark-theme] .sc-workbench[data-palette=vscode]{
 .sc-workbench .sc-wb-tab>button{border-radius:inherit;padding:6px 10px;white-space:nowrap;background:transparent;min-width:0;font-size:12px}
 .sc-workbench .sc-wb-tab>button:first-child{flex:1;justify-content:flex-start;gap:7px;overflow:hidden}
 .sc-wb-tab-name{overflow:hidden;text-overflow:ellipsis}
+.sc-wb-tab-directory{max-width:140px;overflow:hidden;text-overflow:ellipsis}
 .sc-workbench .sc-wb-tab>.sc-wb-tab-close{padding:0;margin-right:7px;width:20px;min-width:20px;height:20px;min-height:20px;line-height:1;color:var(--wb-muted);border-radius:3px}
 .sc-wb-tab-close>.sc-wb-icon{width:14px;height:14px}
 .sc-workbench .sc-wb-tab>.sc-wb-tab-close:hover{background:var(--wb-hover);color:var(--wb-text)}

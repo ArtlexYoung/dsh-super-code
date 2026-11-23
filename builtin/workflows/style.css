@@ -368,3 +368,12 @@
   .sc-flow-reply-source{padding:4px 10px}
   .sc-flow-agent-return{padding:6px 10px}
 }
+.sc-flow-chat-panel>header>div{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.sc-flow-chat-panel>header .sc-flow-expand{font:12px/1.5 system-ui,sans-serif;padding:5px 8px;border:1px solid var(--wb-line);border-radius:var(--wb-radius);color:var(--wb-text)}
+.sc-flow-chat-panel>header .sc-flow-expand:hover{background:var(--wb-hover)}
+.sc-flow-layout[data-layout=focus]{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)}
+.sc-flow-layout[data-layout=focus]>.sc-flows{height:auto;padding:0 16px}
+.sc-flow-layout[data-layout=focus]>.sc-flows>:not(.sc-flow-agents){display:none}
+.sc-flow-layout[data-layout=focus] .sc-flow-agents{position:static;margin:0;border-top:0}
+.sc-flow-layout[data-layout=focus]>.sc-wb-splitter-reading,.sc-flow-layout[data-layout=focus] .sc-flow-reset-width{display:none}
+.sc-flow-layout[data-layout=focus]>.sc-flow-chat-panel{border-left:0}

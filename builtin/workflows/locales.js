@@ -1,5 +1,6 @@
 export const NS = 'dsh-super-code-workflows';
 export const zh = {
+  expandConversation: '放大对话', restoreWorkflow: '返回工作流', findAgentKeys: '输入名称后按 Enter 打开，按向下键进入匹配列表。',
   quoteReply: '引用到当前对话', quoteHint: '先选中文字可只引用这一段；不选则引用整条回复。', quoteSource: '引用来源：', quotedFrom: '刚才引用了 ', returnToReply: '返回原文', dismissQuoteSource: '关闭引用来源提示',
   quoteTooLong: '这条回复较长，请选中需要的部分后再引用。', quoteLocked: '当前草稿含附件或引用，或正在处理输入。请先打开完整对话处理，再引用回复。',
   findAgent: '查找 Agent', noMatchingAgent: '没有找到匹配的 Agent', resizeConversation: '调整对话栏宽度', resetConversationWidth: '恢复默认宽度',
@@ -69,6 +70,7 @@ export const zh = {
   invalidDependencies: '任务未保存：请填写必填内容，并检查前置任务是否有效。任务不能互相等待。',
 };
 export const en = {
+  expandConversation: 'Expand conversation', restoreWorkflow: 'Back to workflow', findAgentKeys: 'Type a name and press Enter to open it, or Down to focus the matching list.',
   quoteReply: 'Quote in current conversation', quoteHint: 'Select text to quote a passage, or quote the whole reply.', quoteSource: 'Quoted from: ', quotedFrom: 'Last quote: ', returnToReply: 'Back to reply', dismissQuoteSource: 'Dismiss quote source',
   quoteTooLong: 'This reply is long. Select the part you need, then quote it.', quoteLocked: 'The current draft has attachments or references, or input is busy. Open the full conversation to resolve this before quoting.',
   findAgent: 'Find an agent', noMatchingAgent: 'No matching agents', resizeConversation: 'Resize conversation pane', resetConversationWidth: 'Reset conversation width',

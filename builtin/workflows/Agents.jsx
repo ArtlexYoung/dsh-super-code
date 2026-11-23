@@ -29,8 +29,7 @@ export function WorkflowAgents({ state, view, agent, select, sessionId, agentAct
   return <>
     {agentActions && watched.map(id => <AgentCatalogWatch key={id} id={id} watchCatalog={agentActions.watch} />)}
     {(all.length > 1 || failed) && <section className="sc-flow-agents" aria-label={t('agents')}>
-      <header><strong>Agent <small>{all.length}</small></strong>{all.length > 6 && <input type="search" aria-label={t('findAgent')} placeholder={t('findAgent')} value={query}
-        onChange={event => { setQuery(event.target.value); setLimit(12); }} onKeyDown={event => { if (event.key === 'Escape') { event.stopPropagation(); setQuery(''); } }} />}
+      <header><strong>Agent <small>{all.length}</small></strong>{all.length > 6 && <AgentSearch query={query} change={value => { setQuery(value); setLimit(12); }} sessionId={sessionId} t={t} />}
         {agentActions && <button type="button" onClick={reload} disabled={busy} aria-label={t('refreshAgents')} title={t('refreshAgents')}>↻</button>}</header>
       {failed && <p role="alert">{t('agentsFailed')}</p>}
       <AgentNavigation rows={rows} view={view} agent={agent} select={select} sessionId={sessionId} t={t} detailT={detailT} />
@@ -38,6 +37,24 @@ export function WorkflowAgents({ state, view, agent, select, sessionId, agentAct
       {more && <button type="button" className="sc-flow-more-agents" onClick={() => setLimit(value => value + 24)}>{t('moreAgents')}</button>}
     </section>}
   </>;
+}
+
+function AgentSearch({ query, change, sessionId, t }) {
+  const move = event => {
+    if (event.nativeEvent.isComposing) return;
+    if (event.key === 'Escape') { event.stopPropagation(); change(''); return; }
+    if (!['ArrowDown', 'Enter'].includes(event.key)) return;
+    const term = query.trim();
+    if (event.key === 'Enter' && !term) return;
+    const first = [...event.currentTarget.closest('.sc-flow-agents').querySelectorAll('nav button:not(:disabled)')]
+      .find(button => !term || button.dataset.agentId !== sessionId);
+    if (!first) return;
+    event.preventDefault(); event.stopPropagation();
+    first.focus({ preventScroll: true }); first.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    if (event.key === 'Enter') first.click();
+  };
+  return <input type="search" aria-label={t('findAgent')} title={t('findAgentKeys')} placeholder={t('findAgent')} value={query}
+    onChange={event => change(event.target.value)} onKeyDown={move} />;
 }
 
 function filterAgentRows({ all, view, selected, sessionId, query, limit }) {

@@ -22,6 +22,7 @@ export function createWindowProxy(send, t, { child, initial, canSplit = false } 
     describe: (items, signal) => call('index.describe', [items], { signal }),
     resolve: (file, name, offset, signal) => call('index.resolve', [file, name, offset], { signal }),
     search: (query, limit, signal) => call('index.search', [query, limit], { signal }),
+    symbols: (query, _limit, signal) => call('index.symbols', [query], { signal }),
   };
   const stores = Object.fromEntries(['snapshot', 'changes', 'reading', 'files', 'layout'].map(key => {
     let value = key === 'snapshot' ? initial : null; const listeners = new Set();

@@ -9,6 +9,7 @@ export function workbenchCommands(workbench, snapshot, t, toggleFocus, current =
   return {
     navigateFiles: { run: () => workbench.panel({ kind: 'navigate', query: '' }) },
     navigateSymbols: { run: () => workbench.panel({ kind: 'navigate', query: '@' }), disabled: !current },
+    navigateProjectSymbols: { run: () => workbench.panel({ kind: 'navigate', query: '#' }) },
     commandPalette: { run: () => workbench.panel({ kind: 'navigate', query: '>' }) },
     readingFocus: { run: toggleFocus, disabled: !current || !toggleFocus },
     saveConflict: { run: () => workbench.panel({ kind: 'saveConflict', path: snapshot.saveConflict || snapshot.file }), disabled: !current },

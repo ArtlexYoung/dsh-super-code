@@ -29,3 +29,13 @@ test('新导航快捷键保留 IDEA 参数提示，既有自定义绑定优先�
   assert.equal(keyOf(custom, 'save'), 'Mod-Shift-o')
   assert.equal(keyOf(custom, 'navigateFiles'), '')
 })
+
+test('文件行列输入从1转换为0，支持当前文件及含冒号的真实文件名', () => {
+  const state = { file: 'src/main.ts', recentFiles: ['src/main.ts'], symbols: [] }
+  const files = ['src/main.ts', '中文/入口.ts', 'notes:12', 'notes']
+  assert.deepEqual(navigationItems('src/main.ts:120:8', state, files, [])[0].target, { file: 'src/main.ts', line: 119, character: 7 })
+  assert.deepEqual(navigationItems('中文 入口:3', state, files, [])[0].target, { file: '中文/入口.ts', line: 2, character: 0 })
+  assert.deepEqual(navigationItems(':4:2', state, files, [])[0].target, { file: 'src/main.ts', line: 3, character: 1 })
+  assert.deepEqual(navigationItems('notes:12', state, files, [])[0].target, { file: 'notes:12' })
+  for (const query of ['src/main.ts:0', 'src/main.ts:2:0', 'src/main.ts:9007199254740993']) assert.equal(navigationItems(query, state, files, []).length, 0)
+})

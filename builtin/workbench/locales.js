@@ -18,8 +18,9 @@ export const zh = {
   WORKBENCH_SESSION_READ: '无法读取上次的工作记录，仍可直接打开文件。', WORKBENCH_SESSION_WRITE: '工作位置未能记住，请检查浏览器存储后重试；当前编辑仍保留。',
   WORKBENCH_SESSION_INVALID: '工作记录无法识别，仍可直接打开文件。', WORKBENCH_SESSION_SIZE: '工作记录超出容量，暂未更新；当前编辑仍保留。',
   navigate: '快速导航', navigateFiles: '快速打开文件', navigateSymbols: '当前文件符号', commandPalette: '所有操作',
-  navigateHint: '输入文件名 · @ 查符号 · > 查操作', navigateCount: '{count} 项', navigateClose: 'Esc 返回编辑区',
-  action_navigateFiles: '快速打开文件', action_navigateSymbols: '查找当前文件符号', action_commandPalette: '搜索所有操作', action_readingFocus: '切换专注阅读',
+  navigateProjectSymbols: '项目符号', navigateSymbolSource: '来源：项目声明索引 · {count} 个文件', navigateIndexReady: '索引完成', navigateIndexPartial: '索引未完成', navigateSymbolLimit: '显示前 1000 个符号，请增加名称或路径关键词缩小范围',
+  navigateHint: '文件:行:列 · @ 当前符号 · # 项目符号 · > 操作', navigateCount: '{count} 项', navigateClose: 'Esc 返回编辑区',
+  action_navigateProjectSymbols: '查找项目符号', action_navigateFiles: '快速打开文件', action_navigateSymbols: '查找当前文件符号', action_commandPalette: '搜索所有操作', action_readingFocus: '切换专注阅读',
 
   saveConflict: '比较并合并', conflictHint: '草稿和磁盘都已修改，请核对结果',
   conflictResultChanged: '已应用点击时的结果；比较窗口中又有新编辑，已保留，请复制后重新比较。',
@@ -174,8 +175,9 @@ export const en = {
   WORKBENCH_SESSION_READ: 'Could not read the previous workspace. You can still open files.', WORKBENCH_SESSION_WRITE: 'Could not remember your workspace. Check browser storage and retry; current edits are preserved.',
   WORKBENCH_SESSION_INVALID: 'The workspace record is not recognized. You can still open files.', WORKBENCH_SESSION_SIZE: 'The workspace record exceeds the storage limit and was not updated; current edits are preserved.',
   navigate: 'Quick navigation', navigateFiles: 'Open file', navigateSymbols: 'File symbols', commandPalette: 'All actions',
-  navigateHint: 'File name · @ symbols · > actions', navigateCount: '{count} results', navigateClose: 'Esc returns to editor',
-  action_navigateFiles: 'Quick open file', action_navigateSymbols: 'Find file symbol', action_commandPalette: 'Search all actions', action_readingFocus: 'Toggle reading focus',
+  navigateProjectSymbols: 'Project symbols', navigateSymbolSource: 'Source: project declarations · {count} files', navigateIndexReady: 'Index ready', navigateIndexPartial: 'Index incomplete', navigateSymbolLimit: 'Showing the first 1,000 symbols. Add name or path keywords to narrow results.',
+  navigateHint: 'file:line:column · @ file symbols · # project symbols · > actions', navigateCount: '{count} results', navigateClose: 'Esc returns to editor',
+  action_navigateProjectSymbols: 'Find project symbol', action_navigateFiles: 'Quick open file', action_navigateSymbols: 'Find file symbol', action_commandPalette: 'Search all actions', action_readingFocus: 'Toggle reading focus',
 
   saveConflict: 'Compare and merge', conflictHint: 'Both the draft and the file on disk changed. Review the result.',
   conflictResultChanged: 'The result at click time was applied. New edits in this comparison are kept; copy them before comparing again.',

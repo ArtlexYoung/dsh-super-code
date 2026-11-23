@@ -5,6 +5,7 @@ import { appearanceDefaults, readAppearance } from './appearance.js';
 export const actions = [
   { id: 'navigateFiles', idea: 'Mod-Shift-o', vscode: 'Mod-p', surface: true },
   { id: 'navigateSymbols', idea: 'Mod-F12', vscode: 'Mod-Shift-o', surface: true },
+  { id: 'navigateProjectSymbols', idea: 'Mod-Alt-o', vscode: 'Mod-t', surface: true },
   { id: 'commandPalette', idea: 'Mod-Shift-p', vscode: 'Mod-Shift-p', surface: true },
   { id: 'readingFocus', idea: 'Mod-Shift-Enter', vscode: 'Mod-Shift-Enter', surface: true },
   { id: 'saveAll', idea: 'Mod-Alt-s', vscode: 'Mod-Alt-s', surface: true },

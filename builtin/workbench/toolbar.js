@@ -24,6 +24,7 @@ export const toolbarActions = [
   { id: 'readingFocus', label: 'readingFocus', icon: 'focus', shortcut: 'readingFocus', secondary: true },
   { id: 'saveConflict', label: 'saveConflict', icon: 'replace', secondary: true },
   { id: 'reopenTab', label: 'reopenTab', icon: 'back', shortcut: 'reopenTab', secondary: true },
+  { id: 'navigateProjectSymbols', label: 'navigateProjectSymbols', icon: 'outline', shortcut: 'navigateProjectSymbols', secondary: true },
 ];
 
 export function readToolbar(value) {

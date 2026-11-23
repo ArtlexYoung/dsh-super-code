@@ -29,6 +29,7 @@ function createHost(workbench, transmit, close, metadata, onReady) {
     'index.describe': (args, signal) => workbench.index.describe(args[0], signal),
     'index.resolve': (args, signal) => workbench.index.resolve(args[0], args[1], args[2], signal),
     'index.search': (args, signal) => workbench.index.search(args[0], args[1], signal),
+    'index.symbols': (args, signal) => workbench.index.symbols(args[0], 1000, signal),
     edit: args => edits.apply(args[0]),
     list: (args, signal) => workbench.list(args[0], signal),
     fail: args => workbench.fail(new Error(args[0])),

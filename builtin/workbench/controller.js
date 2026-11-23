@@ -70,6 +70,8 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
   let project, unsubscribeProject = () => {}, synchronizing = false, receiving = false;
   let snapshot = { searchQuery: { ...projectSearchDefaults }, file: null, editorKind: 'file', tabs: [], canReopenTab: Boolean(closedTabs.peek()), recentFiles: [], saveConflict: null, directories, symbols: [], cursor: null, status: t('ready'), error: '', preferences, environmentPaths: {}, panel: null, assistant: null, indexing: false, indexed: 0, back: false, forward: false, fileMenu: null, fileClipboard: null, closingFile: null };
   const publish = patch => { if (disposed) return; snapshot = { ...snapshot, unsaved: [...(project?.documents.values() || [])].filter(doc => doc.dirty).map(doc => ({ path: doc.path, review: doc.saveReview })), ...patch }; for (const listener of subscribers) listener(); };
+  const unsubscribeIndex = index.subscribe(() => publish(index.snapshot()));
+  snapshot = { ...snapshot, ...index.snapshot() };
   const fail = error => { if (error.name !== 'AbortError') publish({ error: errorText(error, t) }); };
   const drafts = draftRecovery || (draftStore ? createDraftRecovery(draftStore, t) : null);
   const unsubscribeDrafts = drafts?.subscribe(() => publish({ drafts: drafts.snapshot(projectPath) }));
@@ -364,6 +366,7 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
     if (sharedIndex) { await list(''); await updateIndex(); return; }
     files.reset();
     scanning?.abort(); const abort = new AbortController(); scanning = abort;
+    index.progress({ indexing: true, indexPartial: true });
     publish({ indexing: true, indexed: 0, error: '' });
     try {
       await list('', abort.signal);
@@ -420,9 +423,10 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
       await updateIndex();
       abort.signal.throwIfAborted();
       if (metadata.length) await api.storeIndex(metadata, abort.signal);
+      index.progress({ indexPartial: listing.truncated || partial });
       publish({ tabs: tabs(), indexed: index.files.size, status: listing.truncated ? t('indexLimit') : partial ? message(t, 'indexPartial', { count: index.files.size }) : message(t, 'indexed', { count: index.files.size }) });
     } catch (error) { if (!abort.signal.aborted) fail(error); }
-    finally { if (scanning === abort) publish({ indexing: false }); }
+    finally { if (scanning === abort) index.progress({ indexing: false }); }
   }
   async function persist(path) {
     const target = project, doc = target.documents.get(path);
@@ -829,7 +833,7 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
     dispose() {
       recovery?.dispose();
       unsubscribeDrafts?.(); if (!historyOwner) drafts?.dispose();
-      this.groups?.reset();
+      this.groups?.reset(); unsubscribeIndex();
       windowRoute.dispose(); kept = false; this.detach(); autosave.dispose(); unsubscribeProject(); unsubscribeSettings(); unsubscribeClosedTabs(); disposed = true; assistant.dispose(); reading.dispose(); changes.dispose(); files.dispose();
       const paths = [...documents.keys()]; projectViews.get(project)?.delete(documents); documents.clear(); if (project) collectBuffers(project, paths);
       states.clear(); subscribers.clear(); editorSubscribers.clear(); locationSubscribers.clear();

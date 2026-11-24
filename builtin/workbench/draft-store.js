@@ -1,10 +1,13 @@
-import { z } from 'zod';
+import { z } from 'zod/mini';
 
 export const MAX_DRAFT_BYTES = 16 * 1024 * 1024;
 export const MAX_RECOVERY_BYTES = 64 * 1024 * 1024;
-const path = z.string().min(1).max(4096).refine(value => !/[\\\0:]/.test(value) && !value.startsWith('/') && !value.split('/').some(part => !part || part === '..' || part === '.'));
-const entriesSchema = z.array(z.object({ path, text: z.string(), original: z.string(), diskVersion: z.string().min(1) })).max(100);
-const recordSchema = z.object({ version: z.literal(1), revision: z.number().int().positive(), updatedAt: z.number().int().nonnegative(), bytes: z.number().int().nonnegative(), entries: entriesSchema });
+const entriesSchema = z.lazy(() => {
+  const path = z.string().check(z.minLength(1), z.maxLength(4096), z.refine(value => !/[\\\0:]/.test(value) && !value.startsWith('/') && !value.split('/').some(part => !part || part === '..' || part === '.')));
+  return z.array(z.object({ path, text: z.string(), original: z.string(), diskVersion: z.string().check(z.minLength(1)) })).check(z.maxLength(100));
+});
+const recordSchema = z.lazy(() => z.object({ version: z.literal(1), revision: z.int().check(z.positive()),
+  updatedAt: z.int().check(z.nonnegative()), bytes: z.int().check(z.nonnegative()), entries: entriesSchema }));
 
 export function draftRecord(entries, revision) {
   const parsed = entriesSchema.safeParse(entries);

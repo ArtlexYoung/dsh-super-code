@@ -1,13 +1,18 @@
-import { z } from 'zod';
+import { z } from 'zod/mini';
 
-const path = z.string().min(1).max(4096).refine(value => !value.includes('\0'));
-const coordinate = z.number().int().min(0).max(1e9), kind = z.enum(['file', 'markdown']);
-const location = z.object({ line: coordinate, character: coordinate, length: coordinate,
-  viewport: z.object({ line: coordinate, offset: z.number().min(0).max(1e6), left: z.number().min(0).max(1e7) }).optional() });
-const tree = z.lazy(() => z.union([z.number().int().min(0).max(15), z.object({ vertical: z.boolean(), ratio: z.number().min(.2).max(.8), children: z.tuple([tree, tree]) })]));
-const record = z.object({ version: z.literal(1), updatedAt: z.number().int().min(0), tree, active: z.number().int().min(0),
-  panes: z.array(z.object({ tabs: z.array(z.object({ path, kind, pinned: z.boolean(), dirty: z.boolean(), location: location.optional() })).max(50),
-    current: z.object({ file: path, kind }).nullable(), recent: z.array(path).max(50) })).min(1).max(16) });
+// 工作台关闭时也会注册宿主入口，等到读写会话时再构建校验规则。
+const record = z.lazy(() => {
+  const path = z.string().check(z.minLength(1), z.maxLength(4096), z.refine(value => !value.includes('\0')));
+  const coordinate = z.int().check(z.minimum(0), z.maximum(1e9)), kind = z.enum(['file', 'markdown']);
+  const location = z.object({ line: coordinate, character: coordinate, length: coordinate,
+    viewport: z.optional(z.object({ line: coordinate, offset: z.number().check(z.minimum(0), z.maximum(1e6)), left: z.number().check(z.minimum(0), z.maximum(1e7)) })) });
+  const tree = z.lazy(() => z.union([z.int().check(z.minimum(0), z.maximum(15)),
+    z.object({ vertical: z.boolean(), ratio: z.number().check(z.minimum(.2), z.maximum(.8)), children: z.tuple([tree, tree]) })]));
+  const tabs = z.array(z.object({ path, kind, pinned: z.boolean(), dirty: z.boolean(), location: z.optional(location) })).check(z.maxLength(50));
+  const pane = z.object({ tabs, current: z.nullable(z.object({ file: path, kind })), recent: z.array(path).check(z.maxLength(50)) });
+  return z.object({ version: z.literal(1), updatedAt: z.int().check(z.minimum(0)), tree, active: z.int().check(z.minimum(0)),
+    panes: z.array(pane).check(z.minLength(1), z.maxLength(16)) });
+});
 
 function paneIndices(tree) {
   // 先限制树的大小，避免损坏的存储让递归校验无限深入。
@@ -19,14 +24,17 @@ function paneIndices(tree) {
   return queue.filter(node => typeof node === 'number');
 }
 function parse(value, capacityError = 'WORKBENCH_SESSION_INVALID') {
+  let leaves, parsed;
   try {
-    const leaves = paneIndices(value?.tree), result = record.parse(value);
-    if (result.active >= result.panes.length || leaves.length !== result.panes.length || new Set(leaves).size !== leaves.length || leaves.some(index => index >= result.panes.length)) throw new Error();
-    return result;
+    leaves = paneIndices(value?.tree);
+    parsed = record.safeParse(value);
   } catch (error) {
-    if (error instanceof RangeError || error instanceof z.ZodError && error.issues.some(issue => issue.code === 'too_big')) throw new Error(capacityError);
-    throw new Error('WORKBENCH_SESSION_INVALID');
+    throw new Error(error instanceof RangeError ? capacityError : 'WORKBENCH_SESSION_INVALID');
   }
+  if (!parsed.success) throw new Error(parsed.error.issues.some(issue => issue.code === 'too_big') ? capacityError : 'WORKBENCH_SESSION_INVALID');
+  const result = parsed.data;
+  if (result.active >= result.panes.length || leaves.length !== result.panes.length || new Set(leaves).size !== leaves.length || leaves.some(index => index >= result.panes.length)) throw new Error('WORKBENCH_SESSION_INVALID');
+  return result;
 }
 
 /** 与布局设置使用同一客户端来源；只保存元数据，不保存源码、草稿或模型输出。 */

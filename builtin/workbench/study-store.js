@@ -1,25 +1,35 @@
-import { z } from 'zod';
+import { z } from 'zod/mini';
 
 const MAX_BYTES = 2 * 1024 * 1024;
-const path = z.string().min(1).max(4096).refine(value => !/[\\\0]/.test(value) && !value.split('/').some(part => !part || part === '.' || part === '..'));
-const integer = z.number().int().max(1e9), coordinate = integer.min(0);
-const range = { file: path, fromLine: coordinate.min(1), toLine: coordinate.min(1) };
-const orderedLines = ({ fromLine, toLine }) => fromLine <= toLine;
-const reference = z.object({ ...range, quote: z.string() }).refine(orderedLines);
-const sources = z.array(z.object({ ...range, id: z.string(), text: z.string(), version: z.string() }).refine(orderedLines));
-const refs = z.array(reference);
-const thread = z.object({ id: z.string(), file: path, kind: z.enum(['code', 'translation']), language: z.string().optional(),
-  line: coordinate, character: coordinate, from: coordinate, to: coordinate, original: z.string().min(1), stale: z.boolean(),
-  messages: z.array(z.object({ role: z.enum(['user', 'assistant']), text: z.string(), mode: z.enum(['ask', 'edit', 'translate']).optional() })) });
-const plan = z.object({ title: z.string(), summary: z.string(), steps: z.array(z.object({ title: z.string(), reason: z.string(), refs: refs.min(1) })).min(1).max(12) });
-const explanation = z.object({ locale: z.string(), value: z.object({ sections: z.array(z.object({ title: z.string(), text: z.string(), refs })), sources, partial: z.boolean() }) });
+const coordinate = () => z.int().check(z.minimum(0), z.maximum(1e9));
 const formats = {
-  pins: z.array(thread).refine(items => new Set(items.map(item => item.id)).size === items.length && items.every(item => item.from <= item.to)),
-  reading: z.object({ goal: z.string().min(1), plan, planSources: sources, active: integer.min(-1),
-    completed: z.array(coordinate), explanations: z.array(z.tuple([coordinate, explanation])) }).refine(value => value.active < value.plan.steps.length &&
-      [...value.completed, ...value.explanations.map(([index]) => index)].every(index => index < value.plan.steps.length)),
+  pins: z.lazy(() => {
+    const thread = z.object({ id: z.string(), file: projectPath(), kind: z.enum(['code', 'translation']), language: z.optional(z.string()),
+      line: coordinate(), character: coordinate(), from: coordinate(), to: coordinate(), original: z.string().check(z.minLength(1)), stale: z.boolean(),
+      messages: z.array(z.object({ role: z.enum(['user', 'assistant']), text: z.string(), mode: z.optional(z.enum(['ask', 'edit', 'translate'])) })) });
+    return z.array(thread).check(z.refine(items => new Set(items.map(item => item.id)).size === items.length && items.every(item => item.from <= item.to)));
+  }),
+  reading: z.lazy(() => {
+    const line = coordinate().check(z.minimum(1));
+    const range = { file: projectPath(), fromLine: line, toLine: line };
+    const orderedLines = z.refine(({ fromLine, toLine }) => fromLine <= toLine);
+    const reference = z.object({ ...range, quote: z.string() }).check(orderedLines);
+    const sources = z.array(z.object({ ...range, id: z.string(), text: z.string(), version: z.string() }).check(orderedLines));
+    const refs = z.array(reference);
+    const step = z.object({ title: z.string(), reason: z.string(), refs: refs.check(z.minLength(1)) });
+    const plan = z.object({ title: z.string(), summary: z.string(), steps: z.array(step).check(z.minLength(1), z.maxLength(12)) });
+    const explanation = z.object({ locale: z.string(), value: z.object({ sections: z.array(z.object({ title: z.string(), text: z.string(), refs })), sources, partial: z.boolean() }) });
+    const index = coordinate();
+    return z.object({ goal: z.string().check(z.minLength(1)), plan, planSources: sources, active: z.int().check(z.minimum(-1), z.maximum(1e9)),
+      completed: z.array(index), explanations: z.array(z.tuple([index, explanation])) }).check(z.refine(value => value.active < value.plan.steps.length &&
+        [...value.completed, ...value.explanations.map(([index]) => index)].every(index => index < value.plan.steps.length)));
+  }),
 };
-const record = z.object({ version: z.literal(1), revision: coordinate.min(1), text: z.string() });
+const record = z.lazy(() => z.object({ version: z.literal(1), revision: coordinate().check(z.minimum(1)), text: z.string() }));
+
+function projectPath() {
+  return z.string().check(z.minLength(1), z.maxLength(4096), z.refine(value => !/[\\\0]/.test(value) && !value.split('/').some(part => !part || part === '.' || part === '..')));
+}
 
 function decode(kind, text) {
   if (new TextEncoder().encode(text).length > MAX_BYTES) throw new Error('WORKBENCH_STUDY_SIZE');

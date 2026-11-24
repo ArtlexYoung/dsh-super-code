@@ -129,6 +129,33 @@ try {
       assert.equal(await search(page).getByRole('alert').count(), 0);
     });
 
+    await t.test('搜索可停止并保留已收到的匹配，迟到结果不会混入重试', async () => {
+      await page.evaluate(() => {
+        const controller = window.test.controller, original = controller.searchProject;
+        controller.searchProject = async function* (query, signal) {
+          controller.searchProject = original;
+          for await (const event of original(query, signal)) {
+            yield event;
+            if (event.kind !== 'matches') continue;
+            await new Promise(resolve => { window.test.releaseSearch = resolve; });
+            throw new Error('late failure');
+          }
+        };
+      });
+      const panel = search(page), query = panel.getByRole('combobox', { name: '全局搜索', exact: true });
+      await query.fill('Token12');
+      await panel.getByRole('option').first().waitFor();
+      await panel.getByRole('button', { name: '停止', exact: true }).click();
+      await panel.getByRole('status').filter({ hasText: '搜索已停止' }).waitFor();
+      assert.ok(await panel.getByRole('option').count() > 0);
+      assert.equal(await query.evaluate(element => element === document.activeElement), true);
+      await capture(page, 'search-stopped');
+      await panel.getByRole('button', { name: '重试', exact: true }).click();
+      await page.evaluate(() => window.test.releaseSearch());
+      await page.waitForFunction(() => document.querySelectorAll('.sc-wb-locations [role=option]').length === 4);
+      assert.equal(await panel.getByRole('alert').count(), 0);
+    });
+
     await t.test('英文和两倍显示下范围控件可操作，收起范围可继续阅读结果', async () => {
       await page.evaluate(() => { window.test.locale(); document.body.style.zoom = '2'; });
       await search(page).getByRole('combobox', { name: 'Project search', exact: true }).fill('Token12');

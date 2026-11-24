@@ -22,7 +22,7 @@ function ReplaceFiles({ review, workbench, palette, Button, t }) {
 }
 
 export function Replace({ workbench, Button, t, palette }) {
-  const review = useReplacement(workbench, t), { query, preview, busy, failure, applied, change, scan, apply, stop } = review;
+  const review = useReplacement(workbench, t), { query, preview, phase, busy, status, applied, change, scan, apply, stop } = review;
   const count = preview?.selected.length || 0;
   return <div className="sc-wb-replace">
     <form onSubmit={event => { event.preventDefault(); void scan(); }}>
@@ -32,10 +32,12 @@ export function Replace({ workbench, Button, t, palette }) {
       {query.regexp && <small className="sc-wb-search-regexp-hint">{t('searchReplacementHint')}</small>}
       <nav><Button type="submit" disabled={busy || !query.search}>{t('replacePreview')}</Button><Button type="button" className="sc-wb-primary" disabled={busy || !count} onClick={() => { void apply(); }}>{message(t, 'replaceApply', { count })}</Button>{busy && <Button type="button" onClick={stop}>{t('stop')}</Button>}</nav>
     </form>
-    {busy && <p role="status">{t('working')}</p>}
+    {busy && <p role="status">{t(`replaceBusy_${phase}`)}</p>}
+    {status?.stopped && <p role="status">{t(status.kind === 'apply' ? 'replaceWriteStopped' : 'replaceReadStopped')}</p>}
     {preview && <p role="status">{message(t, 'replaceScope', { count: preview.scanned, skipped: preview.skipped })}</p>}
     {applied && <div role="status">{message(t, 'replaceResult', { count: applied.changed.length, failed: applied.failed.length })}{applied.failed.map(item => <p key={item.path}>{item.path} · {errorText(item.error, t)}</p>)}</div>}
-    {failure && <p role="alert">{failure}</p>}
+    {status?.failure && <p role="alert">{status.failure}{status.kind === 'apply' && !!preview?.rows.length && ` ${t('replaceRecheckHint')}`}</p>}
+    {status?.failure && status.kind !== 'apply' && <Button disabled={busy} onClick={() => { void scan(status.kind === 'recheck'); }}>{t('retryOperation')}</Button>}
     {preview && !!preview.rows.length && <><div className="sc-wb-replace-help"><small>{t('replaceReviewHint')}</small><Button disabled={busy} onClick={() => { void scan(true); }}>{t('replaceRecheck')}</Button></div>
       <ReplaceFiles review={review} workbench={workbench} palette={palette} Button={Button} t={t} /></>}
     {preview && !preview.rows.length && <p>{t('noResults')}</p>}

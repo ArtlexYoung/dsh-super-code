@@ -9,53 +9,29 @@ import { FileAction } from './FileActions.jsx';
 import { Comparison } from '../git/Changes.jsx';
 import { Icon } from './Icon.jsx';
 import { SearchOptions } from './SearchOptions.jsx';
-import { searchQueryKey } from '../../../src/workbench/search-query.ts';
 import { FileCompare } from './FileCompare.jsx';
 import { LibrarySource } from './LibrarySource.jsx';
 import { SaveConflict } from './SaveConflict.jsx';
 import { Drafts } from './Drafts.jsx';
 import { MatchText, ResultFiles, SearchContext, useResultGroups } from './SearchResults.jsx';
 import { Navigator } from './Navigator.jsx';
+import { useProjectMatches } from './project-matches.js';
 
 const emptyResults = { matches: [] };
 
 export function Locations({ data, search, workbench, Button, t }) {
   const { searchQuery } = useSyncExternalStore(workbench.subscribe, workbench.snapshot);
-  const text = searchQuery.search, queryKey = searchQueryKey(searchQuery), setText = search => workbench.setSearchQuery({ search });
-  const [found, setFound] = useState({ matches: [] }), [busy, setBusy] = useState(false), [error, setError] = useState(''), [count, setCount] = useState(0);
+  const text = searchQuery.search, setText = search => workbench.setSearchQuery({ search });
+  const project = useProjectMatches(workbench, searchQuery, search);
+  const result = search ? project.result : data;
+  const busy = search && result.status === 'searching', stopped = search && result.status === 'stopped';
+  const error = search && result.status === 'failed' ? errorText(result.failure, t) : '';
   const id = useId(), input = useRef(null), list = useRef(null);
   const [selection, setSelection] = useState(null), [visible, setVisible] = useState([]);
   
   useEffect(() => { if (!search) list.current.focus(); }, [search, data?.id]);
-  useEffect(() => {
-    if (!search) return;
-    const abort = new AbortController(); setError(''); setBusy(!!text); setCount(0); setSelection(null);
-    if (!text) { setFound({ query: queryKey, matches: [] }); return; }
-    const timer = setTimeout(() => {
-      const matches = []; let completion, published = 0, yielding = performance.now();
-      const publishMatches = () => { published = performance.now(); setCount(matches.length); setFound({ query: queryKey, matches: matches.slice() }); };
-      void (async () => {
-        for await (const event of workbench.searchProject({ ...searchQuery, locations: true }, abort.signal)) {
-          if (abort.signal.aborted) return;
-          if (event.kind === 'matches') { for (const item of event.matches) matches.push({ ...item, file: event.path, key: `location:${matches.length}` }); if (!published || performance.now() - published >= 100) publishMatches(); }
-          else if (event.kind === 'done') completion = event;
-          if (performance.now() - yielding >= 12) {
-            await new Promise(resolve => setTimeout(resolve, 0)); yielding = performance.now();
-            if (abort.signal.aborted) return;
-          }
-        }
-        if (!abort.signal.aborted) {
-          if (!completion) throw new Error('WORKBENCH_REMOTE');
-          setFound({ query: queryKey, matches, ...completion });
-        }
-      })().catch(failure => { if (!abort.signal.aborted) { setFound({ query: queryKey, matches: [] }); setError(errorText(failure, t)); } })
-        .finally(() => { if (!abort.signal.aborted) setBusy(false); });
-    }, 180);
-    return () => { clearTimeout(timer); abort.abort(); };
-  }, [queryKey, search, workbench, t]);
-  const result = search ? found.query === queryKey ? found : emptyResults : data;
   const hits = useMemo(() => search ? result.matches || [] : (result.matches || []).map((item, index) => ({ ...item, key: `location:${index}` })), [result.matches, search]);
-  const scope = search ? queryKey : data.id;
+  const scope = search ? `${project.attempt}:${project.key}` : data.id;
   const grouped = useResultGroups(search ? hits : emptyResults.matches, scope), rows = search ? grouped.rows : hits;
   const [context, setContext] = useState(false);
   const index = selection?.scope === scope ? Math.max(0, rows.findIndex(row => row.key === selection.key)) : 0, active = rows[index];
@@ -84,16 +60,19 @@ export function Locations({ data, search, workbench, Button, t }) {
       aria-expanded={true} aria-autocomplete="list" aria-controls={id} aria-activedescendant={activeId} value={text} onChange={event => setText(event.target.value)} onKeyDown={keydown} />
       {text && <Button title={t('clearFileSearch')} aria-label={t('clearFileSearch')} onClick={() => { setText(''); input.current.focus(); }}><Icon name="close" /></Button>}</label>
       <SearchOptions query={searchQuery} change={workbench.setSearchQuery} workbench={workbench} Button={Button} t={t} />
-      <span role="status">{busy ? `${t('working')} · ${count} ${t('searchMatches')}` : `${hits.length} ${t('searchMatches')}`}</span><Button aria-pressed={context} onClick={() => setContext(!context)}>{t('searchContext')}</Button></div>}
-    {error && <p role="alert">{error}</p>}{busy && <p role="status">{t('working')}</p>}
+      <div className="sc-wb-search-actions"><span role="status">{busy && `${t('projectSearching')} · `}{stopped && `${t('projectSearchStopped')} · `}{hits.length} {t('searchMatches')}</span>
+        {busy && <Button onClick={() => { project.stop(); input.current.focus(); }}>{t('stop')}</Button>}
+        {(stopped || error) && <Button onClick={() => { project.retry(); input.current.focus(); }}>{t('retryOperation')}</Button>}
+        <Button aria-pressed={context} onClick={() => setContext(!context)}>{t('searchContext')}</Button></div></div>}
+    {error && <p role="alert">{error}</p>}
     <div className="sc-wb-result-body">{search && grouped.groups.length > 0 && <ResultFiles {...grouped} active={active?.file} jump={jump} Button={Button} t={t} />}
     <div ref={list} id={id} role="listbox" aria-label={t('locationResults')} aria-busy={busy} aria-activedescendant={activeId} tabIndex={0} className="sc-wb-location-list" onKeyDown={keydown}>
     {!!rows.length && <FileList key={scope} className="sc-wb-results" items={rows} rowHeight={36} focusKey={active?.key} visible={setVisible}>{(item, row) => <Button id={`${id}-${row}`} role="option" aria-selected={row === index} aria-posinset={row + 1} aria-setsize={rows.length} tabIndex={-1}
       onClick={() => { choose(row); visit(item); }} title={`${item.file}:${item.line + 1}`}>
       <span className="sc-wb-result-path">{item.file}<small>{item.line + 1}</small></span><code>{search ? <MatchText item={item} /> : item.lineText || item.declaration || item.name}</code>
-    </Button>}</FileList>}{!rows.length && !busy && !error && <div className="sc-wb-location-empty" role="status"><span>{t(hits.length ? 'searchFilesFolded' : 'noResults')}</span>{!search && <small>{t('definitionEnvironmentHint')}</small>}</div>}</div>
+    </Button>}</FileList>}{!rows.length && !busy && !error && !stopped && <div className="sc-wb-location-empty" role="status"><span>{t(hits.length ? 'searchFilesFolded' : 'noResults')}</span>{!search && <small>{t('definitionEnvironmentHint')}</small>}</div>}</div>
     </div>{search && context && <SearchContext item={active} workbench={workbench} t={t} />}
-    <footer>{hits.length} · {search ? result.scanned === undefined ? '' : message(t, 'replaceScope', { count: result.scanned, skipped: result.skipped }) : t('usageNote')}{result.truncated && <span>{t('searchLimit')}</span>}
+    <footer>{search ? result.scanned === undefined ? null : message(t, 'replaceScope', { count: result.scanned, skipped: result.skipped }) : `${hits.length} · ${t('usageNote')}`}{result.truncated && <span>{t('searchLimit')}</span>}
       {!!rows.length && <span className="sc-wb-location-keys">{t('locationKeys')}</span>}</footer>
   </div>;
 }

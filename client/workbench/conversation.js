@@ -26,20 +26,21 @@ function WorkbenchConversation({ sessionId, visible = true, useSessions, useSess
 function WorkbenchInput({ useInput, inputActions, openView, t }) {
   const [error, setError] = useState('')
   const input = useInput(value => value)
-  const rich = input.attachmentIds?.length > 0 || input.occurrences?.length > 0
-  const locked = input.phase !== 'plain' || rich
+  const reason = input.phase !== 'plain' ? `conversationInput_${input.phase}`
+    : input.attachmentIds?.length > 0 || input.occurrences?.length > 0 ? 'conversationRichDraft' : ''
+  const canSend = !reason && !!input.draft.trim()
   const act = callback => { try { callback(); setError('') } catch { setError(t('conversationFailed')) } }
-  const send = () => act(() => inputActions.submit())
+  const send = () => { if (canSend) act(() => inputActions.submit()) }
   return React.createElement('form', { className: 'sc-wb-conversation-input', onSubmit: event => { event.preventDefault(); send() } },
     error && React.createElement('p', { role: 'alert' }, error),
-    rich && React.createElement('small', null, t('conversationRichDraft')),
-    React.createElement('textarea', { 'aria-label': t('conversationInput'), placeholder: t('conversationInput'), value: input.draft, disabled: locked,
+    reason && React.createElement('small', { role: 'status' }, t(reason)),
+    React.createElement('textarea', { 'aria-label': t('conversationInput'), placeholder: t('conversationInput'), value: input.draft, disabled: !!reason,
       onChange: event => act(() => inputActions.setDraft(event.target.value)),
       onKeyDown: event => {
-        if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); if (!locked && input.draft.trim()) send() }
+        if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); send() }
       } }),
     React.createElement('div', null, React.createElement(ActionButton, { type: 'button', onClick: () => openView('chat', '') }, t('openConversation')),
-      React.createElement(ActionButton, { type: 'submit', disabled: locked || !input.draft.trim() }, t('send'))))
+      React.createElement(ActionButton, { type: 'submit', disabled: !canSend }, t('send'))))
 }
 
 export { WorkbenchConversation }

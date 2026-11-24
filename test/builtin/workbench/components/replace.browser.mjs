@@ -26,6 +26,22 @@ try {
     t.afterEach(async () => { await page.evaluate(() => { window.test.release(); window.test.dispose(); }); await page.close(); assert.deepEqual(errors, []); });
     const field = side => page.locator('#' + side).getByRole('textbox', { name: 'replaceSearch' });
     const preview = side => page.locator('#' + side).getByRole('button', { name: 'replacePreview', exact: true });
+    await t.test('扫描显示当前阶段，失败和主动停止都可以继续检查', async () => {
+      const panel = page.locator('#a');
+      await field('a').fill('current'); await preview('a').click();
+      await panel.getByRole('status').filter({ hasText: 'replaceBusy_scan' }).waitFor();
+      await page.waitForFunction(() => window.test.waiting() === 1);
+      await page.evaluate(() => window.test.fail());
+      await panel.getByRole('alert').waitFor();
+      await panel.getByRole('button', { name: 'retryOperation', exact: true }).click();
+      await page.waitForFunction(() => window.test.waiting() === 1);
+      await panel.getByRole('button', { name: 'stop', exact: true }).click();
+      await page.evaluate(() => window.test.release());
+      await panel.getByRole('status').filter({ hasText: 'replaceReadStopped' }).waitFor();
+      assert.equal(await panel.getByRole('alert').count(), 0);
+      await page.evaluate(() => window.test.fast());
+      await preview('a').click(); await panel.locator('.sc-wb-replace-row').waitFor();
+    });
     await t.test('另一个视图改查询后，晚到的旧预览不可应用', async () => {
       await field('a').fill('old'); await preview('a').click(); await page.waitForFunction(() => window.test.waiting() === 1);
       await field('b').fill('new'); await page.evaluate(() => window.test.release()); await preview('a').waitFor({ state: 'visible' });

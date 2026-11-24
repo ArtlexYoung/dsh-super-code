@@ -24,21 +24,31 @@ export function useReplacement(workbench, t) {
   const { searchQuery: query } = useSyncExternalStore(workbench.subscribe, workbench.snapshot);
   const [savedPreview, setPreview] = usePanelState(workbench, 'replacePreview', null), [read, setRead] = usePanelState(workbench, 'replaceRead', null);
   const [applied, setApplied] = usePanelState(workbench, 'replaceResult', null);
-  const [busy, setBusy] = useState(false), [error, setError] = useState(null), pending = useRef(null);
+  const [phase, setPhase] = useState(null), [outcome, setOutcome] = useState(null), pending = useRef(null);
   const preview = sameQuery(savedPreview?.query, query) ? savedPreview : null;
-  const failure = error?.read === read ? error.text : '';
+  const status = outcome?.read === read ? outcome : null;
   useEffect(() => () => pending.current?.abort.abort(), []);
   const current = id => workbench.snapshot().panel?.state?.replaceRead === id;
   const update = (id, change) => setPreview(previous => previous?.id === id ? change(previous) : previous);
-  const change = patch => { setRead(null); workbench.setSearchQuery(patch); setPreview(null); setApplied(null); setError(null); };
+  const change = patch => { setRead(null); workbench.setSearchQuery(patch); setPreview(null); setApplied(null); setOutcome(null); };
   function start(id, kind) {
     pending.current?.abort.abort();
     const abort = new AbortController(); pending.current = { abort, id, kind };
-    setBusy(true); setError(null); setApplied(null);
+    setPhase(kind); setOutcome(null); setApplied(null);
     return abort;
   }
-  function finish(abort) { if (pending.current?.abort === abort) { pending.current = null; setBusy(false); } }
+  function finish(abort) {
+    const request = pending.current;
+    if (request?.abort !== abort) return;
+    pending.current = null; setPhase(null);
+    if (abort.signal.aborted && current(request.id)) setOutcome({ read: request.id, kind: request.kind, stopped: true });
+  }
+  function fail(abort, id, error) {
+    if (abort.signal.aborted || !current(id)) return;
+    setOutcome({ read: id, kind: pending.current.kind, failure: errorText(error, t) });
+  }
   async function scan(remaining = false) {
+    if (pending.current || !query.search) return;
     const id = uniqueId(), paths = remaining ? new Set(preview.rows.map(row => row.path)) : null;
     const selected = remaining ? new Set(preview.selected) : null;
     const abort = start(id, remaining ? 'recheck' : 'scan'); setRead(id); setPreview(remaining ? { ...preview, id } : null);
@@ -46,10 +56,11 @@ export function useReplacement(workbench, t) {
       const result = await scanMatches(workbench, query, abort.signal, paths);
       if (!current(id)) return;
       setPreview({ id, query, ...result, selected: result.rows.filter(row => !selected || selected.has(row.path)).map(row => row.path), active: null });
-    } catch (error) { if (!abort.signal.aborted && current(id)) setError({ read: id, text: errorText(error, t) }); }
+    } catch (error) { fail(abort, id, error); }
     finally { finish(abort); }
   }
   async function apply() {
+    if (pending.current || !preview) return;
     const selected = new Set(preview.selected), rows = preview.rows.filter(row => selected.has(row.path));
     if (!rows.length) return;
     const { id } = preview, abort = start(id, 'apply');
@@ -61,7 +72,7 @@ export function useReplacement(workbench, t) {
       const result = await workbench.replaceProject(rows, query, progress, abort.signal, id);
       const failed = new Set(result.failed.map(item => item.path));
       update(id, previous => remainingReplacements(previous, rows.filter(row => !failed.has(row.path)).map(row => row.path)));
-    } catch (error) { if (!abort.signal.aborted && current(id)) setError({ read: id, text: errorText(error, t) }); }
+    } catch (error) { fail(abort, id, error); }
     finally { finish(abort); }
   }
   function stop() {
@@ -74,5 +85,5 @@ export function useReplacement(workbench, t) {
     selected: checked ? [...new Set([...previous.selected, path])] : previous.selected.filter(item => item !== path) }));
   const selectAll = checked => update(preview.id, previous => ({ ...previous, selected: checked ? previous.rows.map(row => row.path) : [] }));
   const inspect = path => update(preview.id, previous => ({ ...previous, active: path }));
-  return { query, preview, busy, failure, applied, change, scan, apply, stop, select, selectAll, inspect };
+  return { query, preview, phase, busy: !!phase, status, applied, change, scan, apply, stop, select, selectAll, inspect };
 }

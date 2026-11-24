@@ -561,7 +561,8 @@ body[data-ds-dark-theme] .sc-workbench[data-palette=vscode]{
 .sc-wb-resize-se{bottom:-4px;right:-4px;cursor:nwse-resize}.sc-wb-resize-sw{bottom:-4px;left:-4px;cursor:nesw-resize}
 .sc-wb-locations{height:100%;min-height:0;display:flex;flex-direction:column;background:var(--wb-panel)}
 .sc-wb-search-header{padding:14px 16px 10px;display:flex;flex-direction:column;gap:7px;border-bottom:1px solid var(--wb-line);flex:none}
-.sc-wb-search-header>span{font-size:11px;color:var(--wb-muted)}
+.sc-wb-search-actions{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.sc-wb-search-actions>span{font-size:11px;color:var(--wb-muted);margin-inline-end:auto}
 .sc-wb-search-field{display:flex;align-items:center;gap:8px;border:1px solid var(--wb-input-line);border-radius:var(--wb-radius);background:var(--wb-input);padding:3px 9px}
 .sc-wb-search-field:focus-within{border-color:var(--wb-accent);box-shadow:0 0 0 1px var(--wb-accent)}
 .sc-workbench .sc-wb-search-field>input{flex:1;min-width:0;border:0;padding:6px 0;background:transparent;color:var(--wb-text);font:inherit;outline:none}
@@ -854,7 +855,6 @@ body[data-ds-dark-theme] :is(.sc-wb-drafts,.sc-wb-file-dialog) [role=alert]{colo
 .sc-wb-result-group small{font-variant-numeric:tabular-nums}
 .sc-wb-result-body .sc-wb-location-list{min-width:0}
 .sc-wb-locations mark{background:var(--wb-selected);color:var(--wb-selected-text);font-weight:700;text-decoration:underline;text-underline-offset:2px}
-.sc-wb-search-header>button{align-self:flex-start}
 .sc-wb-search-context{padding:6px 12px;max-height:32%;overflow:auto;border-top:1px solid var(--wb-line);font-size:11px}
 .sc-wb-search-context>small{display:block}.sc-wb-search-context pre{margin:5px 0;line-height:1.5;overflow:auto}.sc-wb-search-context pre small{display:inline-block;min-width:3em;color:var(--wb-muted)}
 .sc-wb-main{--wb-search-dock-width:min(40%,460px)}

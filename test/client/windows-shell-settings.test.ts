@@ -4,15 +4,25 @@ import { readFileSync } from 'node:fs'
 import { runInNewContext } from 'node:vm'
 import { validateConfiguration } from '../../src/dsh/budgets.js'
 
-function client() {
-  let plugin: any
+type SettingsClient = Pick<typeof import('../../builtin/settings/budgets.js'), 'createBudgetAutosave' | 'createBudgetEditors'>
+
+function loadSettingsClient(): SettingsClient {
+  let plugin: SettingsClient | undefined
   runInNewContext(readFileSync(new URL('../../dist/client.js', import.meta.url), 'utf8'), {
     setTimeout, clearTimeout,
-    __ModuleLoader__: { load: ({ factory }: any) => { plugin = factory((id: string) => id === 'react' ? { forwardRef: () => 'button' } : {}) } },
+    __ModuleLoader__: {
+      load: ({ factory }: { factory: (requireModule: (id: string) => object) => SettingsClient }) => {
+        plugin = factory(id => id === 'react' ? { forwardRef: () => 'button' } : {})
+      },
+    },
   })
+  assert.ok(plugin, 'The built client must register its settings exports')
   return plugin
 }
-const editor = (api: object, section: string) => client().createBudgetAutosave(api, section)
+
+// Each editor owns its state, so the tests can share the loaded client bundle.
+const { createBudgetAutosave, createBudgetEditors } = loadSettingsClient()
+const editor = (api: object, section: string) => createBudgetAutosave(api, section)
 
 for (const [section, key, initial, changed] of [
   ['skills', 'grillMeSkill', false, true],
@@ -23,7 +33,7 @@ for (const [section, key, initial, changed] of [
   let stored = { revision: 1, writable: true, configuration: { maxTasks: 32 } as Record<string, unknown> }
   let release!: () => void
   const writes: Record<string, unknown>[] = []
-  const settings = client().createBudgetEditors({
+  const settings = createBudgetEditors({
     readConfig: async () => ({ ok: true, value: structuredClone(stored) }),
     saveConfig: async (content: string, expected: string) => {
       const configuration = JSON.parse(content)
@@ -51,7 +61,7 @@ for (const [section, key, initial, changed] of [
 for (const localWrites of [1, 2]) test(`a restarted settings service cannot rebase or save an old draft after ${localWrites} new Skill saves`, async () => {
   let stored = { revision: 1, generation: 'first-service', writable: true,
     configuration: { maxTasks: 32 } as Record<string, unknown> }
-  const settings = client().createBudgetEditors({
+  const settings = createBudgetEditors({
     readConfig: async () => ({ ok: true, value: structuredClone(stored) }),
     saveConfig: async (content: string, expected: string) => {
       const [revision, generation] = expected.split(':')
@@ -85,7 +95,7 @@ for (const localWrites of [1, 2]) test(`a restarted settings service cannot reba
 test('a late save from the old service cannot replace a read from a restarted service', async () => {
   let stored = { revision: 4, generation: 'first-service', writable: true, configuration: {} }
   let hold = false, release!: () => void
-  const settings = client().createBudgetEditors({
+  const settings = createBudgetEditors({
     readConfig: async () => {
       const captured = structuredClone(stored)
       if (hold) { hold = false; await new Promise<void>(resolve => { release = resolve }) }
@@ -110,7 +120,7 @@ test('a late save from the old service cannot replace a read from a restarted se
 test('a late read from the old service cannot undo a newer read and its local Skill saves', async () => {
   let stored = { revision: 1, generation: 'first-service', writable: true, configuration: {} }
   let hold = false, release!: () => void
-  const settings = client().createBudgetEditors({
+  const settings = createBudgetEditors({
     readConfig: async () => {
       const captured = structuredClone(stored)
       if (hold) { hold = false; await new Promise<void>(resolve => { release = resolve }) }
@@ -190,7 +200,7 @@ test('unchanged safe-integer execution budgets survive seconds conversion withou
 test('an older overlapping read cannot change the permissions of an editor that received a newer snapshot', async () => {
   let stored = { revision: 1, writable: true, configuration: {} }
   let hold = false, release!: () => void
-  const settings = client().createBudgetEditors({ readConfig: async () => {
+  const settings = createBudgetEditors({ readConfig: async () => {
     const captured = structuredClone(stored)
     if (hold) { hold = false; await new Promise<void>(resolve => { release = resolve }) }
     return { ok: true, value: captured }
@@ -208,7 +218,7 @@ test('an older overlapping read cannot change the permissions of an editor that 
 
 test('home changes carry untouched protection fields into a retained draft without losing edited fields', async () => {
   let stored = { revision: 1, writable: true, configuration: { deletionProtection: 'relaxed', deletionProtectionForOfficialPresets: false } }
-  const settings = client().createBudgetEditors({
+  const settings = createBudgetEditors({
     readConfig: async () => ({ ok: true, value: structuredClone(stored) }),
     saveConfig: async (content: string, expected: string) => {
       assert.equal(expected, String(stored.revision))
@@ -228,7 +238,7 @@ test('a retained invalid or failed budget draft can save after another local tab
   for (const failure of ['invalid', 'save-failed']) {
     let stored = { revision: 1, writable: true, configuration: { budgets: { summaryMaxTokens: 8192 } } as Record<string, any> }
     let unavailable = failure === 'save-failed'
-    const settings = client().createBudgetEditors({
+    const settings = createBudgetEditors({
       readConfig: async () => ({ ok: true, value: structuredClone(stored) }),
       saveConfig: async (content: string, expected: string) => {
         if (unavailable) return { ok: false }
@@ -257,7 +267,7 @@ test('a retained invalid or failed budget draft can save after another local tab
 test('an older read waits for every queued local Skill save and cannot regress its revision', async () => {
   let stored = { revision: 1, writable: true, configuration: {} as Record<string, unknown> }
   let release!: () => void, finishSave!: () => void, hold = false, writes = 0
-  const settings = client().createBudgetEditors({
+  const settings = createBudgetEditors({
     readConfig: async () => {
       const captured = structuredClone(stored)
       if (hold) { hold = false; await new Promise<void>(resolve => { release = resolve }) }
@@ -291,7 +301,7 @@ test('an older read waits for every queued local Skill save and cannot regress i
 
 test('fresh reads accept a restarted settings service and its lower revision', async () => {
   let stored = { revision: 4, writable: true, configuration: {} as Record<string, unknown> }
-  const settings = client().createBudgetEditors({
+  const settings = createBudgetEditors({
     readConfig: async () => ({ ok: true, value: structuredClone(stored) }),
     saveConfig: async (content: string) => {
       stored = { ...stored, revision: stored.revision + 1, configuration: JSON.parse(content) }
@@ -311,7 +321,7 @@ test('fresh reads accept a restarted settings service and its lower revision', a
 
 test('local saves do not silently rebase a draft across an external budget revision', async () => {
   let stored = { revision: 1, writable: true, configuration: { budgets: { summaryMaxTokens: 8192 } } as Record<string, any> }
-  const settings = client().createBudgetEditors({
+  const settings = createBudgetEditors({
     readConfig: async () => ({ ok: true, value: structuredClone(stored) }),
     saveConfig: async (content: string, expected: string) => {
       if (expected !== String(stored.revision)) return { ok: true, value: { ok: false, error: 'conflict' } }
@@ -342,7 +352,7 @@ test('switching budget tabs waits for all local Skill saves, including edits que
       stored = { ...stored, revision: stored.revision + 1, configuration: JSON.parse(content) }
       return { ok: true, value: { ok: true, snapshot: structuredClone(stored) } }
     } }
-  const settings = client().createBudgetEditors(api), { skills, shell } = settings.editors
+  const settings = createBudgetEditors(api), { skills, shell } = settings.editors
   skills.receive((await settings.readConfig()).value)
   skills.change({ openspecSkills: true })
   skills.change({ mattpocockSkills: true })
@@ -361,7 +371,7 @@ test('switching budget tabs waits for all local Skill saves, including edits que
 
 test('budget tab reads wait for direct reset/home saves and recover from a rejected write', async () => {
   let release!: () => void, reject = false, reads = 0
-  const settings = client().createBudgetEditors({
+  const settings = createBudgetEditors({
     readConfig: async () => { reads++; return { ok: true, value: { revision: 2, writable: true, configuration: {} } } },
     saveConfig: async () => { await new Promise<void>(resolve => { release = resolve }); if (reject) throw new Error('offline'); return { ok: true } },
   })
@@ -377,7 +387,7 @@ test('budget tab reads wait for direct reset/home saves and recover from a rejec
 
 test('a real external budget conflict retains the draft without blind retries or overwriting it on another tab', async () => {
   let writes = 0
-  const settings = client().createBudgetEditors({
+  const settings = createBudgetEditors({
     readConfig: async () => ({ ok: true, value: { revision: 2, writable: true, configuration: { openspecSkills: false } } }),
     saveConfig: async () => { writes++; return { ok: true, value: { ok: false, error: 'conflict' } } },
   })

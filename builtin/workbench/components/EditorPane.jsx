@@ -1,8 +1,10 @@
-import React, { useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
+import React, { useCallback, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import { Tabs } from './Tabs.jsx';
 import { Icon } from './Icon.jsx';
 import { FileIcon } from './FileIcon.jsx';
+import { BreadcrumbPicker } from './BreadcrumbPicker.jsx';
+import { message } from '../locales.js';
 import { ScopePath } from './ScopePath.jsx';
 import { MarkdownPreview } from './MarkdownPreview.jsx';
 import { EmptyWorkspace } from './WorkspaceRecovery.jsx';
@@ -23,6 +25,8 @@ export function EditorPane({ pane, rect, groups, active, hidden, drop, drag, spl
   const snapshot = useSyncExternalStore(workbench.subscribe, workbench.snapshot);
   const editor = useRef(null), tooltips = useRef(null), opened = useRef(false);
   const [previews, setPreviews] = useState(() => pane.previews || new Set(initialPreview ? [initialPreview] : []));
+  const [picker, setPicker] = useState(null), closePicker = useCallback(() => setPicker(null), []);
+  useLayoutEffect(closePicker, [snapshot.file, hidden, closePicker]);
   const markdown = snapshot.editorKind === 'markdown';
   const file = snapshot.file, parts = file?.split('/') || [], name = parts.pop();
   const isMarkdown = /\.(md|markdown|mdown)$/i.test(name || ''), showBoth = isMarkdown && !markdown && previews.has(file);
@@ -55,7 +59,7 @@ export function EditorPane({ pane, rect, groups, active, hidden, drop, drag, spl
 
   const inlineScope = snapshot.preferences.palette === 'vscode';
   const view = name && !markdown && workbench.view();
-  const scope = view && <ScopePath view={view} file={file} workbench={workbench} inline={inlineScope} Button={Button} t={t} />;
+  const scope = view && <ScopePath view={view} file={file} workbench={workbench} inline={inlineScope} pick={setPicker} Button={Button} t={t} />;
   const act = callback => () => { Promise.resolve().then(callback).catch(workbench.fail); };
   const preview = name && (markdown || showBoth) && <MarkdownPreview key={file} document={workbench.view()?.state.doc} file={file}
     cwd={cwd} workbench={workbench} list={list} revealDirectory={revealDirectory} t={t} />;
@@ -65,8 +69,8 @@ export function EditorPane({ pane, rect, groups, active, hidden, drop, drag, spl
     <div className="sc-wb-path">
       <div className="sc-wb-path-row">
         <div className="sc-wb-path-location">
-          {parts.length > 0 && <span className="sc-wb-path-folders" title={parts.join('/')}>{parts.map((part, index) => <React.Fragment key={index}>{part}<i className="sc-wb-path-separator" aria-hidden="true" /></React.Fragment>)}</span>}
-          {name && <FileIcon path={name} />}<span className="sc-wb-path-name" title={file}>{name || t('title')}</span>
+          {parts.length > 0 && <span className="sc-wb-path-folders" title={parts.join('/')}>{parts.map((part, index) => <React.Fragment key={index}><Button aria-haspopup="listbox" aria-label={message(t, 'browseSiblings', { name: part })} onClick={event => setPicker({ file, anchor: event.currentTarget, directory: parts.slice(0, index).join('/') })}>{part}</Button><i className="sc-wb-path-separator" aria-hidden="true" /></React.Fragment>)}</span>}
+          {name ? <><FileIcon path={name} /><Button className="sc-wb-path-name" title={file} aria-haspopup="listbox" aria-label={message(t, 'browseSiblings', { name })} onClick={event => setPicker({ file, anchor: event.currentTarget, directory: parts.join('/') })}>{name}</Button></> : <span>{t('title')}</span>}
         </div>
         {inlineScope && scope}
         {isMarkdown && <Button title={t(markdown ? 'markdownSource' : 'markdownPreview')} aria-label={t(markdown ? 'markdownSource' : 'markdownPreview')}
@@ -88,6 +92,7 @@ export function EditorPane({ pane, rect, groups, active, hidden, drop, drag, spl
           onClick={toggleFocus}><Icon name={focus ? 'focusReturn' : 'focus'} /><span>{t('readingFocus')}</span></Button>}
       </div>
     </div>
+    {picker?.file === file && picker && <BreadcrumbPicker target={picker} close={closePicker} list={list} workbench={workbench} Button={Button} t={t} />}
     <div className="sc-wb-editor-area" data-markdown-split={showBoth}>
       <div ref={editor} className="sc-wb-editor" hidden={markdown} />
       {preview}

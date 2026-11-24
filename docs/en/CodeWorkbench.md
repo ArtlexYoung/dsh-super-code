@@ -33,6 +33,8 @@ Choose **Open file**, or press Ctrl/⌘+Shift+O with the IDEA keymap or Ctrl/⌘
 
 In Quick navigation, enter `src/a.ts:120:8` and press Enter to open line 120, column 8. Use `:120:8` in the current file. Type `#` or choose **Project symbols** to search declarations by name and path. The panel shows how many files have been indexed. You can open available matches while indexing continues. The default shortcut is Ctrl/⌘+Alt+O with the IDEA keymap and Ctrl/⌘+T with VS Code.
 
+Click a folder or filename in the editor path to filter its siblings or browse a subfolder. In the scope path, click a declaration to jump to it or use its arrow to choose a sibling declaration. Both work with the explorer hidden.
+
 The default toolbar shows Back, Forward, Open file, Find and project Search. Replace, definitions, completion, parameter info and code history are available through All actions and can be restored to the toolbar in settings. New layouts use a 200px explorer and 320px right sidebar, keeping more room for code in narrow windows. Saved dimensions, pane visibility, action order and visibility are preserved.
 
 Code defaults to bundled JetBrains Mono at 14px with 1.5 line spacing. The variable regular and italic faces support weights 100–800 and work offline. In **Reading & font** in either editor settings or Super Code settings, choose the English code font and Chinese fallback font separately, and adjust size and spacing. Chinese defaults to system fallback; existing font choices are preserved. Preferences save immediately and synchronize across this client's sessions and detached windows; changing autosave, model, or toolbar settings preserves the current documentation and keyboard focus.

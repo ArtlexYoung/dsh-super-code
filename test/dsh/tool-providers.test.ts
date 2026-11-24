@@ -20,8 +20,10 @@ test('isolated provider services activate before mounting tools and all release 
     const location = join(directory, 'node_modules', '@deepseek-ai', module!)
     await mkdir(location, { recursive: true })
     await writeFile(join(location, 'package.json'), JSON.stringify({ type: 'module', main: 'index.js' }))
+    const isTerminalBackend = module === 'dsh-terminal-bash'
     await writeFile(join(location, 'index.js'), `export const inject = ['tools'${module.startsWith('dsh-tool-bash') ? ", 'shell'" : ''}];
-      export function apply(ctx) { ${module === 'dsh-tool-fs' ? `ctx.inject(['attachments'], nested => nested.tools.register({ name: 'read_image', parameters: {}, output: { schema: {} } }));` : ''}
+      ${isTerminalBackend ? 'export let mountedConfig;' : ''}
+      export function apply(ctx, config) { ${isTerminalBackend ? 'mountedConfig = config;' : ''} ${module === 'dsh-tool-fs' ? `ctx.inject(['attachments'], nested => nested.tools.register({ name: 'read_image', parameters: {}, output: { schema: {} } }));` : ''}
         ${name ? `ctx.effect(() => ctx.tools.register({ name: ${JSON.stringify(name)},
         parameters: { type: 'object', properties: { command: { type: 'string' }, ${module === 'dsh-tool-bash' ? "description: { type: 'string' }" : ''} },
           required: ['command'${module === 'dsh-tool-bash' ? ", 'description'" : ''}], additionalProperties: true },
@@ -44,6 +46,9 @@ test('isolated provider services activate before mounting tools and all release 
   const owner = await ctx.plugin({ async apply(scope: Context) { providers = await mountToolProviders(scope, runtime) } })
   assert.equal(providers.shellAvailable('standard'), true)
   assert.equal(providers.shellAvailable('persistent'), true)
+  const terminalModuleUrl = pathToFileURL(join(directory, 'node_modules', '@deepseek-ai', 'dsh-terminal-bash', 'index.js'))
+  const terminalBackend = await import(terminalModuleUrl.href) as { mountedConfig: { disposeGraceMs?: number } }
+  assert.equal(terminalBackend.mountedConfig.disposeGraceMs, process.platform === 'darwin' ? 1000 : undefined)
   const parameters = registered.get('bash')!.parameters
   assert.equal(parameters.type, 'object')
   assert.deepEqual(parameters.required, ['command', 'description'])

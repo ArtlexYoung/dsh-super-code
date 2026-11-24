@@ -9,6 +9,7 @@ const require = createRequire(import.meta.url)
 test('工作台独立初始化、工作流随真实开关登记，并在卸载时撤销登记', async () => {
   let plugin: any
   const loadedModules: string[] = []
+  let editorEnvironmentReads = 0
   const react = { ...require('react'), useMemo: (create: () => unknown) => create() }
   const storage = new Map<string, string>()
   const localStorage = { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => storage.set(key, value) }
@@ -35,6 +36,7 @@ test('工作台独立初始化、工作流随真实开关登记，并在卸载�
   }
   runInNewContext(readFileSync(new URL('../../dist/client.js', import.meta.url), 'utf8'), {
     URL, AbortController, localStorage, setTimeout, clearTimeout, console,
+    get navigator() { editorEnvironmentReads++; return { userAgent: '', vendor: '', platform: '' } },
     document: { documentElement: { style: {} }, createElement: () => ({ dataset: {}, style: {}, remove() {} }), head: { append() {}, appendChild() {} } },
     window: { addEventListener() {}, removeEventListener() {}, __ModuleLoader__: { load: ({ factory }: any) => { plugin = factory((id: string) => {
       loadedModules.push(id)
@@ -51,7 +53,9 @@ test('工作台独立初始化、工作流随真实开关登记，并在卸载�
     activateWorkbench(child)
     return () => { for (const dispose of childEffects.reverse()) dispose() }
   }
+  const beforeWorkbench = editorEnvironmentReads
   const stop = start()
+  assert.equal(editorEnvironmentReads, beforeWorkbench, '登记关闭的工作台不初始化编辑器的浏览器环境')
   const settings = entries.get('super-code').contribution.inject()
   await settingsUpdated()
   assert.equal(entries.has('super-code-mattpocock'), false)
@@ -83,6 +87,7 @@ test('工作台独立初始化、工作流随真实开关登记，并在卸载�
   assert.equal(entries.has('super-code-workbench'), false)
   assert.equal(workflow.hasWorkbench(), false)
   preference.save({ enabled: true })
+  assert.ok(editorEnvironmentReads > beforeWorkbench, '启用时准备编辑器，首次打开文件不再初始化模块')
   assert.equal(workflow.hasWorkbench(), true, '工作流文件入口读取工作台现有开关')
   assert.equal(entries.get('super-code-workbench').contribution.name, 'conversation.view')
   assert.ok(entries.has('super-code'))

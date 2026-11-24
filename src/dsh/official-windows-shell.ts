@@ -78,6 +78,15 @@ export function applyOfficialWindowsShell(ctx: Context): void {
       agent.ctx.effect(() => state.release)
       // Plugin unload restores filters even while the owning Agent remains alive.
       cleanups.push(owner.effect(() => state.release))
+      const tools = agent.ctx.get('tools')!, denied = enabled ? 'pwsh' : 'bash'
+      let restricted = false
+      const restrictChoice = (): void => {
+        if (restricted || !tools.get(denied, key)) return
+        cleanups.push(tools.restrict({ deny: [denied] }))
+        restricted = true
+      }
+      // 已挂载的工具必须在首步快照前筛选；子任务发布通知不等待异步监听器。
+      restrictChoice()
       state.ready = (async () => {
         const lease = await acquire(key)
         cleanups.push(lease.release)
@@ -94,13 +103,12 @@ export function applyOfficialWindowsShell(ctx: Context): void {
           return
         }
         if (state.disposed) return
-        const tools = agent.ctx.get('tools')!
         if (!prepare) {
           if (!enabled) return
-          cleanups.push(tools.restrict({ deny: ['pwsh'] }))
+          restrictChoice()
           throw new ShellPreparationError('Unsupported host shell provider; disable bundled Bash to use the host shell')
         }
-        cleanups.push(tools.restrict({ deny: [enabled ? 'pwsh' : 'bash'] }))
+        restrictChoice()
         if (!enabled) return
         try {
           if (parent?.key === key) await parent.ready

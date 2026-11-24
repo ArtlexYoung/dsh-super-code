@@ -1,22 +1,19 @@
-export { SafeMarkdown } from './windows/markdown.jsx';
 import React, { useMemo, useSyncExternalStore } from 'react';
 import { workspaceApi } from './remote.js';
 export { descriptors } from './remote.js';
-import { createWorkbench } from './controller.js';
-import { Workbench as WorkbenchView } from './components/Workbench.jsx';
 import { featureView } from '../ui/boundary.js';
 import { NS, zh, en } from './locales.js';
 import stylesheet from './style.css';
 import fontStyles from './fonts/style.js';
 import { createWorkbenchPreference, createEditorPreference } from './preference.js';
 import { createLayoutPreference } from './layout.js';
-import { createWorkspaceSession } from './session.js';
-import { createDraftStore } from './draft-store.js';
-import { createStudyStore } from './study-store.js';
-import { Settings } from './components/Settings.jsx';
-import { FileChanges } from './git/Changes.jsx';
 import { closingFileMentions, registerFileNavigation } from './file-links.js';
 export { createWorkbenchPreference } from './preference.js';
+
+export function SafeMarkdown(props) {
+  const { SafeMarkdown: Markdown } = require('./windows/markdown.jsx');
+  return <Markdown {...props} />;
+}
 
 export function apply(ctx, { Button, Select, MarkdownText, Conversation, preference = createWorkbenchPreference(localStorage) }) {
   const workspaces = new Map(), projects = new Map();
@@ -27,7 +24,10 @@ export function apply(ctx, { Button, Select, MarkdownText, Conversation, prefere
     mentions = ready.chatFileMentions;
     ready.effect(() => () => { mentions = undefined; });
   });
-  function Workbench(props) { return featureView(WorkbenchView, { ...props, t: props.t || ctx.locale.bind('dshSuperCode') }); }
+  function Workbench(props) {
+    const { Workbench: WorkbenchView } = require('./components/Workbench.jsx');
+    return featureView(WorkbenchView, { ...props, t: props.t || ctx.locale.bind('dshSuperCode') });
+  }
   function WorkbenchButton({ title, ...props }) { return React.createElement(Button, { ...props, title, 'aria-label': props['aria-label'] || title }); }
   ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'super-code: workbench locale');
   const t = ctx.locale.bind(NS);
@@ -37,14 +37,23 @@ export function apply(ctx, { Button, Select, MarkdownText, Conversation, prefere
   };
   function workspace(remote, sessionId) {
     let workbench = workspaces.get(sessionId);
-    if (!workbench) { workbench = createWorkbench(workspaceApi(remote, sessionId), t, { projects, translationLanguage, settings: editorPreference, layout: layoutPreference, session: createWorkspaceSession(localStorage, sessionId), draftStore: createDraftStore(sessionId), studyStore: createStudyStore(sessionId) }); workspaces.set(sessionId, workbench); }
+    if (!workbench) {
+      const { createWorkbench } = require('./controller.js');
+      const { createWorkspaceSession } = require('./session.js');
+      const { createDraftStore } = require('./draft-store.js');
+      const { createStudyStore } = require('./study-store.js');
+      workbench = createWorkbench(workspaceApi(remote, sessionId), t, { projects, translationLanguage, settings: editorPreference, layout: layoutPreference, session: createWorkspaceSession(localStorage, sessionId), draftStore: createDraftStore(sessionId), studyStore: createStudyStore(sessionId) });
+      workspaces.set(sessionId, workbench);
+    }
     return workbench;
   }
   function Changes({ remote, sessionId, revision }) {
     if (!sessionId) return null;
+    const { FileChanges } = require('./git/Changes.jsx');
     return <FileChanges key={sessionId} workbench={workspace(remote, sessionId)} Button={WorkbenchButton} Select={Select} t={t} revision={revision} standalone />;
   }
   function GlobalSettings({ remote }) {
+    const { Settings } = require('./components/Settings.jsx');
     const state = useSyncExternalStore(editorPreference.subscribe, editorPreference.snapshot);
     const workbench = useMemo(() => ({
       models: workspaceApi(remote, '').models,
@@ -85,6 +94,11 @@ export function apply(ctx, { Button, Select, MarkdownText, Conversation, prefere
         if (enabled === preference.snapshot().enabled) return;
         enabled = preference.snapshot().enabled;
         dispose();
+        if (enabled) {
+          // 启用后先准备编辑器，避免把模块初始化留到首次点击文件时。
+          require('./controller.js');
+          require('./components/Workbench.jsx');
+        }
         if (!enabled) for (const workspace of workspaces.values()) workspace.reading.stop();
         dispose = enabled ? ready.slots.register(contribution, Workbench) : () => {};
       };

@@ -213,13 +213,13 @@ Batching cuts round trips between the model and tools. It doesn't make every ope
 
 ## Remote projects
 
-Keep Super Code selected when using lightweight remote mode in `dsh-ssh-workspaces`. Once the session provides `remote_bash`, Super Code automatically uses native tool calls: commands go through `remote_bash`, file tools use the mounted directory or relative paths, and task, method, and memory tools remain available. Selection follows the session's tools, not its directory name.
+Keep Super Code selected when using lightweight remote mode in `dsh-ssh-workspaces`. Once the session provides `remote_bash`, Super Code automatically uses native tool calls: commands and file changes go through `remote_bash`, and task, method, and memory tools remain available. Native reads and searches require a working mount. If reads fail or a search is unexpectedly empty, inspect the remote project through `remote_bash` before concluding that files are absent. Selection follows the session's tools, not its directory name.
 
-Lightweight mode does not support PTC, local terminals, background commands, worktrees, or subagent execution. Related tools and local command-environment guidance are hidden. DSH and the remote plugin retain approval, cancellation, and disconnection checks; a disconnected session never falls back to local execution. Bundled local CLI programs and Skill scripts are not automatically installed on the server.
+Lightweight mode does not support PTC, local terminals, background commands, worktrees, workflows, or subagent execution. Related tools and local command-environment guidance are hidden across tool profiles; local persistent-shell settings do not apply to remote commands. DSH and the remote plugin retain approval, cancellation, and disconnection checks; a disconnected session never falls back to local execution. Bundled local CLI programs and Skill scripts are not automatically installed on the server.
 
 Full remote mode runs in a remote DSH instance, where Super Code must be installed. Sessions without `remote_bash` retain DSH PTC. The plugin does not synchronize remote models, plugins, or dependencies. After upgrading, reinstall the Super Code preset and start a new session; existing sessions' old preset compositions are not rewritten.
 
-Windows lightweight remote projects retain native reads; file changes use `remote_bash`. Native `write`, `edit`, and `str_replace_editor` are hidden, and calls from older conversations receive an explicit error. This avoids native-write failures caused by SFTP mounts lacking handle-permission changes and hard links. Commands are never executed or retried automatically. Read existing content before changing it and verify the result afterward; inspect effects after an error or interruption before deciding what remains. The original remote-command approval, cancellation, and disconnection checks remain in force.
+Lightweight remote projects on every platform use `remote_bash` for file changes. Native `write`, `edit`, `apply_patch`, and `str_replace_editor` are hidden, and calls from older conversations receive an explicit error. The plugin cannot currently verify the mount. Using remote commands avoids writing into an ordinary local directory and also avoids Windows SFTP failures caused by missing handle-permission changes and hard links. Commands are never executed or retried automatically. Read existing content before changing it and verify the result afterward; inspect effects after an error or interruption before deciding what remains. The original remote-command approval, cancellation, and disconnection checks remain in force.
 
 A Windows mount must support recursive creation of an existing directory when DSH creates a session. In testing, SSHFS-Win `3.5.20357` incorrectly returns `EPERM`, preventing DSH `0.2.2-rc.2` from creating a session; a model cannot recover by choosing another tool. Real-mount acceptance uses Rclone `1.76.0` with WinFsp `2.1.25156`. Use the project path returned by the remote plugin; drive-letter aliases may not match the registered project.
 
@@ -299,6 +299,8 @@ Under the **Deletion protection** tab. Default is **Relaxed**.
 | Strict | No direct `rm`, even in scripts. Recognized permanent deletions need your approval each time, and only temp-file or build-artifact cleanup is allowed |
 
 The exact Relaxed instruction: **Delete files or directories with `trash <path>` (recoverable) by default; use `rm` only for temp files or build artifacts after I've confirmed.**
+
+Both Relaxed and Strict guidance say to use another recoverable trash mechanism or stop if `trash` is unavailable. In lightweight remote sessions, check commands such as `gio trash` or `trash-put` on the remote machine; their availability on the local machine does not imply availability on the server.
 
 - Only Super Code is protected by default. "Also apply to official presets" is off by default (independent of the budget switch with the same name).
 - Saved changes apply to later commands.

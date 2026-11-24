@@ -17,6 +17,10 @@ interface RuntimeOwnership {
   namesOf(agent: Agent): { self: string; parent?: string }
 }
 
+interface SubagentLifecycle {
+  on(name: 'subagent/start', listener: (info: { id: Agent['id']; local: boolean }) => void | Promise<void>): () => void
+}
+
 function ownershipUnavailable(error: unknown): error is Error & { code: 'UNAUTHORIZED' } {
   return error instanceof Error && 'code' in error && error.code === 'UNAUTHORIZED'
 }
@@ -71,6 +75,12 @@ export function applyShellLifecycle(ctx: Context, install: (agent: Agent) => voi
   ctx.on('agent/created', async ({ agent }) => {
     try { await prepare(agent) }
     catch (error) { if (!(error instanceof ShellOwnershipPending)) throw error }
+  })
+  // 新版宿主在发布子任务时已登记归属；首步工具解析早于 agent/pre-step。
+  ;(ctx as unknown as SubagentLifecycle).on('subagent/start', ({ id, local }) => {
+    if (!local) return
+    const agent = ctx.agents.list().find(agent => agent.id === id)
+    if (agent) return prepare(agent)
   })
   ctx.on('agent/pre-step', async ({ agent }, next) => {
     await prepare(agent)

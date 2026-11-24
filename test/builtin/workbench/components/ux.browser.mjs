@@ -186,7 +186,7 @@ try {
       await popup.locator('.cm-content').first().click(); await popup.keyboard.press('Control+Shift+o');
       await popup.getByRole('combobox', { name: '快速导航', exact: true }).fill('b.ts');
       await popup.locator('.sc-wb-navigator-list [role=option]').filter({ hasText: 'b.ts' }).waitFor(); await popup.keyboard.press('Enter');
-      try { await popup.locator('.sc-wb-path-name[title="b.ts"]').waitFor(); }
+      try { await popup.getByRole('button', { name: '浏览 b.ts 的同级项', exact: true }).waitFor(); }
       catch (error) { await capture(popup, 'window-failure'); throw error; }
       await popup.locator('.cm-content').first().click(); await popup.keyboard.press('Meta+ArrowUp'); await popup.keyboard.insertText('// window draft\n');
       await page.evaluate(() => window.test.controller.visit({ file: 'b.ts' }));

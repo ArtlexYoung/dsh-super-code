@@ -150,7 +150,7 @@ try {
       try {
         await popup.locator('[data-toolbar-action=navigateFiles]').click();
         await popup.getByRole('combobox', { name: '快速导航', exact: true }).fill('b.ts'); await popup.getByRole('option').filter({ hasText: 'b.ts' }).waitFor(); await popup.getByRole('combobox', { name: '快速导航', exact: true }).press('Enter');
-        await popup.locator('.sc-wb-path-name[title="b.ts"]').waitFor();
+        await popup.getByRole('button', { name: '浏览 b.ts 的同级项', exact: true }).waitFor();
         await popup.locator('[data-toolbar-action=window]').click();
         await page.waitForFunction(() => !window.test.controller.snapshot().window);
         await page.reload(); await resume();

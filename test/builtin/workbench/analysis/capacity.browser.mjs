@@ -71,7 +71,7 @@ try {
       });
       await t.test('大量匹配只渲染可见行，全部2205处都可定位且不再截断到500项', async () => {
         await page.getByRole('combobox',{name:'全局搜索',exact:true}).fill('export function');
-        await page.waitForFunction(()=>document.querySelector('.sc-wb-locations footer')?.textContent.startsWith('2205'));
+        await page.getByRole('status').filter({hasText:/^2205 项匹配$/}).waitFor();
         assert.equal(await page.getByText('仅显示前 500 项结果，请缩小搜索范围',{exact:true}).count(),0);
         assert.ok(await page.locator('.sc-wb-results button').count()<60);
         await page.locator('.sc-wb-results').evaluate(element=>{element.scrollTop=element.scrollHeight});

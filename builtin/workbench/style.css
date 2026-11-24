@@ -428,6 +428,10 @@ body[data-ds-dark-theme] .sc-workbench[data-palette=vscode]{
 .sc-workbench .sc-wb-path-row>button:hover{color:var(--wb-text)}
 .sc-workbench .sc-wb-path-row>:is(.sc-wb-reader-toggle,.sc-wb-reading-focus,.sc-wb-markdown-mode)[aria-pressed=true]{border-color:color-mix(in srgb,var(--wb-accent) 32%,var(--wb-line));background:var(--wb-selected);color:var(--wb-selected-text)}
 .sc-workbench[data-palette=vscode] .sc-wb-path-row>:is(.sc-wb-reader-toggle,.sc-wb-reading-focus,.sc-wb-markdown-mode)[aria-pressed=true]{border-color:transparent var(--wb-line) var(--wb-accent);background:var(--wb-surface);color:var(--wb-text)}
+@container(max-width:420px){
+  .sc-wb-path-row:has(.sc-wb-scope-inline)>.sc-wb-reading-focus>span,
+  .sc-workbench[data-palette=vscode] .sc-wb-path-row:has(.sc-wb-scope-inline)>.sc-wb-reader-toggle>span{display:none}
+}
 @container(max-width:360px){.sc-wb-path-row:has(.sc-wb-scope-inline)>button>span{display:none}}
 @container(max-width:265px){.sc-wb-path-row>button>span{display:none}.sc-wb-path-folders{display:none}}
 @container(max-width:220px){.sc-wb-path-row{flex-wrap:wrap;row-gap:0}.sc-wb-path-location{flex:1}.sc-wb-scope-inline{flex:0 0 100%;order:1}}

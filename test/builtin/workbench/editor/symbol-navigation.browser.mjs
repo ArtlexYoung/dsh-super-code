@@ -107,7 +107,7 @@ try {
       assert.equal(await page.locator('.sc-wb-location-list').getAttribute('aria-busy'),'true');
       assert.equal(await page.evaluate(()=>window.test.searchCalls()),1);
       const finish=performance.now();await page.evaluate(()=>window.test.release());
-      await page.waitForFunction(()=>document.querySelector('.sc-wb-locations footer')?.textContent.startsWith('102400'));
+      await page.getByRole('status').filter({hasText:/^102400 项匹配$/}).waitFor();
       const totalMs=performance.now()-finish;
       assert.ok(await page.locator('.sc-wb-results button').count()<60);
       await page.locator('.sc-wb-location-list').focus();await page.keyboard.press('End');

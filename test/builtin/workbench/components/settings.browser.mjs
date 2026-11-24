@@ -172,7 +172,10 @@ try {
       assert.equal(toolbar[0].id, 'back'); assert.equal(toolbar[0].visible, false);
       const shortcut = editor.locator('[data-setting="shortcuts.save"]');
       await shortcut.getByRole('button', { name: '保存文件', exact: true }).click(); await page.keyboard.press('Control+Alt+s');
-      assert.equal(await page.evaluate(() => window.test.first.snapshot().preferences.shortcuts.save), 'Ctrl-Alt-s');
+      await editor.getByRole('alert').filter({ hasText: '此组合键已被使用' }).waitFor();
+      assert.equal(await page.evaluate(() => window.test.first.snapshot().preferences.shortcuts.save), undefined);
+      await page.keyboard.press('Control+Alt+g');
+      assert.equal(await page.evaluate(() => window.test.first.snapshot().preferences.shortcuts.save), 'Ctrl-Alt-g');
       await shortcut.getByRole('button', { name: '恢复默认：保存文件', exact: true }).click();
       assert.equal(await page.evaluate(() => window.test.first.snapshot().preferences.shortcuts.save), undefined);
       assert.deepEqual(await page.evaluate(() => window.test.first.snapshot().preferences.toolbar), toolbar);

@@ -16,6 +16,7 @@ export const gitRequestSchema: z.ZodType<GitRequest> = z.discriminatedUnion('act
   z.object({ action: z.literal('status') }).strict(),
   z.object({ action: z.literal('diff'), path, side: z.enum(['worktree', 'staged', 'total']), version }).strict(),
   z.object({ action: z.literal('restoreHunk'), path, side: z.enum(['worktree', 'staged', 'total']), hunk: z.number().int().min(0).max(20000), version }).strict(),
+  z.object({ action: z.literal('stageHunk'), path, hunk: z.number().int().min(0).max(20000), version }).strict(),
   z.object({ action: z.literal('conflict'), path, version }).strict(),
   z.object({ action: z.literal('resolveConflict'), path, text: z.string().refine(value => !value.includes('\0') && Buffer.byteLength(value) <= 2 * 1024 * 1024).nullable(), version }).strict(),
   z.object({ action: z.literal('stats'), paths: paths.max(64), version }).strict(),
@@ -40,6 +41,7 @@ export type GitRequest =
   | { action: 'status' }
   | { action: 'diff'; path: string; side: 'worktree' | 'staged' | 'total'; version: string }
   | { action: 'restoreHunk'; path: string; side: 'worktree' | 'staged' | 'total'; hunk: number; version: string }
+  | { action: 'stageHunk'; path: string; hunk: number; version: string }
   | { action: 'conflict'; path: string; version: string }
   | { action: 'resolveConflict'; path: string; text: string | null; version: string }
   | { action: 'stats'; paths: string[]; version: string }

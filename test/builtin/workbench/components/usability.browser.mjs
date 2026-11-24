@@ -109,6 +109,36 @@ try {
       await rail.getByRole('button', { name: '对话', exact: true }).click();
       assert.deepEqual(await page.locator('.sc-wb-right-pane:visible').evaluateAll(nodes => nodes.map(n => n.dataset.pane)), ['quick']);
     });
+    await t.test('紧凑布局可保存，右栏临时放大保留其他面板、比例及未保存文字', async () => {
+      await reload(); await visit('a.ts');
+      const tabs = page.locator('.sc-wb-editor-group:visible .sc-wb-tabs');
+      const comfortable = (await tabs.boundingBox()).height;
+      await page.locator('[data-toolbar-action=settings]').click();
+      await page.getByRole('combobox', { name: '布局密度' }).selectOption('compact');
+      await page.locator('.sc-wb-main[data-density=compact]').waitFor();
+      await page.getByRole('dialog').getByRole('button', { name: '关闭', exact: true }).click();
+      assert.ok((await tabs.boundingBox()).height < comfortable);
+      await rail.getByRole('button', { name: '快速对话', exact: true }).click();
+      const conversation = page.locator('.sc-wb-right-pane[data-pane=conversation]');
+      const quick = page.locator('.sc-wb-right-pane[data-pane=quick]');
+      const splitter = page.getByRole('separator', { name: /对话/ }).last();
+      await splitter.press('ArrowDown');
+      const layout = await page.evaluate(() => window.test.controller.layout.snapshot());
+      const height = (await quick.boundingBox()).height;
+      await page.evaluate(() => window.test.controller.view().dispatch({ changes: { from: 0, insert: '// unsaved\n' } }));
+      await quick.getByRole('button', { name: '放大「快速对话」' }).press('Enter');
+      assert.equal(await conversation.isVisible(), false);
+      assert.ok((await quick.boundingBox()).height > height);
+      await capture('compact-expanded-tool');
+      await quick.getByRole('button', { name: '恢复「快速对话」布局' }).press('Enter');
+      assert.equal(await conversation.isVisible(), true);
+      assert.equal((await quick.boundingBox()).height, height);
+      assert.deepEqual(await page.evaluate(() => window.test.controller.layout.snapshot()), layout);
+      assert.ok(await page.evaluate(() => window.test.controller.view().state.doc.toString().startsWith('// unsaved\n')));
+      await page.evaluate(() => window.test.controller.save());
+      await reload(true); await page.locator('.sc-wb-main[data-density=compact]').waitFor();
+      await page.evaluate(() => { const controller = window.test.controller; return controller.settings({ ...controller.snapshot().preferences, density: 'comfortable' }); });
+    });
     await t.test('文件夹开关的绘图与外框高度一致，工具栏图标不挤压', async () => {
       await reload();
       for (const theme of ['idea', 'vscode']) {

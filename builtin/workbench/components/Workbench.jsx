@@ -32,6 +32,8 @@ export function Workbench({ workbench: primary, Button, Select, MarkdownText, Co
   const snapshot = workbench === primary ? base : { ...currentView, directories: base.directories, indexed: base.indexed, indexing: base.indexing };
   const layout = useSyncExternalStore(primary.layout.subscribe, primary.layout.snapshot), rightOpen = layout.panes;
   const [readingFocus, setReadingFocus] = useState(false), [directory, setDirectory] = useState(null);
+  const [expandedTool, setExpandedTool] = useState(null);
+  const expandedPane = rightOpen[expandedTool] ? expandedTool : null;
   const sidebarId = useId();
   const explorerOpen = layout.explorerOpen && (layout.filesOpen || layout.outlineOpen), rightVisible = Object.values(rightOpen).some(Boolean);
   const fileOnly = presentation.kind === 'file', panelOnly = presentation.kind === 'panel', selectionOnly = presentation.kind === 'selection', closeOnly = presentation.kind === 'closeFile', focused = fileOnly || panelOnly || selectionOnly || closeOnly;
@@ -86,11 +88,13 @@ export function Workbench({ workbench: primary, Button, Select, MarkdownText, Co
     changeLayout({ ...next, explorerOpen: Object.values(next).some(Boolean) }); persistLayout();
   };
   const toggleRight = key => {
+    setExpandedTool(null);
+    if (expandedPane && rightOpen[key]) return;
     changeLayout({ panes: { [key]: !rightOpen[key] } }); persistLayout();
   };
   const searchDocked = !focused && panel?.kind === 'search' && !!panel.docked;
   const action = callback => () => { Promise.resolve().then(callback).catch(workbench.fail); };
-  return <section className="sc-workbench sc-wb-main" lang={t('languageTag')} tabIndex={-1} data-conversation-composer-overlay="" data-palette={snapshot.preferences.palette} data-search-docked={searchDocked} data-tool-names={snapshot.preferences.showToolNames} aria-label={t('title')}
+  return <section className="sc-workbench sc-wb-main" lang={t('languageTag')} tabIndex={-1} data-conversation-composer-overlay="" data-palette={snapshot.preferences.palette} data-density={snapshot.preferences.density} data-search-docked={searchDocked} data-tool-names={snapshot.preferences.showToolNames} aria-label={t('title')}
     style={{ '--wb-explorer-width': `${layout.explorer}px`, '--wb-reading-width': `${layout.reading}px`, '--wb-files-height': `${layout.files}px` }}
     onKeyDownCapture={event => {
       if (event.defaultPrevented || event.nativeEvent.isComposing || event.target.closest('.sc-wb-conversation,[data-workbench-dialog]')) return;
@@ -144,9 +148,9 @@ export function Workbench({ workbench: primary, Button, Select, MarkdownText, Co
       initialPreview={presentation.markdownSplit ? presentation.file : undefined} />{!focused && rightVisible && <Splitter panel="reading" label={t('resizeReading')} value={layout.reading} ratio={.48}
       change={value => changeLayout({ reading: value })} commit={persistLayout} />}{!focused && <Sidebar key={sessionId} hidden={!rightVisible} id={sidebarId}
       workbench={workbench} Button={Button} Select={Select} t={t} layout={layout} changeLayout={changeLayout} persistLayout={persistLayout}
-      open={rightOpen} toggle={toggleRight} items={snapshot.assistant?.conversations}
+      open={rightOpen} toggle={toggleRight} expandedPane={expandedPane} expand={setExpandedTool} items={snapshot.assistant?.conversations}
       learning={<ReadingPanel workbench={workbench} file={snapshot.file} Button={Button} MarkdownText={MarkdownText} t={t} />}
-      conversation={<Conversation key={sessionId} sessionId={sessionId} visible={rightOpen.conversation} useSessions={useSessions} useSessionStatus={useSessionStatus} useInput={useInput} inputActions={inputActions}
+      conversation={<Conversation key={sessionId} sessionId={sessionId} visible={rightOpen.conversation && (!expandedPane || expandedPane === 'conversation')} useSessions={useSessions} useSessionStatus={useSessionStatus} useInput={useInput} inputActions={inputActions}
           remote={conversationRemote} detailT={conversationT} openView={openView} openFile={openFile} useChat={useChat} useConversation={useConversation} fileMentions={fileMentions} t={t} />} />}
       {!focused && <nav className="sc-wb-side-rail sc-wb-side-rail-right" aria-label={t('conversationBar')}>{rightPanels.map(item =>
         <Button key={item.key} aria-pressed={rightOpen[item.key]} aria-controls={`${sidebarId}-${item.key}`} title={t(item.label)} onClick={() => toggleRight(item.key)}><Icon name={item.icon} /><span>{t(item.label)}</span></Button>)}</nav>}

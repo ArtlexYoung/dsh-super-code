@@ -34,7 +34,8 @@ export const actions = [
   { id: 'wordRight', idea: 'Ctrl-ArrowRight', vscode: 'Ctrl-ArrowRight' },
   { id: 'deleteLine', idea: 'Mod-y', vscode: 'Mod-Shift-k' },
 ];
-export const defaults = () => ({ keymap: 'idea', palette: 'idea', shortcuts: {}, autoSave: 'manual', undoLimit: 1000, toolbar: readToolbar(), showToolbarShortcuts: false, showToolNames: true, windowMode: 'internal', followFile: true, previewTabs: true, quickReasoning: 'off', translationReasoning: 'off', ...appearanceDefaults });
+export const layoutDensities = ['comfortable', 'compact'];
+export const defaults = () => ({ keymap: 'idea', palette: 'idea', density: 'comfortable', shortcuts: {}, autoSave: 'manual', undoLimit: 1000, toolbar: readToolbar(), showToolbarShortcuts: false, showToolNames: true, windowMode: 'internal', followFile: true, previewTabs: true, quickReasoning: 'off', translationReasoning: 'off', ...appearanceDefaults });
 const profiles = ['idea', 'vscode'];
 const knownKeys = /^((?:(?:Mod|Ctrl|Meta|Alt|Shift)-)*)([a-z0-9]|[\[\]\\/.,;='`-]|Space|Tab|Enter|Escape|Backspace|Delete|Home|End|PageUp|PageDown|ArrowLeft|ArrowRight|ArrowUp|ArrowDown|F(?:[1-9]|1\d|2[0-4]))$/;
 const modifierOrder = ['Mod', 'Ctrl', 'Meta', 'Alt', 'Shift'];
@@ -66,9 +67,11 @@ export function readPreferences(value) {
   const showToolbarShortcuts = value.showToolbarShortcuts === undefined ? false : value.showToolbarShortcuts;
   const showToolNames = value.showToolNames === undefined ? true : value.showToolNames;
   const windowMode = value.windowMode === undefined ? 'internal' : value.windowMode;
+  const density = value.density === undefined ? 'comfortable' : value.density;
+  if (!layoutDensities.includes(density)) throw new Error('WORKBENCH_PREFERENCES_INVALID');
   const followFile = value.followFile === undefined ? true : value.followFile, previewTabs = value.previewTabs === undefined ? true : value.previewTabs;
   if (![showToolbarShortcuts, showToolNames, followFile, previewTabs].every(item => typeof item === 'boolean') || !['internal', 'external'].includes(windowMode)) throw new Error('WORKBENCH_PREFERENCES_INVALID');
-  const result = { keymap: value.keymap, palette: value.palette, shortcuts: Object.fromEntries(shortcuts), autoSave, undoLimit, toolbar: readToolbar(value.toolbar), showToolbarShortcuts, showToolNames, windowMode, followFile, previewTabs, ...readAppearance(value) };
+  const result = { keymap: value.keymap, palette: value.palette, density, shortcuts: Object.fromEntries(shortcuts), autoSave, undoLimit, toolbar: readToolbar(value.toolbar), showToolbarShortcuts, showToolNames, windowMode, followFile, previewTabs, ...readAppearance(value) };
   for (const key of ['quickReasoning', 'translationReasoning']) {
     const effort = value[key] === undefined ? 'off' : value[key];
     if (typeof effort !== 'string' || !effort.trim() || effort.length > 256) throw new Error('WORKBENCH_MODEL_SETTING');

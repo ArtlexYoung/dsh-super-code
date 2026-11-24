@@ -4,7 +4,7 @@ import { toolbarActions, readToolbar } from './toolbar.js';
 export const settingGroups = ['appearanceSettings', 'readingSettings', 'editingSettings', 'languageSettings', 'assistantSettings', 'toolbar', 'shortcut'];
 export const environmentLanguages = [['python', 'Python'], ['javascript', 'JavaScript / TypeScript'], ['go', 'Go'], ['rust', 'Rust'], ['java', 'Java'], ['cpp', 'C / C++'], ['csharp', 'C#'], ['php', 'PHP'], ['ruby', 'Ruby']];
 const fields = {
-  appearanceSettings: ['palette', 'keymap', 'showToolbarShortcuts', 'showToolNames', 'windowMode'],
+  appearanceSettings: ['palette', 'keymap', 'density', 'showToolbarShortcuts', 'showToolNames', 'windowMode'],
   readingSettings: ['fontFamily', 'chineseFontFamily', 'fontSize', 'lineHeight', 'stickyScroll', 'readerMode'],
   editingSettings: ['followFile', 'previewTabs', 'autoSave', 'undoLimit'],
   assistantSettings: ['quickModel', 'quickReasoning', 'translationModel', 'translationReasoning'],

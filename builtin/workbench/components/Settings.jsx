@@ -1,6 +1,6 @@
 import React, { useRef, useState, useSyncExternalStore } from 'react';
 import { errorText } from '../locales.js';
-import { actions, keyOf, keyLabel, shortcutOf, conflict } from '../editor/preferences.js';
+import { actions, keyOf, keyLabel, shortcutOf, conflict, layoutDensities } from '../editor/preferences.js';
 import { settingEntries, settingGroups, settingMatches, resetPreference } from '../settings.js';
 import { ModelSettings } from './TranslationModel.jsx';
 import { saveDelays } from '../editing/autosave.js';
@@ -51,6 +51,7 @@ export function Settings({ workbench, preferences, Button, Select, t, general = 
     {!visible.length && <p className="sc-wb-setting-note">{t('settingsEmpty')}</p>}
     <SettingGroup id="appearanceSettings">
     {['palette', 'keymap'].map(key => <Setting id={key} key={key}><Select label={t(key)} value={preferences[key]} choices={[["idea", 'IntelliJ IDEA'], ['vscode', 'VS Code']]} onChange={value => apply({ ...preferences, [key]: value })} /></Setting>)}
+    <Setting id="density"><Select label={t('density')} value={preferences.density} choices={layoutDensities.map(value => [value, t(`density_${value}`)])} onChange={density => apply({ ...preferences, density })} /></Setting>
     {['showToolbarShortcuts', 'showToolNames'].map(key => <Setting id={key} key={key}><span className="sc-wb-setting-toggle"><input aria-label={t(key)} type="checkbox" checked={preferences[key]} onChange={event => apply({ ...preferences, [key]: event.target.checked })} /></span></Setting>)}
     <Setting id="windowMode"><Select label={t('windowMode')} value={preferences.windowMode} choices={['internal', 'external'].map(value => [value, t(`windowMode_${value}`)])} onChange={windowMode => apply({ ...preferences, windowMode })} /></Setting>
     </SettingGroup>

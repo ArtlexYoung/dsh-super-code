@@ -93,6 +93,7 @@ export function Workbench({ workbench: primary, Button, Select, MarkdownText, Co
     changeLayout({ panes: { [key]: !rightOpen[key] } }); persistLayout();
   };
   const searchDocked = !focused && panel?.kind === 'search' && !!panel.docked;
+  const statusError = snapshot.error || base.studyError;
   const action = callback => () => { Promise.resolve().then(callback).catch(workbench.fail); };
   return <section className="sc-workbench sc-wb-main" lang={t('languageTag')} tabIndex={-1} data-conversation-composer-overlay="" data-palette={snapshot.preferences.palette} data-density={snapshot.preferences.density} data-search-docked={searchDocked} data-tool-names={snapshot.preferences.showToolNames} aria-label={t('title')}
     style={{ '--wb-explorer-width': `${layout.explorer}px`, '--wb-reading-width': `${layout.reading}px`, '--wb-files-height': `${layout.files}px` }}
@@ -157,7 +158,7 @@ export function Workbench({ workbench: primary, Button, Select, MarkdownText, Co
     </div>
     {(panelOnly || closingConflict) && <section className={`sc-wb-focused-panel${panel?.kind === 'fileAction' ? ' sc-wb-file-dialog' : ''}`} data-workbench-dialog>{panel ? <PanelContent key={panel.id} panel={panel} workbench={workbench} Button={Button} Select={Select} t={t} /> : <div className="sc-wb-empty">{t('windowContentClosed')}</div>}</section>}
     {closeOnly && !closingConflict && <section className="sc-wb-focused-panel" data-workbench-dialog>{snapshot.closingFile ? <CloseFile path={snapshot.closingFile} workbench={workbench} snapshot={snapshot} Button={Button} t={t} inline /> : <p>{t('windowContentClosed')}</p>}</section>}
-    <footer className="sc-wb-status" role="status"><span className={snapshot.error || snapshot.studyError ? 'sc-wb-error' : ''}>{snapshot.error || snapshot.studyError || snapshot.status}</span>
+    <footer className="sc-wb-status" role="status"><span className={statusError ? 'sc-wb-error' : ''} title={statusError || undefined}>{statusError || snapshot.status}</span>
       {(snapshot.unsaved?.length > 0 || snapshot.drafts?.candidates.length > 0 || snapshot.drafts?.error) && <Button onClick={() => workbench.panel({ kind: 'drafts' })}>{message(t, 'draftCount', { count: snapshot.unsaved?.length || 0 })}{snapshot.drafts?.error ? ' !' : snapshot.drafts?.candidates.length ? ` · ${t('draftAvailable')}` : ''}</Button>}
       {snapshot.saveConflict && <Button className="sc-wb-conflict-link" onClick={() => workbench.panel({ kind: 'saveConflict', path: snapshot.saveConflict })}>{t('saveConflict')}</Button>}
       {snapshot.cursor && <span>{message(t, 'position', { line: snapshot.cursor.line + 1, column: snapshot.cursor.character + 1 })}{snapshot.cursor.length > 0 && ` · ${message(t, 'selected', { count: snapshot.cursor.length })}`}</span>}</footer>

@@ -260,7 +260,7 @@ try {
       assert.equal(await page.locator('button[title=history-entry]').count(), 2);
     });
     const searchField = side => page.locator('#' + side).getByRole('combobox', { name: 'search', exact: true });
-    const searched = side => page.waitForFunction(side => document.querySelector('#' + side + ' footer')?.textContent.startsWith('650'), side);
+    const searched = side => page.locator('#' + side + ' .sc-wb-search-actions').getByText('650 searchMatches', { exact: true }).waitFor();
     const resultList = side => page.locator('#' + side).getByRole('listbox', { name: 'locationResults' });
     const chosen = side => page.locator('#' + side + ' .sc-wb-results [aria-selected=true]');
     const readySearch = async () => {

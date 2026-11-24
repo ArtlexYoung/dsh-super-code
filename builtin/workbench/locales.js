@@ -168,7 +168,7 @@ export const zh = {
   WORKBENCH_STUDY_SIZE: '固定对话或学习记录超过 2 MiB，已保存的记录仍保留。',
   WORKBENCH_STUDY_INVALID: '无法识别固定对话或学习记录，已保存的记录仍保留。',
   WORKBENCH_STUDY_STORAGE: '无法访问本地存储，固定对话和学习进度可能无法恢复。',
-  WORKBENCH_STUDY_CHANGED: '另一窗口已更新本地记录。重新打开工作台后可读取较新的记录。',
+  WORKBENCH_STUDY_CHANGED: '另一窗口已更新本地记录。重新载入客户端可读取较新的记录。',
 };
 export const en = {
   saveAll: 'Save all', action_saveAll: 'Save all', drafts: 'Unsaved files and recovery copies', draftCount: '{count} unsaved files', draftAvailable: 'Recovery copies available',
@@ -337,7 +337,7 @@ export const en = {
   WORKBENCH_STUDY_SIZE: 'Pinned conversations or learning progress exceeded 2 MiB. The saved record was kept.',
   WORKBENCH_STUDY_INVALID: 'The pinned conversation or learning record could not be read. The saved record was kept.',
   WORKBENCH_STUDY_STORAGE: 'Local storage is unavailable. Pinned conversations and learning progress may not be restored.',
-  WORKBENCH_STUDY_CHANGED: 'Another window updated the local record. Reopen the workbench to load the newer record.',
+  WORKBENCH_STUDY_CHANGED: 'Another window updated the local record. Reload the client to load the newer record.',
 };
 export function message(t, key, values = {}) { return Object.entries(values).reduce((text, [name, value]) => text.replaceAll(`{${name}}`, String(value)), t(key)); }
 export function errorText(error, t) { const code = /WORKBENCH_[A-Z_]+|READING_[A-Z_]+|FS_STALE_VERSION/.exec(error.message)?.[0]; return code ? t(code === 'FS_STALE_VERSION' ? 'WORKBENCH_CONFLICT' : code) : error.message; }

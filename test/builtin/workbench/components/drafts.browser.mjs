@@ -83,6 +83,23 @@ try {
       await page.waitForFunction(() => !window.test.controller.snapshot().unsaved.length);
       assert.ok((await page.evaluate(() => window.test.texts['b.ts'])).startsWith('// later'));
     });
+    await t.test('双倍缩放下用键盘保存全部，禁用期间和保存完成后仍可继续 Tab', async () => {
+      await edit('b.ts', '// saved with keyboard\n'); await open();
+      await page.evaluate(() => { document.body.style.zoom = '2'; window.test.holdSave(); });
+      const saveAll = panel().getByRole('button', { name: '保存全部', exact: true });
+      await saveAll.focus(); await page.keyboard.press('Enter');
+      await page.waitForFunction(() => window.test.saveStarted());
+      assert.equal(await saveAll.getAttribute('aria-disabled'), 'true');
+      assert.equal(await saveAll.evaluate(node => node === document.activeElement && node.matches(':focus-visible') && getComputedStyle(node).opacity === '1'), true);
+      await page.keyboard.press('Enter'); await page.keyboard.press('Space');
+      await page.evaluate(() => window.test.releaseSave());
+      await panel().getByText('项目中没有未保存文件', { exact: true }).waitFor();
+      assert.equal(await saveAll.evaluate(node => node === document.activeElement), true);
+      assert.ok((await page.evaluate(() => window.test.texts['b.ts'])).startsWith('// saved with keyboard'));
+      await capture(page, 'save-all-keyboard-zoom');
+      await page.keyboard.press('Tab');
+      assert.equal(await panel().getByRole('button', { name: '重试', exact: true }).evaluate(node => node === document.activeElement), true);
+    });
     await t.test('刷新后恢复为草稿，立即自动保存也不会越过手动确认', async () => {
       await edit('b.ts', '// recovered\n'); await backup('// recovered');
       await page.reload(); await ready();

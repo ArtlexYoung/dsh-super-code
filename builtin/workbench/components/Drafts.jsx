@@ -10,13 +10,15 @@ export function Drafts({ workbench, Button, t }) {
     void Promise.resolve().then(execute).catch(error => setError(errorText(error, t))).finally(() => setAction(null));
   };
   const busy = !!action || saveBatch?.busy;
+  const canSave = !busy && unsaved.length > 0;
+  const saveAll = () => { if (canSave) run('saveAll', workbench.saveAll); };
   function saveShortcut(event) {
     if (event.nativeEvent.isComposing || !matchesShortcut(event, keyOf(preferences, 'saveAll'))) return;
     event.preventDefault(); event.stopPropagation();
-    if (!busy && unsaved.length) run('saveAll', workbench.saveAll);
+    saveAll();
   }
   return <div className="sc-wb-drafts" aria-busy={busy} onKeyDown={saveShortcut}>
-    <header><strong>{message(t, 'draftCount', { count: unsaved.length })}</strong><Button className="sc-wb-primary" disabled={busy || !unsaved.length} onClick={() => run('saveAll', workbench.saveAll)}>{t('saveAll')}</Button></header>
+    <header><strong>{message(t, 'draftCount', { count: unsaved.length })}</strong><Button className="sc-wb-primary" aria-disabled={!canSave} tabIndex={canSave ? undefined : -1} onClick={saveAll}>{t('saveAll')}</Button></header>
     {error && <p role="alert">{error}</p>}
     {saveBatch && <SaveResult result={saveBatch} workbench={workbench} Button={Button} t={t} />}
     <ul>{unsaved.map(item => <li key={item.path}><Button className="sc-wb-draft-path" title={item.path} onClick={() => run(item.path, () => workbench.visit({ file: item.path }))}>{item.path}</Button>

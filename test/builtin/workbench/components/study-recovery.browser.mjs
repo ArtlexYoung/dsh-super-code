@@ -174,6 +174,11 @@ try {
         await dialog.getByRole('button', { name: '取消固定对话', exact: true }).click();
         await page.locator('.sc-wb-status').getByText(/另一窗口已更新本地记录/).waitFor();
         assert.deepEqual(await saved(page, 'pins', before + 1), []);
+        await page.evaluate(() => {
+          const { groups } = window.test.controller;
+          groups.activate(groups.split(groups.snapshot().active, 'right'));
+        });
+        await page.locator('.sc-wb-status').getByText(/另一窗口已更新本地记录/).waitFor();
         await other.close();
       });
     } finally { await context.close(); assert.deepEqual(errors, []); }

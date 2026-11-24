@@ -37,6 +37,29 @@ const server = createServer(async (req, res) => {
 await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 const browser = await (process.env.SC_TEST_BROWSER === 'webkit' ? webkit : chromium).launch({ headless: true, ...(process.env.SC_TEST_EXECUTABLE ? { executablePath: process.env.SC_TEST_EXECUTABLE } : {}) });
 const evidence = process.env.SC_TEST_ARTIFACTS;
+async function controlColors(control) {
+  return control.evaluate(node => {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 1;
+    const context = canvas.getContext('2d');
+    function luminance(color) {
+      context.clearRect(0, 0, 1, 1);
+      context.fillStyle = color;
+      context.fillRect(0, 0, 1, 1);
+      return [...context.getImageData(0, 0, 1, 1).data].slice(0, 3).map(value => value / 255)
+        .map(value => value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4)
+        .reduce((sum, value, index) => sum + value * [.2126, .7152, .0722][index], 0);
+    }
+    const contrast = (first, second) => {
+      const colors = [luminance(first), luminance(second)].sort((a, b) => b - a);
+      return (colors[0] + .05) / (colors[1] + .05);
+    };
+    const style = getComputedStyle(node);
+    let background = style.backgroundColor;
+    for (let parent = node.parentElement; background === 'rgba(0, 0, 0, 0)' && parent; parent = parent.parentElement) background = getComputedStyle(parent).backgroundColor;
+    return { background, text: contrast(style.color, background), focus: contrast(style.outlineColor, background), outline: style.outlineStyle, outlineOffset: style.outlineOffset };
+  });
+}
 async function toolInkOffsets(page) {
   const buttons = await page.locator('.sc-wb-side-rail button').evaluateAll(nodes => nodes.map(node => {
     const rect = value => ({ x: value.x, y: value.y, width: value.width, height: value.height });
@@ -82,6 +105,53 @@ try {
     const visit = file => page.evaluate(file => window.test.controller.visit({ file }), file);
     const rail = page.locator('.sc-wb-side-rail-right');
     const capture = async name => { if (evidence) { await mkdir(evidence, { recursive: true }); await page.screenshot({ path: join(evidence, name + '.png'), animations:'disabled' }); } };
+    await t.test('四种主题的标签、列表、主按钮和错误文字保留各自状态', async () => {
+      await reload();
+      await visit('a.ts');
+      await page.evaluate(() => window.test.controller.keepTab('a.ts'));
+      await visit('b.ts');
+      await rail.getByRole('button', { name: '学习', exact: true }).click();
+      await page.getByRole('textbox', { name: '阅读目标', exact: true }).fill('了解入口');
+      await page.evaluate(() => window.test.controller.visit({ file: 'missing.ts' }).catch(() => {}));
+      const primary = page.getByRole('button', { name: '生成阅读路径', exact: true });
+      const error = page.locator('.sc-wb-status .sc-wb-error');
+      const activeTab = page.locator('.sc-wb-tab[data-file-tab="b.ts"] button[aria-current=page]');
+      const otherClose = page.locator('.sc-wb-tab[data-file-tab="a.ts"] .sc-wb-tab-close');
+      const selectedFile = page.locator('.sc-wb-explorer-files .sc-wb-file[aria-current=page]');
+      for (const [palette, dark] of [['idea', false], ['idea', true], ['vscode', false], ['vscode', true]]) {
+        await page.evaluate(([palette, dark]) => window.test.theme(palette, dark), [palette, dark]);
+        await page.mouse.move(720, 820);
+        const original = await controlColors(primary);
+        const tab = await controlColors(activeTab), file = await controlColors(selectedFile);
+        await selectedFile.hover();
+        assert.equal((await controlColors(selectedFile)).background, file.background);
+        await activeTab.hover();
+        assert.equal((await controlColors(activeTab)).background, tab.background);
+        await otherClose.focus(); await page.keyboard.press('Tab');
+        assert.equal(await activeTab.evaluate(node => node === document.activeElement && node.matches(':focus-visible')), true);
+        const focused = await controlColors(activeTab);
+        assert.equal(focused.outline, 'solid'); assert.equal(focused.outlineOffset, '-2px');
+        assert.ok(focused.focus >= 3, JSON.stringify({ palette, dark, focused }));
+        await primary.hover();
+        const hovered = await controlColors(primary);
+        assert.notEqual(hovered.background, original.background);
+        const errorColors = await controlColors(error);
+        assert.equal(await error.getAttribute('title'), '该路径不是可编辑文件');
+        assert.ok([original, hovered, errorColors, file, tab].every(item => item.text >= 4.5), JSON.stringify({ palette, dark, original, hovered, errorColors, file, tab }));
+        const tool = await controlColors(rail.getByRole('button', { name: '学习', exact: true }));
+        assert.ok(tool.text >= 4.5, JSON.stringify({ palette, dark, tool }));
+        if (palette === 'idea' && dark) assert.equal(tool.background, 'rgb(46, 67, 110)');
+        await capture(`control-states-${palette}-${dark ? 'dark' : 'light'}`);
+        await page.evaluate(() => window.test.controller.panel({ kind: 'navigate' }));
+        const option = page.locator('.sc-wb-navigator [role=option][aria-selected=true]');
+        await option.waitFor();
+        const row = await controlColors(option), detail = await controlColors(option.locator('small'));
+        await option.hover();
+        assert.equal((await controlColors(option)).background, row.background);
+        assert.ok(row.text >= 4.5 && detail.text >= 4.5, JSON.stringify({ palette, dark, row, detail }));
+        await page.keyboard.press('Escape');
+      }
+    });
     await t.test('IDEA 逐字笔画、图标与按钮在普通及高像素密度下对齐', async () => {
       for (const deviceScaleFactor of [1, 2]) {
         const target = await browser.newPage({ viewport: { width: 1440, height: 940 }, deviceScaleFactor });

@@ -103,7 +103,12 @@ export async function mountToolProviders(ctx: Context, runtime: ToolRuntime): Pr
   try {
     const persistent = shellContexts[1]!.isolate('terminals')
     await mount(persistent, 'dsh-terminal')
-    await mount(persistent, 'dsh-terminal-bash', { shellDialect: process.platform === 'win32' ? 'pwsh' : 'bash', timeoutMs: 300000 })
+    await mount(persistent, 'dsh-terminal-bash', {
+      shellDialect: process.platform === 'win32' ? 'pwsh' : 'bash',
+      timeoutMs: 300000,
+      // macOS 桌面宿主最多等待 5 秒完成后台清理。交互式 Bash 会忽略 SIGTERM，需为其他清理留出时间。
+      ...(process.platform === 'darwin' ? { disposeGraceMs: 1000 } : {}),
+    })
     await mount(persistent, process.platform === 'win32' ? 'dsh-tool-pwsh-persistent' : 'dsh-tool-bash-persistent', { timeoutMs: 300000 })
   } catch (error) { reasons.set('persistent', String(error)) }
   const delegation = (await capture()).isolate('workflowEngine')

@@ -1091,15 +1091,15 @@ test('the Skill settings retain package versions after saving a switch and toler
     const groups = nodes(render()).filter(row => row.props.id?.startsWith('super-code-skills-'))
     assert.deepEqual(groups.map(row => row.props.title), ['skills.individual', 'skills.workflows'])
     assert.deepEqual(groups.map(row => row.children.map((child: any) => child.props.id)), [
-      ['super-code-skill-grillMeSkill', 'super-code-skill-openspecSkills', 'super-code-skill-oilUiSkill'],
-      ['super-code-skill-mattpocockSkills', 'super-code-skill-pstackSkills'],
+      ['super-code-skill-grillMeSkill', 'super-code-skill-oilUiSkill'],
+      ['super-code-skill-mattpocockSkills', 'super-code-skill-pstackSkills', 'super-code-skill-openspecSkills'],
     ])
     const versions = () => nodes(render()).flatMap(row => nodes(row.props.label))
       .filter(row => row.props.className === 'dsh-super-code-skill-version').map(row => row.children.join(''))
-    assert.deepEqual(versions(), metadata ? ['v1.3.2', 'v1.17.0', 'v0.32.0', 'v1.3.2', 'v0.15.36'] : [])
+    assert.deepEqual(versions(), metadata ? ['v1.3.2', 'v0.32.0', 'v1.3.2', 'v0.15.36', 'v1.17.0'] : [])
     render.props.api.editors.skills.change({ grillMeSkill: true }); await render.props.api.editors.skills.flush()
     assert.equal(stored.configuration.grillMeSkill, true)
-    assert.deepEqual(versions(), metadata ? ['v1.3.2', 'v1.17.0', 'v0.32.0', 'v1.3.2', 'v0.15.36'] : [])
+    assert.deepEqual(versions(), metadata ? ['v1.3.2', 'v0.32.0', 'v1.3.2', 'v0.15.36', 'v1.17.0'] : [])
     render.unmount()
   }
 })

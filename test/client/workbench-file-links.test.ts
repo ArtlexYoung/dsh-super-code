@@ -86,6 +86,21 @@ test('工作台区分对话输入锁定原因，锁定时拒绝提交并可返�
     assert.deepEqual(opened, [['chat', '']])
   }
 })
+test('切换子 Agent 使用父子地址且隐藏主会话输入，返回后仍使用原输入动作', () => {
+  const inputActions = { submit: () => assert.fail('Rendering must not send') };
+  const props = { sessionId: 'root', remote: {}, t: (key: string) => key, useInput: () => {}, inputActions, useSessions: () => {}, detailT: (key: string) => key };
+  for (const mode of ['one-shot', 'continuable']) {
+    const view = plugin.workbenchControls.Conversation({ ...props, agent: {id:'child',parentId:'parent',mode}, fileMentions: () => assert.fail('Do not attach root file mentions to child records') });
+    const detail = findElement(view, element => element.type?.name === 'AgentDetail');
+    const target = new URL(detail.props.useTabInfo().tab.contentId);
+    assert.equal(target.pathname, '/child');
+    assert.equal(target.searchParams.get('parent'), 'parent');
+    assert.equal(target.searchParams.get('mode'), mode);
+    assert.equal(findElement(view, element => element.type?.name === 'WorkbenchInput'), undefined);
+  }
+  const main = plugin.workbenchControls.Conversation(props);
+  assert.equal(findElement(main, element => element.type?.name === 'WorkbenchInput').props.inputActions, inputActions);
+});
 
 test('普通回复和展开的折叠回复均把官方文件提及交给 Markdown 渲染器', () => {
   const resolver = { resolve: () => undefined }
@@ -101,5 +116,25 @@ test('普通回复和展开的折叠回复均把官方文件提及交给 Markdow
     const text = findElement(message.type(message.props), element => element.type?.name === 'DetailText')
     const markdown = findElement(text.type(text.props), element => element.type === MarkdownText)
     assert.equal(markdown.props.fileMentions, resolver, `collapsed=${collapsed}`)
+  }
+})
+
+test('引用操作仅在调用方启用后出现在 Agent 回复中，不改变普通工作台和工具记录', () => {
+  const replyActions = [{ id: 'quote', label: '引用', run: () => assert.fail('Rendering must not quote') }, { id: 'excerpt', label: '摘录', run: () => assert.fail('Rendering must not excerpt') }]
+  for (const enabled of [false, true]) {
+    const view = plugin.workbenchControls.Conversation({ sessionId: 'root', agent: { id: 'child', parentId: 'root', mode: 'continuable' },
+      remote: {}, t: (key: string) => key, detailT: (key: string) => key,
+      useSessions: (select: (value: unknown) => unknown) => select({ byId: {} }), replyActions: enabled ? replyActions : undefined,
+    })
+    const detail = findElement(view, element => element.type?.name === 'AgentDetail')
+    for (const kind of ['agent', 'user', 'tool']) {
+      const snapshot = { items: [{ seq: 5, time: 1, kind, label: kind, text: '编号 007', format: 'text' }], projections: {}, status: 'ready' }
+      const tree = detail.type({ ...detail.props, createInspector: () => ({ subscribe: () => () => {}, getSnapshot: () => snapshot }) })
+      const message = findElement(tree, element => element.type?.name === 'AgentMessage')
+      for (const reply of replyActions) {
+        const action = findElement(message.type(message.props), element => element.props?.className === 'sc-wb-reply-action' && element.props.children.includes(reply.label))
+        assert.equal(Boolean(action), enabled && kind === 'agent')
+      }
+    }
   }
 })

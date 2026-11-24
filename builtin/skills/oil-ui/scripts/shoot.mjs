@@ -22,11 +22,11 @@ const HELP = `常用命令：
   --out <目录>          输出目录，默认 ./shots
   --root <目录>         本地页面的静态服务根目录，默认按页面和 cwd 推断；共享资源用项目根
   --size <尺寸,...>     默认 390x844；desktop=1440x900，phone/mobile=390x844，可混用数字尺寸
-  --states <a,b,...>    依次用 ?state=<名字> 打开并各截一张
+  --states <a,b,...>    依次用 ?state=<名字> 打开并各截一张；页面本来就读这个参数时才用，交互后的画面用 --steps
   --param <名字>        状态参数名，默认 state
   --query <查询参数>    给地址加参数，例如 --query "a=1&b=2"；可和 --states 一起用
   --zoom <倍数,...>     默认 1；例如 --zoom 1,2，每个倍数各出一套；配 --evidence 时覆盖默认截图倍数
-  --full                截整页，默认只截视口
+  --full                截整页，默认只截视口；页面在内部容器里滚动或有贴住视口的固定外壳时会提示改截视口
   --selector <选择器>   只截匹配元素的区域，自动滚入视口；不与 --full、--record、--frames、--motion、--entry、--evidence 同用
   --thumb               快速缩略图：按 0.5 倍分辨率截视口，缩短等待并跳过可读性检查
   --mask                另截一份遮掉全部文字的版本
@@ -89,7 +89,8 @@ const HELP = `常用命令：
 重跑后截图仍超时则继续后面的项，返回码 1；其他协议超时或浏览器意外断开时退出。
 多项命令每完成一项向标准错误打印进度，标准输出仍是最后的汇总。
 每张图检查控制台错误、横向溢出和加载失败的图片，明细写进 report.json；
-可读性与渲染提示写进 lint 字段。录屏需要 ffmpeg，没有时只留帧。
+可读性与渲染提示写进 lint 字段：文字对比度、过小的字、过紧的行高、停在透明的内容、
+手机上小于 16px 的输入框、打开的弹窗里够不着的操作按钮、用边框分组过多。录屏需要 ffmpeg，没有时只留帧。
 
 和 --states 一起用：
   普通截图会在每个状态执行每组 --steps；动效探测和动作录屏只从第一个状态、第一种尺寸开始，
@@ -309,20 +310,40 @@ for (let i = 0; i < args.length; i++) {
   } else {
     if (stitchInputs.length) fail(`拼图不需要页面，每张图片前都要写 --stitch，收到 ${a}；例如 --stitch before.png --label "修改前" --stitch after.png --label "修改后" --columns 2 --out shots`);
     if (lastFlag === "--motion" && /^(?:[.#\[]|text=)|:has-text\(/.test(a)) fail(`--motion 不带参数，收到 --motion 和 ${a}；要探测的动作写进 --steps，例如 --motion --steps "click ${a}"`);
-    if (positional.length && !/^(?:https?:|file:)|\.html?(?:,|$)|(?:^|[\/])manifest\.json$/i.test(a) && !existsSync(a)) fail(`页面地址或多余参数冲突，收到 ${positional[0]} 和 ${a}${lastFlag ? `；${lastFlag} 不带参数` : ""}；例如 page.html --steps "click .open"`);
+    if (positional.length && !/^(?:https?:|file:)|\.html?(?:[?#,]|$)|(?:^|[\\/])manifest\.json$/i.test(a) && !existsSync(a)) fail(`页面地址或多余参数冲突，收到 ${positional[0]} 和 ${a}${lastFlag ? `；${lastFlag} 不带参数` : ""}；例如 page.html --steps "click .open"`);
     // Selector-like extras after a switch are never page targets.
-    if (lastFlag && /^(?:[.#\[]|text=)/.test(a) && !existsSync(a)) fail(`${lastFlag} 不带参数，收到 ${lastFlag} 和 ${a}；例如 page.html ${lastFlag}`);
+    if (lastFlag && /^(?:[.#\[]|text=)/.test(a) && !/\.html?(?:[?#]|$)/i.test(a) && !existsSync(a)) fail(`${lastFlag} 不带参数，收到 ${lastFlag} 和 ${a}；例如 page.html ${lastFlag}`);
     positional.push(a); lastFlag = null;
   }
 }
 // Expand explorer inputs before dry-run, without requiring ordinary page paths to exist.
 let batchMode = positional.length > 1;
-const localPath = (value) => /^file:\/\//i.test(value) ? fileURLToPath(value) : resolve(value);
+// 文件系统只接收路径；查询与锚点留到静态服务器 URL 上，不能参与 realpath/root/文件名计算。
+const localAddress = (value, base = process.cwd()) => {
+  if (/^file:\/\//i.test(value)) {
+    const url = new URL(value);
+    return { path: fileURLToPath(url), search: url.search, hash: url.hash };
+  }
+  // 普通路径允许目录/文件名含 # 或 ?。先认真实文件，再从右往左找
+  // 已存在的路径前缀，避免把目录名里的符号误切成查询或锚点。
+  const literal = resolve(base, value);
+  if (existsSync(literal)) return { path: literal, search: "", hash: "" };
+  for (let i = value.length - 1; i >= 0; i--) {
+    if (value[i] !== "?" && value[i] !== "#") continue;
+    const path = resolve(base, value.slice(0, i));
+    if (!existsSync(path)) continue;
+    const suffix = value.slice(i).match(/^(\?[^#]*)?(#.*)?$/s);
+    if (suffix) return { path, search: suffix[1] || "", hash: suffix[2] || "" };
+  }
+  const [, path, search = "", hash = ""] = value.match(/^([^?#]*)(\?[^#]*)?(#.*)?$/s);
+  return { path: resolve(base, path), search, hash };
+};
+const localPath = (value) => localAddress(value).path;
 function expandTarget(value) {
   if (/^https?:\/\//i.test(value)) return [{ target: value }];
   let path;
   try { path = localPath(value); } catch { fail(`找不到文件：${value}`); }
-  if (!existsSync(path) && value.includes(",") && value.split(",").every((p) => /\.html?$/i.test(p.trim()))) {
+  if (!existsSync(path) && value.includes(",") && value.split(",").every((p) => /\.html?(?:[?#].*)?$/i.test(p.trim()))) {
     batchMode = true;
     return value.split(",").flatMap((p) => expandTarget(p.trim()));
   }
@@ -340,9 +361,12 @@ function expandTarget(value) {
     try { manifest = JSON.parse(readFileSync(path, "utf8")); }
     catch (error) { fail(`无法读取 manifest：${value}（${error.message}）`); }
     if (!Array.isArray(manifest.candidates)) fail(`manifest 缺少 candidates 数组：${value}`);
-    const candidates = manifest.candidates.filter((c) => c && (!c.kind || c.kind === "html") && typeof c.source === "string" && /\.html?$/i.test(c.source) && !/^[a-z][a-z\d+.-]*:/i.test(c.source));
+    const candidates = manifest.candidates.filter((c) => c && (!c.kind || c.kind === "html") && typeof c.source === "string" && /\.html?(?:[?#].*)?$/i.test(c.source) && !/^[a-z][a-z\d+.-]*:/i.test(c.source));
     if (!candidates.length) fail(`manifest 里找不到本地 HTML 候选：${value}`);
-    return candidates.map((c) => ({ target: resolve(dirname(path), c.source), id: c.id, name: c.name }));
+    return candidates.map((c) => {
+      const { path: file, search, hash } = localAddress(c.source, dirname(path));
+      return { target: file + search + hash, id: c.id, name: c.name };
+    });
   }
   return [{ target: value }];
 }
@@ -350,7 +374,8 @@ const targets = positional.flatMap(expandTarget);
 const target = targets[0]?.target;
 // IDs become filenames only after removing separators and reserved path components.
 const targetStem = (candidate) => {
-  const source = candidate.id || basename(/^https?:\/\//i.test(candidate.target) ? new URL(candidate.target).pathname : localPath(candidate.target), extname(candidate.target));
+  const path = /^https?:\/\//i.test(candidate.target) ? new URL(candidate.target).pathname : localPath(candidate.target);
+  const source = candidate.id || basename(path, extname(path));
   return String(source).replace(/[<>:"/\\|?*\x00-\x1f]/g, "-").replace(/^[. ]+|[. ]+$/g, "") || "page";
 };
 const stitching = stitchInputs.length > 0;
@@ -522,11 +547,7 @@ if (opt.root) {
 }
 async function resolveTarget(t) {
   if (/^https?:\/\//i.test(t)) return t;
-  let localTarget = t;
-  if (/^file:\/\//i.test(t)) {
-    try { localTarget = fileURLToPath(t); } catch { fail(`找不到文件：${t}`); }
-  }
-  const file = resolve(localTarget);
+  const { path: file, search, hash } = localAddress(t);
   if (!existsSync(file)) fail(`找不到文件：${t}`);
   const isDir = statSync(file).isDirectory();
   const fileDir = realpathSync(isDir ? file : dirname(file));
@@ -542,7 +563,8 @@ async function resolveTarget(t) {
   } catch {}
   const targetFile = isDir ? join(fileDir, "index.html") : realpathSync(file);
   const pagePath = relative(root, targetFile).split(sep).map(encodeURIComponent).join("/");
-  if (server) return `http://127.0.0.1:${server.address().port}/${pagePath}`;
+  const pageURL = () => `http://127.0.0.1:${server.address().port}/${pagePath}${search}${hash}`;
+  if (server) return pageURL();
   server = createServer((req, res) => {
     try {
       const origin = `http://127.0.0.1:${server.address().port}`;
@@ -567,7 +589,7 @@ async function resolveTarget(t) {
     }
   });
   await new Promise((ok) => server.listen(0, "127.0.0.1", ok));
-  return `http://127.0.0.1:${server.address().port}/${pagePath}`;
+  return pageURL();
 }
 
 // ---------- 启动一个独立的临时浏览器，不碰用户自己的浏览器数据 ----------
@@ -747,7 +769,20 @@ async function check() {
   const found = await evaluate(`(() => {
     const out = [];
     const doc = document.documentElement;
-    if (doc.scrollWidth > innerWidth + 1) out.push("横向溢出：页面宽 " + doc.scrollWidth + "px，视口 " + innerWidth + "px");
+    if (doc.scrollWidth > innerWidth + 2 && [doc, document.body].every((el) => !["hidden", "clip"].includes(getComputedStyle(el).overflowX))) {
+      const examples = [];
+      for (const el of document.body.querySelectorAll("*")) {
+        const r = el.getBoundingClientRect(), s = getComputedStyle(el);
+        if (r.width <= 0 || r.height <= 0 || r.right <= innerWidth + 2 || s.visibility !== "visible" || s.display === "none") continue;
+        let alpha = 1;
+        for (let node = el; node; node = node.parentElement) alpha *= parseFloat(getComputedStyle(node).opacity);
+        if (alpha <= 0.05) continue;
+        const cls = [...el.classList].slice(0, 2).map((name) => "." + name).join("");
+        examples.push(el.tagName.toLowerCase() + (el.id ? "#" + el.id : "") + cls + " 超出 " + Math.round((r.right - innerWidth) * 10) / 10 + "px");
+        if (examples.length === 3) break;
+      }
+      out.push("横向溢出：页面宽 " + doc.scrollWidth + "px，视口 " + innerWidth + "px" + (examples.length ? "（" + examples.join("；") + "）" : ""));
+    }
     for (const img of document.images) if (img.complete && img.naturalWidth === 0) out.push("图片没加载出来：" + (img.getAttribute("src") || "").slice(0, 120));
     const gl = window.__oilWebgl;
     if (gl) {
@@ -764,9 +799,12 @@ async function check() {
 // 在页面里运行，不能引用外层变量。
 function lintPage() {
   const LABELS = {
-    contrastLow: "文字对比度不达标（正文低于 3:1，大字低于 2.5:1）",
-    smallText: "正文小于 11px", tightLeading: "多行正文行高过紧",
+    contrastLow: "文字对比度不达标（14px 以下的小字和占位文字低于 4.5:1，其他文字低于 3:1，大字低于 2.5:1）",
+    smallText: "文字小于 11px", tightLeading: "多行正文行高过紧",
     stuck: "首屏有内容停在透明状态（出场动画没触发？）",
+    inputZoom: "手机上输入框字号小于 16px（聚焦时 iOS 会自动放大页面）",
+    dialogActions: "弹窗的操作按钮不在视口内（要滚动才够得着）",
+    boxedGroups: "用边框分组过多（首屏多块各自加框，或框里又套着几个加框的小块）",
   };
   const found = new Map();
   const describe = (el) => {
@@ -811,32 +849,70 @@ function lintPage() {
     r: top.r * top.a + bottom.r * (1 - top.a), g: top.g * top.a + bottom.g * (1 - top.a),
     b: top.b * top.a + bottom.b * (1 - top.a), a: 1,
   });
-  const media = [...document.querySelectorAll("img,video,canvas,picture,iframe,svg image")]
-    .filter(shown).map((m) => m.getBoundingClientRect()).filter((r) => r.width * r.height > 2000);
-  const overMedia = (r) => media.some((m) => {
-    const w = Math.min(r.right, m.right) - Math.max(r.left, m.left), h = Math.min(r.bottom, m.bottom) - Math.max(r.top, m.top);
-    return w > 0 && h > 0 && w * h > r.width * r.height * 0.3;
-  });
-  // 文字背后的底色：沿祖先往上叠，遇到背景图、渐变或媒体就算不知道。
-  const backdrop = (el) => {
+  const ownText = (el) => [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join("").trim();
+  const textRect = (el) => {
+    for (const node of el.childNodes) {
+      if (node.nodeType !== 3 || !node.textContent.trim()) continue;
+      const range = document.createRange();
+      range.setStart(node, node.textContent.search(/\S/));
+      range.setEnd(node, node.textContent.trimEnd().length);
+      const rect = [...range.getClientRects()].find((r) => r.width > 0 && r.height > 0);
+      if (rect) return rect;
+    }
+    return null;
+  };
+  const opacity = (el) => {
+    let alpha = 1;
+    for (let node = el; node; node = node.parentElement) alpha *= parseFloat(css(node).opacity);
+    return alpha;
+  };
+  const scaledDown = (el) => {
+    for (let node = el; node; node = node.parentElement) {
+      const transform = css(node).transform;
+      if (transform === "none") continue;
+      const m = new DOMMatrixReadOnly(transform);
+      if (Math.hypot(m.m11, m.m12, m.m13) < 0.999 || Math.hypot(m.m21, m.m22, m.m23) < 0.999) return true;
+    }
+    return false;
+  };
+  // 命中文字的首个 Range，而非宽容器的中心。命中栈只包含实际覆盖该点的底板，
+  // 因此能看到兄弟底板，也不会读到绝对定位文字背后并不存在的窄父容器背景。
+  const backdrop = (el, r) => {
+    const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    if (hasOverlayPlate(el, r, true)) return null;
+    let stack;
+    if (cx >= 0 && cx < innerWidth && cy >= 0 && cy < innerHeight) {
+      stack = document.elementsFromPoint(cx, cy);
+      const start = stack.indexOf(el);
+      if (start < 0) return null; // 视口内被裁掉或无法命中时不猜底色。
+      stack = stack.slice(start);
+    } else {
+      // 命中 API 不覆盖长页的屏外内容。先排除局部滚动/裁切框外的点，
+      // 再只采实际覆盖该点的祖先，绝对定位文字不会误读窄轨道的底色。
+      stack = [];
+      for (let node = el; node; node = node.parentElement) {
+        const nr = node.getBoundingClientRect(), ns = css(node);
+        const inX = cx >= nr.left && cx <= nr.right, inY = cy >= nr.top && cy <= nr.bottom;
+        if ((["hidden", "clip", "scroll", "auto"].includes(ns.overflowX) && !inX)
+          || (["hidden", "clip", "scroll", "auto"].includes(ns.overflowY) && !inY)) return null;
+        if (inX && inY) stack.push(node);
+      }
+    }
     const layers = [];
-    for (let node = el; node && node.nodeType === 1; node = node.parentElement) {
+    for (const node of stack) {
       const s = css(node);
-      if (s.backgroundImage !== "none") return null;
+      if (opacity(node) <= 0.05) continue;
+      if (node.matches("img,video,canvas,picture,iframe,svg image") || s.backgroundImage !== "none") return null;
       const c = rgba(s.backgroundColor);
       if (c.a > 0) { layers.push(c); if (c.a >= 0.99) break; }
     }
     return layers.reverse().reduce((base, c) => over(c, base), { r: 255, g: 255, b: 255, a: 1 });
   };
-  const ownText = (el) => [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join("").trim();
-  const all = [...document.body.querySelectorAll("*")].slice(0, 8000)
+  const all = [document.body, ...document.body.querySelectorAll("*")]
     .filter((el) => !el.closest("svg,script,style,noscript,template,head,[aria-hidden='true'],#oil-mark"));
-  const texts = all.filter((el) => ownText(el).length >= 2 && shown(el));
-
-  const isAncestor = (anc, node) => {
-    for (let p = node; p; p = p.parentElement) if (p === anc) return true;
-    return false;
-  };
+  const nonTextInputs = new Set(["hidden", "checkbox", "radio", "range", "color", "file", "button", "submit", "reset", "image"]);
+  const textControl = (el) => el.matches("textarea,select") || (el.tagName === "INPUT" && !nonTextInputs.has(el.type));
+  const texts = all.filter((el) => (ownText(el).length >= 2 || textControl(el)) && shown(el));
   const containingRect = (node, pos) => {
     if (pos === "fixed") return { left: 0, top: 0 };
     for (let p = node; p && p.nodeType === 1; p = p.parentElement) {
@@ -844,12 +920,13 @@ function lintPage() {
     }
     return document.documentElement?.getBoundingClientRect?.() || { left: 0, top: 0 };
   };
-  const hasOverlayPlate = (el, r) => {
+  const hasOverlayPlate = (el, r, imageOnly = false) => {
     const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
     for (let node = el; node && node.nodeType === 1; node = node.parentElement) {
       for (const pseudo of ["::before", "::after"]) {
         const ps = css(node, pseudo);
         if (!ps || !ps.content || ps.content === "none" || !(ps.backgroundImage !== "none" || rgba(ps.backgroundColor).a > 0.05)) continue;
+        if (imageOnly && ps.backgroundImage === "none") continue;
         const pw = parseFloat(ps.width), ph = parseFloat(ps.height);
         if (!(pw >= r.width * 0.5 && ph >= r.height * 0.5)) continue;
         const base = (ps.position === "absolute" || ps.position === "fixed") ? containingRect(node, ps.position) : node.getBoundingClientRect();
@@ -858,39 +935,51 @@ function lintPage() {
       }
       if (rgba(css(node).backgroundColor).a >= 0.99) break;
     }
-    return all.some((other) => {
-      if (other === el || isAncestor(other, el) || isAncestor(el, other)) return false;
-      const or = other.getBoundingClientRect();
-      if (cx < or.left || cx > or.right || cy < or.top || cy > or.bottom) return false;
-      const os = css(other);
-      return os.backgroundImage !== "none" || rgba(os.backgroundColor).a > 0.05;
-    });
+    return false;
   };
 
   for (const el of texts) {
     const s = css(el), r = el.getBoundingClientRect();
-    if (el.closest("button:disabled,[disabled],[aria-disabled='true'],input,textarea,select,option")) continue;
+    if (el.matches(":disabled") || el.closest("[disabled],[aria-disabled='true'],option")) continue;
+    const control = textControl(el);
+    if (!control && el.closest("input,textarea,select")) continue;
+    const alpha = opacity(el);
+    if (alpha <= 0.05) continue;
     const size = parseFloat(s.fontSize);
-    let alpha = 1;
-    for (let node = el; node && node.nodeType === 1; node = node.parentElement) alpha *= parseFloat(css(node).opacity);
-    const bg = overMedia(r) ? null : backdrop(el);
-    const fg = rgba(s.color);
-    if (bg && alpha > 0.05 && fg.a > 0) {
-      const color = over({ ...fg, a: fg.a * alpha }, bg);
+    if (!(size > 0)) continue; // 窄屏图标按钮常用 0px 有意隐藏自己的文字。
+    const sample = textRect(el) || (control ? r : null);
+    if (!sample) continue; // 普通文字没有可见 Range 时不能拿按钮的图标/内边距代替。
+    if (size < 11 && !el.closest("sup,sub") && !scaledDown(el)) add("smallText", el, size + "px");
+    if (control && innerWidth <= 480 && size < 16 && !scaledDown(el)) add("inputZoom", el, size + "px");
+    let ink = s, hasText = true;
+    if (control) {
+      const value = el.tagName === "SELECT" ? [...el.selectedOptions].map((o) => o.text).join("") : el.value;
+      hasText = value.length > 0;
+      if (!hasText && el.placeholder?.trim() && el.matches(":placeholder-shown")) {
+        ink = css(el, "::placeholder");
+        hasText = true;
+      }
+    }
+    const bg = hasText ? backdrop(el, sample) : null;
+    const fg = rgba(ink.color);
+    if (bg && (fg.a > 0 || control)) {
+      const color = over({ ...fg, a: fg.a * alpha * (ink === s ? 1 : parseFloat(ink.opacity)) }, bg);
       const contrast = ratio(color, bg);
-      const large = size >= 24 || (size >= 18.6 && parseInt(s.fontWeight, 10) >= 700);
-      // 低于 1.5:1 且背后垫着非祖先底板或伪元素（滑块、绝对定位胶囊）时，不误报对比度；确定底色上的极低对比度照常报错
-      if (!(contrast < 1.5 && hasOverlayPlate(el, r))) {
-        if (contrast < (large ? 2.5 : 3.0)) add("contrastLow", el, contrast.toFixed(2) + ":1");
+      const large = !control && (size >= 24 || (size >= 18.6 && parseInt(s.fontWeight, 10) >= 700));
+      // 伪元素不在命中栈里，沿用底板免误报；兄弟底板已按绘制顺序采到，极低对比度也照常报。
+      if (!(contrast < 1.5 && hasOverlayPlate(el, sample))) {
+        // 字越小越靠对比度撑着：小字和占位文字按 4.5:1，其余沿用 3:1。
+        const floor = large ? 2.5 : (size < 14 || ink !== s) ? 4.5 : 3.0;
+        if (contrast < floor) add("contrastLow", el, contrast.toFixed(2) + ":1");
       }
     }
     // 正文：两行以上的段落
+    if (control) continue;
     const text = ownText(el);
     const zh = /[一-鿿]/.test(text);
     if (text.length < (zh ? 30 : 60) || el.closest("code,pre,table,nav,button,label,figcaption,kbd")) continue;
     const lh = s.lineHeight === "normal" ? size * 1.2 : parseFloat(s.lineHeight);
     if (r.height < lh * 1.8) continue;
-    if (size < 11) add("smallText", el, size + "px");
     if (lh / size < (zh ? 1.4 : 1.3)) add("tightLeading", el, (lh / size).toFixed(2));
   }
 
@@ -911,6 +1000,56 @@ function lintPage() {
     if (/absolute|fixed/.test(hs.position) || hs.pointerEvents === "none" || css(el).visibility === "hidden") continue;
     add("stuck", el);
   }
+
+  // 用边框分组：四边都有可见边框、装着文字的块。首屏由多块各自加框的卡片堆成，或一块卡片里又摆着几个加框的小块。
+  // 输入框、表格、图片和浮层里的边框各有职责，不算；绝对定位的浮起块也不算。
+  const BOX_STACK = 4;
+  const framedInside = "table,dialog,[role='dialog'],[role='alertdialog'],[role='menu'],[role='listbox'],[role='tooltip'],[popover],#oil-mark";
+  const framed = (el) => {
+    const s = css(el);
+    if (/absolute|fixed/.test(s.position)) return false;
+    return ["Top", "Right", "Bottom", "Left"].every((side) => parseFloat(s["border" + side + "Width"]) >= 1
+      && !/none|hidden/.test(s["border" + side + "Style"]) && rgba(s["border" + side + "Color"]).a >= 0.15);
+  };
+  const boxes = all.filter((el) => el !== document.body && !el.matches("input,select,textarea,img,video,canvas,iframe,picture,hr")
+    && !el.closest(framedInside) && shown(el) && opacity(el) > 0.05 && (el.innerText || "").trim().length > 0 && framed(el));
+  const sized = (el, w, h) => { const r = el.getBoundingClientRect(); return r.width >= w && r.height >= h; };
+  const cards = boxes.filter((el) => sized(el, 120, 48));
+  const cardSet = new Set(cards);
+  const outer = cards.filter((el) => { for (let p = el.parentElement; p; p = p.parentElement) if (cardSet.has(p)) return false; return true; });
+  const firstScreen = outer.filter((el) => { const r = el.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight; });
+  if (firstScreen.length >= BOX_STACK) add("boxedGroups", firstScreen[0], "首屏 " + firstScreen.length + " 块各自加框");
+  const inner = new Map();
+  for (const el of boxes) {
+    if (!sized(el, 24, 24)) continue;
+    for (let p = el.parentElement; p; p = p.parentElement) if (cardSet.has(p)) { inner.set(p, (inner.get(p) || 0) + 1); break; }
+  }
+  for (const [card, n] of inner) if (n >= 2) add("boxedGroups", card, "框里又有 " + n + " 个加框的块");
+
+  // 打开着的表单型弹窗：提交按钮和最后一个按钮要在视口里，也不被弹窗内部的滚动区裁掉。
+  const reachable = (el, root) => {
+    const r = el.getBoundingClientRect();
+    if (r.bottom > innerHeight + 1 || r.top < -1 || r.right > innerWidth + 1 || r.left < -1) return false;
+    for (let node = el.parentElement; node && node !== root.parentElement; node = node.parentElement) {
+      if (!["auto", "scroll", "hidden", "clip"].includes(css(node).overflowY)) continue;
+      const nr = node.getBoundingClientRect();
+      if (r.bottom > nr.bottom + 1 || r.top < nr.top - 1) return false;
+    }
+    return true;
+  };
+  const missedActions = new Set();
+  for (const dialog of document.querySelectorAll("dialog[open],[role='dialog'],[role='alertdialog'],[aria-modal='true']")) {
+    if (dialog.closest("[hidden],[aria-hidden='true'],#oil-mark") || !shown(dialog) || opacity(dialog) <= 0.05) continue;
+    const dr = dialog.getBoundingClientRect();
+    if (dr.bottom <= 0 || dr.top >= innerHeight) continue;
+    if (!dialog.querySelector("form,input:not([type='hidden']),textarea,select")) continue;
+    const buttons = [...dialog.querySelectorAll("button,[role='button'],input[type='submit'],input[type='button']")]
+      .filter((b) => shown(b) && !b.matches(":disabled") && opacity(b) > 0.05);
+    if (!buttons.length) continue;
+    const targets = new Set([buttons[buttons.length - 1], ...buttons.filter((b) => b.getAttribute("type") === "submit")]);
+    for (const button of targets) if (!reachable(button, dialog)) missedActions.add(button);
+  }
+  for (const button of missedActions) add("dialogActions", button);
 
   return [...found.values()];
 }
@@ -972,6 +1111,28 @@ async function selectorClip() {
     if (transportFailure) throw error;
     await cleanup(); fail(error.message);
   }
+}
+// 整页截图不适合的两种页面：内容在内部容器里滚动，或有贴住视口的固定外壳。只提示，不改行为。
+async function fullPageNote() {
+  const kind = await evaluate(`(() => {
+    const root = document.scrollingElement || document.documentElement;
+    const tall = (el) => el.getBoundingClientRect().height >= innerHeight * 0.6;
+    if (root.scrollHeight <= innerHeight + 2) {
+      for (const el of document.body.querySelectorAll("*")) {
+        if (/auto|scroll/.test(getComputedStyle(el).overflowY) && el.scrollHeight > el.clientHeight + 40 && el.clientHeight >= innerHeight * 0.4) return "inner";
+      }
+      return "";
+    }
+    for (const el of document.body.querySelectorAll("*")) {
+      const s = getComputedStyle(el), r = el.getBoundingClientRect();
+      if (/fixed|sticky/.test(s.position) && tall(el) && r.width >= 40 && r.width < innerWidth * 0.9 && s.visibility !== "hidden" && s.display !== "none") return "shell";
+    }
+    return "";
+  })()`);
+  const note = kind === "inner" ? "--full：页面本身不滚动，内容在内部滚动区里，整页图和视口图相同；这类页面按视口图取证"
+    : kind === "shell" ? "--full：页面有贴住视口的固定侧栏或外壳，整页图里它只出现在第一屏；这类页面按视口图取证" : "";
+  if (note && !notices.includes(note)) notices.push(note);
+  return note;
 }
 async function screenshot(file, full, clipOverride = null) {
   let clip = clipOverride;
@@ -1847,7 +2008,9 @@ for (const candidate of targets) bases.push(await resolveTarget(candidate.target
 let base = bases[0], activeTarget = targets[0];
 const withState = (s) => {
   const u = new URL(base);
-  for (const [key, value] of new URLSearchParams(opt.query || "")) u.searchParams.set(key, value);
+  const query = new URLSearchParams(opt.query || "");
+  for (const key of new Set(query.keys())) u.searchParams.delete(key);
+  for (const [key, value] of query) u.searchParams.append(key, value);
   if (s) u.searchParams.set(opt.param, s);
   return u.toString();
 };
@@ -1930,9 +2093,10 @@ async function captureBatch(selectedStates, selectedZooms, selectedGroups, useMa
       const file = join(out, `${name}.png`);
       await item(`${name}.png`, meta, async () => {
         const animationWaitMs = await prepare();
+        const note = flags.has("full") && !selector ? await fullPageNote() : "";
         await screenshot(file, flags.has("full"), selector ? await selectorClip() : thumb ? { x: 0, y: 0, width: w, height: h, scale: 0.5 } : null);
         const issues = await check(), hints = thumb ? [] : await lint();
-        entry = { file: basename(file), ...meta, ...(thumb ? { thumb: true } : {}), animationWaitMs, issues, lint: hints };
+        entry = { file: basename(file), ...meta, ...(thumb ? { thumb: true } : {}), animationWaitMs, issues, lint: hints, ...(note ? { note } : {}) };
         lines.push(`${basename(file)}${issues.length ? "  ⚠ " + issues.join("；") : ""}${hints.length ? "  ◇ 可读性提示：" + lintLine(hints) : ""}`);
         report.push(entry); shots.push({ path: file, label: state || "page" });
         if (batchMode) targetShots.push({ path: file, label: [meta.name, state, suffix].filter(Boolean).join(" · ") });

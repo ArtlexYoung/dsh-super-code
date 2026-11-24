@@ -58,7 +58,15 @@ export function readPreferences(value) {
   if (Object.prototype.toString.call(value) !== '[object Object]') throw new Error('WORKBENCH_PREFERENCES_INVALID');
   if (![value.keymap, value.palette].every(profile => profiles.includes(profile))) throw new Error('WORKBENCH_PREFERENCES_INVALID');
   if (Object.prototype.toString.call(value.shortcuts) !== '[object Object]') throw new Error('WORKBENCH_SHORTCUT_INVALID');
-  const shortcuts = Object.entries(value.shortcuts).map(([id, key]) => {
+  // main 的旧命令入口与快速导航共用一个动作，保留用户已经保存的绑定。
+  const shortcutEntries = new Map();
+  for (const [storedId, key] of Object.entries(value.shortcuts)) {
+    const id = storedId === 'commands' ? 'commandPalette' : storedId;
+    const normalized = normalize(key);
+    if (shortcutEntries.has(id) && shortcutEntries.get(id) !== normalized) throw new Error('WORKBENCH_SHORTCUT_CONFLICT');
+    shortcutEntries.set(id, normalized);
+  }
+  const shortcuts = [...shortcutEntries].map(([id, key]) => {
     if (!actions.some(action => action.id === id)) throw new Error('WORKBENCH_SHORTCUT_INVALID');
     return [id, normalize(key)];
   });

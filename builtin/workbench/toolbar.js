@@ -31,6 +31,7 @@ export function readToolbar(value) {
   const defaults = toolbarActions.filter(item => !item.fixed).map(({ id, secondary }) => ({ id, visible: !secondary }));
   if (value === undefined) return defaults;
   if (!Array.isArray(value)) throw new Error('WORKBENCH_PREFERENCES_INVALID');
+  value = value.map(item => item?.id === 'commands' ? { ...item, id: 'commandPalette' } : item);
   const found = new Set();
   for (const item of value) {
     if (!item || !toolbarActions.some(({ id }) => id === item.id) || found.has(item.id) || typeof item.visible !== 'boolean') throw new Error('WORKBENCH_PREFERENCES_INVALID');

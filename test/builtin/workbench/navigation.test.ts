@@ -30,6 +30,15 @@ test('新导航快捷键保留 IDEA 参数提示，既有自定义绑定优先�
   assert.equal(keyOf(custom, 'navigateFiles'), '')
 })
 
+test('main 的命令面板自定义快捷键迁移到所有操作，默认设置没有重复绑定', () => {
+  const initial = readPreferences(defaults())
+  assert.equal(keyOf(initial, 'commandPalette'), 'Mod-Shift-p')
+  const migrated = readPreferences({ ...initial, shortcuts: { commands: 'Mod-Alt-p' } })
+  assert.deepEqual(migrated.shortcuts, { commandPalette: 'Mod-Alt-p' })
+  assert.equal(keyOf(migrated, 'commandPalette'), 'Mod-Alt-p')
+  assert.throws(() => readPreferences({ ...initial, shortcuts: { commands: 'Mod-Alt-p', commandPalette: 'Mod-Shift-p' } }), /WORKBENCH_SHORTCUT_CONFLICT/)
+})
+
 test('文件行列输入从1转换为0，支持当前文件及含冒号的真实文件名', () => {
   const state = { file: 'src/main.ts', recentFiles: ['src/main.ts'], symbols: [] }
   const files = ['src/main.ts', '中文/入口.ts', 'notes:12', 'notes']

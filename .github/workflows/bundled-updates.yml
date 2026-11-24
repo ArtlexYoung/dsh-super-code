@@ -1,0 +1,63 @@
+name: Check bundled Skills and dependencies
+
+on:
+  schedule:
+    - cron: '17 2 * * 1'
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: Create a verified maintenance branch
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bundled-maintenance
+  cancel-in-progress: false
+
+jobs:
+  maintenance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+      APPLY_UPDATES: ${{ vars.SUPER_CODE_AUTO_UPDATE == 'true' || (github.event_name == 'workflow_dispatch' && inputs.apply) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm run updates:install
+      - name: Check or prepare updates
+        run: |
+          if [ "$APPLY_UPDATES" = true ]; then
+            npm run updates:apply -- --branch "chore/bundled-updates-${GITHUB_RUN_ID}" --report .development/updates/report.json
+          else
+            npm run updates:check -- --report .development/updates/report.json
+          fi
+      - name: Push the verified maintenance branch
+        if: env.APPLY_UPDATES == 'true'
+        run: |
+          node --input-type=module <<'JS'
+          import { readFile } from 'node:fs/promises';
+          import { execFileSync } from 'node:child_process';
+          const { result } = JSON.parse(await readFile('.development/updates/report.json', 'utf8'));
+          const branch = `chore/bundled-updates-${process.env.GITHUB_RUN_ID}`;
+          if (!['updated', 'updated-with-blocked-targets'].includes(result.status)) process.exit(0);
+          if (result.branch !== branch || !/^[a-f0-9]{40}$/.test(result.commit)) throw Error('Unexpected maintenance result');
+          execFileSync('git', ['push', 'origin', `${result.commit}:refs/heads/${branch}`], { stdio: 'inherit' });
+          JS
+      - name: Keep the maintenance report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundled-maintenance-report
+          path: |
+            .development/updates/report.json
+            .development/updates/run-*/*.log
+          retention-days: 14

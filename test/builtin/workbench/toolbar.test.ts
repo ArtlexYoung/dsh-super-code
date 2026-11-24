@@ -3,6 +3,12 @@ import assert from 'node:assert/strict'
 import { readToolbar, moveToolbar } from '../../../builtin/workbench/toolbar.js'
 import { defaults, readPreferences } from '../../../builtin/workbench/editor/preferences.js'
 
+test('main 的所有操作按钮迁入固定工具栏，保留其他按钮的顺序和隐藏设置', () => {
+  const toolbar = readToolbar([{ id: 'find', visible: false }, { id: 'commands', visible: true }, { id: 'back', visible: true }])
+  assert.deepEqual(toolbar.slice(0, 2), [{ id: 'find', visible: false }, { id: 'back', visible: true }])
+  assert.equal(toolbar.some((item: { id: string }) => ['commands', 'commandPalette'].includes(item.id)), false)
+})
+
 test('原有编辑设置自动补齐工具栏，固定操作不参与显示隐藏和排序', () => {
   const value = readPreferences({ keymap: 'idea', palette: 'idea', shortcuts: {} })
   assert.deepEqual(value.toolbar.map((item: { id: string }) => item.id), ['back', 'forward', 'navigateFiles', 'find', 'replace', 'project', 'projectReplace', 'definition', 'complete', 'parameters', 'codeHistory', 'saveAll', 'drafts', 'undo', 'redo', 'navigateSymbols', 'readingFocus', 'saveConflict', 'reopenTab', 'navigateProjectSymbols'])

@@ -1,0 +1,1124 @@
+[
+  {
+    "id": "mattpocock",
+    "title": "Matt Pocock",
+    "version": "1.3.2",
+    "source": "https://github.com/mattpocock/skills",
+    "revision": "4ae2317ddb22b046e26455e4f9c9b3aaaf62212d",
+    "skills": [
+      {
+        "id": "mattpocock/ask-matt",
+        "name": "ask-matt",
+        "description": "Ask which skill or flow fits your situation. A router over the skills in this repo.",
+        "path": "mattpocock/skills/ask-matt/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "The main flow: idea → ship",
+          "On-ramps",
+          "Codebase health",
+          "Vocabulary underneath",
+          "Phase boundaries",
+          "Standalone",
+          "Precondition"
+        ]
+      },
+      {
+        "id": "mattpocock/code-review",
+        "name": "code-review",
+        "description": "Review the changes since a fixed point (commit, branch, tag, or merge-base) along two axes: Standards (does the code follow this repo's documented coding standards?) and Spec (does the code match what the originating issue/spec asked for?). Runs both reviews in parallel sub-agents and reports them side by side. Use when the user wants to review a branch, a PR, work-in-progress changes, or asks to \"review since X\".",
+        "path": "mattpocock/skills/code-review/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Process",
+          "Why two axes"
+        ]
+      },
+      {
+        "id": "mattpocock/codebase-design",
+        "name": "codebase-design",
+        "description": "Shared vocabulary for designing deep modules. Use when the user wants to design or improve a module's interface, find deepening opportunities, decide where a seam goes, make code more testable or AI-navigable, or when another skill needs the deep-module vocabulary.",
+        "path": "mattpocock/skills/codebase-design/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Glossary",
+          "Deep vs shallow",
+          "Principles",
+          "Designing for testability",
+          "Relationships",
+          "Rejected framings",
+          "Going deeper"
+        ]
+      },
+      {
+        "id": "mattpocock/diagnosing-bugs",
+        "name": "diagnosing-bugs",
+        "description": "Diagnosis loop for hard bugs and performance regressions. Use when the user says \"diagnose\"/\"debug this\", or reports something broken/throwing/failing/slow.",
+        "path": "mattpocock/skills/diagnosing-bugs/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Redact",
+          "Phase 1: Build a feedback loop",
+          "Phase 2: Reproduce + minimise",
+          "Phase 3: Hypothesise",
+          "Phase 4: Instrument",
+          "Phase 5: Fix + regression test",
+          "Phase 6: Cleanup"
+        ]
+      },
+      {
+        "id": "mattpocock/domain-modeling",
+        "name": "domain-modeling",
+        "description": "Build and sharpen a project's domain model. Use when discussing codebase terminology, writing or editing a GLOSSARY.md, or recording or editing an ADR.",
+        "path": "mattpocock/skills/domain-modeling/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "File structure",
+          "During the session"
+        ]
+      },
+      {
+        "id": "mattpocock/grill-me",
+        "name": "grill-me",
+        "description": "A relentless interview to sharpen a plan or design.",
+        "path": "mattpocock/skills/grill-me/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "mattpocock/grill-with-docs",
+        "name": "grill-with-docs",
+        "description": "A relentless interview to sharpen a plan or design, which also creates docs (ADR's and glossary) as we go.",
+        "path": "mattpocock/skills/grill-with-docs/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "mattpocock/grilling",
+        "name": "grilling",
+        "description": "Grill the user relentlessly about a plan, decision, or idea. Use when the user wants to stress-test their thinking, or uses any 'grill' trigger phrases.",
+        "path": "mattpocock/skills/grilling/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "mattpocock/handoff",
+        "name": "handoff",
+        "description": "Compact the current conversation into a handoff document for another agent to pick up.",
+        "path": "mattpocock/skills/handoff/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "mattpocock/implement",
+        "name": "implement",
+        "description": "Implement a piece of work based on a spec or set of tickets.",
+        "path": "mattpocock/skills/implement/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "mattpocock/implement-spec",
+        "name": "implement-spec",
+        "description": "Implement the result of /to-spec and /to-tickets in code.",
+        "path": "mattpocock/skills/implement-spec/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Steps"
+        ]
+      },
+      {
+        "id": "mattpocock/improve-codebase-architecture",
+        "name": "improve-codebase-architecture",
+        "description": "Scan a codebase for deepening opportunities, present them as a visual HTML report, then grill through whichever one you pick.",
+        "path": "mattpocock/skills/improve-codebase-architecture/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Process"
+        ]
+      },
+      {
+        "id": "mattpocock/pr",
+        "name": "pr",
+        "description": "Use when writing a PR body.",
+        "path": "mattpocock/skills/pr/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Summary",
+          "Evidence",
+          "Merge Danger",
+          "Sections"
+        ]
+      },
+      {
+        "id": "mattpocock/prototype",
+        "name": "prototype",
+        "description": "Build a throwaway prototype to answer a design question. Use when the user wants to sanity-check whether a state model or logic feels right, or explore what a UI should look like.",
+        "path": "mattpocock/skills/prototype/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Pick a branch",
+          "Rules that apply to both"
+        ]
+      },
+      {
+        "id": "mattpocock/research",
+        "name": "research",
+        "description": "Investigate a question against high-trust primary sources and capture the findings as a Markdown file in the repo. Use when the user wants a topic researched, docs or API facts gathered, or reading legwork delegated to a background agent.",
+        "path": "mattpocock/skills/research/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "mattpocock/retro",
+        "name": "retro",
+        "description": "Conduct a retrospective on a coding session.",
+        "path": "mattpocock/skills/retro/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Steps",
+          "Reference"
+        ]
+      },
+      {
+        "id": "mattpocock/setup-matt-pocock-skills",
+        "name": "setup-matt-pocock-skills",
+        "description": "Configure this repo for the engineering skills: set up its issue tracker, triage label vocabulary, and domain doc layout. Run once before first use of the other engineering skills.",
+        "path": "mattpocock/skills/setup-matt-pocock-skills/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Process",
+          "Agent skills"
+        ]
+      },
+      {
+        "id": "mattpocock/tdd",
+        "name": "tdd",
+        "description": "Test-driven development. Use when the user wants to build features or fix bugs test-first, mentions \"red-green-refactor\", or wants integration tests.",
+        "path": "mattpocock/skills/tdd/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "What a good test is",
+          "Seams: where tests go",
+          "Anti-patterns",
+          "Rules of the loop"
+        ]
+      },
+      {
+        "id": "mattpocock/teach",
+        "name": "teach",
+        "description": "Teach the user a new skill or concept, within this workspace.",
+        "path": "mattpocock/skills/teach/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Teaching Workspace",
+          "Philosophy",
+          "Lessons",
+          "Assets",
+          "The Mission",
+          "Zone Of Proximal Development",
+          "Knowledge",
+          "Skills"
+        ]
+      },
+      {
+        "id": "mattpocock/to-questionnaire",
+        "name": "to-questionnaire",
+        "description": "Turn a decision you can't fully answer into a questionnaire for someone else to fill in.",
+        "path": "mattpocock/skills/to-questionnaire/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Document structure",
+          "Context",
+          "How to answer",
+          "<Theme heading>",
+          "Anything else?"
+        ]
+      },
+      {
+        "id": "mattpocock/to-spec",
+        "name": "to-spec",
+        "description": "Turn the current conversation into a spec and publish it to the project issue tracker: no interview, just synthesis of what you've already discussed.",
+        "path": "mattpocock/skills/to-spec/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Process",
+          "Problem Statement",
+          "Solution",
+          "User Stories",
+          "Implementation Decisions",
+          "Testing Decisions",
+          "Out of Scope",
+          "Further Notes"
+        ]
+      },
+      {
+        "id": "mattpocock/to-tickets",
+        "name": "to-tickets",
+        "description": "Break a plan, spec, or the current conversation into a set of tracer-bullet tickets, each declaring its blocking edges, published to the configured tracker (edges as text in one file per ticket locally, or native blocking links on a real tracker).",
+        "path": "mattpocock/skills/to-tickets/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Process",
+          "Parent",
+          "What to build",
+          "Acceptance criteria",
+          "Blocked by"
+        ]
+      },
+      {
+        "id": "mattpocock/triage",
+        "name": "triage",
+        "description": "Move issues and external PRs through a state machine of triage roles, categorise, verify, grill if needed, and write agent-ready briefs.",
+        "path": "mattpocock/skills/triage/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Reference docs",
+          "Roles",
+          "Invocation",
+          "Show what needs attention",
+          "Triage a specific issue or PR",
+          "Quick state override",
+          "Needs-info template",
+          "Triage Notes"
+        ]
+      },
+      {
+        "id": "mattpocock/wait-what",
+        "name": "wait-what",
+        "description": "Stop. That last message did not land: re-pitch it.",
+        "path": "mattpocock/skills/wait-what/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "mattpocock/wayfinder",
+        "name": "wayfinder",
+        "description": "Plan a huge chunk of work (more than one agent session can hold) as a shared map of decision tickets on your issue tracker, and resolve them one at a time until the way to the destination is clear.",
+        "path": "mattpocock/skills/wayfinder/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Plan, don't do",
+          "Refer by name",
+          "The Map",
+          "Destination",
+          "Notes",
+          "Decisions so far",
+          "Not yet specified",
+          "Out of scope"
+        ]
+      },
+      {
+        "id": "mattpocock/wizard",
+        "name": "wizard",
+        "description": "Generate an interactive bash wizard that walks a human through steps only they can perform. Use when provisioning infrastructure, setting up credentials or CI secrets, walking an unfamiliar third-party dashboard, or running a one-off migration or cutover. Don't invoke this for steps the agent can perform itself.",
+        "path": "mattpocock/skills/wizard/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Process"
+        ]
+      },
+      {
+        "id": "mattpocock/writing-for-agents",
+        "name": "writing-for-agents",
+        "description": "Writing documents for agents. Use when creating or editing skills, or modifying AGENTS.md or CLAUDE.md.",
+        "path": "mattpocock/skills/writing-for-agents/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Context pointers",
+          "The two loads",
+          "Information hierarchy",
+          "Steps and completion criteria",
+          "When to split",
+          "Leading words",
+          "Pruning"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "pstack",
+    "title": "PStack",
+    "version": "0.15.36",
+    "source": "https://github.com/cursor/plugins/tree/main/pstack",
+    "revision": "63912a91d52c43946f974f2aaf661334a6116a82",
+    "skills": [
+      {
+        "id": "pstack/architect",
+        "name": "architect",
+        "description": "Sketch types, signatures, and module structure before code, then stay in the loop while implementation fills in. Use for /architect, 'architect this', 'design this', or non-trivial work where jumping to code would lock in the wrong shape.",
+        "path": "pstack/dsh/skills/architect/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Start",
+          "Phase A: Ground the problem",
+          "Phase B: Sketch",
+          "Phase C: Agree (opt-in)",
+          "Phase D: Implement against the sketch",
+          "Phase E: Scrap when the architecture is wrong",
+          "Outputs"
+        ]
+      },
+      {
+        "id": "pstack/arena",
+        "name": "arena",
+        "description": "Spawn N parallel candidates at the same task, pick a base, graft the strongest parts of the losers into it. Use for /arena, 'arena this', 'throw it in the arena', or when one attempt at a non-trivial artifact would lock in the wrong shape.",
+        "path": "pstack/dsh/skills/arena/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Phase A: Frame",
+          "Phase B: Fan out",
+          "Phase C: Cross-judge",
+          "Phase D: Pick a base",
+          "Phase E: Graft",
+          "Phase F: Verify",
+          "Outputs"
+        ]
+      },
+      {
+        "id": "pstack/automate-me",
+        "name": "automate-me",
+        "description": "Use for \"automate me\", \"create/update/refresh my -mode skill\", \"turn/capture my preferences or working style into a skill\", or wanting agents to follow how the user works. Drafts or revises a personal -mode skill with the bundled DSH authoring guide + unslop, optionally pulling fresh evidence from recent transcripts.",
+        "path": "pstack/dsh/skills/automate-me/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/benchmark-checklist",
+        "name": "benchmark-checklist",
+        "description": "Vet a perf measurement (limiter, tuning, limits, errors, repeatability, relevance, and whether the work happened) before you report or act on it. Use when you run a benchmark or report a speedup or regression you measured.",
+        "path": "pstack/dsh/skills/benchmark-checklist/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Before you run anything",
+          "The questions",
+          "Report",
+          "Other perf material"
+        ]
+      },
+      {
+        "id": "pstack/blast-radius",
+        "name": "blast-radius",
+        "description": "Find what a change could break somewhere else before it ships, beyond the diff, and prove the one fact it's safe because of by running real code instead of writing it up. Use for 'blast radius of X', 'what could this break', or reviewing a small diff you don't trust.",
+        "path": "pstack/dsh/skills/blast-radius/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Don't trust your own writeup",
+          "Steps",
+          "What to hand back"
+        ]
+      },
+      {
+        "id": "pstack/bro",
+        "name": "bro",
+        "description": "Restate the last message in plain human language, with no jargon.",
+        "path": "pstack/dsh/skills/bro/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/correct",
+        "name": "correct",
+        "description": "Find the mistakes agents keep repeating in this repo and make each one impossible. Try architecture first, then types, then a lint whose error names the fix, then a test, and write docs last. Prove each check fails on a real past mistake. Repeat this each time the operator corrects you. Use for /correct.",
+        "path": "pstack/dsh/skills/correct/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Find the mistake classes",
+          "Fix each class at the highest level that works",
+          "Fix and prove",
+          "Keep the rule table"
+        ]
+      },
+      {
+        "id": "pstack/create-formal-verification-skill",
+        "name": "create-formal-verification-skill",
+        "description": "Generate a project-local skill that formally verifies the code where a bug costs the most and tests reach the least, in any language, with whichever verification tool fits. Use for /create-formal-verification-skill, \"model-check this race\", \"prove this invariant\", or when concurrency, retries, state machines, parsers, or unsafe code need more than tests.",
+        "path": "pstack/dsh/skills/create-formal-verification-skill/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Choose the target from the code",
+          "Let the question choose the tool",
+          "What makes it good",
+          "Generate the verify skill",
+          "Prove it before you hand off",
+          "Hand off"
+        ]
+      },
+      {
+        "id": "pstack/create-verification-skill",
+        "name": "create-verification-skill",
+        "description": "Generate a project-local verification skill that drives your app the way a user does — any language, framework, or platform. Use for /create-verification-skill, \"make a control skill for this repo\", or when a project has no scripted way to prove UI/CLI/service behavior.",
+        "path": "pstack/dsh/skills/create-verification-skill/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "1. Interview the repo, not the user",
+          "2. Generate the skill",
+          "3. Seed the feature map",
+          "4. Prove the generated skill before handing it over",
+          "5. Offer the maintenance loop"
+        ]
+      },
+      {
+        "id": "pstack/figure-it-out",
+        "name": "figure-it-out",
+        "description": "Design an auditable playbook when no narrower one fits: a large migration, an ambitious multi-part change, or work a human reviews after stepping away. Scales rigor to the task, runs a hypothesis loop, and logs decisions. Use for /figure-it-out or 'figure it out'.",
+        "path": "pstack/dsh/skills/figure-it-out/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Start",
+          "Phase A: Frame",
+          "Phase B: Design the workflow",
+          "Phase C: Run the loop",
+          "Phase D: Keep the audit trail",
+          "Phase E: Verify and hand back"
+        ]
+      },
+      {
+        "id": "pstack/how",
+        "name": "how",
+        "description": "Use for \"how does X work\", code walkthroughs before changing something, and placement / ownership / layering questions (\"where should this live\", \"which package owns this\", \"is this the right layer\"). Explains subsystem architecture, runtime flow, onboarding mental models. Use why for motivation.",
+        "path": "pstack/dsh/skills/how/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "1. Assess complexity",
+          "2. Explore (complex only)",
+          "3. Synthesize (complex only)",
+          "4. Present",
+          "Output format"
+        ]
+      },
+      {
+        "id": "pstack/in-your-own-words",
+        "name": "in-your-own-words",
+        "description": "Restate in your own words what you think the user's goals are and what problem they're trying to solve. Use for /in-your-own-words.",
+        "path": "pstack/dsh/skills/in-your-own-words/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/interrogate",
+        "name": "interrogate",
+        "description": "Use for \"interrogate\", \"adversarial review\", \"multi-model review\", \"challenge this\", \"stress test this code\", \"find blind spots\", or \"tear this apart\". Adversaries try to break a change or design, and only findings proven by a run survive.",
+        "path": "pstack/dsh/skills/interrogate/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Frame",
+          "Fan out",
+          "Verify",
+          "Output"
+        ]
+      },
+      {
+        "id": "pstack/ketchup",
+        "name": "ketchup",
+        "description": "Catch the user up on what changed in this chat since their last message, in plain words and small visuals. List every item waiting on them with what they need to decide it from the reply alone. Use for /ketchup.",
+        "path": "pstack/dsh/skills/ketchup/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Gather what changed",
+          "Write the reply",
+          "Visuals"
+        ]
+      },
+      {
+        "id": "pstack/ketchup-video",
+        "name": "ketchup-video",
+        "description": "Catch the user up like /ketchup, with a short subtitled video of slides for what happened and the waiting calls as text under it. Use for /ketchup-video.",
+        "path": "pstack/dsh/skills/ketchup-video/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Slides",
+          "Subtitles",
+          "Render"
+        ]
+      },
+      {
+        "id": "pstack/maintain-formal-verification-skill",
+        "name": "maintain-formal-verification-skill",
+        "description": "Bring a project's formal verification back in line with the code after the code changes: find the commits that touched verified code, update the model, harness, or properties to describe the code as it is now, rerun, and say whether each failure is drift in the verification or a bug in the code. Use for /maintain-formal-verification-skill, \"is the model still true to the code\", or after merges and refactors that touched verified code without rechecking it.",
+        "path": "pstack/dsh/skills/maintain-formal-verification-skill/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Outcomes",
+          "Edit scope",
+          "Pass",
+          "Report"
+        ]
+      },
+      {
+        "id": "pstack/maintain-verification-skill",
+        "name": "maintain-verification-skill",
+        "description": "Periodic pass that keeps a project's verification skill and feature map honest: parallel source readers per feature, one live session driving every feature, at most one PR of proven corrections. Use for /maintain-verification-skill or \"audit the verify skill\".",
+        "path": "pstack/dsh/skills/maintain-verification-skill/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Outcomes",
+          "Edit scope",
+          "Pass"
+        ]
+      },
+      {
+        "id": "pstack/make-bot-ui",
+        "name": "make-bot-ui",
+        "description": "Build a UI and backend that submit tasks through the DSH MCP connection and show progress and results.",
+        "path": "pstack/dsh/skills/make-bot-ui/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/no-comments",
+        "name": "no-comments",
+        "description": "Spawn Comment Sicko, fix accepted findings, and offer encodings for claimed constraints.",
+        "path": "pstack/dsh/skills/no-comments/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Scope",
+          "Steps"
+        ]
+      },
+      {
+        "id": "pstack/poteto-help",
+        "name": "poteto-help",
+        "description": "Guides users through pstack setup, /poteto-mode, and picking the skill, playbook, or principle for a task. Type /poteto-help with a question.",
+        "path": "pstack/dsh/skills/poteto-help/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/poteto-mode",
+        "name": "poteto-mode",
+        "description": "poteto's agent style for concise, detailed responses, deliberate subagents, unslopped prose, simple code, and verified work. Use for poteto, /poteto-mode, or requests to work in this style.",
+        "path": "pstack/dsh/skills/poteto-mode/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Non-negotiables",
+          "Principles",
+          "Autonomy",
+          "Subagents",
+          "Writing the reply",
+          "Comments",
+          "Playbooks"
+        ]
+      },
+      {
+        "id": "pstack/principle-attack-the-premise",
+        "name": "principle-attack-the-premise",
+        "description": "Apply when two or more fixes that share one premise have failed the same gate. Write the premise down and test it directly before you write another fix that assumes it.",
+        "path": "pstack/dsh/skills/principle-attack-the-premise/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/principle-boundary-discipline",
+        "name": "principle-boundary-discipline",
+        "description": "Apply when wiring validation, error handling, or framework adapters. Concentrate guards at system boundaries (CLI, config, network, external APIs); trust internal types and keep business logic in pure functions.",
+        "path": "pstack/dsh/skills/principle-boundary-discipline/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/principle-build-the-lever",
+        "name": "principle-build-the-lever",
+        "description": "Apply to any non-trivial work, not just bulk work: edits, migrations, analyses, checks. Build the tool that does it or proves it (codemod, script, generator, or a skill your subagents follow) instead of working by hand. The tool is the artifact a reviewer can rerun.",
+        "path": "pstack/dsh/skills/principle-build-the-lever/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/principle-encode-lessons-in-structure",
+        "name": "principle-encode-lessons-in-structure",
+        "description": "Apply when you catch yourself writing the same instruction a second time, or notice a recurring correction. Encode the rule as a lint, metadata flag, runtime check, or script instead of more text.",
+        "path": "pstack/dsh/skills/principle-encode-lessons-in-structure/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/principle-exhaust-the-design-space",
+        "name": "principle-exhaust-the-design-space",
+        "description": "Apply when facing a novel UI interaction or architectural decision with no precedent in the codebase. Build 2-3 competing prototypes and compare side by side before committing.",
+        "path": "pstack/dsh/skills/principle-exhaust-the-design-space/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/principle-experience-first",
+        "name": "principle-experience-first",
+        "description": "Apply when product, UX, or feature-scope tradeoffs come up. Choose user delight over implementation convenience; ship fewer polished features over more rough ones.",
+        "path": "pstack/dsh/skills/principle-experience-first/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/principle-explain-the-number",
+        "name": "principle-explain-the-number",
+        "description": "Apply before you measure, and before you trust, report, or act on a number you measured: a speedup, a regression, a throughput, a latency, or an eval result. Find what limits it, and rule out that it measured something other than the work you think.",
+        "path": "pstack/dsh/skills/principle-explain-the-number/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/principle-fix-root-causes",
+        "name": "principle-fix-root-causes",
+        "description": "Apply when debugging. Trace each symptom back to the first place the system went wrong and fix it there. A guard is a fix only when the state it handles is legitimate.",
+        "path": "pstack/dsh/skills/principle-fix-root-causes/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/principle-foundational-thinking",
+        "name": "principle-foundational-thinking",
+        "description": "Apply before writing logic: choosing core types and data structures, sequencing scaffold-vs-feature work, asking what concurrent actors share. Get the data structures right so downstream code becomes obvious.",
+        "path": "pstack/dsh/skills/principle-foundational-thinking/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/principle-guard-the-context-window",
+        "name": "principle-guard-the-context-window",
+        "description": "Apply when context is filling up: large outputs, long files, repeated reads, fan-out planning. Route bulk to subagents; keep summaries in the main thread, not raw payloads.",
+        "path": "pstack/dsh/skills/principle-guard-the-context-window/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/principle-laziness-protocol",
+        "name": "principle-laziness-protocol",
+        "description": "Apply when refactoring, evaluating diff size, or tempted to add abstractions, layers, or signal threading. Bias toward deletion and the smallest change that solves the problem.",
+        "path": "pstack/dsh/skills/principle-laziness-protocol/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/principle-make-operations-idempotent",
+        "name": "principle-make-operations-idempotent",
+        "description": "Apply when designing commands, lifecycle steps, or processing loops that run amid crashes, restarts, and retries. Converge to the same end state regardless of partial prior runs.",
+        "path": "pstack/dsh/skills/principle-make-operations-idempotent/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/principle-migrate-callers-then-delete-legacy-apis",
+        "name": "principle-migrate-callers-then-delete-legacy-apis",
+        "description": "Apply when introducing a new internal API while old callers still exist. Migrate callers and delete the old API in the same wave instead of preserving compatibility layers.",
+        "path": "pstack/dsh/skills/principle-migrate-callers-then-delete-legacy-apis/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/principle-minimize-reader-load",
+        "name": "principle-minimize-reader-load",
+        "description": "Apply when reviewing or shaping code that's hard to trace. Count layers between question and answer, and hidden state in the reader's head; collapse one-caller wrappers and shrink mutable scope.",
+        "path": "pstack/dsh/skills/principle-minimize-reader-load/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/principle-model-the-domain",
+        "name": "principle-model-the-domain",
+        "description": "Apply when writing stateful logic, or when code branches a lot or repeats a shape assumption across files.",
+        "path": "pstack/dsh/skills/principle-model-the-domain/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/principle-never-block-on-the-human",
+        "name": "principle-never-block-on-the-human",
+        "description": "Apply when tempted to ask 'should I do X?' on reversible work.",
+        "path": "pstack/dsh/skills/principle-never-block-on-the-human/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/principle-outcome-oriented-execution",
+        "name": "principle-outcome-oriented-execution",
+        "description": "Apply during planned rewrites and migrations with explicit phase boundaries. Converge on the target architecture; don't preserve smooth intermediate states with throwaway compatibility code.",
+        "path": "pstack/dsh/skills/principle-outcome-oriented-execution/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/principle-prove-it-works",
+        "name": "principle-prove-it-works",
+        "description": "Apply after completing a task, before declaring done. Verify against the real artifact (run the feature, read the actual value, inspect the diff), not a proxy, self-report, or 'it compiles.'",
+        "path": "pstack/dsh/skills/principle-prove-it-works/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Script the check when you can"
+        ]
+      },
+      {
+        "id": "pstack/principle-redesign-from-first-principles",
+        "name": "principle-redesign-from-first-principles",
+        "description": "Apply when integrating a new requirement into an existing design.",
+        "path": "pstack/dsh/skills/principle-redesign-from-first-principles/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/principle-separate-before-serializing-shared-state",
+        "name": "principle-separate-before-serializing-shared-state",
+        "description": "Apply when concurrent actors might write to the same file, branch, key, or state object. Eliminate the sharing first; serialize structurally only when one shared writer is a real invariant.",
+        "path": "pstack/dsh/skills/principle-separate-before-serializing-shared-state/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/principle-sequence-verifiable-units",
+        "name": "principle-sequence-verifiable-units",
+        "description": "Apply to multi-step work (sweeps, migrations, runs of similar edits) and to how you stack commits and PRs. Break work into small units that each end in a verifiable state, check each before the next, and order delivery so the sequence proves itself to a reviewer.",
+        "path": "pstack/dsh/skills/principle-sequence-verifiable-units/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/principle-subtract-before-you-add",
+        "name": "principle-subtract-before-you-add",
+        "description": "Apply when sequencing an addition, refactor, or rewrite. Remove dead code, redundant validators, and stub references first, then build on the simpler base.",
+        "path": "pstack/dsh/skills/principle-subtract-before-you-add/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/principle-test-behavior-not-implementation",
+        "name": "principle-test-behavior-not-implementation",
+        "description": "Apply when you write, change, or keep a test. Assert what the code's users can observe, so that the test fails when that behavior breaks and keeps passing when only the internals change.",
+        "path": "pstack/dsh/skills/principle-test-behavior-not-implementation/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/principle-type-system-discipline",
+        "name": "principle-type-system-discipline",
+        "description": "Apply when designing types, reviewing a function signature, or writing code in any statically-typed language. Make illegal states unrepresentable, brand semantic primitives, parse external data at boundaries, exhaust variants, derive from authoritative schemas.",
+        "path": "pstack/dsh/skills/principle-type-system-discipline/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/recall",
+        "name": "recall",
+        "description": "Reconstruct your recent working context from your own chat history, live state, and the shared record (user reports, prior fixes, incidents), then hand back a tight current-state brief. Use for 'recall my work on X', 'catch me up', 'what have I been working on', 'where did I leave off', before starting or resuming work.",
+        "path": "pstack/dsh/skills/recall/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/reflect",
+        "name": "reflect",
+        "description": "Spawn three parallel review subagents over the active transcript, surface learnings, and route each to a concrete edit on an existing skill. Use when the user says reflect.",
+        "path": "pstack/dsh/skills/reflect/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/setup-pstack",
+        "name": "setup-pstack",
+        "description": "Configure project-local PStack role models and reasoning budgets for DSH, using only the host's available routes.",
+        "path": "pstack/dsh/skills/setup-pstack/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "1. Discover available routes",
+          "2. Read current choices",
+          "3. Choose reasoning budget and every role",
+          "4. Validate and confirm",
+          "5. Write project preferences",
+          "6. Read back and report scope",
+          "7. Offer real-app verification once",
+          "8. Offer formal verification once"
+        ]
+      },
+      {
+        "id": "pstack/sharpen",
+        "name": "sharpen",
+        "description": "Make a task deeper, not bigger, then rewrite the prompt. Use for /sharpen.",
+        "path": "pstack/dsh/skills/sharpen/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/show-me-your-work",
+        "name": "show-me-your-work",
+        "description": "Keep a reviewable decision trail for long-running or unattended work: a TSV log with one row per decision (what, why, evidence, result). Local by default; commit it when a reviewer needs the trail to trust the result. Use for /show-me-your-work, autonomous or multi-phase runs, or work a human reviews after stepping away.",
+        "path": "pstack/dsh/skills/show-me-your-work/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "The format",
+          "Logging a row",
+          "Where it lives",
+          "Rules",
+          "Audit the log against the transcript",
+          "Cross-model review of the trail",
+          "Reviewing the trail",
+          "Composing this skill"
+        ]
+      },
+      {
+        "id": "pstack/statechart",
+        "name": "statechart",
+        "description": "Check a TLA+ model of a system that moves between states, such as a product flow, a protocol, or a service, and draw it as a Mermaid statechart. The report gives the shortest path to each state that breaks a rule. Use for /statechart, or to show a bug as a path through states.",
+        "path": "pstack/dsh/skills/statechart/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Run",
+          "Write the spec",
+          "Pick the chart",
+          "Read the report",
+          "Show the chart",
+          "Hand off"
+        ]
+      },
+      {
+        "id": "pstack/swarm",
+        "name": "swarm",
+        "description": "Fan out N parallel workers, drain them, and return one report. Use for /swarm, 'swarm this', or parallel coverage, races, gauntlets, and exploration.",
+        "path": "pstack/dsh/skills/swarm/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Start",
+          "Phase A: Frame",
+          "Phase B: Fan out",
+          "Phase C: Aggregate",
+          "Phase D: Report"
+        ]
+      },
+      {
+        "id": "pstack/tdd",
+        "name": "tdd",
+        "description": "Use only when the user explicitly asks for TDD, a failing test, or a regression test, OR when the bug has an obvious cheap local test target. Skip when the test path is unclear, expensive, integration-heavy, or not requested.",
+        "path": "pstack/dsh/skills/tdd/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Workflow",
+          "If a Failing Test Is Impractical",
+          "Guardrails",
+          "Final Response"
+        ]
+      },
+      {
+        "id": "pstack/teach",
+        "name": "teach",
+        "description": "Explain a body of work plainly so a person actually understands it. Runs the `how` and `why` skills and weaves what they find into one clear explanation. Use for 'teach me this', 'help me really understand X', 'explain this change or subsystem to me'.",
+        "path": "pstack/dsh/skills/teach/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/technical-writing",
+        "name": "technical-writing",
+        "description": "Layered technical-writing standard: Diátaxis structure, Google developer style sentences, STE instruction rules, Global English syntax. Use for /technical-writing or when writing or reviewing docs, RFCs, readmes, PR descriptions, or commit messages.",
+        "path": "pstack/dsh/skills/technical-writing/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Vary the rhythm",
+          "Pick the mode first (Diátaxis)",
+          "Write sentences to the reader (Google developer style)",
+          "Make statements load one at a time (STE rules)",
+          "Leave no sentence open to two readings (Global English)",
+          "Voice and repo specifics",
+          "Worked example"
+        ]
+      },
+      {
+        "id": "pstack/typescript-best-practices",
+        "name": "typescript-best-practices",
+        "description": "TypeScript best practices. Use when reading or editing any .ts or .tsx file.",
+        "path": "pstack/dsh/skills/typescript-best-practices/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "pstack/unslop",
+        "name": "unslop",
+        "description": "Cut AI tells from any writing.",
+        "path": "pstack/dsh/skills/unslop/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Patterns to detect and fix"
+        ]
+      },
+      {
+        "id": "pstack/why",
+        "name": "why",
+        "description": "Use for 'why does X work this way', 'why we picked Y', design rationale, regressions, postmortems, or data-backed thresholds. Discovers available MCPs and queries each evidence category (source control, issue tracker, long-form docs, real-time chat, infrastructure observability, error tracking, product analytics warehouse) in parallel, then returns a cited read on decisions and tradeoffs. Use how for runtime behavior.",
+        "path": "pstack/dsh/skills/why/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Operating Posture",
+          "Step 1. Understand the Target and the Question",
+          "Step 2. Establish the Code Anchor",
+          "Step 3. Spawn Parallel Investigators",
+          "Step 4. Synthesize",
+          "Step 5. Present",
+          "Output Format",
+          "Common Failure Modes to Avoid"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "openspec",
+    "title": "OpenSpec",
+    "version": "1.17.0",
+    "source": "https://github.com/Fission-AI/OpenSpec",
+    "revision": "579fcac57ae00c2dff38f971b6d88b6f1f098b8a",
+    "skills": [
+      {
+        "id": "openspec/openspec-apply-change",
+        "name": "openspec-apply-change",
+        "description": "Implement tasks from an OpenSpec change. Use when the user wants to start implementing, continue implementation, or work through tasks. Also use when the user says \"openspec apply\", \"opsx apply\", or \"openspec implement\".",
+        "path": "openspec/skills/openspec-apply-change/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Implementing: <change-name> (schema: <schema-name>)",
+          "Implementation Complete",
+          "Implementation Paused"
+        ]
+      },
+      {
+        "id": "openspec/openspec-archive-change",
+        "name": "openspec-archive-change",
+        "description": "Archive a completed OpenSpec change in the experimental workflow. Use when the user wants to finalize and archive a change after implementation is complete. Also use when the user says \"openspec archive\" or \"opsx archive\".",
+        "path": "openspec/skills/openspec-archive-change/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Archive Complete"
+        ]
+      },
+      {
+        "id": "openspec/openspec-bulk-archive-change",
+        "name": "openspec-bulk-archive-change",
+        "description": "Archive multiple completed OpenSpec changes at once. Use when archiving several parallel changes. Also use for a plural archive request - \"openspec bulk-archive\", \"opsx bulk-archive\", \"openspec archive all\", or \"openspec archive these changes\".",
+        "path": "openspec/skills/openspec-bulk-archive-change/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Bulk Archive Complete",
+          "Bulk Archive Complete (partial)",
+          "No Changes to Archive"
+        ]
+      },
+      {
+        "id": "openspec/openspec-continue-change",
+        "name": "openspec-continue-change",
+        "description": "Continue working on an OpenSpec change by creating the next artifact. Use when the user wants to progress their change, create the next artifact, or continue their workflow. Also use when the user says \"openspec continue\" or \"opsx continue\".",
+        "path": "openspec/skills/openspec-continue-change/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "openspec/openspec-explore",
+        "name": "openspec-explore",
+        "description": "Enter OpenSpec explore mode - a thinking partner for exploring ideas, investigating problems, and clarifying requirements in a project that uses OpenSpec. Use when the user wants to think through something before or during an OpenSpec change. Also use when the user says \"openspec explore\" or \"opsx explore\".",
+        "path": "openspec/skills/openspec-explore/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "The Stance",
+          "Planning a Change",
+          "What You Might Do",
+          "OpenSpec Awareness",
+          "What You Don't Have To Do",
+          "Handling Different Entry Points",
+          "Ending Discovery",
+          "What We Figured Out"
+        ]
+      },
+      {
+        "id": "openspec/openspec-ff-change",
+        "name": "openspec-ff-change",
+        "description": "Fast-forward through OpenSpec artifact creation. Use when the user wants to quickly create all artifacts needed for implementation without stepping through each one individually. Also use when the user says \"openspec ff\" or \"opsx ff\".",
+        "path": "openspec/skills/openspec-ff-change/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "openspec/openspec-new-change",
+        "name": "openspec-new-change",
+        "description": "Start a new OpenSpec change using the experimental artifact workflow. Use when the user wants to create a new feature, fix, or modification with a structured step-by-step approach. Also use when the user says \"openspec new change\" or \"opsx new\".",
+        "path": "openspec/skills/openspec-new-change/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "openspec/openspec-onboard",
+        "name": "openspec-onboard",
+        "description": "Guided onboarding for OpenSpec - walk through a complete workflow cycle with narration and real codebase work. Also use when the user says \"openspec onboard\" or \"opsx onboard\".",
+        "path": "openspec/skills/openspec-onboard/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Preflight",
+          "Phase 1: Welcome",
+          "Welcome to OpenSpec!",
+          "Phase 2: Task Selection",
+          "Task Suggestions",
+          "Phase 3: Explore Demo",
+          "Quick Exploration",
+          "Phase 4: Create the Change"
+        ]
+      },
+      {
+        "id": "openspec/openspec-propose",
+        "name": "openspec-propose",
+        "description": "Propose a new OpenSpec change with all artifacts generated in one step. Use when the user wants to quickly describe what they want to build and get a complete proposal with design, specs, and tasks ready for implementation. Also use when the user says \"openspec propose\" or \"opsx propose\".",
+        "path": "openspec/skills/openspec-propose/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "openspec/openspec-sync-specs",
+        "name": "openspec-sync-specs",
+        "description": "Sync delta specs from an OpenSpec change to main specs. Use when the user wants to update main specs with changes from a delta spec, without archiving the change. Also use when the user says \"openspec sync\" or \"opsx sync\".",
+        "path": "openspec/skills/openspec-sync-specs/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "Purpose",
+          "ADDED Requirements",
+          "MODIFIED Requirements",
+          "REMOVED Requirements",
+          "RENAMED Requirements",
+          "Purpose",
+          "Requirements",
+          "Specs Synced: <change-name>"
+        ]
+      },
+      {
+        "id": "openspec/openspec-update-change",
+        "name": "openspec-update-change",
+        "description": "Update an OpenSpec change by revising its existing planning artifacts and keeping them coherent with one another. Use when the user wants to revise a change's plan, fold new decisions into it, or reconcile its artifacts after an edit. Also use when the user says \"openspec update change\" or \"opsx update\". If the user means the openspec update CLI command, which refreshes generated files, run that command instead. Never edits code.",
+        "path": "openspec/skills/openspec-update-change/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      },
+      {
+        "id": "openspec/openspec-verify-change",
+        "name": "openspec-verify-change",
+        "description": "Verify implementation matches OpenSpec change artifacts. Use when the user wants to validate that implementation is complete, correct, and coherent before archiving. Also use when the user says \"openspec verify\" or \"opsx verify\".",
+        "path": "openspec/skills/openspec-verify-change/SKILL.md",
+        "userInvocable": true,
+        "sections": []
+      }
+    ]
+  },
+  {
+    "id": "oil-ui",
+    "title": "oil-ui",
+    "version": "0.34.2",
+    "source": "https://github.com/oil-oil/oil-ui",
+    "revision": "81f2657f41410f04ae47ba77f902fcc0567eaab2",
+    "skills": [
+      {
+        "id": "oil-ui/oil-ui",
+        "name": "oil-ui",
+        "description": "UI/UX design skill for Claude Code, Cursor, Codex & AI coding agents: design, refine, and review frontend interfaces for websites, apps, dashboards, and components with visual direction exploration, 3-direction side-by-side HTML comparison on request, DESIGN.md conflict checks, and real-browser screenshot & lightweight UX review. Defers to oil-ui-pro when installed. 设计、改进和评审网站、App、后台与组件的界面：探索设计方向、按需生成多风格同屏对比页、排查设计规范（DESIGN.md）冲突，并基于真实截图打磨视觉层级；按请求交付对比页、设计说明、设计稿或可运行界面。只负责设计判断，不用于纯业务逻辑、接口构建、无界面变化的代码整理，或改法已完全明确的日常修改（如改文案、调数量、删指定元素、复用现有样式，哪怕带有“优化”字样）。已安装 oil-ui-pro 时交给 oil-ui-pro。",
+        "path": "oil-ui/SKILL.md",
+        "userInvocable": true,
+        "sections": [
+          "内置版本",
+          "选择范围",
+          "页面类型",
+          "什么时候加深",
+          "按需再读",
+          "评审与交付",
+          "能力边界"
+        ]
+      }
+    ]
+  }
+]

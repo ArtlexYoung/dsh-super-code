@@ -111,6 +111,7 @@
     "dist",
     "locales",
     "docs/CodeWorkbench.md",
+    "docs/Workflows.md",
     "builtin/workbench/fonts",
     "builtin/workbench/native"
   ],
@@ -248,7 +249,7 @@
     "dompurify": "3.4.18",
     "esbuild": "^0.28.2",
     "isomorphic-git": "1.44.13",
-    "marked": "18.2.0",
+    "marked": "18.2.1",
     "playwright": "1.61.1",
     "react": "18.3.1",
     "react-dom": "18.3.1",
@@ -256,8 +257,11 @@
     "typescript": "^5.7.0"
   },
   "scripts": {
-    "skills:build": "node scripts/skills/pstack/convert.mjs",
-    "skills:check": "node scripts/skills/pstack/convert.mjs --check",
+    "updates:check": "node scripts/updates/run.mjs",
+    "updates:install": "node scripts/updates/install.mjs",
+    "updates:apply": "node scripts/updates/run.mjs --apply",
+    "skills:build": "node scripts/skills/pstack/convert.mjs && node scripts/skills/catalog.mjs",
+    "skills:check": "node scripts/skills/pstack/convert.mjs --check && node scripts/skills/catalog.mjs --check",
     "build": "npm run skills:build && tsc -p tsconfig.json && npm run build:client",
     "prepare": "npm run build",
     "typecheck": "tsc -p tsconfig.json --noEmit",

@@ -4,7 +4,7 @@ import { ActionButton, Glyph, icons } from '../ui/controls.js'
 
 const normalizedRecords = new WeakMap()
 
-function AgentMessage({ record, saved, t, toolName, compact = false, fileMentions }) {
+function AgentMessage({ record, saved, t, toolName, compact = false, fileMentions, replyActions = [] }) {
   const item = useMemo(() => record.entry ? presentDetail(normalizedRecords.get(record) || normalizeDetail(record.entry), t) : record, [record, t])
   const eventType = record.entry?.event?.type
   const kind = eventType === 'user/message' ? 'user' : eventType === 'assistant/message' ? 'agent'
@@ -12,15 +12,45 @@ function AgentMessage({ record, saved, t, toolName, compact = false, fileMention
   const time = new Date(item.time).toLocaleTimeString(localeCode(t), { hour12: false })
   const label = React.createElement('div', { className: 'dsh-super-code-detail-entry-label' },
     React.createElement('span', null, compact && kind === 'user' ? text(t, 'workbench.question') : compact && kind === 'agent' && !record.entry?.event?.data?.interrupted ? text(t, 'workbench.reply') : item.label, toolName && !item.toolName ? ' · ' + toolName : ''), React.createElement('time', { dateTime: new Date(item.time).toISOString() }, time))
-  return React.createElement('article', { className: 'dsh-super-code-detail-entry ' + kind, 'data-event-type': eventType, 'data-message-seq': item.seq },
+  const body = React.createElement(React.Fragment, null,
+    React.createElement(DetailText, { text: item.text, format: item.format, fileMentions, t }),
+    kind === 'agent' && replyActions.length > 0 && item.text.trim() && React.createElement('div', { className: 'sc-wb-reply-actions' }, replyActions.map(action => React.createElement(ActionButton, {
+      key: action.id, type: 'button', className: 'sc-wb-reply-action', disabled: action.disabled, title: action.title,
+      onPointerDown: event => event.preventDefault(),
+      onClick: event => {
+        const content = event.currentTarget.closest('.dsh-super-code-detail-message').querySelector('.dsh-super-code-detail-content')
+        action.run({ seq: item.seq, text: selectedReplyText(content, item.text) })
+      },
+    }, action.label))))
+  return React.createElement('article', { className: 'dsh-super-code-detail-entry ' + kind, 'data-event-type': eventType, 'data-message-seq': item.seq, tabIndex: compact ? -1 : undefined },
     React.createElement('span', { className: 'dsh-super-code-detail-avatar', 'aria-hidden': true }, React.createElement(Glyph, { type: kind })),
-    React.createElement('div', { className: 'dsh-super-code-detail-message' }, item.collapsed
-      ? React.createElement('details', { open: saved.open.has(item.seq), onToggle: event => {
-          if (event.currentTarget.open) saved.open.add(item.seq); else saved.open.delete(item.seq)
-        } },
-        React.createElement('summary', null, label, React.createElement(Glyph, { type: 'chevron' })),
-        React.createElement(DetailText, { text: item.text, format: item.format, fileMentions, t }))
-      : React.createElement(React.Fragment, null, label, React.createElement(DetailText, { text: item.text, format: item.format, fileMentions, t }))))
+    React.createElement('div', { className: 'dsh-super-code-detail-message' },
+      messageContent({ item, kind, compact, saved, label, body, t })))
+}
+
+function messageContent({ item, kind, compact, saved, label, body, t }) {
+  const question = compact && kind === 'user' && (item.text.length > 280 || item.text.split('\n').length > 6)
+  if (!question && !item.collapsed) return React.createElement(React.Fragment, null, label, body)
+  const preview = question ? item.text.replace(/\s+/g, ' ').trim() : ''
+  return React.createElement('details', { className: question ? 'sc-wb-question' : undefined, open: saved.open.has(item.seq), onToggle: event => {
+    if (event.target !== event.currentTarget) return
+    if (event.currentTarget.open) saved.open.add(item.seq); else saved.open.delete(item.seq)
+  } },
+    React.createElement('summary', null, label,
+      question && React.createElement(React.Fragment, null,
+        React.createElement('span', { className: 'sc-wb-question-preview' }, preview.slice(0, 160), preview.length > 160 ? '…' : ''),
+        React.createElement('span', { className: 'sc-wb-question-toggle' },
+          React.createElement('span', { className: 'sc-wb-question-expand' }, text(t, 'workbench.expandQuestion')),
+          React.createElement('span', { className: 'sc-wb-question-collapse' }, text(t, 'workbench.collapseQuestion')))),
+      React.createElement(Glyph, { type: 'chevron' })), body)
+}
+
+function selectedReplyText(content, original) {
+  const selection = content.ownerDocument.getSelection()
+  if (!selection?.rangeCount || selection.isCollapsed) return original
+  const range = selection.getRangeAt(0)
+  if (!content.contains(range.startContainer) || !content.contains(range.endContainer)) return original
+  return selection.toString().trim() ? selection.toString() : original
 }
 
 function contentText(blocks, t) {

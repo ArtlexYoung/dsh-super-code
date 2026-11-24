@@ -26,7 +26,7 @@ function fixture(modern: boolean) {
   })
   const context = {
     effect: () => {}, remote: { $mount: async () => () => {}, superCodeMemory: {} }, settingsScope: { bind: () => ({}) },
-    inject: (_dependencies: string[], run: any) => { if (_dependencies.join(',') !== 'sessions,sidebarRightTabs') run(context) }, sessions: {}, sidebarRight: {},
+    inject: (_dependencies: string[], run: any) => { if (_dependencies.join(',') !== 'sessions,sidebarRightTabs' && !_dependencies.includes('remote.skills')) run(context) }, sessions: {}, sidebarRight: {},
     sidebarRightTabs: { register: () => () => {} },
     slots: { inject: (_name: string, register: any) => {
       const value = register(); if (value?.[Symbol.iterator]) for (const _ of value) { /* 完成页签注册。 */ }

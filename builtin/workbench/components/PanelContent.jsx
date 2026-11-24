@@ -16,6 +16,7 @@ import { Drafts } from './Drafts.jsx';
 import { MatchText, ResultFiles, SearchContext, useResultGroups } from './SearchResults.jsx';
 import { Navigator } from './Navigator.jsx';
 import { useProjectMatches } from './project-matches.js';
+import { Commands } from './Commands.jsx';
 
 const emptyResults = { matches: [] };
 
@@ -86,6 +87,7 @@ export function PanelContent({ panel, workbench, Button, Select, t, toggleFocus 
   const Component = panelComponents.get(panel.kind);
   if (Component) return <Component {...props} panel={panel} toggleFocus={toggleFocus} />;
   switch (panel.kind) {
+    case 'commands': return <Commands {...props} />;
     case 'settings': return <Settings {...props} preferences={preferences} />;
     case 'library': return <LibrarySource target={panel.target} preferences={preferences} t={t} />;
     case 'fileAction': return <FileAction {...props} dialog={panel} />;

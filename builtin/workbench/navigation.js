@@ -16,7 +16,7 @@ export const symbolItems = symbols => symbols.map(item => ({ key: `symbol:${item
 
 export function navigationItems(query, snapshot, files, commands) {
   const mode = navigationMode(query), text = (mode === 'files' ? query : query.slice(1)).trim().toLowerCase();
-  if (mode === 'commands') return commands.filter(item => `${item.label} ${item.id}`.toLowerCase().includes(text))
+  if (mode === 'commands') return commands.filter(item => text.split(/\s+/).every(term => `${item.label} ${item.id}`.toLowerCase().includes(term)))
     .map(item => ({ ...item, key: item.id, detail: item.shortcut }));
   if (mode === 'symbols') return symbolItems(snapshot.symbols.filter(item => item.name.toLowerCase().includes(text)));
   if (mode === 'projectSymbols') return [];

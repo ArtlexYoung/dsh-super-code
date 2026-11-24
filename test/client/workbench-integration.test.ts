@@ -6,15 +6,20 @@ import { runInNewContext } from 'node:vm'
 
 const require = createRequire(import.meta.url)
 
-test('工作台独立初始化、随开关登记，并在卸载时撤销登记', () => {
+test('工作台独立初始化、工作流随真实开关登记，并在卸载时撤销登记', async () => {
   let plugin: any
+  const loadedModules: string[] = []
+  const react = { ...require('react'), useMemo: (create: () => unknown) => create() }
   const storage = new Map<string, string>()
   const localStorage = { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => storage.set(key, value) }
   const entries = new Map<string, any>(), effects: (() => void)[] = []
   let activateWorkbench: (owner: any) => void = () => {}
-  const remote = { $mount: async () => {}, superCodeWorkbench: {} }
+  let configuration = { mattpocockSkills: false, pstackSkills: false, openspecSkills: false, oilUiSkill: false }
+  const settingListeners = new Set<() => void>()
+  const remote = { $mount: async () => {}, $on: (_event: string, listener: () => void) => { settingListeners.add(listener); return () => settingListeners.delete(listener) }, superCodeWorkbench: {}, superCodeBudgets: { readConfig: async (...args: unknown[]) => { assert.equal(args.length, 0, '设置接口没有参数'); return { ok: true, value: { configuration } } } } }
+  const settingsUpdated = async () => { for (const listener of settingListeners) listener(); await new Promise(resolve => setImmediate(resolve)) }
   const ctx: any = {
-    remote,
+    remote, on: () => () => {},
     locale: { register: () => () => {}, bind: () => (key: string) => key, getLocale: () => ({ active: 'zh', locales: [{ id: 'zh', label: '中文' }] }) },
     sessions: { list: { getSnapshot: () => ({ byId: {} }) } }, sidebarRightTabs: { register: () => () => {} },
     slots: {
@@ -25,13 +30,17 @@ test('工作台独立初始化、随开关登记，并在卸载时撤销登记',
     effect(callback: () => unknown) { const dispose = callback(); if (typeof dispose === 'function') effects.push(dispose as () => void) },
     inject(names: string[], callback: (ctx: any) => void) {
       if (names.join(',') === 'sessions,sidebarRightTabs') activateWorkbench = callback
-      else if (names.every(name => ['remote.superCodeWorkbench', 'remote.session'].includes(name))) callback(this)
+      else if (names.every(name => ['remote.superCodeWorkbench', 'remote.session', 'remote.skills', 'remote.superCodeBudgets', 'sessions'].includes(name))) callback(this)
     },
   }
   runInNewContext(readFileSync(new URL('../../dist/client.js', import.meta.url), 'utf8'), {
     URL, AbortController, localStorage, setTimeout, clearTimeout, console,
     document: { documentElement: { style: {} }, createElement: () => ({ dataset: {}, style: {}, remove() {} }), head: { append() {}, appendChild() {} } },
-    window: { addEventListener() {}, removeEventListener() {}, __ModuleLoader__: { load: ({ factory }: any) => { plugin = factory((id: string) => id.startsWith('@deepseek-ai/') ? {} : require(id)) } } },
+    window: { addEventListener() {}, removeEventListener() {}, __ModuleLoader__: { load: ({ factory }: any) => { plugin = factory((id: string) => {
+      loadedModules.push(id)
+      if (id === 'react') return react
+      return id.startsWith('@deepseek-ai/') ? {} : require(id)
+    }) } } },
   })
   plugin.apply(ctx)
   const start = () => {
@@ -44,23 +53,53 @@ test('工作台独立初始化、随开关登记，并在卸载时撤销登记',
   }
   const stop = start()
   const settings = entries.get('super-code').contribution.inject()
+  await settingsUpdated()
+  assert.equal(entries.has('super-code-mattpocock'), false)
+  assert.equal(entries.has('super-code-skills'), false)
+  configuration = { ...configuration, oilUiSkill: true }
+  await settingsUpdated()
+  assert.equal(entries.has('super-code-skills'), true)
+  assert.equal(entries.has('super-code-oil-ui'), false, 'oil-ui只登记目录，不登记工作流')
+  configuration = { ...configuration, mattpocockSkills: true, pstackSkills: true, openspecSkills: true }
+  await settingsUpdated()
+  assert.equal(entries.has('super-code-pstack'), true)
+  assert.equal(entries.has('super-code-openspec'), true)
+  const workflow = entries.get('super-code-mattpocock').contribution.inject()
+  const beforeView = loadedModules.length
+  const page = entries.get('super-code-mattpocock').component({ ...workflow, sessionId: 'root' })
+  const opened = page.type(page.props)
+  assert.equal(opened.props.children.type.name, 'WorkflowWorkspace')
+  assert.ok(loadedModules.length > beforeView, '工作流视图的模块在首次打开时才加载')
+  const afterView = loadedModules.length
+  assert.equal(page.type(page.props).props.children.type, opened.props.children.type)
+  assert.equal(loadedModules.length, afterView, '再次打开复用同一视图模块')
+  configuration = { ...configuration, pstackSkills: false }
+  await settingsUpdated()
+  assert.equal(entries.has('super-code-pstack'), false)
+  assert.deepEqual(Array.from(workflow.packageState.snapshot()), ['mattpocock', 'openspec', 'oil-ui'])
+  assert.equal(workflow.page, 'mattpocock')
   const preference = settings.workbenchState.snapshot()?.preference
   assert.ok(preference)
   assert.equal(entries.has('super-code-workbench'), false)
+  assert.equal(workflow.hasWorkbench(), false)
   preference.save({ enabled: true })
+  assert.equal(workflow.hasWorkbench(), true, '工作流文件入口读取工作台现有开关')
   assert.equal(entries.get('super-code-workbench').contribution.name, 'conversation.view')
   assert.ok(entries.has('super-code'))
   preference.save({ enabled: false })
   assert.equal(entries.has('super-code-workbench'), false)
+  assert.equal(workflow.hasWorkbench(), false)
   preference.save({ enabled: true })
   const changes: unknown[] = []
   const unsubscribe = settings.workbenchState.subscribe(() => changes.push(settings.workbenchState.snapshot()))
   stop()
   assert.equal(settings.workbenchState.snapshot(), null)
+  assert.equal(workflow.hasWorkbench(), false)
   assert.equal(entries.has('super-code-workbench'), false)
   const stopAgain = start()
   assert.equal(settings.workbenchState.snapshot().preference.snapshot().enabled, true)
   assert.equal(entries.has('super-code-workbench'), true)
+  assert.equal(workflow.hasWorkbench(), true)
   assert.equal(changes.length, 2)
   unsubscribe()
   stopAgain()

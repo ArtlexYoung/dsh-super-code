@@ -22,7 +22,7 @@ test('详情消息复用解码，替换记录和切换语言时仍显示最新�
   const slots: any[] = []
   const context = {
     effect() {}, remote: { $mount: async () => () => {} }, settingsScope: { bind: () => ({}) },
-    inject: (_deps: string[], run: any) => { if (_deps.join(',') !== 'sessions,sidebarRightTabs') run(context) }, sessions: {}, sidebarRight: {},
+    inject: (_deps: string[], run: any) => { if (_deps.join(',') !== 'sessions,sidebarRightTabs' && !_deps.includes('remote.skills')) run(context) }, sessions: {}, sidebarRight: {},
     sidebarRightTabs: { register: () => () => {} },
     slots: {
       inject: (_name: string, register: any) => {
@@ -60,8 +60,12 @@ test('详情消息复用解码，替换记录和切换语言时仍显示最新�
   const localized = render(record, key => key === 'detail.toolCall' ? 'Tool call' : key)
   assert.ok(find(localized, node => node.children?.includes('Tool call · read_file')))
   const details = find(localized, node => node.type === 'details')
-  details.props.onToggle({ currentTarget: { open: true } })
+  const target = { open: true }
+  details.props.onToggle({ target: {}, currentTarget: target })
+  assert.equal(saved.open.has(1), false, '嵌套展开事件不会改变外层消息的阅读状态')
+  details.props.onToggle({ target, currentTarget: target })
   assert.equal(saved.open.has(1), true)
-  details.props.onToggle({ currentTarget: { open: false } })
+  target.open = false
+  details.props.onToggle({ target, currentTarget: target })
   assert.equal(saved.open.has(1), false)
 })

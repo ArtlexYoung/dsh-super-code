@@ -201,7 +201,7 @@ test('plugin settings open on home, separate protection and retain version and r
     locale: { register: (_namespace: string, values: Record<string, Record<string, string>>) => { Object.assign(dictionaries, values); return () => {} }, bind: () => (key: string) => key },
     settingsScope: { bind: () => ({ getSnapshot: () => ({ status: 'ready', value: { preference: 'zh' } }), subscribe: () => () => {} }) },
     remote: { $mount: async () => {} },
-    inject: (_dependencies: string[], callback: (ready: any) => void) => { if (_dependencies.join(',') !== 'sessions,sidebarRightTabs') callback(ctx) },
+    inject: (_dependencies: string[], callback: (ready: any) => void) => { if (_dependencies.join(',') !== 'sessions,sidebarRightTabs' && !_dependencies.includes('remote.skills')) callback(ctx) },
     slots: {
       inject: (_name: string, callback: () => void) => callback(),
       register: (config: { name: string }, component: (props: object) => Element) => {
@@ -536,7 +536,7 @@ test('plugin opens read-only resource tabs without navigating the main conversat
     effect: () => {},
     remote: { $mount: async () => () => {}, superCodeMemory: {} },
     settingsScope: { bind: () => ({}) },
-    inject: (_deps: string[], ready: (ctx: object) => void) => { if (_deps.join(',') !== 'sessions,sidebarRightTabs') ready(context) },
+    inject: (_deps: string[], ready: (ctx: object) => void) => { if (_deps.join(',') !== 'sessions,sidebarRightTabs' && !_deps.includes('remote.skills')) ready(context) },
     slots: { inject: (_name: string, register: () => any) => { const result = register(); if (result?.[Symbol.iterator]) for (const _ of result) { /* Consume keyed registrations. */ } }, register: (config: Record<string, unknown>, component: unknown) => slots.push({ config, component }) },
     sidebarRightTabs: { register: (definition: any) => { definitions.push(definition); return () => {} } },
     sessions: { openSubagent: () => assert.fail('must not switch conversations'), open: () => assert.fail('must not switch conversations') },
@@ -895,7 +895,7 @@ function workspaceFixture() {
     effect: () => {}, remote: { $mount: async () => () => {}, superCodeMemory: {
       saveEntry: async () => ({ ok: true, value: { kind: 'saved' } }),
     } }, settingsScope: { bind: () => ({}) },
-    inject: (_deps: string[], run: Function) => { if (_deps.join(',') !== 'sessions,sidebarRightTabs') run(context) },
+    inject: (_deps: string[], run: Function) => { if (_deps.join(',') !== 'sessions,sidebarRightTabs' && !_deps.includes('remote.skills')) run(context) },
     slots: { inject: (_name: string, register: Function) => {
       const result = register(); if (result?.[Symbol.iterator]) for (const _ of result) { /* Register tab types. */ }
     }, register: (config: any, component: any) => { slots.push({ config, component }); return () => {} } },

@@ -70,7 +70,8 @@ export function Navigator({ panel, workbench, Button, t, toggleFocus }) {
   const project = useProjectSymbols(query, workbench);
   const commands = workbenchCommands(workbench, snapshot, t, toggleFocus);
   const actions = toolbarActions.map(item => ({ ...commands[item.id], id: item.id, label: t(item.id === 'window' && workbench.external ? 'windowReturn' : item.label), shortcut: item.shortcut ? keyLabel(keyOf(snapshot.preferences, item.shortcut), t('space')) : '' }));
-  const rows = useMemo(() => navigationMode(query) === 'projectSymbols' ? symbolItems(project.matches) : navigationItems(query, snapshot, catalog.files, actions), [query, snapshot, catalog.files, project.matches, t, toggleFocus]);
+  const openedFiles = snapshot.tabs.filter(tab => tab.kind === 'file').map(tab => ({ id: `file:${tab.path}`, label: tab.path, shortcut: t(tab.dirty ? 'unsavedFile' : 'openFileTab'), run: () => workbench.visit({ file: tab.path }) }));
+  const rows = useMemo(() => navigationMode(query) === 'projectSymbols' ? symbolItems(project.matches) : navigationItems(query, snapshot, catalog.files, [...actions, ...openedFiles]), [query, snapshot, catalog.files, project.matches, t, toggleFocus]);
   const index = chosen?.query === query ? Math.max(0, rows.findIndex(item => item.key === chosen.key)) : 0, active = rows[index];
   const waiting = query !== text || !!project.busy, searching = mode === 'files' && catalog.searching || mode === 'projectSymbols' && project.busy;
   const activeId = !waiting && visible.some(item => item.key === active?.key) ? `${id}-${index}` : undefined;

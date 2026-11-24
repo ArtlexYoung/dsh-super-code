@@ -18,7 +18,7 @@ function render(records: object[]) {
   })
   const context = {
     effect: () => {}, remote: { $mount: async () => () => {} }, settingsScope: { bind: () => ({}) },
-    inject: (deps: string[], run: Function) => { if (deps.join(',') !== 'sessions,sidebarRightTabs') run(context) },
+    inject: (deps: string[], run: Function) => { if (deps.join(',') !== 'sessions,sidebarRightTabs' && !deps.includes('remote.skills')) run(context) },
     slots: { inject: (_name: string, register: Function) => {
       const result = register(); if (result?.[Symbol.iterator]) for (const _ of result) { /* Register details. */ }
     }, register: (config: any, component: any) => { slots.push({ config, component }); return () => {} } },

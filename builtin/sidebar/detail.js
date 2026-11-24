@@ -4,9 +4,10 @@ import { localeCode, text, zh } from '../ui/locale.js'
 import { AgentMessage, detailRecord } from './messages.js'
 import React, { useMemo, useRef, useState, useSyncExternalStore, useLayoutEffect, useEffect } from '../ui/react.js'
 import { TaskMemoryPanel, agentExecutionStatus, agentSessionState, buildAgentView } from './agents.js'
-import { ActionButton, Glyph, IconRefreshOutline16, SelectControl } from '../ui/controls.js'
+import { ActionButton, Glyph, IconRefreshOutline16 } from '../ui/controls.js'
 import { MemoryActivity } from './memory.js'
 import { FeedbackTools, feedbackToolSummary } from './feedback.js'
+import { conversationQuestions, questionAtPosition, QuestionNavigation } from './questions.js'
 
 // The host journal owns decoding, cursor validation and reconnects. This view
 // keeps a bounded display window and never stages or sends to another session.
@@ -105,7 +106,7 @@ function workbenchConversationRows(records) {
   return rows.map(row => row.kind === 'tools' ? { kind: row.kind, key: row.key, items: row.items, tools: feedbackToolSummary(row.calls) } : row)
 }
 
-function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, createInspector, detailStates, openMemory, compact = false, fileMentions, t = key => zh[key] || key }) {
+function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, createInspector, detailStates, openMemory, compact = false, fileMentions, replyActions, t = key => zh[key] || key }) {
   const { tab } = useTabInfo()
   const catalog = useSessions(s => s)
   const statuses = useSessionStatus ? useSessionStatus(s => s) : undefined
@@ -124,7 +125,17 @@ function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, cre
   const inspector = useMemo(() => createInspector(tab.contentId, saved.snapshot), [createInspector, tab.contentId, tab.visible, revision])
   const snapshot = useSyncExternalStore(inspector.subscribe, inspector.getSnapshot, inspector.getSnapshot)
   const rows = useMemo(() => compact ? workbenchConversationRows(snapshot.items) : snapshot.items.map(record => ({ kind: 'message', key: record.seq, record })), [snapshot.items, compact])
-  const questions = useMemo(() => snapshot.items.filter(record => record.entry?.event?.type === 'user/message'), [snapshot.items])
+  const questions = useMemo(() => conversationQuestions(snapshot.items), [snapshot.items])
+  const jump = (seq, questionSeq) => {
+    const element = log.current, target = element?.querySelector(`[data-message-seq="${seq}"]`)
+    if (!target) return
+    const folded = target.querySelector('.sc-wb-question')
+    if (folded) { saved.open.add(seq); folded.open = true }
+    saved.following = false
+    element.scrollTop += target.getBoundingClientRect().top - element.getBoundingClientRect().top - 8
+    saved.navigation = { seq, question: questionSeq }
+    target.focus({ preventScroll: true }); trackPosition()
+  }
   function trackPosition() {
     const element = log.current
     if (!element) return
@@ -133,14 +144,12 @@ function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, cre
     if (saved.following) markUnread(false)
     if (compact) {
       setAway(!saved.following)
-      const top = element.getBoundingClientRect().top
-      let active = questions[0]?.seq
-      for (const item of questions) if ((element.querySelector(`[data-message-seq="${item.seq}"]`)?.getBoundingClientRect().top ?? Infinity) <= top + 32) active = item.seq
-      setQuestion(active === undefined ? '' : String(active))
+      setQuestion(String(questionAtPosition(element, questions, saved.navigation) ?? ''))
     }
   }
   const latest = () => {
     saved.snapshot = undefined; saved.following = true; saved.top = 0
+    saved.navigation = undefined
     restored.current = false; previous.current = undefined; markUnread(false)
     setRevision(value => value + 1)
   }
@@ -179,7 +188,7 @@ function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, cre
     const data = record.entry?.event?.data
     const key = JSON.stringify([data?.turn, data?.step, record.parentCallId, record.callId])
     if (record.toolName && record.callId) toolNames.set(key, record.toolName)
-    return React.createElement(AgentMessage, { key: record.seq, record, saved, t, compact, fileMentions: fileMentions?.get(record.seq), toolName: toolNames.get(key) })
+    return React.createElement(AgentMessage, { key: record.seq, record, saved, t, compact, replyActions, fileMentions: fileMentions?.get(record.seq), toolName: toolNames.get(key) })
   }
   const task = tasks?.current?.kind === 'task' ? tasks.current : undefined
   const title = node?.title || node?.displayTitle || text(t, 'detail.title')
@@ -209,13 +218,7 @@ function AgentDetail({ useTabInfo, useSessions, useSessionStatus, sessionId, cre
           id !== view.root && task?.goal && task.goal !== title && React.createElement('p', { className: 'dsh-super-code-detail-task' }, task.goal),
           id === view.root && React.createElement(TaskMemoryPanel, { state: tasks, t }),
           featureView(MemoryActivity, { usage: projections.superCodeMemoryUsage, sessionId: id, openMemory, t })))),
-    compact && questions.length > 0 && React.createElement('nav', { className: 'sc-wb-question-nav', 'aria-label': text(t, 'workbench.questions') },
-      React.createElement(SelectControl, { label: text(t, 'workbench.questions'), value: questions.some(item => String(item.seq) === question) ? question : String(questions[0].seq),
-        choices: questions.map((item, index) => [String(item.seq), `${index + 1}. ${item.text.replace(/\s+/g, ' ').slice(0, 72)}`]),
-        onChange: value => {
-          const element = log.current, target = element?.querySelector(`[data-message-seq="${value}"]`)
-          if (target) { saved.following = false; element.scrollTop += target.getBoundingClientRect().top - element.getBoundingClientRect().top - 8; setQuestion(value); setAway(true) }
-        } })),
+    compact && React.createElement(QuestionNavigation, { questions, selected: question, jump, t }),
     React.createElement('div', { ref: log, className: 'dsh-super-code-detail-log', 'aria-label': text(t, 'tree.title'), onScroll: trackPosition },
       snapshot.error && React.createElement('p', { role: 'alert' }, text(t, snapshot.error)),
       snapshot.status === 'loading' && React.createElement('p', { role: 'status' }, text(t, 'detail.reading')),

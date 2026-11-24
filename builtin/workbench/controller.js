@@ -23,6 +23,7 @@ import { readReplacement, remainingReplacements } from './editing/replace.js';
 import { readSaveConflict, applySaveConflict } from './editing/save-conflict.js';
 import { createWorkspaceRecovery } from './recovery.js';
 import { createDraftRecovery } from './draft-recovery.js';
+import { connectStudy } from './study-store.js';
 import { restoreDraft } from './editing/drafts.js';
 import { createTabs, createClosedTabs, tabsToClose } from './tabs.js';
 import { createEditorGroups } from './editor/groups.js';
@@ -40,13 +41,13 @@ const projectViews = new WeakMap();
 function collectBuffers(project, paths) {
   for (const path of paths) {
     const doc = project.documents.get(path);
-    if (!doc || doc.dirty || doc.pinned || project.conversations.files.get(path)?.length) continue;
+    if (!doc || doc.dirty || doc.pinned || [...project.conversationScopes.values()].some(store => store.files.get(path)?.length)) continue;
     if ([...(projectViews.get(project) || [])].some(documents => documents.has(path))) continue;
     project.documents.delete(path);
   }
 }
 
-export function createWorkbench(api, t, { projects = new Map(), translationLanguage, settings: preference = createEditorPreference(localStorage), layout = createLayoutPreference(localStorage), sharedIndex, historyOwner, pane = false, session, draftStore, draftRecovery, stopRecovery, closedTabs = createClosedTabs() } = {}) {
+export function createWorkbench(api, t, { projects = new Map(), translationLanguage, settings: preference = createEditorPreference(localStorage), layout = createLayoutPreference(localStorage), sharedIndex, historyOwner, pane = false, session, draftStore, draftRecovery, stopRecovery, closedTabs = createClosedTabs(), studyStore, studyScope = studyStore } = {}) {
   const analyzer = createAnalyzer(), documents = new Map(), states = new Map(), subscribers = new Set(), directories = new Map(), listings = new Map();
   const index = sharedIndex || new SymbolIndex(analyzer.analyze, { read: async (file, signal) => project.documents.get(file)?.text ?? (await api.read(file, signal)).text,
     external: async (file, name, offset, source, signal) => {
@@ -61,6 +62,8 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
   let history = [], at = -1, moving = false, navigation = Promise.resolve(), binding = Promise.resolve(), requested = 0;
   let saving, operation, pendingClose;
   let projectPath, resuming;
+  let studyReading, previousStudyWrite;
+  const studyPins = new Map(), studyErrors = new Map();
   const locations = new Map();
   let kept = false, retainedParent, retainedHost;
   const editorSubscribers = new Set();
@@ -78,7 +81,7 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
   const fileTabs = createTabs(documents), tabs = fileTabs.list;
   const unsubscribeClosedTabs = closedTabs.subscribe(() => publish({ canReopenTab: Boolean(closedTabs.peek()) }));
   const assistant = createSelectionAssistant({ editor: { file: () => current, view: () => editor?.view }, api, t, changed: value => publish({ assistant: value }),
-    modelOptions: kind => ({ ...(preferences[`${kind}Model`] ? { model: preferences[`${kind}Model`] } : {}), reasoningEffort: preferences[`${kind}Reasoning`] }), translationLanguage });
+    stores: () => project?.conversationScopes.values(), modelOptions: kind => ({ ...(preferences[`${kind}Model`] ? { model: preferences[`${kind}Model`] } : {}), reasoningEffort: preferences[`${kind}Reasoning`] }), translationLanguage });
   const reading = createReading({ api, documents, currentFile: () => current, visit, t, locale: () => t('readingLanguage') });
   const changes = createChanges(async (input, signal) => {
     const target = project;
@@ -230,10 +233,13 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
     else if (fileTabs.isClosed(file)) fileTabs.open(file, preferences.previewTabs);
     publish({ editorKind, tabs: tabs(), status: documents.get(file).dirty ? t('unsaved') : t('saved') });
     const view = editor.view;
-    if (target.line !== undefined || target.character !== undefined || target.length !== undefined) {
-      const line = view.state.doc.line(Math.min((target.line ?? 0) + 1, view.state.doc.lines));
-      const from = Math.min(line.to, line.from + (target.character ?? 0));
-      view.dispatch({ selection: { anchor: from, head: Math.min(view.state.doc.length, from + (target.length ?? 0)) }, effects: EditorView.scrollIntoView(from, { y: 'center' }) });
+    assistant.validateRestored(file, view.state);
+    const thread = target.threadId && assistant.threads(file).find(item => item.id === target.threadId);
+    const location = thread && !thread.stale ? { line: thread.line, character: thread.character, length: thread.to - thread.from } : target;
+    if (location.line !== undefined || location.character !== undefined || location.length !== undefined) {
+      const line = view.state.doc.line(Math.min((location.line ?? 0) + 1, view.state.doc.lines));
+      const from = Math.min(line.to, line.from + (location.character ?? 0));
+      view.dispatch({ selection: { anchor: from, head: Math.min(view.state.doc.length, from + (location.length ?? 0)) }, effects: EditorView.scrollIntoView(from, { y: 'center' }) });
     }
     if (editorKind === 'file') view.focus();
     cursor(); return true;
@@ -668,7 +674,7 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
         const transaction = (attached && states.get(path) || doc.state || EditorState.create({ doc: doc.text })).update({ changes });
         doc.state = transaction.state;
         if (attached && states.has(path)) states.set(path, transaction.state);
-        assistant.update({ docChanged: transaction.docChanged, transactions: [transaction], state: doc.state }, path, target.conversations);
+        assistant.update({ docChanged: transaction.docChanged, transactions: [transaction], state: doc.state }, path, target.conversationScopes.values());
       }
     } finally { synchronizing = false; }
     doc.writers.add(owner); if (!doc.dirty) doc.writers.clear();
@@ -733,8 +739,23 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
     publish({ tabs: tabs(), status: t(!entry ? 'undoEmpty' : direction === 'undo' ? 'undone' : 'redone') });
     if (entry?.kind === 'text') { if (entry.path !== current) await visit({ file: entry.path }); else void updateIndex().catch(fail); }
   }
+  function showStudyError() {
+    const errors = studyErrors.get(projectPath);
+    publish({ studyError: errors?.pins || errors?.reading || '' });
+  }
+  function bindStudy(root, kind, state, after) {
+    return connectStudy(studyStore(root, kind), state, error => {
+      const errors = studyErrors.get(root) || {};
+      errors[kind] = error ? errorText(error, t) : '';
+      studyErrors.set(root, errors);
+      if (projectPath === root) showStudyError();
+    }, after);
+  }
   function bindProject(root) {
-    if (projectPath !== root.path) recovery?.flush();
+    if (projectPath !== root.path) {
+      recovery?.flush();
+      previousStudyWrite = studyReading?.close() || previousStudyWrite; studyReading = null;
+    }
     if (!projects.has(root.path)) projects.set(root.path, createProject(api, fail, createEnvironmentPreference(localStorage, root.path)));
     unsubscribeProject(); const previous = project; project = projects.get(root.path); unsubscribeProject = project.subscribe(projectChanged);
     if (previous && previous !== project) {
@@ -749,9 +770,15 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
     project.environment.refresh();
     publish({ environmentPaths: project.environment.snapshot().paths });
     for (const path of documents.keys()) { const doc = project.documents.get(path); if (doc) documents.set(path, doc); else documents.delete(path); }
-    assistant.bind(project.conversations); reading.bind(project.documents); configureSettings(preferences);
+    const conversations = project.conversationsFor(studyScope);
+    assistant.bind(conversations); reading.bind(project.documents); configureSettings(preferences);
     projectPath = root.path; recovery?.bind(root.path);
     drafts?.bind(root.path, project, owner); publish({ drafts: drafts?.snapshot(root.path) });
+    if (!studyStore) return;
+    showStudyError();
+    if (!studyPins.has(root.path)) studyPins.set(root.path, bindStudy(root.path, 'pins', conversations));
+    studyReading ||= bindStudy(root.path, 'reading', reading, previousStudyWrite);
+    return Promise.all([studyPins.get(root.path).ready, studyReading.ready]);
   }
   async function restoreTab(item, signal) {
     await visit({ ...item.location, file: item.path, kind: item.kind }, true);
@@ -811,7 +838,8 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
         if (editor !== attached) return;
         const root = await api.fileOperation({ action: 'absolutePath', path: '' });
         if (editor !== attached) return;
-        bindProject(root);
+        await bindProject(root);
+        if (editor !== attached) return;
         if (current) { const target = { file: current, kind: snapshot.editorKind }; current = null; await display(target); }
         if (editor === attached && !pane) void refresh().catch(fail);
       })();
@@ -832,6 +860,7 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
     },
     dispose() {
       recovery?.dispose();
+      studyReading?.close(); for (const connection of studyPins.values()) connection.close(); studyPins.clear();
       unsubscribeDrafts?.(); if (!historyOwner) drafts?.dispose();
       this.groups?.reset(); unsubscribeIndex();
       windowRoute.dispose(); kept = false; this.detach(); autosave.dispose(); unsubscribeProject(); unsubscribeSettings(); unsubscribeClosedTabs(); disposed = true; assistant.dispose(); reading.dispose(); changes.dispose(); files.dispose();
@@ -935,9 +964,14 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
       try { return await replaceFiles(editing, matches, query, report, signal); }
       finally { if (project === target && binding === ready) { changes.invalidate(); publish({ tabs: tabs() }); void updateIndex().catch(fail); } }
     },
-    async openConversation(row) {
-      try { await visit({ file: row.file, line: row.line, character: row.character, length: row.to - row.from }); }
-      finally { assistant.open(row.id); }
+    async openConversation(row, show = true) {
+      const ready = binding;
+      try { await visit({ file: row.file, threadId: row.id }); }
+      catch (error) {
+        if (ready === binding && error.message === 'WORKBENCH_NOT_FILE') assistant.validateRestored(row.file);
+        if (!show || error.message !== 'WORKBENCH_NOT_FILE') throw error;
+      }
+      if (show && ready === binding) assistant.open(row.id);
     },
     menu(value) { publish({ fileMenu: value }); },
     copyFile({ path, type }) { publish({ fileClipboard: { path, type }, status: t('fileCopied'), error: '' }); },
@@ -967,7 +1001,7 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
         return failures;
       } finally { signal.removeEventListener('abort', cancel); if (resuming === abort) resuming = null; }
     },
-    createPane: () => createWorkbench(api, t, { projects, translationLanguage, settings: preference, layout, sharedIndex: index, historyOwner: owner, draftRecovery: drafts, closedTabs, pane: true, stopRecovery: () => recovery?.stop() }),
+    createPane: () => createWorkbench(api, t, { projects, translationLanguage, settings: preference, layout, sharedIndex: index, historyOwner: owner, draftRecovery: drafts, closedTabs, pane: true, stopRecovery: () => recovery?.stop(), studyScope }),
     hasUnsavedFiles: () => project && [...project.documents.values()].some(doc => doc.dirty),
     keepPaneEdits(pane) {
       for (const [path, doc] of pane.documents) if (doc.dirty && project?.documents.get(path) === doc) autosave.change(path);
@@ -985,6 +1019,6 @@ export function createWorkbench(api, t, { projects = new Map(), translationLangu
   const recovery = session && !pane ? createWorkspaceRecovery(controller, session, patch => publish(patch), t) : null;
   controller.recovery = recovery;
   const windowRoute = createWindowRoute(controller, api.windows, t, presentation => presentation.kind === 'closeFile' ? { workbench: controller, dispose() {} } : createWindowView(
-    createWorkbench(api, t, { projects, translationLanguage, settings: preference, layout, sharedIndex: index, historyOwner: owner, draftRecovery: drafts }), controller, presentation));
+    createWorkbench(api, t, { projects, translationLanguage, settings: preference, layout, sharedIndex: index, historyOwner: owner, draftRecovery: drafts, studyScope }), controller, presentation));
   return controller;
 }

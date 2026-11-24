@@ -101,7 +101,7 @@ export const zh = {
   conversationInput_adjudicating: '正在识别输入的命令。', conversationInput_claimed: '当前草稿正在使用对话命令，请打开对话继续。',
   conversationInput_submitting: '对话命令正在提交，可打开对话查看进度。',
   action_close: '关闭对话框',
-  selectionPin: '固定标记', selectionUnpin: '取消固定标记',
+  selectionPin: '固定对话', selectionUnpin: '取消固定对话', quickPinned: '已固定',
   sourceLocation: '{file} · 第 {line} 行', space: '空格', syntaxKeyword: '语法关键词', basicType: '基础类型', functionTemplate: '函数模板',
   action_definition: '跳到定义', action_complete: '代码补全', action_find: '当前文件搜索', action_project: '全局搜索',
   action_back: '后退', action_forward: '前进', action_indent: '缩进／接受补全', action_outdent: '反缩进',
@@ -165,6 +165,10 @@ export const zh = {
   WORKBENCH_CONFLICT: '磁盘内容已变化，已保留编辑；请核对后重新保存', WORKBENCH_MODEL: '请先为当前会话选择模型',
   WORKBENCH_MODEL_INCOMPLETE: '模型未完整结束，本次结果未应用', WORKBENCH_MODEL_EMPTY: '模型没有返回回答', WORKBENCH_OUTPUT_SIZE: '模型输出过长，本次结果未应用',
   WORKBENCH_SELECTION_SIZE: '选区过大，请缩小后重试',
+  WORKBENCH_STUDY_SIZE: '固定对话或学习记录超过 2 MiB，已保存的记录仍保留。',
+  WORKBENCH_STUDY_INVALID: '无法识别固定对话或学习记录，已保存的记录仍保留。',
+  WORKBENCH_STUDY_STORAGE: '无法访问本地存储，固定对话和学习进度可能无法恢复。',
+  WORKBENCH_STUDY_CHANGED: '另一窗口已更新本地记录。重新打开工作台后可读取较新的记录。',
 };
 export const en = {
   saveAll: 'Save all', action_saveAll: 'Save all', drafts: 'Unsaved files and recovery copies', draftCount: '{count} unsaved files', draftAvailable: 'Recovery copies available',
@@ -266,7 +270,7 @@ export const en = {
   conversationInput_adjudicating: 'Checking which command handles this input.', conversationInput_claimed: 'This draft uses a conversation command. Open Conversation to continue.',
   conversationInput_submitting: 'A conversation command is being submitted. Open Conversation to follow its progress.',
   action_close: 'Close dialog',
-  selectionPin: 'Pin marker', selectionUnpin: 'Unpin marker',
+  selectionPin: 'Pin conversation', selectionUnpin: 'Unpin conversation', quickPinned: 'Pinned',
   sourceLocation: '{file} · Line {line}', space: 'Space', syntaxKeyword: 'Keyword', basicType: 'Primitive type', functionTemplate: 'Function snippet',
   action_definition: 'Go to definition', action_complete: 'Complete', action_find: 'Find in file', action_project: 'Project search',
   action_back: 'Back', action_forward: 'Forward', action_indent: 'Indent / Accept completion', action_outdent: 'Outdent',
@@ -330,6 +334,10 @@ export const en = {
   WORKBENCH_CONFLICT: 'The file changed on disk. Your edits have been kept. Review before saving.', WORKBENCH_MODEL: 'Select a model for this conversation first',
   WORKBENCH_MODEL_INCOMPLETE: 'The model did not finish normally. Its result was not applied.', WORKBENCH_MODEL_EMPTY: 'The model returned no answer', WORKBENCH_OUTPUT_SIZE: 'Model output is too large. Its result was not applied.',
   WORKBENCH_SELECTION_SIZE: 'The selection is too large. Select a smaller range and try again.',
+  WORKBENCH_STUDY_SIZE: 'Pinned conversations or learning progress exceeded 2 MiB. The saved record was kept.',
+  WORKBENCH_STUDY_INVALID: 'The pinned conversation or learning record could not be read. The saved record was kept.',
+  WORKBENCH_STUDY_STORAGE: 'Local storage is unavailable. Pinned conversations and learning progress may not be restored.',
+  WORKBENCH_STUDY_CHANGED: 'Another window updated the local record. Reopen the workbench to load the newer record.',
 };
 export function message(t, key, values = {}) { return Object.entries(values).reduce((text, [name, value]) => text.replaceAll(`{${name}}`, String(value)), t(key)); }
 export function errorText(error, t) { const code = /WORKBENCH_[A-Z_]+|READING_[A-Z_]+|FS_STALE_VERSION/.exec(error.message)?.[0]; return code ? t(code === 'FS_STALE_VERSION' ? 'WORKBENCH_CONFLICT' : code) : error.message; }

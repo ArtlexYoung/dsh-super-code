@@ -5,7 +5,7 @@ import { createConversationStore } from './conversations.js';
 import { uniqueId } from '../id.js';
 import { selectionContext } from '../../../src/workbench/assistant-context.ts';
 
-export function createSelectionAssistant({ editor, api, changed, t, modelOptions = () => ({}), translationLanguage = () => t('translationLanguage') }) {
+export function createSelectionAssistant({ editor, api, changed, t, stores, modelOptions = () => ({}), translationLanguage = () => t('translationLanguage') }) {
   let store, unsubscribe = () => {}, marking = false, disposed = false;
   const owned = new Set();
   let active = null, visible = false, mode = 'ask', applying = null;
@@ -41,7 +41,9 @@ export function createSelectionAssistant({ editor, api, changed, t, modelOptions
     const thread = [...store.files.values()].flat().find(item => item.id === id);
     if (!thread) return;
     if (active !== thread) close();
-    active = thread; visible = true; mode = thread.kind === 'translation' ? 'translate' : 'ask'; publish();
+    active = thread; visible = true; mode = thread.kind === 'translation' ? 'translate' : 'ask';
+    if (thread.stale) thread.note = t('stale');
+    publish();
   }
   function select(action = 'ask') {
     const view = editor.view(), range = view.state.selection.main;
@@ -124,15 +126,32 @@ export function createSelectionAssistant({ editor, api, changed, t, modelOptions
     draft(value) { if (active) { active.draft = value; refresh(); } },
     mode(value) { mode = value; publish(); },
     pin() { if (active) { active.pinned = !active.pinned; refresh(); } },
-    update(update, file = editor.file(), origin = store) {
-      if (!update.docChanged) return;
-      for (const transaction of update.transactions) if (transaction.docChanged) for (const thread of origin.files.get(file) || []) {
-        if (thread.id !== applying) Object.assign(thread, mapThread(thread, transaction.changes));
-        const line = update.state.doc.lineAt(Math.min(thread.from, update.state.doc.length));
+    validateRestored(file, state) {
+      let checked = false;
+      for (const thread of threads(file)) {
+        if (!thread.unchecked) continue;
+        thread.unchecked = false; checked = true;
+        thread.stale = !state || thread.to > state.doc.length || state.sliceDoc(thread.from, thread.to) !== thread.original;
+        if (thread.stale) { thread.note = t('stale'); continue; }
+        const line = state.doc.lineAt(thread.from);
         thread.line = line.number - 1; thread.character = thread.from - line.from;
       }
-      if (origin === store && active?.stale && active.kind !== 'translation') active.note = t('stale');
-      origin.publish();
+      if (checked) refresh();
+    },
+    update(update, file = editor.file(), affected = stores?.() || [store]) {
+      if (!update.docChanged) return;
+      for (const origin of affected) {
+        const threads = origin.files.get(file);
+        if (!threads?.length) continue;
+        for (const transaction of update.transactions) if (transaction.docChanged) for (const thread of threads) {
+          if (thread.unchecked || thread.to > transaction.startState.doc.length) continue;
+          if (thread.id !== applying) Object.assign(thread, mapThread(thread, transaction.changes));
+          const line = transaction.newDoc.lineAt(Math.min(thread.from, transaction.newDoc.length));
+          thread.line = line.number - 1; thread.character = thread.from - line.from;
+        }
+        if (origin === store && active?.stale && active.kind !== 'translation') active.note = t('stale');
+        origin.publish();
+      }
     },
     switchFile,
     dispose() { disposed = true; unsubscribe(); switchFile(); },

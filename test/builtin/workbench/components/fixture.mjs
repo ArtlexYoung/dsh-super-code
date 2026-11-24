@@ -1,5 +1,6 @@
 export const fixture = `import React from 'react';import{createRoot}from'react-dom/client';
 import{createDraftStore}from'./builtin/workbench/draft-store.js';
+import{createStudyStore}from'./builtin/workbench/study-store.js';
 import{createWorkspaceSession}from'./builtin/workbench/session.js';
 import{searchMatches,locationBatches,searchPathFilter,searchText}from'./src/workbench/search-query.ts';
 import{Workbench}from'./builtin/workbench/components/Workbench.jsx';import{createWorkbench}from'./builtin/workbench/controller.js';
@@ -16,7 +17,22 @@ const readGates=new Map(),readSignals=new Map();
 let saveGate,saveStarted=false;
 const versions={},versionOf=path=>versions[path]||'v1';let revision=1;
 const api={windows,fonts:async()=>['Menlo','Songti SC'],list:async path=>({entries:path==='folder'?[{name:'test.py',path:'folder/test.py',type:'file'}]:[{name:'folder',path:'folder',type:'directory'},{name:'a.ts',path:'a.ts',type:'file'},{name:'b.ts',path:'b.ts',type:'file'}],truncated:false}),read:async(path,signal)=>{readSignals.set(path,signal);await readGates.get(path)?.promise;if(!(path in texts))throw new Error('WORKBENCH_NOT_FILE');return{path,text:texts[path],version:versionOf(path)}},save:async input=>{if(input.version!==versionOf(input.path))throw new Error('WORKBENCH_CONFLICT');texts[input.path]=input.text;versions[input.path]='v'+(++revision);return{path:input.path,text:input.text,version:versionOf(input.path)}},project:async()=>({files:Object.keys(texts),truncated:false}),fileOperation:async()=>({path:query.get('root')||'/demo'}),git:async()=>({kind:'snapshot',snapshot:{version:'v',files:[],branches:[],commits:[],remotes:[],status:{}}}),models:async()=>[{provider:'demo',model:'configured',name:'演示模型',current:true,efforts:[{id:'high',name:'High'},{id:'max',name:'Max'}]},{provider:'demo',model:'controllable',name:'可关闭思考的演示模型',efforts:[{id:'off',name:'Off'},{id:'high',name:'High'}]}],assist:async()=>new Promise(resolve=>{resolveAnswer=resolve}),async *reading(input){window.lastReading=input;yield{kind:'status',stage:'catalog'};yield{kind:'sources',sources:[{id:'S1',file:'a.ts',fromLine:1,toLine:1,text:texts['a.ts'].split('\\n')[0],version:'v1'}],partial:false};yield{kind:'plan',plan:{title:'项目阅读',summary:'从项目入口开始',steps:[{title:'入口',reason:'了解输入输出',refs:[{file:'a.ts',fromLine:1,toLine:1,quote:texts['a.ts'].split('\\n')[0]}]}]}};yield{kind:'done'}}};
-const controller=createWorkbench(api,t,{draftStore:query.has('drafts')?createDraftStore(query.get('drafts')):undefined,session:query.has('recovery')?createWorkspaceSession(localStorage,query.get('recovery')):undefined}),root=createRoot(document.getElementById('root'));
+const studyStore=query.has('study')?createStudyStore(query.get('study')):undefined;
+if(studyStore){
+  for(const [path,value] of Object.entries(JSON.parse(sessionStorage.getItem('study-test-disk')||'{}'))){if(value===null)delete texts[path];else texts[path]=value}
+  const reading=api.reading, assist=api.assist;
+  window.studyTest={store:studyStore, requests:0};
+  api.assist=(...args)=>{window.studyTest.requests++;return assist(...args)};
+  api.reading=async function*(input){
+    window.studyTest.requests++;
+    if(input.kind==='plan'){yield* reading(input);return}
+    const ref=input.step.refs[0];
+    yield{kind:'sources',sources:[{id:'S1',file:ref.file,fromLine:ref.fromLine,toLine:ref.toLine,text:ref.quote,version:versionOf(ref.file)}],partial:false};
+    yield{kind:'section',section:{title:'入口说明',text:'入口为 add 函数。',refs:[ref]}};
+    yield{kind:'done'};
+  };
+}
+const controller=createWorkbench(api,t,{studyStore,draftStore:query.has('drafts')?createDraftStore(query.get('drafts')):undefined,session:query.has('recovery')?createWorkspaceSession(localStorage,query.get('recovery')):undefined}),root=createRoot(document.getElementById('root'));
 const save=api.save;api.save=async input=>{if(saveGate){saveStarted=true;await saveGate.promise}return save(input)};
 api.searchProject=async function*(query,signal){for(const path of Object.keys(texts)){signal.throwIfAborted();if(!searchPathFilter(query).file(path))continue;const file=await api.read(path);if(query.locations){for(const matches of locationBatches(file.text,query.search,query.caseSensitive,query))yield{kind:'matches',path,version:file.version,matches};continue}const count=[...searchMatches(searchText(file.text),query)].length;if(count)yield{kind:'file',path,version:file.version,count,sample:file.text.split('\\n')[0]}}yield{kind:'done',scanned:Object.keys(texts).length,skipped:0}};
 function Button({children,...p}){return <button type='button' {...p}>{children}</button>}

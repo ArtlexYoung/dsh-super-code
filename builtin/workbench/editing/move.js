@@ -17,11 +17,12 @@ export function moveProjectFile(project, { previousPath: from, path: to, version
   const doc = project.documents.get(from);
   if (doc) { project.documents.delete(from); doc.path = to; doc.version = version; project.documents.set(to, doc); }
   project.history.rename(from, to);
-  const threads = project.conversations.files.get(from);
-  if (threads) {
-    project.conversations.files.delete(from);
+  for (const store of project.conversationScopes.values()) {
+    const threads = store.files.get(from);
+    if (!threads) continue;
+    store.files.delete(from);
     for (const thread of threads) { thread.file = to; thread.version++; }
-    project.conversations.files.set(to, threads); project.conversations.publish();
+    store.files.set(to, [...(store.files.get(to) || []), ...threads]); store.publish();
   }
   project.publish({ kind: 'move', from, to, version, previousVersion });
   for (const path of new Set([from, to].map(path => path.split('/').slice(0, -1).join('/')))) project.publish({ kind: 'directory', path });

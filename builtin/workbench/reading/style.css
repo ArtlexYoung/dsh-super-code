@@ -10,6 +10,7 @@
 .sc-reading-plan>p{color:var(--wb-muted);font-size:12px;line-height:1.75;margin:0 0 12px;white-space:pre-wrap}
 .sc-reading-plan ol{margin:0;padding:0;list-style:none;display:grid;gap:3px}
 .sc-reading-plan li>button{width:100%;justify-content:flex-start;text-align:left;white-space:normal;gap:10px;padding:6px 8px;line-height:1.55}
+.sc-reading-complete{margin-inline-start:auto;color:var(--wb-muted);white-space:nowrap}
 .sc-reading-plan li>button[aria-current=step]{background:var(--wb-hover);color:var(--wb-accent)}
 .sc-reading-number{width:20px;height:20px;border:1px solid var(--wb-line);border-radius:var(--wb-radius);display:inline-grid;place-items:center;flex:none;font-size:10px;font-variant-numeric:tabular-nums;color:var(--wb-muted)}
 [aria-current=step] .sc-reading-number{border-color:var(--wb-accent);color:var(--wb-accent)}

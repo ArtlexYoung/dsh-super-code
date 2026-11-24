@@ -7,7 +7,7 @@ export function createReading({ api, documents, currentFile, visit, t, locale })
   const subscribers = new Set();
   let request, context = new AbortController(), disposed = false;
   const cache = new Map();
-  const initial = { goal: '', plan: null, planSources: [], active: -1, sections: [], sources: [], status: 'idle', stage: '', error: '', stale: false, partial: false, finished: false, target: null };
+  const initial = { goal: '', plan: null, planSources: [], active: -1, completed: [], sections: [], sources: [], status: 'idle', stage: '', error: '', stale: false, partial: false, finished: false, target: null };
   let snapshot = { ...initial };
   function publish(patch) { if (disposed) return; snapshot = { ...snapshot, ...patch }; for (const listener of subscribers) listener(); }
   function buffers() {
@@ -58,8 +58,9 @@ export function createReading({ api, documents, currentFile, visit, t, locale })
       if (!snapshot.finished) throw new Error('WORKBENCH_MODEL_INCOMPLETE');
       const checked = await synchronize(snapshot, abort.signal);
       abort.signal.throwIfAborted();
-      publish({ ...checked, status: 'ready' });
-      if (!checked.stale && active >= 0) cache.set(active, { locale: locale(), value: { sections: snapshot.sections, sources: snapshot.sources, partial: snapshot.partial } });
+      if (!checked.stale && active >= 0) cache.set(active, { locale: locale(), value: { sections: checked.sections, sources: checked.sources, partial: snapshot.partial } });
+      const completed = !checked.stale && active >= 0 ? [...new Set([...snapshot.completed, active])] : snapshot.completed;
+      publish({ ...checked, completed, status: 'ready' });
     } catch (error) {
       if (request === abort) publish({ status: abort.signal.aborted ? 'stopped' : 'error', error: abort.signal.aborted ? '' : errorText(error, t), finished: false });
     } finally { if (request === abort) request = null; }
@@ -98,7 +99,7 @@ export function createReading({ api, documents, currentFile, visit, t, locale })
     return {
       async plan() {
         if (!snapshot.goal.trim()) return;
-        cache.clear(); publish({ plan: null, planSources: [], planGoal: snapshot.goal.trim() });
+        cache.clear(); publish({ plan: null, planSources: [], planGoal: snapshot.goal.trim(), completed: [] });
         await run({ kind: 'plan', goal: snapshot.goal.trim(), ...(currentFile() ? { file: currentFile() } : {}) });
       },
       async file() {
@@ -107,7 +108,7 @@ export function createReading({ api, documents, currentFile, visit, t, locale })
       },
       async retry() {
         if (snapshot.stale && snapshot.plan) {
-          cache.clear(); publish({ plan: null, planSources: [] });
+          cache.clear(); publish({ plan: null, planSources: [], completed: [] });
           await run({ kind: 'plan', goal: snapshot.planGoal, ...(currentFile() ? { file: currentFile() } : {}) });
         } else if (snapshot.active >= 0) await step(snapshot.active, true);
         else if (snapshot.target) await run(snapshot.target);
@@ -121,6 +122,21 @@ export function createReading({ api, documents, currentFile, visit, t, locale })
     // 学习状态及请求共用，文件入口和引用跳转跟随各自视图。
     forView(navigation) { return { ...reading, ...actions(navigation) }; },
     subscribe(listener) { subscribers.add(listener); return () => subscribers.delete(listener); }, snapshot: () => snapshot,
+    archive() {
+      const { status, plan, planGoal, planSources, active, completed } = snapshot;
+      if (status !== 'ready' || !plan || !planGoal) return;
+      return { goal: planGoal, plan, planSources, active, completed, explanations: [...cache] };
+    },
+    restore(saved) {
+      if (request || snapshot.plan) return;
+      for (const [index, explanation] of saved.explanations) cache.set(index, explanation);
+      const explanation = cache.get(saved.active)?.value;
+      const { plan, planSources, active, completed, goal } = saved;
+      const step = plan.steps[active];
+      const target = step ? { kind: 'explain', goal, file: step.refs[0].file, step } : { kind: 'plan', goal };
+      publish({ ...initial, ...explanation, goal, planGoal: goal, plan, planSources, active, completed, target, finished: !!explanation, status: 'ready' });
+      void reading.verify();
+    },
     bind(value) {
       if (documents === value) return;
       stop(); context.abort(); context = new AbortController(); documents = value; cache.clear();
@@ -136,8 +152,10 @@ export function createReading({ api, documents, currentFile, visit, t, locale })
     async verify() {
       const before = snapshot;
       if (!before.sources.length && !before.planSources.length) return;
-      try { const checked = await synchronize(before, new AbortController().signal); if (snapshot === before) publish(checked); }
-      catch (error) { if (snapshot === before) publish({ stale: true, error: errorText(error, t) }); }
+      const signal = context.signal;
+      const unchanged = () => !signal.aborted && snapshot.sources === before.sources && snapshot.planSources === before.planSources && snapshot.sections === before.sections && snapshot.plan === before.plan;
+      try { const checked = await synchronize(before, signal); if (unchanged()) publish(checked); }
+      catch (error) { if (unchanged()) publish({ stale: true, error: errorText(error, t) }); }
     },
     dispose() { stop(); context.abort(); disposed = true; subscribers.clear(); cache.clear(); },
   };

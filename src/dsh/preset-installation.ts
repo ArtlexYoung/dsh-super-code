@@ -1,7 +1,7 @@
 /** Host-only preset discovery repair; never part of a model's tool surface. */
 import { cp, lstat, mkdir, mkdtemp, readdir, rm, readFile, writeFile, rename, realpath } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
-import { join, resolve } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { createRequire } from 'node:module'
 import type { Context } from '@deepseek-ai/cordis'
@@ -327,12 +327,19 @@ async function declarationHost(owner: Context): Promise<DeclarationHost | false>
     const require = createRequire(profile.installAnchor ?? new URL('package.json', owner.baseUrl))
     const boot = await import(pathToFileURL(require.resolve('@deepseek-ai/dsh-app-boot')).href)
     if (typeof boot.readProfilePatches !== 'function' || typeof boot.reconcileProfilePatches !== 'function') return false
+    const { withFileLock } = await import(pathToFileURL(require.resolve('@deepseek-ai/dsh-atomic-write')).href)
     const hmr = owner.get('hmr') as { runExclusive<T>(run: () => Promise<T>): Promise<T> } | undefined
+    // ConfigEditor writes the same patch under the profile package lock, even
+    // when HMR is absent. Acquire both locks in the host's order.
+    const lockPath = join(dirname(profile.patchPath), 'package.json')
     return {
       patchPath: profile.patchPath,
       entries: () => [...loader.entries()].map(row => ({ id: row.options.id, disabled: row.disabled, options: row.options })),
       reload: async () => { await boot.reconcileProfilePatches(owner.root, boot.readProfilePatches('dsh', profile), 'dsh') },
-      exclusive: run => hmr ? hmr.runExclusive(run) : run(),
+      exclusive: run => {
+        const locked = () => withFileLock(lockPath, run)
+        return hmr ? hmr.runExclusive(locked) : locked()
+      },
     }
   } catch { return false }
 }

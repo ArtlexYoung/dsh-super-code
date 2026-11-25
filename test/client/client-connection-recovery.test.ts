@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import { runInNewContext } from 'node:vm'
+import { Script } from 'node:vm'
 import { mkdtemp, mkdir, realpath, rm, symlink } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -10,6 +10,9 @@ import { ConnectionService } from '../../src/connection/service.js'
 import { ConnectionStore } from '../../src/connection/store.js'
 import { SuperCodeConnection } from '../../src/dsh/connection.js'
 import type { DelegationHost } from '../../src/connection/types.js'
+
+// Reuse compiled code while keeping each fixture's globals and module state isolated.
+const clientScript = new Script(readFileSync(new URL('../../dist/client.js', import.meta.url), 'utf8'))
 
 function nodes(tree: any): any[] {
   if (!tree || typeof tree !== 'object') return []
@@ -48,7 +51,7 @@ function fixture(api: any, options: { home?: boolean; budgetApi?: any; budgetSec
     useSyncExternalStore: (_subscribe: Function, read: Function) => read(),
   }
   Object.assign(react, { useLayoutEffect: react.useEffect })
-  runInNewContext(readFileSync(new URL('../../dist/client.js', import.meta.url), 'utf8'), {
+  clientScript.runInNewContext({
     URL, Event, setTimeout, clearTimeout, setInterval: (callback: Function) => { options.timers?.push(callback); return 1 }, clearInterval() {},
     window: { addEventListener() {}, removeEventListener() {}, location: { reload: () => options.reload?.() },
       dispatchEvent() {},

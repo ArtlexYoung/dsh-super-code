@@ -3,14 +3,17 @@ import { createPortal } from 'react-dom';
 import { message } from '../locales.js';
 import { uniqueId } from '../id.js';
 import { Icon } from './Icon.jsx';
+import { tabsToClose } from '../tabs.js';
 
-const menuIcons = { closeFile: 'close', splitRight: 'splitRight', splitDown: 'splitDown', tabWindow: 'window', fileNew: 'newFile', fileNewDirectory: 'folder', fileCopy: 'copy', filePaste: 'paste', filePin: 'pin', fileUnpin: 'unpin', fileCompare: 'diff', fileRelativePath: 'link', fileAbsolutePath: 'link', fileTrash: 'trash' };
+const menuIcons = { closeFile: 'close', closeOtherTabs: 'close', closeRightTabs: 'close', closeSavedTabs: 'close', reopenTab: 'back', splitRight: 'splitRight', splitDown: 'splitDown', tabWindow: 'window', fileNew: 'newFile', fileNewDirectory: 'folder', fileCopy: 'copy', filePaste: 'paste', fileRename: 'edit', fileMove: 'folder', filePin: 'pin', fileUnpin: 'unpin', fileCompare: 'diff', fileRelativePath: 'link', fileAbsolutePath: 'link', fileTrash: 'trash' };
 
 function Menu({ target, entries, close, palette, Button, t }) {
   const menu = useRef(null), [position, setPosition] = useState({ left: target.x, top: target.y });
   useLayoutEffect(() => {
     const node = menu.current, previous = document.activeElement, rect = node.getBoundingClientRect();
-    setPosition({ left: Math.max(8, Math.min(target.x, window.innerWidth - rect.width - 8)), top: Math.max(8, Math.min(target.y, window.innerHeight - rect.height - 8)) });
+    const scale = rect.width / node.offsetWidth, maxHeight = window.innerHeight - 16;
+    setPosition({ left: Math.max(8, Math.min(target.x, window.innerWidth - rect.width - 8)) / scale,
+      top: Math.max(8, Math.min(target.y, window.innerHeight - Math.min(rect.height, maxHeight) - 8)) / scale, maxHeight: maxHeight / scale });
     node.querySelector('[role=menuitem]:not(:disabled)')?.focus();
     return () => { if (previous?.isConnected && node.contains(document.activeElement)) previous.focus({ preventScroll: true }); };
   }, [target]);
@@ -37,24 +40,31 @@ export function FileAction({ dialog, workbench, Button, t }) {
   const close = () => { if (!busy) workbench.panel(null); };
   const naming = !['trash', 'copyPath'].includes(dialog.action);
   return <form onSubmit={event => { event.preventDefault(); void workbench.submitFileAction().catch(workbench.fail); }}>
-    {dialog.action === 'copyPath' ? <input aria-label={t('fileCopyPath')} value={dialog.path} readOnly autoFocus onFocus={event => event.target.select()} />
-      : naming ? <><small>{dialog.parent || '.'}</small><label>{t('fileName')}<input aria-label={t('fileName')} value={name} disabled={busy} autoFocus onChange={event => update({ name: event.target.value })} /></label></>
-      : <p>{message(t, 'fileTrashConfirm', { path: dialog.path })}</p>}
+    <FileActionInput dialog={dialog} update={update} t={t} />
     {error && <p role="alert">{error}</p>}
     <footer><Button type="button" disabled={busy} onClick={close}>{t('fileCancel')}</Button>
       {dialog.action !== 'copyPath' && <Button type="submit" className="sc-wb-primary" disabled={busy || naming && !name.trim()}>{t(busy ? 'working' : naming ? 'fileConfirm' : 'fileTrash')}</Button>}</footer>
   </form>;
 }
 
+function FileActionInput({ dialog, update, t }) {
+  if (dialog.action === 'copyPath') return <input aria-label={t('fileCopyPath')} value={dialog.path} readOnly autoFocus onFocus={event => event.target.select()} />;
+  if (dialog.action === 'trash') return <p>{message(t, 'fileTrashConfirm', { path: dialog.path })}</p>;
+  const moving = ['rename', 'move'].includes(dialog.action), label = t(dialog.action === 'move' ? 'fileDestination' : 'fileName');
+  return <><small>{moving ? dialog.path : dialog.parent || '.'}</small><label>{label}<input aria-label={label} value={dialog.name} disabled={dialog.busy} autoFocus
+    onFocus={event => event.target.select()} onChange={event => update({ name: event.target.value })} /></label>{moving && <small>{t('fileMoveHint')}</small>}</>;
+}
+
 export function FileActions({ snapshot, workbench, Button, t, splitTab, detachTab }) {
   const target = snapshot.fileMenu, palette = snapshot.preferences.palette;
   const closeMenu = () => workbench.menu(null);
   const showDialog = (action, values) => workbench.panel({ kind: 'fileAction', id: uniqueId(), action, name: '', error: '', busy: false,
-    title: t(({ createFile: 'fileNew', createDirectory: 'fileNewDirectory', copy: 'filePaste', trash: 'fileTrash', copyPath: 'fileCopyPath' })[action]), ...values });
+    title: t(({ createFile: 'fileNew', createDirectory: 'fileNewDirectory', copy: 'filePaste', rename: 'fileRename', move: 'fileMove', trash: 'fileTrash', copyPath: 'fileCopyPath' })[action]), ...values });
   function show(action) {
     const parent = target.type === 'directory' ? target.path : target.path.split('/').slice(0, -1).join('/');
     const source = snapshot.fileClipboard;
-    showDialog(action, { parent, path: target.path, source, name: action === 'copy' ? source.path.split('/').at(-1) : '' }); closeMenu();
+    const names = { copy: source?.path.split('/').at(-1), rename: target.path.split('/').at(-1), move: target.path };
+    showDialog(action, { parent, path: target.path, source, name: names[action] || '' }); closeMenu();
   }
   async function copyPath(absolute) {
     const path = absolute ? (await workbench.fileOperation({ action: 'absolutePath', path: target.path })).path : target.path || '.';
@@ -65,7 +75,14 @@ export function FileActions({ snapshot, workbench, Button, t, splitTab, detachTa
   const act = callback => () => { Promise.resolve().then(callback).catch(workbench.fail); };
   const pinned = target && snapshot.tabs.some(tab => tab.path === target.path && tab.pinned);
   const entries = target ? [
-    ...(target.source === 'tab' ? [{ id: 'closeFile', run: act(async () => { closeMenu(); await workbench.closeFile(target.path, 'check', target.kind); }) }] : []),
+    ...(target.source === 'tab' ? [
+      { id: 'closeFile', run: act(async () => { closeMenu(); await workbench.closeFile(target.path, 'check', target.kind); }) },
+      ...[['closeOtherTabs', 'others'], ['closeRightTabs', 'right'], ['closeSavedTabs', 'saved']].map(([id, mode]) => ({
+        id, disabled: !tabsToClose(snapshot.tabs, mode, target.path, target.kind).length,
+        run: act(async () => { closeMenu(); await workbench.closeTabs(mode, target.path, target.kind); }),
+      })),
+      { id: 'reopenTab', disabled: !snapshot.canReopenTab, run: act(async () => { closeMenu(); await workbench.reopenTab(); }) },
+    ] : []),
     ...(target.source === 'tab' && splitTab ? [
       { id: 'splitRight', run: () => { closeMenu(); splitTab(target, 'right'); } },
       { id: 'splitDown', run: () => { closeMenu(); splitTab(target, 'down'); } },
@@ -74,6 +91,8 @@ export function FileActions({ snapshot, workbench, Button, t, splitTab, detachTa
     { id: 'fileNew', run: () => show('createFile') }, { id: 'fileNewDirectory', run: () => show('createDirectory') },
     { id: 'fileCopy', disabled: !target.path, run: () => { workbench.copyFile(target); closeMenu(); } },
     { id: 'filePaste', disabled: !snapshot.fileClipboard, run: () => show('copy') },
+    { id: 'fileRename', disabled: target.type !== 'file', run: () => show('rename') },
+    { id: 'fileMove', disabled: target.type !== 'file', run: () => show('move') },
     { id: pinned ? 'fileUnpin' : 'filePin', disabled: target.type !== 'file', run: act(async () => { closeMenu(); await workbench.pinFile(target.path); }) },
     { id: 'fileCompare', disabled: target.type !== 'file', run: () => { workbench.panel({ kind: 'fileCompare', path: target.path, title: t('fileCompare') }); closeMenu(); } },
     { id: 'fileRelativePath', run: act(() => copyPath(false)) }, { id: 'fileAbsolutePath', run: act(() => copyPath(true)) },

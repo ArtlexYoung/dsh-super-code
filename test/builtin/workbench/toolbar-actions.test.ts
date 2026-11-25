@@ -29,13 +29,13 @@ test('工具栏保存先恢复编辑器焦点，保存拒绝仍交给统一错�
   assert.deepEqual(calls, ['focus', 'save', 'error'])
 })
 
-test('右侧固定按钮依次为保存、Git、刷新、独立窗口、编辑器设置，没有学习入口', async () => {
+test('固定操作保留保存和设置，并始终提供所有操作入口', async () => {
   const Toolbar = await toolbar()
   const tree = Toolbar({ workbench: {}, snapshot: { preferences: defaults() }, current: null, Button: 'button', t: (key: string) => key })
   function fixed(node: any): any {
     if (node?.props?.className?.includes('sc-wb-toolbar-fixed')) return node
     return node?.children?.map(fixed).find(Boolean)
   }
-  assert.deepEqual(fixed(tree).children.map((child: any) => child.props['data-toolbar-action']), ['save', 'git', 'refresh', 'window', 'settings'])
+  assert.deepEqual(fixed(tree).children.map((child: { props: { 'data-toolbar-action': string } }) => child.props['data-toolbar-action']), ['save', 'git', 'refresh', 'window', 'settings', 'commandPalette'])
   assert.equal(find(tree, 'reading'), undefined)
 })

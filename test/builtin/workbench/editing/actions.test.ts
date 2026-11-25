@@ -4,7 +4,7 @@ import { ChangeSet, EditorState } from '@codemirror/state'
 import { createBuffer } from '../../../../builtin/workbench/buffer.js'
 import { createProject } from '../../../../builtin/workbench/editing/project.js'
 import { undoEdit } from '../../../../builtin/workbench/editing/actions.js'
-import { replaceProject } from '../../../../builtin/workbench/editing/replace.js'
+import { replaceProject, replacementChange } from '../../../../builtin/workbench/editing/replace.js'
 import { asText, createHistory } from '../../../../builtin/workbench/editing/history.js'
 
 test('项目卸载等待在途文件操作记账完成，再释放新增恢复令牌', async () => {
@@ -91,4 +91,13 @@ test('全局替换分别报告过期、未保存与写入失败的文件，其�
   assert.equal(history.peek(owner, 'undo', 'good.ts').after.eq(asText('new')), true)
   const entry = history.peek(owner, 'undo', 'good.ts'); history.complete(owner, 'undo', entry, entry)
   assert.equal(history.peek(owner, 'undo', ''), null)
+})
+
+test('正则替换使用捕获组和美元转义，字面替换保留美元符号，全词匹配不修改长标识符', () => {
+  const before = asText('id=12 id=34 other_id=56')
+  const query = { search: 'id=(?<value>\\d+)', replace: '$<value>:$1:$$:$&', caseSensitive: true, regexp: true, wholeWord: true }
+  assert.equal(replacementChange(before, query).apply(before).toString(), '12:12:$:id=12 34:34:$:id=34 other_id=56')
+  assert.equal(replacementChange(before, { search: 'id', replace: '$1', caseSensitive: true }).apply(before).toString(), '$1=12 $1=34 other_$1=56')
+  const zero = asText('ab')
+  assert.equal(replacementChange(zero, { search: '(?=.)', replace: '-', caseSensitive: true, regexp: true }).apply(zero).toString(), '-a-b')
 })

@@ -1,11 +1,11 @@
-import { selectionThread, selectionSnapshot, mapThread, applyReplacement, hasMark } from './selection-state.js';
+import { selectionThread, selectionSnapshot, mapThread, applyReplacement, verifyReplacement, hasMark } from './selection-state.js';
 import { refreshMarks } from './selection-extension.js';
 import { errorText, message } from '../locales.js';
 import { createConversationStore } from './conversations.js';
 import { uniqueId } from '../id.js';
 import { selectionContext } from '../../../src/workbench/assistant-context.ts';
 
-export function createSelectionAssistant({ editor, api, changed, t, modelOptions = () => ({}), translationLanguage = () => t('translationLanguage') }) {
+export function createSelectionAssistant({ editor, api, changed, t, stores, modelOptions = () => ({}), translationLanguage = () => t('translationLanguage') }) {
   let store, unsubscribe = () => {}, marking = false, disposed = false;
   const owned = new Set();
   let active = null, visible = false, mode = 'ask', applying = null;
@@ -41,7 +41,9 @@ export function createSelectionAssistant({ editor, api, changed, t, modelOptions
     const thread = [...store.files.values()].flat().find(item => item.id === id);
     if (!thread) return;
     if (active !== thread) close();
-    active = thread; visible = true; mode = thread.kind === 'translation' ? 'translate' : 'ask'; publish();
+    active = thread; visible = true; mode = thread.kind === 'translation' ? 'translate' : 'ask';
+    if (thread.stale) thread.note = t('stale');
+    publish();
   }
   function select(action = 'ask') {
     const view = editor.view(), range = view.state.selection.main;
@@ -67,6 +69,7 @@ export function createSelectionAssistant({ editor, api, changed, t, modelOptions
   }
   async function send() {
     if (!active || active.status === 'running' || !active.draft.trim()) return;
+    if (active.proposal?.state === 'pending') { active.note = t('editReviewFirst'); refresh(); return; }
     const thread = active, origin = store, view = editor.view(), instruction = thread.draft.trim(), selectedMode = mode;
     let snapshot, source;
     try { if (selectedMode !== 'translate') { if (thread.file !== editor.file() || !view) throw new Error(); snapshot = selectionSnapshot(thread, view.state); source = selectionContext(view.state.doc, thread.from, thread.to); } }
@@ -82,29 +85,73 @@ export function createSelectionAssistant({ editor, api, changed, t, modelOptions
       abort.signal.throwIfAborted();
       if (selectedMode !== 'translate' && thread.file !== editor.file()) throw new Error(t('stopped'));
       if (result.kind === 'edit') {
-        applying = thread.id;
-        try { Object.assign(thread, applyReplacement(editor.view(), thread, snapshot, result.replacement)); }
-        finally { applying = null; }
-        thread.messages.push({ role: 'assistant', text: result.replacement || t('deleted') }); thread.note = t('edited');
+        thread.proposal = { id: uniqueId(), state: 'pending', before: snapshot.original, after: result.replacement, snapshot };
+        thread.messages.push({ role: 'assistant', text: result.replacement || t('editDeleteProposal'), proposalId: thread.proposal.id });
       } else thread.messages.push({ role: 'assistant', text: result.text });
       thread.status = 'idle';
     } catch (error) { thread.status = abort.signal.aborted ? 'stopped' : 'error'; thread.note = abort.signal.aborted ? t('stopped') : errorText(error, t); }
     finally { origin.pending.delete(thread.id); owned.delete(thread.id); origin.publish(); }
   }
+  function changeProposal(thread, proposal, view, undo) {
+    applying = thread.id;
+    try { Object.assign(thread, applyReplacement(view, thread, proposal.snapshot, undo ? proposal.before : proposal.after)); }
+    finally { applying = null; }
+    proposal.state = undo ? 'undone' : 'applied';
+    proposal.snapshot = { revision: thread.revision, original: thread.original, version: thread.version };
+    thread.note = t(undo ? 'editUndone' : 'editApplied');
+  }
+  function proposalView(thread) {
+    const view = editor.view();
+    if (thread.file !== editor.file() || !view) throw new Error('WORKBENCH_EDIT_FILE');
+    if (view.state.readOnly) throw new Error('WORKBENCH_EDIT_READONLY');
+    verifyReplacement(view.state, thread, thread.proposal.snapshot);
+    return view;
+  }
+  function review(id, action) {
+    const thread = active, proposal = thread?.proposal;
+    if (!proposal || proposal.id !== id || thread.status === 'running' || !['pending', 'applied'].includes(proposal.state)) return;
+    const expected = { apply: 'pending', undo: 'applied', discard: 'pending', recheck: proposal.state }[action];
+    if (proposal.state !== expected) return;
+    if (action === 'discard') { proposal.state = 'discarded'; thread.note = t('editDiscarded'); refresh(); return; }
+    try {
+      const view = proposalView(thread);
+      if (action === 'recheck') { proposal.snapshot = { ...proposal.snapshot, version: thread.version }; thread.note = t('editRechecked'); return; }
+      if (proposal.snapshot.version !== thread.version) throw new Error('WORKBENCH_EDIT_RECHECK');
+      changeProposal(thread, proposal, view, action === 'undo');
+    } catch (error) { thread.note = errorText(error, t); }
+    finally { refresh(); }
+  }
   return {
-    threads, open, select, close, send, stop, remove, bind,
+    threads, open, select, close, send, stop, remove, bind, review,
     draft(value) { if (active) { active.draft = value; refresh(); } },
     mode(value) { mode = value; publish(); },
     pin() { if (active) { active.pinned = !active.pinned; refresh(); } },
-    update(update, file = editor.file(), origin = store) {
-      if (!update.docChanged) return;
-      for (const transaction of update.transactions) if (transaction.docChanged) for (const thread of origin.files.get(file) || []) {
-        if (thread.id !== applying) Object.assign(thread, mapThread(thread, transaction.changes));
-        const line = update.state.doc.lineAt(Math.min(thread.from, update.state.doc.length));
+    validateRestored(file, state) {
+      let checked = false;
+      for (const thread of threads(file)) {
+        if (!thread.unchecked) continue;
+        thread.unchecked = false; checked = true;
+        thread.stale = !state || thread.to > state.doc.length || state.sliceDoc(thread.from, thread.to) !== thread.original;
+        if (thread.stale) { thread.note = t('stale'); continue; }
+        const line = state.doc.lineAt(thread.from);
         thread.line = line.number - 1; thread.character = thread.from - line.from;
       }
-      if (origin === store && active?.stale && active.kind !== 'translation') active.note = t('stale');
-      origin.publish();
+      if (checked) refresh();
+    },
+    update(update, file = editor.file(), affected = stores?.() || [store]) {
+      if (!update.docChanged) return;
+      for (const origin of affected) {
+        const threads = origin.files.get(file);
+        if (!threads?.length) continue;
+        for (const transaction of update.transactions) if (transaction.docChanged) for (const thread of threads) {
+          if (thread.unchecked || thread.to > transaction.startState.doc.length) continue;
+          if (thread.id !== applying) Object.assign(thread, mapThread(thread, transaction.changes));
+          const line = transaction.newDoc.lineAt(Math.min(thread.from, transaction.newDoc.length));
+          thread.line = line.number - 1; thread.character = thread.from - line.from;
+        }
+        if (origin === store && active?.stale && active.kind !== 'translation') active.note = t('stale');
+        origin.publish();
+      }
     },
     switchFile,
     dispose() { disposed = true; unsubscribe(); switchFile(); },

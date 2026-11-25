@@ -8,8 +8,8 @@ export function Commands({ workbench, Button, t }) {
   const snapshot = useSyncExternalStore(workbench.subscribe, workbench.snapshot);
   const [query, setQuery] = useState(''), [selected, select] = useState(0), id = useId(), list = useRef(null);
   const current = snapshot.tabs.find(item => item.path === snapshot.file && item.kind === 'file');
-  const commands = workbenchCommands(workbench, snapshot, current, t);
-  const actions = toolbarActions.filter(item => item.id !== 'commands').map(item => ({
+  const commands = workbenchCommands(workbench, snapshot, t, undefined, current);
+  const actions = toolbarActions.filter(item => item.id !== 'commandPalette').map(item => ({
     ...item, ...commands[item.id], label: t(item.id === 'window' && workbench.external ? 'windowReturn' : item.label),
     shortcut: item.shortcut ? keyLabel(keyOf(snapshot.preferences, item.shortcut), t('space')) : '',
   }));

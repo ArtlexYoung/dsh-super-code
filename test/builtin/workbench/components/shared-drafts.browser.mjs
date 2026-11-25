@@ -12,16 +12,16 @@ import{FileCompare}from'./builtin/workbench/components/FileCompare.jsx';
 import{GitPanel}from'./builtin/workbench/git/Panel.jsx';
 import{CodeHistory}from'./builtin/workbench/git/History.jsx';
 import{EditorView}from'@codemirror/view';import{openSearchPanel}from'@codemirror/search';
-import{Locations}from'./builtin/workbench/components/PanelContent.jsx';
+import{Locations}from'./builtin/workbench/components/PanelContent.jsx';import{projectSearchDefaults}from'./src/workbench/search-query.ts';
 import{compareText}from'./src/workbench/git/text-diff.ts';import{diffLines}from'diff';
 const mode=new URLSearchParams(location.search).get('mode'),listeners=new Set(),requests=[],visited=[];let closed=0,refreshed=0;
-let state={panel:{id:'shared',kind:mode==='compare'?'fileCompare':mode==='search'?'search':mode==='history'?'lineHistory':'git',path:'base.txt',target:{path:'base.txt',start:1,end:1},text:'left\\n'}};
+let state={searchQuery:{...projectSearchDefaults},panel:{id:'shared',kind:mode==='compare'?'fileCompare':mode==='search'?'search':mode==='history'?'lineHistory':'git',path:'base.txt',target:{path:'base.txt',start:1,end:1},text:'left\\n'}};
 const locationMode=['definitions','usages'].includes(mode);if(locationMode)state.panel={id:'locations',kind:mode,matches:Array.from({length:650},(_,line)=>({file:'source.ts',line,character:2,name:'target'}))};
 const gitState={state:{exists:true,version:'v1',writable:true,branch:'main',head:'a'.repeat(40),backend:'native',merging:false,branches:['main','other'],remoteBranches:[],remotes:[],author:{name:'Demo',email:'demo@example.invalid'},history:[{oid:'a'.repeat(40),message:'commit-a',author:'Demo',timestamp:1},{oid:'b'.repeat(40),message:'commit-b',author:'Demo',timestamp:2}],changes:['old.txt','new.txt'].map(path=>({path,head:1,stage:1,worktree:2}))},sources:[]};
 gitState.state.changes.push({path:'staged.txt',head:1,stage:2,worktree:2});
 const hold=input=>new Promise((resolve,reject)=>requests.push({resolve,reject,input}));
 const conflict={path:'conflict.txt',version:'v1',base:'base\\n',ours:'ours\\n',theirs:'theirs\\n',result:'<<<<<<< ours\\nours\\n=======\\ntheirs\\n>>>>>>> theirs\\n'};
-const workbench={snapshot:()=>state,subscribe:fn=>{listeners.add(fn);return()=>listeners.delete(fn)},panel(panel){state={...state,panel};for(const listener of listeners)listener()},
+const workbench={setSearchQuery(patch){state={...state,searchQuery:{...state.searchQuery,...patch}};for(const listener of listeners)listener()},snapshot:()=>state,subscribe:fn=>{listeners.add(fn);return()=>listeners.delete(fn)},panel(panel){state={...state,panel};for(const listener of listeners)listener()},
 list:async()=>({entries:[],truncated:false}),refresh:async()=>{refreshed++},changes:{snapshot:()=>gitState,subscribe:()=>()=>{},refresh:async()=>{},invalidate(){}},
 visit:async value=>{visited.push(value)},fail(error){throw error},
 async *searchProject(query,signal){await hold(query);if(query.search!=='empty')for(let start=0;start<650;start+=256)yield{kind:'matches',path:query.search+'.txt',version:'v1',matches:Array.from({length:Math.min(256,650-start)},(_,i)=>({line:start+i,character:1,length:query.search.length,lineText:'('+query.search+')'}))};yield{kind:'done',scanned:1,skipped:0};if(query.search==='interrupted')throw new Error('stream ended')},
@@ -260,7 +260,7 @@ try {
       assert.equal(await page.locator('button[title=history-entry]').count(), 2);
     });
     const searchField = side => page.locator('#' + side).getByRole('combobox', { name: 'search', exact: true });
-    const searched = side => page.waitForFunction(side => document.querySelector('#' + side + ' footer')?.textContent.startsWith('650'), side);
+    const searched = side => page.locator('#' + side + ' .sc-wb-search-actions').getByText('650 searchMatches', { exact: true }).waitFor();
     const resultList = side => page.locator('#' + side).getByRole('listbox', { name: 'locationResults' });
     const chosen = side => page.locator('#' + side + ' .sc-wb-results [aria-selected=true]');
     const readySearch = async () => {

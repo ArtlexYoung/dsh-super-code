@@ -49,7 +49,7 @@ export function createMessageReader() {
 export function createRequests(send) {
   let sequence = 0, closed = false;
   const pending = new Map();
-  function request(method, args = [], { signal, progress } = {}) {
+  function request(method, args = [], { signal, progress, waitForCompletion = false } = {}) {
     if (closed) return Promise.reject(new Error('WORKBENCH_WINDOW_DISCONNECTED'));
     signal?.throwIfAborted();
     // JSON 数组会把 undefined 变为 null，省略尾部空参数才能保留默认参数语义。
@@ -58,7 +58,11 @@ export function createRequests(send) {
     args = args.slice(0, length);
     const id = ++sequence;
     return new Promise((resolve, reject) => {
-      const cancel = () => { pending.delete(id); reject(signal.reason); void send({ kind: 'cancel', id }).catch(() => {}); };
+      const cancel = () => {
+        // 写入已经开始时，仍需接收成功项的进度，才能安全地继续处理剩余文件。
+        if (!waitForCompletion) { pending.delete(id); reject(signal.reason); }
+        void send({ kind: 'cancel', id }).catch(error => { if (pending.delete(id)) { cleanup(); reject(error); } });
+      };
       const cleanup = () => signal?.removeEventListener('abort', cancel);
       pending.set(id, { resolve, reject, cleanup, progress }); signal?.addEventListener('abort', cancel, { once: true });
       Promise.resolve(send({ kind: 'call', id, method, args })).catch(error => {

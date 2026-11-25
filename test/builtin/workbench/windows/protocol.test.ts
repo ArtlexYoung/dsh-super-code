@@ -1,6 +1,28 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { createMessageReader, createMessageSender, encode } from '../../../../builtin/workbench/windows/protocol.js'
+import { createMessageReader, createMessageSender, createRequests, encode } from '../../../../builtin/workbench/windows/protocol.js'
+
+test('取消写入请求仍接收最后进度，完成后才结束；普通读取仍立即取消', async () => {
+  const sent: { kind: string; id: number }[] = [], progress: string[] = []
+  const requests = createRequests(async (message: { kind: string; id: number }) => { sent.push(message) })
+  const abort = new AbortController()
+  let settled = false
+  const writing = requests.request('replaceProject', [], { signal: abort.signal, waitForCompletion: true, progress: (value: string) => progress.push(value) }).finally(() => { settled = true })
+  abort.abort(); await Promise.resolve()
+  assert.equal(settled, false); assert.deepEqual(sent.map(item => item.kind), ['call', 'cancel'])
+  requests.accept({ kind: 'progress', id: sent[0]!.id, value: 'first.ts' })
+  requests.accept({ kind: 'result', id: sent[0]!.id, value: 'stopped' })
+  assert.equal(await writing, 'stopped'); assert.deepEqual(progress, ['first.ts'])
+  const readingAbort = new AbortController(), reading = requests.request('read', [], { signal: readingAbort.signal })
+  const rejected = assert.rejects(reading, { name: 'AbortError' }); readingAbort.abort(); await rejected
+})
+
+test('等待写入取消结果时连接断开会结束请求，不无限等待', async () => {
+  const requests = createRequests(async () => {}), abort = new AbortController()
+  const writing = requests.request('replaceProject', [], { signal: abort.signal, waitForCompletion: true })
+  const rejected = assert.rejects(writing, /WORKBENCH_WINDOW_DISCONNECTED/)
+  abort.abort(); requests.close(); await rejected
+})
 
 test('跨帧消息保留中文、代理字符对、Map 和错误，多个消息不会交叉', async () => {
   const read = createMessageReader(), messages: any[] = [], sizes: number[] = []

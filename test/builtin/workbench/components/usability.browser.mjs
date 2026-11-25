@@ -12,22 +12,7 @@ const repo = fileURLToPath(new URL('../../../../', import.meta.url));
 const candidate = process.env.SC_TEST_PACKAGE;
 const { WorkbenchWindows } = candidate ? await import(pathToFileURL(join(candidate, 'lib/workbench/window.js')))
   : await tsImport('../../../../src/workbench/window.ts', import.meta.url);
-const fixture = `import React from 'react';import{createRoot}from'react-dom/client';
-import{Workbench}from'./builtin/workbench/components/Workbench.jsx';import{createWorkbench}from'./builtin/workbench/controller.js';
-import{SafeMarkdown}from'./builtin/workbench/windows/markdown.jsx';import{zh,en}from'./builtin/workbench/locales.js';import css from'./builtin/workbench/style.css';import fontStyles from './builtin/workbench/fonts/style.js';
-const style=document.createElement('style');style.textContent=fontStyles+css;document.head.append(style);let language='zh',resolveAnswer;
-const t=k=>(language==='zh'?zh:en)[k]||k;
-const texts={'a.ts':'/** Adds an amount. @param value the amount */\\nexport function add(value: number): number { return value + 1; }\\nadd(2);',
-'b.ts':'/** Another add. */\\nexport function add(value: string): string { return value; }', 'folder/test.py':'def example():\\n    return 1'};
-async function request(path,body,signal){const r=await fetch(path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body),signal});if(!r.ok)throw Error(await r.text());return r.json()}
-const windows={open:(native,signal)=>request('/open',{},signal),close:id=>request('/close',{id}),send:(id,content,signal)=>request('/send',{id,content},signal),async *events(id,signal){const r=await fetch('/events?id='+id,{signal});let pending='';const decoder=new TextDecoder();for await(const b of r.body){pending+=decoder.decode(b,{stream:true});let end;while((end=pending.indexOf('\\n'))>=0){yield JSON.parse(pending.slice(0,end));pending=pending.slice(end+1)}}}};
-const api={windows,fonts:async()=>['Menlo','Songti SC'],list:async path=>({entries:path==='folder'?[{name:'test.py',path:'folder/test.py',type:'file'}]:[{name:'folder',path:'folder',type:'directory'},{name:'a.ts',path:'a.ts',type:'file'},{name:'b.ts',path:'b.ts',type:'file'}],truncated:false}),read:async path=>({path,text:texts[path],version:'v1'}),project:async()=>({files:Object.keys(texts),truncated:false}),fileOperation:async()=>({path:'/demo'}),git:async()=>({kind:'snapshot',snapshot:{version:'v',files:[],branches:[],commits:[],remotes:[],status:{}}}),models:async()=>[{provider:'demo',model:'configured',name:'演示模型',current:true,efforts:[{id:'high',name:'High'},{id:'max',name:'Max'}]},{provider:'demo',model:'controllable',name:'可关闭思考的演示模型',efforts:[{id:'off',name:'Off'},{id:'high',name:'High'}]}],assist:async()=>new Promise(resolve=>{resolveAnswer=resolve}),async *reading(input){window.lastReading=input;yield{kind:'status',stage:'catalog'};yield{kind:'sources',sources:[{id:'S1',file:'a.ts',fromLine:1,toLine:1,text:texts['a.ts'].split('\\n')[0],version:'v1'}],partial:false};yield{kind:'plan',plan:{title:'项目阅读',summary:'从项目入口开始',steps:[{title:'入口',reason:'了解输入输出',refs:[{file:'a.ts',fromLine:1,toLine:1,quote:texts['a.ts'].split('\\n')[0]}]}]}};yield{kind:'done'}}};
-const controller=createWorkbench(api,t),root=createRoot(document.getElementById('root'));
-function Button({children,...p}){return <button type='button' {...p}>{children}</button>}
-function Select({label,value,choices,onChange,disabled}){return <select aria-label={label} value={value} disabled={disabled} onChange={e=>onChange(e.target.value)}>{choices.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select>}
-function Conversation(){return <div className='sc-wb-conversation'><div className='dsh-super-code-detail-log'><div className='dsh-super-code-detail-entry agent'><div className='dsh-super-code-detail-message'><div className='dsh-super-code-detail-content'><h2>三、你现在该做什么</h2><div className='host-markdown'><table><thead><tr><th>阶段</th><th>读哪几篇</th><th>读完能回答</th><th>时间</th></tr></thead><tbody><tr><td>1</td><td><a href='#'>输入和提示格式以及一次决策与完整流程</a> + <code><button>src/example/module_entry_point.py</button></code></td><td>文字如何变为输入？候选选项怎样形成决策结果？</td><td>1–2h</td></tr></tbody></table><pre><code>{'long_code_'.repeat(45)}</code></pre></div></div></div></div></div></div>}
-function render(){root.render(<Workbench workbench={controller} Button={Button} Select={Select} Conversation={Conversation} MarkdownText={SafeMarkdown} sessionId='demo' t={t}/>)}render();
-window.test={controller,texts,answer:()=>resolveAnswer({kind:'ask',text:'选区返回加法的结果。'}),theme:(palette,dark)=>{document.body.toggleAttribute('data-ds-dark-theme',dark);return controller.settings({...controller.snapshot().preferences,palette})},locale:()=>{language='en';render()},dispose:()=>{root.unmount();controller.dispose()}};`;
+import { fixture } from './fixture.mjs';
 const app = await build({ stdin: { contents: fixture, loader: 'jsx', resolveDir: repo }, bundle: true, write: false, format: 'esm', platform: 'browser', loader: { '.css': 'text', '.woff2': 'dataurl' } });
 const windows = new WorkbenchWindows(undefined, () => readFile(process.env.SC_TEST_WINDOW_SCRIPT || join(candidate || repo, 'dist/window.js')));
 const server = createServer(async (req, res) => {
@@ -52,6 +37,29 @@ const server = createServer(async (req, res) => {
 await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 const browser = await (process.env.SC_TEST_BROWSER === 'webkit' ? webkit : chromium).launch({ headless: true, ...(process.env.SC_TEST_EXECUTABLE ? { executablePath: process.env.SC_TEST_EXECUTABLE } : {}) });
 const evidence = process.env.SC_TEST_ARTIFACTS;
+async function controlColors(control) {
+  return control.evaluate(node => {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 1;
+    const context = canvas.getContext('2d');
+    function luminance(color) {
+      context.clearRect(0, 0, 1, 1);
+      context.fillStyle = color;
+      context.fillRect(0, 0, 1, 1);
+      return [...context.getImageData(0, 0, 1, 1).data].slice(0, 3).map(value => value / 255)
+        .map(value => value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4)
+        .reduce((sum, value, index) => sum + value * [.2126, .7152, .0722][index], 0);
+    }
+    const contrast = (first, second) => {
+      const colors = [luminance(first), luminance(second)].sort((a, b) => b - a);
+      return (colors[0] + .05) / (colors[1] + .05);
+    };
+    const style = getComputedStyle(node);
+    let background = style.backgroundColor;
+    for (let parent = node.parentElement; background === 'rgba(0, 0, 0, 0)' && parent; parent = parent.parentElement) background = getComputedStyle(parent).backgroundColor;
+    return { background, text: contrast(style.color, background), focus: contrast(style.outlineColor, background), outline: style.outlineStyle, outlineOffset: style.outlineOffset };
+  });
+}
 async function toolInkOffsets(page) {
   const buttons = await page.locator('.sc-wb-side-rail button').evaluateAll(nodes => nodes.map(node => {
     const rect = value => ({ x: value.x, y: value.y, width: value.width, height: value.height });
@@ -97,6 +105,53 @@ try {
     const visit = file => page.evaluate(file => window.test.controller.visit({ file }), file);
     const rail = page.locator('.sc-wb-side-rail-right');
     const capture = async name => { if (evidence) { await mkdir(evidence, { recursive: true }); await page.screenshot({ path: join(evidence, name + '.png'), animations:'disabled' }); } };
+    await t.test('四种主题的标签、列表、主按钮和错误文字保留各自状态', async () => {
+      await reload();
+      await visit('a.ts');
+      await page.evaluate(() => window.test.controller.keepTab('a.ts'));
+      await visit('b.ts');
+      await rail.getByRole('button', { name: '学习', exact: true }).click();
+      await page.getByRole('textbox', { name: '阅读目标', exact: true }).fill('了解入口');
+      await page.evaluate(() => window.test.controller.visit({ file: 'missing.ts' }).catch(() => {}));
+      const primary = page.getByRole('button', { name: '生成阅读路径', exact: true });
+      const error = page.locator('.sc-wb-status .sc-wb-error');
+      const activeTab = page.locator('.sc-wb-tab[data-file-tab="b.ts"] button[aria-current=page]');
+      const otherClose = page.locator('.sc-wb-tab[data-file-tab="a.ts"] .sc-wb-tab-close');
+      const selectedFile = page.locator('.sc-wb-explorer-files .sc-wb-file[aria-current=page]');
+      for (const [palette, dark] of [['idea', false], ['idea', true], ['vscode', false], ['vscode', true]]) {
+        await page.evaluate(([palette, dark]) => window.test.theme(palette, dark), [palette, dark]);
+        await page.mouse.move(720, 820);
+        const original = await controlColors(primary);
+        const tab = await controlColors(activeTab), file = await controlColors(selectedFile);
+        await selectedFile.hover();
+        assert.equal((await controlColors(selectedFile)).background, file.background);
+        await activeTab.hover();
+        assert.equal((await controlColors(activeTab)).background, tab.background);
+        await otherClose.focus(); await page.keyboard.press('Tab');
+        assert.equal(await activeTab.evaluate(node => node === document.activeElement && node.matches(':focus-visible')), true);
+        const focused = await controlColors(activeTab);
+        assert.equal(focused.outline, 'solid'); assert.equal(focused.outlineOffset, '-2px');
+        assert.ok(focused.focus >= 3, JSON.stringify({ palette, dark, focused }));
+        await primary.hover();
+        const hovered = await controlColors(primary);
+        assert.notEqual(hovered.background, original.background);
+        const errorColors = await controlColors(error);
+        assert.equal(await error.getAttribute('title'), '该路径不是可编辑文件');
+        assert.ok([original, hovered, errorColors, file, tab].every(item => item.text >= 4.5), JSON.stringify({ palette, dark, original, hovered, errorColors, file, tab }));
+        const tool = await controlColors(rail.getByRole('button', { name: '学习', exact: true }));
+        assert.ok(tool.text >= 4.5, JSON.stringify({ palette, dark, tool }));
+        if (palette === 'idea' && dark) assert.equal(tool.background, 'rgb(46, 67, 110)');
+        await capture(`control-states-${palette}-${dark ? 'dark' : 'light'}`);
+        await page.evaluate(() => window.test.controller.panel({ kind: 'navigate' }));
+        const option = page.locator('.sc-wb-navigator [role=option][aria-selected=true]');
+        await option.waitFor();
+        const row = await controlColors(option), detail = await controlColors(option.locator('small'));
+        await option.hover();
+        assert.equal((await controlColors(option)).background, row.background);
+        assert.ok(row.text >= 4.5 && detail.text >= 4.5, JSON.stringify({ palette, dark, row, detail }));
+        await page.keyboard.press('Escape');
+      }
+    });
     await t.test('IDEA 逐字笔画、图标与按钮在普通及高像素密度下对齐', async () => {
       for (const deviceScaleFactor of [1, 2]) {
         const target = await browser.newPage({ viewport: { width: 1440, height: 940 }, deviceScaleFactor });
@@ -124,6 +179,36 @@ try {
       await rail.getByRole('button', { name: '对话', exact: true }).click();
       assert.deepEqual(await page.locator('.sc-wb-right-pane:visible').evaluateAll(nodes => nodes.map(n => n.dataset.pane)), ['quick']);
     });
+    await t.test('紧凑布局可保存，右栏临时放大保留其他面板、比例及未保存文字', async () => {
+      await reload(); await visit('a.ts');
+      const tabs = page.locator('.sc-wb-editor-group:visible .sc-wb-tabs');
+      const comfortable = (await tabs.boundingBox()).height;
+      await page.locator('[data-toolbar-action=settings]').click();
+      await page.getByRole('combobox', { name: '布局密度' }).selectOption('compact');
+      await page.locator('.sc-wb-main[data-density=compact]').waitFor();
+      await page.getByRole('dialog').getByRole('button', { name: '关闭', exact: true }).click();
+      assert.ok((await tabs.boundingBox()).height < comfortable);
+      await rail.getByRole('button', { name: '快速对话', exact: true }).click();
+      const conversation = page.locator('.sc-wb-right-pane[data-pane=conversation]');
+      const quick = page.locator('.sc-wb-right-pane[data-pane=quick]');
+      const splitter = page.getByRole('separator', { name: /对话/ }).last();
+      await splitter.press('ArrowDown');
+      const layout = await page.evaluate(() => window.test.controller.layout.snapshot());
+      const height = (await quick.boundingBox()).height;
+      await page.evaluate(() => window.test.controller.view().dispatch({ changes: { from: 0, insert: '// unsaved\n' } }));
+      await quick.getByRole('button', { name: '放大「快速对话」' }).press('Enter');
+      assert.equal(await conversation.isVisible(), false);
+      assert.ok((await quick.boundingBox()).height > height);
+      await capture('compact-expanded-tool');
+      await quick.getByRole('button', { name: '恢复「快速对话」布局' }).press('Enter');
+      assert.equal(await conversation.isVisible(), true);
+      assert.equal((await quick.boundingBox()).height, height);
+      assert.deepEqual(await page.evaluate(() => window.test.controller.layout.snapshot()), layout);
+      assert.ok(await page.evaluate(() => window.test.controller.view().state.doc.toString().startsWith('// unsaved\n')));
+      await page.evaluate(() => window.test.controller.save());
+      await reload(true); await page.locator('.sc-wb-main[data-density=compact]').waitFor();
+      await page.evaluate(() => { const controller = window.test.controller; return controller.settings({ ...controller.snapshot().preferences, density: 'comfortable' }); });
+    });
     await t.test('文件夹开关的绘图与外框高度一致，工具栏图标不挤压', async () => {
       await reload();
       for (const theme of ['idea', 'vscode']) {
@@ -132,7 +217,7 @@ try {
         const bounds = () => folder.locator(`[data-icon-theme=${theme}]`).evaluate(n => { const r = n.getBBox(); return { y: r.y, height: r.height }; });
         const before = await bounds(); await folder.click(); assert.deepEqual(await bounds(), before); await folder.click();
       }
-      const icons = await page.locator('.sc-wb-toolbar svg,.sc-wb-side-rail svg').evaluateAll(nodes => nodes.map(n => ({ w: n.getBoundingClientRect().width, h: n.getBoundingClientRect().height })));
+      const icons = await page.locator('.sc-wb-toolbar svg:visible,.sc-wb-side-rail svg:visible').evaluateAll(nodes => nodes.map(n => ({ w: n.getBoundingClientRect().width, h: n.getBoundingClientRect().height })));
       assert.ok(icons.every(r => r.w > 0 && r.w === r.h));
     });
     await t.test('IDEA 两侧图标下显示竖排文字，可即时关闭并恢复；VS Code 保持图标栏', async () => {
@@ -388,7 +473,7 @@ try {
         assert.equal(await page.evaluate(() => window.test.controller.view().state.selection.main.head), 0);
       } finally {
         await page.evaluate(() => window.test.controller.settings({ ...window.test.controller.snapshot().preferences, readerMode: false, stickyScroll: true }));
-        await Promise.all([peer.waitForEvent('close'), peer.getByRole('button', { name: '返回 DSH', exact: true }).click()]);
+        await Promise.all([peer.waitForEvent('close'), peer.locator('[data-toolbar-action=window]').click()]);
       }
     });
     await t.test('正式独立窗口复用符号搜索与函数筛选，查询和光标各自独立', async () => {
@@ -579,7 +664,7 @@ try {
         const before=await first.locator('.sc-wb-main').evaluate(n=>n.style.getPropertyValue('--wb-reading-width'));
         await splitter.focus();await first.keyboard.press('ArrowLeft');
         await first.waitForFunction(before=>document.querySelector('.sc-wb-main').style.getPropertyValue('--wb-reading-width')!==before,before);
-        await first.waitForFunction(()=>document.querySelector('.sc-wb-main').style.getPropertyValue('--wb-reading-width')!=='380px');
+        await first.waitForFunction(()=>document.querySelector('.sc-wb-main').style.getPropertyValue('--wb-reading-width')!=='320px');
         const width=await first.locator('.sc-wb-main').evaluate(n=>n.style.getPropertyValue('--wb-reading-width'));
         for(const target of [page,second])await target.waitForFunction(width=>document.querySelector('.sc-wb-main').style.getPropertyValue('--wb-reading-width')===width,width);
         const row=first.getByRole('separator',{name:'调整区域高度 · 快速对话',exact:true}),ratio=await row.getAttribute('aria-valuenow');

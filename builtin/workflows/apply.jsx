@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react';
-import { WorkflowWorkspace } from './Workspace.jsx';
 import { workspaceApi } from '../workbench/remote.js';
 import { NS, zh, en } from './locales.js';
 import { featureView } from '../ui/boundary.js';
@@ -15,6 +14,7 @@ const pages = [
 
 function WorkflowPage({ filesRemote, ...props }) {
   const filesApi = useMemo(() => workspaceApi(filesRemote, props.sessionId), [filesRemote, props.sessionId]);
+  const { WorkflowWorkspace } = require('./Workspace.jsx');
   return featureView(WorkflowWorkspace, { ...props, filesApi, MarkdownText: require('super-code-workbench').SafeMarkdown });
 }
 

@@ -32,7 +32,7 @@ export function diffBlocks(lines: GitDiff['lines']): DiffBlock[] {
 }
 
 /** 使用原文偏移替换，保留 CRLF、BOM 和文件末尾是否换行。 */
-export function restoreTextHunk(diff: GitDiff, hunk: number): string {
+function copyTextHunk(diff: GitDiff, hunk: number, forward: boolean): string {
   const block = diffBlocks(diff.lines)[hunk]
   if (diff.binary || !Number.isInteger(hunk) || !block) throw new Error('WORKBENCH_GIT_HUNK')
   const offset = (text: string, line: number) => {
@@ -40,10 +40,16 @@ export function restoreTextHunk(diff: GitDiff, hunk: number): string {
     for (let i = 1; i < line; i++) { const next = text.indexOf('\n', at); if (next < 0) return text.length; at = next + 1 }
     return at
   }
-  return diff.after.slice(0, offset(diff.after, block.after))
-    + diff.before.slice(offset(diff.before, block.before), offset(diff.before, block.before + block.removed))
-    + diff.after.slice(offset(diff.after, block.after + block.added))
+  const [target, targetLine, targetCount, source, sourceLine, sourceCount] = forward
+    ? [diff.before, block.before, block.removed, diff.after, block.after, block.added] as const
+    : [diff.after, block.after, block.added, diff.before, block.before, block.removed] as const
+  return target.slice(0, offset(target, targetLine))
+    + source.slice(offset(source, sourceLine), offset(source, sourceLine + sourceCount))
+    + target.slice(offset(target, targetLine + targetCount))
 }
+
+export const restoreTextHunk = (diff: GitDiff, hunk: number): string => copyTextHunk(diff, hunk, false)
+export const stageTextHunk = (diff: GitDiff, hunk: number): string => copyTextHunk(diff, hunk, true)
 
 export interface ConflictBlock { from: number; to: number; ours: string; theirs: string }
 export function conflictBlocks(text: string): ConflictBlock[] {

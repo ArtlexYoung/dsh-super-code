@@ -100,10 +100,10 @@ try {
     try {
       await page.goto(`http://127.0.0.1:${server.address().port}/`);
       await page.waitForFunction(() => window.test && !window.test.controller.snapshot().indexing);
-      await t.test('左右竖栏逐项提供六个入口，顶栏固定五项且没有学习', async () => {
+      await t.test('左右竖栏逐项提供六个入口，顶栏保留常用操作和所有操作入口', async () => {
         assert.deepEqual(await leftRail.getByRole('button').allTextContents(), ['文件', '文件结构']);
         assert.deepEqual(await rightRail.getByRole('button').allTextContents(), ['对话', '快速对话', '修改文件', '学习']);
-        assert.deepEqual(await page.locator('.sc-wb-toolbar-fixed button').evaluateAll(nodes => nodes.map(node => node.dataset.toolbarAction)), ['save', 'git', 'refresh', 'window', 'settings']);
+        assert.deepEqual(await page.locator('.sc-wb-toolbar-fixed button').evaluateAll(nodes => nodes.map(node => node.dataset.toolbarAction)), ['save', 'git', 'refresh', 'window', 'settings', 'commandPalette']);
         assert.equal(await page.locator('.sc-wb-toolbar').getByRole('button', { name: '学习', exact: true }).count(), 0);
         assert.equal(await rightRail.getByRole('button', { name: '对话', exact: true }).getAttribute('aria-pressed'), 'true');
         for (const label of ['快速对话', '修改文件', '学习']) assert.equal(await rightRail.getByRole('button', { name: label, exact: true }).getAttribute('aria-pressed'), 'false');
@@ -443,7 +443,7 @@ try {
         assert.notEqual(await controller(() => window.test.controller.snapshot().panel.id), id);
         await controller(() => window.test.releaseSearch());
         await page.waitForFunction(() => window.test.controller.snapshot().panel.state === undefined);
-        assert.equal(await page.getByRole('textbox', { name: '查找文本', exact: true }).inputValue(), '');
+        assert.equal(await page.getByRole('textbox', { name: '查找文本', exact: true }).inputValue(), 'old');
         assert.equal(await page.locator('.sc-wb-replace-row').count(), 0); await closePanel();
       });
       await t.test('拖出文件标签只显示该文件，编辑保存返回后内容一致', async () => {
@@ -654,7 +654,7 @@ try {
           await target.evaluate(async () => {
             const { controller: c, texts } = window.test;
             texts.set('a.ts', Array.from({ length: 120 }, (_, i) => '/**\n * 读取 **任务列表**。\n * @param value 任务编号。\n */\nfunction read' + i + '(value: number) { return value; }').join('\n'));
-            await c.settings({ ...c.snapshot().preferences, readerMode: true });
+            await c.settings({ ...c.snapshot().preferences, readerMode: true, showToolbarShortcuts: true });
             await c.visit({ file: 'a.ts', line: 250 });
           });
           const opened = target.waitForEvent('popup');
@@ -872,7 +872,9 @@ try {
           await peer.keyboard.press(process.platform==='darwin'?'Meta+ArrowDown':'Control+End');
           for(let i=0;i<4;i++)await peer.keyboard.press('ArrowLeft');
           await settle(peer);assert.ok((await position(peer)).top>10000);
-          await peer.locator('[data-toolbar-action="definition"]').click();
+          await peer.locator('[data-toolbar-action=commandPalette]').click();
+          await peer.locator('.sc-wb-navigator input').fill('>定义与用法');
+          await peer.getByRole('option').filter({ hasText: '定义与用法' }).click();
           try{await peer.waitForFunction(()=>[...document.querySelectorAll('.sc-wb-main .cm-line')].some(node=>node.textContent.startsWith('function jumpTarget')&&node.getBoundingClientRect().bottom>document.querySelector('.sc-wb-main .cm-scroller').getBoundingClientRect().top),null,{timeout:5000})}
           catch(error){t.diagnostic(JSON.stringify({calls,position:await position(peer),notices:await peer.locator('[role="alert"],.sc-wb-status').allTextContents()}));throw error}
           await settle(peer);assert.ok((await position(peer)).top<100);
@@ -883,7 +885,9 @@ try {
             window.test.releaseDefinition=()=>{index.navigate=navigate;release()};
             index.navigate=async(...args)=>{window.test.definitionStarted=true;await gate;return navigate(...args)};
           });
-          await peer.locator('[data-toolbar-action="definition"]').click();
+          await peer.locator('[data-toolbar-action=commandPalette]').click();
+          await peer.locator('.sc-wb-navigator input').fill('>定义与用法');
+          await peer.getByRole('option').filter({ hasText: '定义与用法' }).click();
           await page.waitForFunction(()=>window.test.definitionStarted);
           await visit(peer,'b.ts');
           const continued=await scroll(peer,7000,300);
@@ -1147,9 +1151,9 @@ try {
       await page.waitForFunction(() => window.test && !window.test.controller.snapshot().indexing);
       await page.locator('.sc-wb-main').focus();
       await page.keyboard.press('ControlOrMeta+Shift+p');
-      const input = page.getByRole('combobox', { name: '搜索操作或已打开的文件' });
+      const input = page.getByRole('combobox', { name: '快速导航', exact: true });
       await input.waitFor();
-      await input.fill('save');
+      await input.fill('>save');
       assert.equal(await page.getByRole('option').first().getAttribute('aria-disabled'), 'true');
       await input.press('Enter');
       assert.equal(await input.isVisible(), true);
@@ -1157,18 +1161,18 @@ try {
       await page.evaluate(async () => { await window.test.controller.visit({ file: 'a.ts' }); window.test.controller.view().dispatch({ changes: { from: 0, insert: '// palette edit\n' } }); });
       await page.locator('.cm-content').focus();
       await page.keyboard.press('ControlOrMeta+Shift+p');
-      await input.fill('保存'); await input.press('Enter');
+      await input.fill('>save'); await input.press('Enter');
       await page.waitForFunction(() => window.test.texts.get('a.ts').startsWith('// palette edit') && !window.test.controller.snapshot().tabs.find(tab => tab.path === 'a.ts').dirty);
       await page.evaluate(async () => { await window.test.controller.visit({ file: 'b.ts' }); window.test.controller.view().dispatch({ changes: { from: 0, insert: '// unsaved\n' } }); });
       await page.locator('.cm-content').focus(); await page.keyboard.press('ControlOrMeta+Shift+p');
-      await input.fill('.ts');
+      await input.fill('>.ts');
       assert.match(await page.getByRole('option').allTextContents().then(values => values.join(' ')), /b\.ts.*未保存/);
       await input.press('ArrowDown'); await input.press('ArrowUp'); await input.press('Enter');
       await page.waitForFunction(() => window.test.controller.snapshot().file === 'a.ts');
       assert.equal(await page.evaluate(() => window.test.controller.snapshot().tabs.find(tab => tab.path === 'b.ts').dirty), true);
       await page.evaluate(() => window.test.language('en'));
       await page.locator('.cm-content').focus(); await page.keyboard.press('ControlOrMeta+Shift+p');
-      await page.getByRole('combobox', { name: 'Search commands or open files' }).fill('settings');
+      await page.getByRole('combobox', { name: 'Quick navigation', exact: true }).fill('>settings');
       await page.keyboard.press('Enter');
       await page.getByRole('dialog', { name: 'Editor settings', exact: true }).waitFor();
     } finally { await page.close(); }

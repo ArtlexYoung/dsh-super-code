@@ -12,6 +12,7 @@ import { createEditorGroups } from '../editor/groups.js';
 export function createWindowProxy(send, t, { child, initial, canSplit = false } = {}) {
   let editor, current, loading, receiving = false, disposed = false, turn = 0, threads = [], draftRevision = 0, pendingDraft, panelRevision = 0, pendingPanel;
   let settingsRevision = 0, pendingSettings, confirmedPreferences;
+  let searchRevision = 0, pendingSearch, confirmedSearch;
   let readOnly = false, editingFailed = false, navigation = 0;
   const requests = createRequests(send), documents = new Map(), states = new Map();
   const panes = new Map();
@@ -21,6 +22,7 @@ export function createWindowProxy(send, t, { child, initial, canSplit = false } 
     describe: (items, signal) => call('index.describe', [items], { signal }),
     resolve: (file, name, offset, signal) => call('index.resolve', [file, name, offset], { signal }),
     search: (query, limit, signal) => call('index.search', [query, limit], { signal }),
+    symbols: (query, _limit, signal) => call('index.symbols', [query], { signal }),
   };
   const stores = Object.fromEntries(['snapshot', 'changes', 'reading', 'files', 'layout'].map(key => {
     let value = key === 'snapshot' ? initial : null; const listeners = new Set();
@@ -45,7 +47,7 @@ export function createWindowProxy(send, t, { child, initial, canSplit = false } 
   }
   async function call(method, args = [], options) {
     const target = args[0];
-    if (['visit', 'move', 'closeFile'].includes(method)) {
+    if (['visit', 'move', 'closeFile', 'closeTabs', 'reopenTab'].includes(method)) {
       navigation++;
       rememberReadingPosition(method, target);
     }
@@ -67,7 +69,7 @@ export function createWindowProxy(send, t, { child, initial, canSplit = false } 
     const view = editor?.view;
     if (view && (file !== current || !selection.eq(view.state.selection))) view.dispatch({ effects: EditorView.scrollIntoView(view.state.selection.main, { y: 'center' }) });
   }
-  const assistant = Object.fromEntries(['open', 'select', 'close', 'send', 'stop', 'remove', 'draft', 'mode', 'pin'].map(method => [method, (...args) => call(`assistant.${method}`, args).catch(fail)]));
+  const assistant = Object.fromEntries(['open', 'select', 'close', 'send', 'stop', 'remove', 'draft', 'mode', 'pin', 'review'].map(method => [method, (...args) => call(`assistant.${method}`, args).catch(fail)]));
   Object.assign(assistant, { threads: () => threads, update() {} });
   assistant.draft = value => {
     const state = stores.snapshot.snapshot(), thread = state.assistant?.thread;
@@ -104,7 +106,7 @@ export function createWindowProxy(send, t, { child, initial, canSplit = false } 
   }
   const proxy = {
     ...stores.snapshot, documents, index, assistant, t, external: true,
-    ...Object.fromEntries(['visit', 'move', 'list', 'refresh', 'save', 'fileOperation', 'submitFileAction', 'undo', 'closeFile', 'openConversation', 'pinFile'].map(method => [method, (...args) => call(method, args)])),
+    ...Object.fromEntries(['visit', 'move', 'list', 'refresh', 'save', 'saveAll', 'recoverDraft', 'discardDraft', 'draftText', 'retryDrafts', 'fileOperation', 'submitFileAction', 'undo', 'closeFile', 'closeTabs', 'reopenTab', 'openConversation', 'pinFile'].map(method => [method, (...args) => call(method, args)])),
     definition,
     ...Object.fromEntries(['cancelCloseFile', 'moveTab', 'keepTab', 'menu', 'copyFile'].map(method => [method, (...args) => invoke(method, args)])),
     openFileWindow: ({ file, editorKind, markdownSplit }) => invoke('openFileWindow', [file, editorKind, markdownSplit]),
@@ -117,6 +119,14 @@ export function createWindowProxy(send, t, { child, initial, canSplit = false } 
         throw error;
       }).finally(() => { if (pendingSettings?.revision === revision) pendingSettings = null; });
     },
+    setSearchQuery(patch) {
+      const value = { ...stores.snapshot.snapshot().searchQuery, ...patch }, revision = ++searchRevision;
+      pendingSearch = { value, revision }; stores.snapshot.publish({ ...stores.snapshot.snapshot(), searchQuery: value });
+      return call('setSearchQuery', [patch]).catch(error => {
+        if (pendingSearch?.revision === revision) stores.snapshot.publish({ ...stores.snapshot.snapshot(), searchQuery: confirmedSearch });
+        fail(error);
+      }).finally(() => { if (pendingSearch?.revision === revision) pendingSearch = null; });
+    },
     panel(value) {
       if (value) value = { ...value, id: value.id ?? uniqueId() };
       const revision = ++panelRevision; pendingPanel = { value, revision };
@@ -128,16 +138,20 @@ export function createWindowProxy(send, t, { child, initial, canSplit = false } 
       diff: (path, signal) => call('changes.diff', [path], { signal }),
     },
     reading: { ...stores.reading, ...Object.fromEntries(['goal', 'plan', 'file', 'retry', 'step', 'stop', 'open', 'verify'].map(method => [method, (...args) => call(`reading.${method}`, args).catch(fail)])) },
-    files: { ...stores.files, activate: value => invoke('files.activate', [value]), reset: () => invoke('files.reset') },
+    files: { ...stores.files, activate: (...args) => invoke('files.activate', args), reset: () => invoke('files.reset') },
     layout: { ...stores.layout, change: patch => invoke('layout.change', [patch]), save: () => call('layout.save') },
     git: (value, signal) => call('git', [value], { signal }),
+    searchContext: (item, signal) => call('searchContext', [item], { signal }),
     compareFiles: (left, right, signal) => call('compareFiles', [left, right], { signal }),
+    readSaveConflict: (path, signal) => call('readSaveConflict', [path], { signal }),
+    previewReplacement: (match, query, signal) => call('previewReplacement', [match, query], { signal }),
+    applySaveConflict: (entry, text) => call('applySaveConflict', [entry, text]),
     list: (path, signal) => call('list', [path], { signal }),
     models: signal => call('models', [], { signal }),
     fonts: signal => call('fonts', [], { signal }),
     environmentPaths: value => call('environmentPaths', [value]),
     environments: signal => call('environments', [], { signal }),
-    replaceProject: (matches, query, progress, signal) => call('replaceProject', [matches, query], { signal, progress }),
+    replaceProject: (matches, query, progress, signal, previewId) => call('replaceProject', [matches, query, previewId], { signal, progress, waitForCompletion: true }),
     async *searchProject(query, signal) {
       const values = []; let wake, done = false, failure;
       const work = call('searchProject', [query], { signal, progress(value) { values.push(value); wake?.(); } })
@@ -190,7 +204,9 @@ export function createWindowProxy(send, t, { child, initial, canSplit = false } 
         if (pendingPanel && patch.snapshot) patch.snapshot = { ...patch.snapshot, panel: pendingPanel.value };
         if (patch.snapshot) {
           confirmedPreferences = patch.snapshot.preferences;
+          confirmedSearch = patch.snapshot.searchQuery;
           if (pendingSettings) patch.snapshot = { ...patch.snapshot, preferences: pendingSettings.preferences };
+          if (pendingSearch) patch.snapshot = { ...patch.snapshot, searchQuery: pendingSearch.value };
         }
         for (const name of Object.keys(stores)) if (Object.hasOwn(patch, name)) stores[name].publish(patch[name]);
         if (patch.editor) { proxy.initialEditor = patch.editor; await show(patch.editor); }

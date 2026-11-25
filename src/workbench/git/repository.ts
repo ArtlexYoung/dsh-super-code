@@ -14,8 +14,8 @@ import type { ConfineGit } from './native.js'
 import { updateFileVersions } from './version.js'
 import { builtinHistory } from './history-reader.js'
 import { lineHistory, lineHistoryDiff } from './history.js'
-import { builtinConflict, repositoryMode, stageText, writeWorkingText } from './edits.js'
-import { conflictBlocks, restoreTextHunk } from './text-diff.js'
+import { builtinConflict, repositoryMode, stageText, workingText, writeWorkingText } from './edits.js'
+import { conflictBlocks, restoreTextHunk, stageTextHunk } from './text-diff.js'
 
 const { git, http } = library
 type Options = { fs: PromiseFsClient; dir: string; cache: object }
@@ -170,6 +170,18 @@ export class GitRepository {
 
   private async mutate(request: Exclude<GitRequest, { action: 'status' | 'stats' | 'diff' | 'conflict' | 'init' | 'commitFiles' | 'historyDiff' | 'lineHistory' | 'lineHistoryDiff' }>, options: Options, state: GitState, signal: AbortSignal): Promise<void> {
     switch (request.action) {
+      case 'stageHunk': {
+        const file = state.changes.find(file => file.path === request.path)
+        if (!file || file.worktree === file.stage) throw new Error('WORKBENCH_GIT_STALE')
+        if (file.conflict) throw new Error('WORKBENCH_GIT_CONFLICT')
+        const working = await workingText(options, file.path)
+        const mode = file.stage ? await repositoryMode(options, file.path, state.head) : working.mode & 0o111 ? 0o100755 : 0o100644
+        const diff = await repositoryDiff({ ...options, head: state.head }, file.path, 'worktree')
+        const text = stageTextHunk(diff, request.hunk)
+        if ((await snapshot(options, state.writable, signal, false)).version !== state.version) throw new Error('WORKBENCH_GIT_STALE')
+        await stageText(options, file.path, !text && working.text === null ? null : text, mode)
+        return
+      }
       case 'restoreHunk': {
         const file = state.changes.find(file => file.path === request.path)
         if (!file || file.conflict) throw new Error('WORKBENCH_GIT_CONFLICT')

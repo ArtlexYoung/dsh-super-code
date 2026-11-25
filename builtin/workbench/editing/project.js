@@ -1,9 +1,11 @@
 import { createConversationStore } from '../assistant/conversations.js';
 import { createHistory } from './history.js';
+import { uniqueId } from '../id.js';
 
 /** 同一目录只有一份缓冲区和写入队列，切换对话不丢失编辑或历史。 */
 export function createProject(api, fail, environment) {
   const listeners = new Set(), documents = new Map();
+  const conversations = createConversationStore(), conversationScopes = new Map([[undefined, conversations]]);
   let pending = Promise.resolve(), disposed = false, locked = false;
   const run = action => {
     const result = pending.then(() => { if (disposed) throw new Error('WORKBENCH_FILE_BUSY'); return action(); });
@@ -15,7 +17,11 @@ export function createProject(api, fail, environment) {
   const publish = event => { for (const listener of listeners) listener(event); };
   const unsubscribeEnvironment = environment?.subscribe(() => publish({ kind: 'environment' }));
   return {
-    documents, history, environment, conversations: createConversationStore(), run, get locked() { return locked; },
+    id: uniqueId(), documents, history, environment, conversations, conversationScopes, run, get locked() { return locked; },
+    conversationsFor(scope) {
+      if (!conversationScopes.has(scope)) conversationScopes.set(scope, createConversationStore());
+      return conversationScopes.get(scope);
+    },
     exclusive(action) { return run(async () => { locked = true; publish({ kind: 'lock', locked }); try { return await action(); } finally { locked = false; publish({ kind: 'lock', locked }); } }); },
     subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); },
     publish,

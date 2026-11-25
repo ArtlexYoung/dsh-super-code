@@ -1,12 +1,12 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
-import { workbenchCommands } from '../commands.js';
 import { keyOf, keyLabel } from '../editor/preferences.js';
 import { toolbarActions } from '../toolbar.js';
 import { Icon } from './Icon.jsx';
+import { workbenchCommands } from '../commands.js';
 
 const WHEEL_LINE_PIXELS = 16;
 
-export function Toolbar({ workbench, snapshot, current, Button, t }) {
+export function Toolbar({ workbench, snapshot, current, Button, t, toggleFocus }) {
   const scroll = useRef(null), [edges, setEdges] = useState({ overflow: false, start: true, end: true });
   useLayoutEffect(() => {
     const element = scroll.current;
@@ -25,11 +25,13 @@ export function Toolbar({ workbench, snapshot, current, Button, t }) {
     element.addEventListener('wheel', wheel, { passive: false });
     return () => { observer.disconnect(); element.removeEventListener('scroll', measure); element.removeEventListener('wheel', wheel); };
   }, []);
-  const commands = workbenchCommands(workbench, snapshot, current, t);
+  const commands = workbenchCommands(workbench, snapshot, t, toggleFocus, current);
   const shift = direction => scroll.current.scrollBy({ left: direction * Math.max(160, scroll.current.clientWidth * .7), behavior: 'smooth' });
   const renderAction = item => {
     const command = commands[item.id], label = item.id === 'window' && workbench.external ? 'windowReturn' : item.label;
-    return <Button key={item.id} data-toolbar-action={item.id} title={t(item.title || label)} disabled={command.disabled}
+    const shortcut = item.shortcut && keyOf(snapshot.preferences, item.shortcut);
+    const hint = [t(item.title || label), shortcut && keyLabel(shortcut, t('space'))].filter(Boolean).join(' · ');
+    return <Button key={item.id} data-toolbar-action={item.id} aria-label={hint} title={hint} disabled={command.disabled}
       onClick={() => { void Promise.resolve().then(command.run).catch(workbench.fail); }}>
       {item.icon && <Icon name={item.icon} />}<span className="sc-wb-toolbar-label">{t(label)}</span>{snapshot.preferences.showToolbarShortcuts && item.shortcut && <kbd>{keyLabel(keyOf(snapshot.preferences, item.shortcut), t('space'))}</kbd>}
     </Button>;

@@ -1,9 +1,9 @@
 import React, { useCallback, useLayoutEffect, useRef, useSyncExternalStore } from 'react';
-import { displayScope, observeScope, symbolKind } from '../editor/scope.js';
+import { displayScope, observeScope, siblingDeclarations, symbolKind } from '../editor/scope.js';
 import { message } from '../locales.js';
 import { Icon } from './Icon.jsx';
 
-export function ScopePath({ view, file, workbench, inline, Button, t }) {
+export function ScopePath({ view, file, workbench, inline, pick, Button, t }) {
   const nav = useRef(null);
   const subscribe = useCallback(listener => observeScope(view, listener), [view]);
   const { path, ready, reading } = useSyncExternalStore(subscribe, () => displayScope(view));
@@ -32,7 +32,7 @@ export function ScopePath({ view, file, workbench, inline, Button, t }) {
         <i className="sc-wb-path-separator" aria-hidden="true" />
         <Button aria-current={index === path.length - 1 ? 'location' : undefined} aria-label={message(t, 'scopeJump', { name: scope.name })} onClick={() => jump(scope)}>
           <Icon name={symbolKind(scope.kind, path[index - 1]?.kind)} /><span>{scope.name}</span>
-        </Button>
+        </Button><Button className="sc-wb-crumb-arrow" aria-haspopup="listbox" aria-label={message(t, 'chooseSiblingSymbol', { name: scope.name })} onClick={event => pick({ anchor: event.currentTarget, file, symbols: siblingDeclarations(view.state, workbench.snapshot().symbols, path.slice(0, index)) })}><Icon name="chevron" /></Button>
       </React.Fragment>)}
     </> : <span className="sc-wb-scope-status">{t(ready ? 'fileScope' : 'scopeParsing')}</span>}
   </nav>;

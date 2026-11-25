@@ -41,7 +41,7 @@ test('工作台对话通过真实 Cordis 声明会话接口，并随接口恢复
   const module = { exports: {} as { apply: (ctx: Context, options: object) => void; createWorkbenchPreference: (storage: object) => { save: (value: { enabled: boolean }) => void } } }
   const data = new Map<string, string>()
   const storage = { getItem: (key: string) => data.get(key) ?? null, setItem: (key: string, value: string) => data.set(key, value) }
-  runInNewContext(`(function(require,module,exports){${result.outputFiles[0].text}\n})`, { localStorage: storage, setTimeout, clearTimeout, AbortController, document: { createElement: () => ({ dataset: {}, remove() {} }), head: { append() {} } }, window: { addEventListener() {}, removeEventListener() {} } })(createRequire(import.meta.url), module, module.exports)
+  runInNewContext(`(function(require,module,exports){${result.outputFiles[0].text}\n})`, { localStorage: storage, setTimeout, clearTimeout, AbortController, document: { createElement: () => ({ dataset: {}, remove() {} }), head: { append() {} }, addEventListener() {}, removeEventListener() {} }, window: { addEventListener() {}, removeEventListener() {} } })(createRequire(import.meta.url), module, module.exports)
   const ctx = new Context()
   t.after(() => ctx.fiber.dispose())
   type Contribution = { id: string; inject: (sessionId: string) => { conversationRemote: { session: { page: () => string } } } }

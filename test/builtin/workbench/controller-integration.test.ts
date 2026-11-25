@@ -165,6 +165,34 @@ test('未保存缓冲的分批搜索保留取消语义，磁盘上的旧匹配�
   assert.equal(await read(), 'disk needle')
 })
 
+test('全局搜索在指定目录内使用最新草稿和相同正则全词选项，替换预览拒绝范围外文件', async t => {
+  const { create, read, files } = await fixture(t, { 'src/main.ts': 'disk 123', 'src/skip.ts': 'disk 123', 'outside.ts': 'disk 123' })
+  const first = await create(), second = await create()
+  await second.visit({ file: 'src/main.ts' }); edit(second, 0, 8, 'draft abc12 abc123tail')
+  first.setSearchQuery({ search: 'abc\\d+', regexp: true, wholeWord: true, directory: 'src', exclude: 'skip.ts' })
+  first.panel({ kind: 'search' }); const query = first.snapshot().searchQuery
+  const rows = []
+  for await (const event of first.searchProject({ ...query, locations: true }, new AbortController().signal)) if (event.kind === 'matches') rows.push(event)
+  assert.equal(rows.length, 1); assert.equal(rows[0].path, 'src/main.ts')
+  assert.deepEqual(rows[0].matches.map((item: { character: number; length: number }) => [item.character, item.length]), [[6, 5]])
+  first.panel({ kind: 'projectReplace' }); assert.deepEqual(first.snapshot().searchQuery, query)
+  const outside = await files.read('demo', 'outside.ts')
+  await assert.rejects(first.previewReplacement({ path: outside.path, version: outside.version }, query, new AbortController().signal), /WORKBENCH_SEARCH_SCOPE/)
+  assert.equal(await read('src/main.ts'), 'disk 123')
+})
+
+test('真实磁盘：正则替换预览与写入相同捕获组结果，撤销恢复原文', async t => {
+  const { create, files, read } = await fixture(t, { 'main.ts': 'const count = 12;\r\nconst other = 34;\r\n' }), controller = await create()
+  const source = await files.read('demo', 'main.ts'), query = { search: '(\\d+)', replace: 'Number($1)', caseSensitive: true, regexp: true }
+  const match = { path: 'main.ts', version: source.version }
+  const preview = await controller.previewReplacement(match, query, new AbortController().signal)
+  assert.match(preview.after, /Number\(12\)/)
+  await controller.replaceProject([match], query, () => {}, new AbortController().signal)
+  assert.equal(await read(), preview.after.replace(/\n/g, '\r\n'))
+  await controller.undo(); await controller.save()
+  assert.equal(await read(), source.text)
+})
+
 test('切回已有干净标签读取最新磁盘内容，未保存标签保持草稿', async t => {
   const { create, write } = await fixture(t, { 'main.ts': 'original', 'other.ts': 'other' }), controller = await create()
   await controller.visit({ file: 'main.ts' }); controller.keepTab('main.ts')
@@ -640,6 +668,61 @@ test('真实磁盘：全局替换保留换行风格，已保存修改可跨文�
   await controller.undo('redo'); assert.equal(await read('other.py'), 'new three\n')
 })
 
+test('替换审阅只读取文件，完整差异与选定文件保存一致并保留换行', async t => {
+  const { create, read, files } = await fixture(t, { 'main.ts': 'Old one\r\nold two\r\n', 'other.ts': 'old three\n' }), controller = await create()
+  const match = { path: 'main.ts', version: (await files.read('demo', 'main.ts')).version }
+  const query = { search: 'old', replace: 'new\nline', caseSensitive: false }, signal = new AbortController().signal
+  const diff = await controller.previewReplacement(match, query, signal)
+  assert.equal(diff.before, 'Old one\nold two\n'); assert.equal(diff.after, 'new\nline one\nnew\nline two\n')
+  assert.equal(await read(), 'Old one\r\nold two\r\n'); assert.equal(controller.snapshot().file, null)
+  const result = await controller.replaceProject([match], query, () => {}, signal)
+  assert.deepEqual(result.changed, ['main.ts']); assert.deepEqual(result.failed, [])
+  assert.equal((await read()).replaceAll('\r\n', '\n'), diff.after)
+  assert.equal(await read('other.ts'), 'old three\n')
+  await controller.undo(); assert.equal(await read(), 'Old one\r\nold two\r\n')
+})
+
+test('替换审阅拒绝扫描后的磁盘变化和未保存缓冲，旧预览不能写盘', async t => {
+  const { create, read, write, files } = await fixture(t, { 'main.ts': 'old one\n' }), controller = await create()
+  const match = { path: 'main.ts', version: (await files.read('demo', 'main.ts')).version }
+  const query = { search: 'old', replace: '', caseSensitive: true }, signal = new AbortController().signal
+  assert.equal((await controller.previewReplacement(match, query, signal)).after, ' one\n')
+  await write('main.ts', 'old outside\n')
+  await assert.rejects(controller.previewReplacement(match, query, signal), /WORKBENCH_CONFLICT/)
+  const result = await controller.replaceProject([match], query, () => {}, signal)
+  assert.equal(result.failed.length, 1); assert.equal(await read(), 'old outside\n')
+  await controller.visit({ file: 'main.ts' }); edit(controller, 0, 0, '// draft\n')
+  await assert.rejects(controller.previewReplacement({ ...match, version: (await files.read('demo', 'main.ts')).version }, query, signal), /WORKBENCH_CONFLICT/)
+  assert.equal(text(controller), '// draft\nold outside\n'); assert.equal(await read(), 'old outside\n')
+})
+
+for (const newerPreview of [false, true]) test(`真实磁盘：停止替换后${newerPreview ? '晚到结果不改动新预览' : '原控制器记录已完成写入并保留剩余文件'}`, async t => {
+  const { create, read, api } = await fixture(t, { 'main.ts': 'old one\n', 'other.ts': 'old two\n' })
+  const started = Promise.withResolvers<void>(), pending = Promise.withResolvers<void>()
+  const controller = await create({ save: async (input: Parameters<typeof api.save>[0]) => { started.resolve(); await pending.promise; return api.save(input) } })
+  const rows = await Promise.all(['main.ts', 'other.ts'].map(async path => ({ path, version: (await api.read(path)).version })))
+  const query = { search: 'old', replace: 'old new', caseSensitive: true }
+  const preview = { id: 'original', query, rows, selected: rows.map(row => row.path), active: 'main.ts', scanned: 2, skipped: 0 }
+  controller.panel({ kind: 'projectReplace', id: 'review', state: { replaceRead: preview.id, replacePreview: preview } })
+  const abort = new AbortController(), applying = controller.replaceProject(rows, query, () => {}, abort.signal, preview.id)
+  const stopped = assert.rejects(applying, { name: 'AbortError' })
+  const next = { replaceRead: 'newer', replacePreview: { ...preview, id: 'newer', selected: ['other.ts'] }, replaceResult: null }
+  try {
+    await started.promise
+    if (newerPreview) controller.panel({ kind: 'projectReplace', id: 'review', state: next })
+    abort.abort(); pending.resolve(); await stopped
+    assert.equal(await read(), 'old new one\n'); assert.equal(await read('other.ts'), 'old two\n')
+    const state = controller.snapshot().panel.state
+    if (newerPreview) assert.deepEqual(state, next)
+    if (!newerPreview) {
+      assert.deepEqual(state.replacePreview.rows.map((row: { path: string }) => row.path), ['other.ts'])
+      assert.deepEqual(state.replacePreview.selected, ['other.ts']); assert.equal(state.replacePreview.active, null)
+      assert.deepEqual(state.replaceResult, { changed: ['main.ts'], failed: [] })
+    }
+    await controller.undo(); assert.equal(await read(), 'old one\n')
+  } finally { pending.resolve(); await stopped }
+})
+
 test('真实磁盘：新建、编辑、保存后按步骤撤销并重做，文件记录和文本记录一致', async t => {
   const { create, root, read } = await fixture(t), controller = await create()
   controller.panel({ kind: 'fileAction', id: 'new', action: 'createFile', parent: '', name: '中文 文件.ts' })
@@ -675,6 +758,83 @@ test('真实磁盘：关闭未保存标签不丢缓冲与历史，重开后仍�
   await controller.save(); assert.equal(await read(), text(controller))
   await controller.undo(); assert.equal(text(controller), original)
   await controller.save(); assert.equal(await read(), original)
+})
+
+test('批量关闭遇到草稿逐个确认，取消停止后续关闭，固定标签保留', async t => {
+  const { create, read } = await fixture(t, { 'pin.ts': 'p', 'a.ts': 'a', 'b.ts': 'b', 'c.ts': 'c' }), controller = await create()
+  await controller.settings({ ...controller.snapshot().preferences, previewTabs: false })
+  await controller.pinFile('pin.ts')
+  await controller.visit({ file: 'a.ts' }); edit(controller, 0, 0, 'draft ')
+  await controller.visit({ file: 'b.ts' }); edit(controller, 0, 0, 'draft ')
+  await controller.visit({ file: 'c.ts' })
+  await controller.closeTabs('others', 'c.ts', 'file')
+  assert.equal(controller.snapshot().closingFile, 'a.ts')
+  await controller.closeFile('a.ts', 'keep')
+  assert.equal(controller.snapshot().closingFile, 'b.ts')
+  controller.cancelCloseFile()
+  assert.equal(controller.snapshot().closingFile, null)
+  assert.deepEqual(controller.snapshot().tabs.map(({ path }: { path: string }) => path), ['pin.ts', 'b.ts', 'c.ts'])
+  assert.equal(await read('a.ts'), 'a')
+  await controller.reopenTab()
+  assert.equal(controller.snapshot().file, 'a.ts'); assert.equal(text(controller), 'draft a')
+  assert.equal(controller.snapshot().tabs.find(({ path }: { path: string }) => path === 'a.ts').preview, false)
+  await controller.undo(); assert.equal(text(controller), 'a')
+})
+
+test('批量保存并关闭失败时保留确认和后续标签，处理冲突前不继续', async t => {
+  const { create, write, read } = await fixture(t, { 'a.ts': 'a', 'b.ts': 'b', 'c.ts': 'c' }), controller = await create()
+  await controller.settings({ ...controller.snapshot().preferences, previewTabs: false })
+  await controller.visit({ file: 'a.ts' })
+  await controller.visit({ file: 'b.ts' }); edit(controller, 0, 0, 'draft ')
+  await controller.visit({ file: 'c.ts' })
+  await write('b.ts', 'external b')
+  await controller.closeTabs('right', 'a.ts', 'file')
+  await assert.rejects(controller.closeFile('b.ts', 'save'), /WORKBENCH_CONFLICT/)
+  assert.equal(controller.snapshot().closingFile, 'b.ts')
+  assert.deepEqual(controller.snapshot().tabs.map(({ path }: { path: string }) => path), ['a.ts', 'b.ts', 'c.ts'])
+  await controller.closeFile('b.ts', 'keep')
+  assert.deepEqual(controller.snapshot().tabs.map(({ path }: { path: string }) => path), ['a.ts'])
+  assert.equal(await read('b.ts'), 'external b')
+  await controller.reopenTab(); assert.equal(controller.snapshot().file, 'c.ts')
+  await controller.reopenTab(); assert.equal(text(controller), 'draft b')
+})
+
+test('关闭历史不记录预览替换和标签搬移，保存项关闭后可恢复 Markdown 和光标', async t => {
+  const { create } = await fixture(t, { 'a.ts': 'line 1\nline 2\n', 'b.ts': 'b', 'doc.md': '# title' }), controller = await create()
+  await controller.visit({ file: 'a.ts' }); await controller.visit({ file: 'b.ts' })
+  assert.equal(controller.snapshot().canReopenTab, false)
+  await controller.closeFile('b.ts', 'move')
+  assert.equal(controller.snapshot().canReopenTab, false)
+  await controller.visit({ file: 'a.ts', line: 1, character: 2 }); controller.keepTab('a.ts')
+  await controller.visit({ file: 'doc.md', kind: 'markdown' })
+  await controller.closeTabs('saved')
+  assert.equal(controller.snapshot().tabs.length, 0)
+  await controller.reopenTab(); assert.equal(controller.snapshot().editorKind, 'markdown')
+  await controller.reopenTab(); assert.equal(controller.snapshot().editorKind, 'file')
+  await controller.reopenTab()
+  assert.equal(controller.snapshot().file, 'a.ts')
+  assert.equal(controller.snapshot().cursor.line, 1); assert.equal(controller.snapshot().cursor.character, 2)
+})
+
+test('关闭分栏后仍可从主栏恢复刚关闭的草稿', async t => {
+  const { create } = await fixture(t), controller = await create(), pane = controller.createPane()
+  try {
+    await pane.attach({}, {}); await pane.visit({ file: 'main.ts' }); edit(pane, 0, 0, '// pane draft\n')
+    await pane.closeFile('main.ts', 'keep')
+  } finally { pane.dispose() }
+  assert.equal(controller.snapshot().canReopenTab, true)
+  await controller.reopenTab()
+  assert.ok(text(controller).startsWith('// pane draft\n'))
+  assert.equal(controller.snapshot().canReopenTab, false)
+})
+
+test('恢复关闭标签使用已跟随其他视图修改的光标，不跳回旧的行号', async t => {
+  const { create } = await fixture(t), first = await create(), second = await create()
+  await first.visit({ file: 'main.ts', line: 1, character: 3 })
+  await first.closeFile('main.ts')
+  await second.visit({ file: 'main.ts' }); edit(second, 0, 0, '// inserted\n')
+  await first.reopenTab()
+  assert.equal(first.snapshot().cursor.line, 2); assert.equal(first.snapshot().cursor.character, 3)
 })
 
 for (const closed of [false, true]) {
@@ -877,4 +1037,167 @@ test('切换工作区不继承语言路径，旧环境识别结果不得写入�
   await controller.environmentPaths({ python: '/runtime-b' })
   root = '/workspace-a'; await controller.attach({}, {})
   assert.deepEqual(controller.snapshot().environmentPaths, { python: '/runtime-a' })
+})
+
+
+test('保存冲突恢复：从另一视图应用合并结果，同步草稿、撤销和保存但不提前写盘', async t => {
+  const { create, read, write } = await fixture(t, { 'main.ts': 'one\r\ntwo\r\n' })
+  const first = await create(), second = await create()
+  for (const view of [first, second]) await view.visit({ file: 'main.ts' })
+  edit(first, 0, 3, 'ONE')
+  await write('main.ts', 'one\r\nTWO\r\n')
+  await assert.rejects(first.save(), /WORKBENCH_CONFLICT/)
+  assert.equal(first.snapshot().saveConflict, 'main.ts')
+  const entry = await first.readSaveConflict('main.ts')
+  assert.equal(entry.merged, 'ONE\r\nTWO\r\n')
+  await second.applySaveConflict(entry, entry.merged)
+  assert.equal(first.snapshot().saveConflict, null)
+  for (const view of [first, second]) assert.equal(text(view), 'ONE\nTWO\n')
+  assert.equal(await read(), 'one\r\nTWO\r\n')
+  await second.undo()
+  assert.equal(text(first), 'ONE\ntwo\n')
+  await second.undo('redo')
+  assert.equal(text(first), 'ONE\nTWO\n')
+  await second.save()
+  assert.equal(await read(), 'ONE\r\nTWO\r\n')
+  for (const view of [first, second]) assert.equal(view.documents.get('main.ts').dirty, false)
+})
+
+test('保存冲突恢复：比较期间再次编辑或改盘均拒绝旧结果，应用后再次改盘仍拒绝保存', async t => {
+  const { create, read, write } = await fixture(t, { 'main.ts': 'one\ntwo\n' })
+  const first = await create(), second = await create()
+  for (const view of [first, second]) await view.visit({ file: 'main.ts' })
+  edit(first, 0, 3, 'ONE'); await write('main.ts', 'one\nTWO\n')
+  const entry = await first.readSaveConflict('main.ts')
+  edit(second, 0, 0, '// more\n')
+  await assert.rejects(first.applySaveConflict(entry, entry.merged), /WORKBENCH_DRAFT_CHANGED/)
+  const latest = await first.readSaveConflict('main.ts')
+  await write('main.ts', 'one\nTHREE\n')
+  await assert.rejects(first.applySaveConflict(latest, latest.merged), /WORKBENCH_CONFLICT_STALE/)
+  const next = await first.readSaveConflict('main.ts')
+  await first.applySaveConflict(next, next.merged)
+  await write('main.ts', 'one\nFOUR\n')
+  await assert.rejects(first.save(), /WORKBENCH_CONFLICT/)
+  assert.equal(await read(), 'one\nFOUR\n')
+  assert.equal(text(second), '// more\nONE\nTHREE\n')
+})
+
+test('保存冲突恢复：自动保存失败后应用结果等待用户核对，不立即覆盖磁盘', async t => {
+  const { create, read, write } = await fixture(t, { 'main.ts': 'one\ntwo\n' })
+  const view = await create(); await view.visit({ file: 'main.ts' })
+  view.settings({ ...view.snapshot().preferences, autoSave: 'immediate' })
+  await write('main.ts', 'one\nTWO\n'); edit(view, 0, 3, 'ONE')
+  await waitFor(() => view.snapshot().saveConflict === 'main.ts', '自动保存冲突提供恢复入口')
+  const entry = await view.readSaveConflict('main.ts'); await view.applySaveConflict(entry, entry.merged)
+  await new Promise(resolve => setTimeout(resolve, 25))
+  assert.equal(await read(), 'one\nTWO\n')
+  assert.equal(text(view), 'ONE\nTWO\n')
+  await view.save(); assert.equal(await read(), 'ONE\nTWO\n')
+})
+
+test('工作状态恢复读取当前磁盘，保留固定项与位置，缺失文件不阻止其他标签', async t => {
+  const { create, read, write } = await fixture(t, { 'main.ts': 'one\ntwo\n', 'other.ts': 'another' })
+  const original = await create()
+  await original.visit({ file: 'main.ts', line: 1 }); await original.pinFile('main.ts')
+  await original.visit({ file: 'other.ts' }); original.keepTab('other.ts')
+  const record = original.captureSession()
+  edit(original, 0, 0, '// private draft\n')
+  await write('main.ts', 'latest\ncontent\n')
+  const restored = await create({}, new Map())
+  const failures = await restored.restoreSession({ ...record, tabs: [...record.tabs, { path: 'missing.ts', kind: 'file', pinned: false, dirty: false }] }, new AbortController().signal)
+  assert.equal(failures.length, 1); assert.equal(failures[0].path, 'missing.ts')
+  assert.deepEqual(restored.snapshot().tabs.map((item: { path: string; pinned: boolean }) => [item.path, item.pinned]), [['main.ts', true], ['other.ts', false]])
+  await restored.visit({ file: 'main.ts' })
+  assert.equal(text(restored), 'latest\ncontent\n')
+  assert.equal(restored.snapshot().cursor.line, 1)
+  assert.equal(await read('other.ts'), 'another')
+  assert.equal(restored.documents.get('other.ts').dirty, false)
+})
+
+test('恢复过程中主动打开文件会取消剩余恢复，不覆盖新导航或写盘', async t => {
+  const { create, read, api } = await fixture(t, { 'main.ts': 'main', 'other.ts': 'other', 'chosen.ts': 'chosen' })
+  let blocked = false, release = () => {}, requested = false
+  const view = await create({ read: async (path: string, signal: AbortSignal) => {
+    if (blocked && path === 'main.ts') { requested = true; await new Promise<void>(resolve => { release = resolve }) }
+    return api.read(path, signal)
+  } })
+  blocked = true
+  const record = { tabs: ['main.ts', 'other.ts'].map(path => ({ path, kind: 'file', pinned: false, dirty: false })), current: { file: 'other.ts', kind: 'file' }, recent: ['other.ts', 'main.ts'] }
+  const restoring = assert.rejects(view.restoreSession(record, new AbortController().signal), { name: 'AbortError' })
+  await waitFor(() => requested, '恢复已开始读取文件')
+  const chosen = view.visit({ file: 'chosen.ts' }); release()
+  await Promise.all([restoring, chosen])
+  assert.equal(view.snapshot().file, 'chosen.ts')
+  assert.equal(view.snapshot().tabs.some((tab: { path: string }) => tab.path === 'other.ts'), false)
+  assert.equal(await read(), 'main')
+})
+
+test('保存全部覆盖共享项目的关闭标签，保存期间新输入继续标为未保存', async t => {
+  const { create, read } = await fixture(t, { 'main.ts': 'one', 'other.ts': 'two' })
+  const controller = await create(), peer = await create()
+  await controller.visit({ file: 'main.ts' }); edit(controller, 0, 0, 'draft ')
+  await controller.closeFile('main.ts', 'keep')
+  await peer.visit({ file: 'other.ts' }); edit(peer, 0, 0, 'peer ')
+  assert.equal(controller.snapshot().unsaved.length, 2)
+  await controller.saveAll()
+  assert.equal(await read('main.ts'), 'draft one'); assert.equal(await read('other.ts'), 'peer two')
+  assert.equal(controller.snapshot().unsaved.length, 0); assert.equal(peer.snapshot().unsaved.length, 0)
+})
+
+
+test('真实磁盘：改名保留共享草稿、标签顺序与选区，文本撤销跟随新路径', async t => {
+  const { create, read, root } = await fixture(t, { 'main.ts': 'const value = 1;\n', 'other.ts': 'other' })
+  const first = await create(), second = await create()
+  await first.visit({ file: 'main.ts' }); first.keepTab('main.ts')
+  await first.visit({ file: 'other.ts' }); first.keepTab('other.ts')
+  await first.visit({ file: 'main.ts', character: 6, length: 5 }); await second.visit({ file: 'main.ts' })
+  edit(second, 0, 0, '// draft\n')
+  const before = first.view().state.selection.main.from
+  await first.fileOperation({ action: 'move', path: 'main.ts', destination: 'renamed.ts' })
+  assert.deepEqual(first.snapshot().tabs.map((tab: { path: string }) => tab.path), ['renamed.ts', 'other.ts'])
+  assert.equal(first.snapshot().file, 'renamed.ts'); assert.equal(second.snapshot().file, 'renamed.ts')
+  assert.equal(first.view().state.selection.main.from, before)
+  assert.equal(text(first), '// draft\nconst value = 1;\n'); assert.equal(text(second), text(first))
+  assert.equal(await read('renamed.ts'), 'const value = 1;\n')
+  await assert.rejects(stat(join(root, 'main.ts')), { code: 'ENOENT' })
+  await waitFor(() => first.index.declarations('renamed.ts').length > 0, '新路径应完成索引')
+  assert.equal(first.index.files.has('main.ts'), false)
+  await second.undo(); assert.equal(text(first), 'const value = 1;\n')
+  await second.undo('redo'); assert.equal(text(first), '// draft\nconst value = 1;\n')
+  await first.undo(); assert.equal(first.snapshot().file, 'main.ts'); assert.equal(second.snapshot().file, 'main.ts')
+  assert.equal(text(second), '// draft\nconst value = 1;\n')
+  await first.undo('redo'); await second.save()
+  assert.equal(await read('renamed.ts'), '// draft\nconst value = 1;\n')
+  await first.undo(); assert.equal(await read(), '// draft\nconst value = 1;\n')
+})
+
+test('真实磁盘：移动后的关闭标签、导航、目标缓冲与磁盘版本均受保护', async t => {
+  const { create, read, write, root } = await fixture(t, { 'main.ts': 'first', 'folder/other.ts': 'second', 'occupied.ts': 'keep' })
+  const controller = await create()
+  await controller.visit({ file: 'main.ts' }); controller.keepTab('main.ts')
+  await controller.visit({ file: 'folder/other.ts' }); controller.keepTab('folder/other.ts')
+  await controller.closeFile('main.ts')
+  controller.panel({ kind: 'fileAction', id: 'move', action: 'move', path: 'main.ts', name: 'folder/renamed.ts' })
+  await controller.submitFileAction()
+  assert.equal(controller.snapshot().panel, null)
+  await controller.reopenTab(); assert.equal(controller.snapshot().file, 'folder/renamed.ts')
+  await controller.move(-1); assert.equal(controller.snapshot().file, 'folder/other.ts')
+  await controller.move(-1); assert.equal(controller.snapshot().file, 'folder/renamed.ts')
+  await controller.visit({ file: 'occupied.ts' }); edit(controller, 0, 0, 'draft ')
+  await rm(join(root, 'occupied.ts'))
+  await assert.rejects(controller.fileOperation({ action: 'move', path: 'folder/renamed.ts', destination: 'occupied.ts' }), /WORKBENCH_FILE_EXISTS/)
+  assert.equal(text(controller), 'draft keep'); assert.equal(await read('folder/renamed.ts'), 'first')
+  await write('folder/renamed.ts', 'external')
+  await assert.rejects(controller.fileOperation({ action: 'move', path: 'folder/renamed.ts', destination: 'final.ts' }), /WORKBENCH_CONFLICT/)
+  assert.equal(await read('folder/renamed.ts'), 'external')
+})
+
+test('真实磁盘：移动二进制文件不把无法索引误报为移动失败', async t => {
+  const { create, root } = await fixture(t)
+  await writeFile(join(root, 'image.bin'), Buffer.from([0, 1, 2, 3]))
+  const controller = await create()
+  await controller.fileOperation({ action: 'move', path: 'image.bin', destination: 'moved.bin' })
+  await new Promise(resolve => setTimeout(resolve, 25))
+  assert.equal(controller.snapshot().error, '')
+  assert.deepEqual(await readFile(join(root, 'moved.bin')), Buffer.from([0, 1, 2, 3]))
 })

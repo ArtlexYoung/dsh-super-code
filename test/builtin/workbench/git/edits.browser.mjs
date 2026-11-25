@@ -116,6 +116,32 @@ try {
         await writeFile(join(project.root, 'a.ts'), changed);
         await page.evaluate(() => window.test.controller.refresh()); await refresh();
       });
+      await t.test('从文件列表依次审阅，版本变化后需重新标记，选择第二处差异只暂存一段', async () => {
+        const second = 'review.txt'; await writeFile(join(project.root, second), 'other edit\n'); await refresh();
+        const diff = page.locator('.sc-wb-git-diff'), status = page.locator('.sc-wb-git-review').getByRole('status');
+        const next = page.getByRole('button', { name: '下一文件', exact: true });
+        const mark = page.getByRole('button', { name: '标记已查看', exact: true });
+        await next.click(); await diff.locator('header > strong[title="a.ts"]').waitFor();
+        const head = (await project.state()).head;
+        await mark.click(); assert.equal(await mark.getAttribute('aria-pressed'), 'true');
+        assert.equal(await status.textContent(), '已查看 1 / 2');
+        assert.equal((await project.state()).changes.find(file => file.path === 'a.ts').stage, 1);
+        await next.click(); await diff.locator('header > strong[title="review.txt"]').waitFor();
+        await page.getByRole('button', { name: '上一文件', exact: true }).click();
+        await diff.locator('header > strong[title="a.ts"]').waitFor();
+        assert.equal(await mark.getAttribute('aria-pressed'), 'true');
+        const nextChange = diff.getByRole('button', { name: '下一处差异', exact: true });
+        await nextChange.click(); await nextChange.click();
+        await capture('review-and-stage');
+        await diff.getByRole('button', { name: '暂存第 2 段', exact: true }).click();
+        await page.getByRole('status').filter({ hasText: '这段差异已暂存' }).waitFor();
+        assert.equal(await status.textContent(), '已查看 0 / 3');
+        assert.equal(await readFile(join(project.root, 'a.ts'), 'utf8'), changed);
+        const state = await project.state(); assert.equal(state.head, head);
+        const result = await project.act({ action: 'diff', path: 'a.ts', side: 'staged' });
+        assert.equal(result.diff.after, base.replace('last = 1', 'last = 2'));
+        await project.act({ action: 'unstage', paths: ['a.ts'] }); await rm(join(project.root, second)); await refresh();
+      });
       await t.test('点击右箭头只还原选中段，编辑器共享文本立即同步', async () => {
         await page.locator('.sc-wb-git-file>button[title="a.ts"]').click();
         try { await page.getByRole('button', { name: '还原这段变化 2', exact: true }).waitFor(); }

@@ -14,7 +14,8 @@ function ReadingPath({ state, reading, Button, t, busy }) {
   if (!state.plan) return null;
   return <><div className="sc-reading-plan"><h2>{state.plan.title}</h2><p>{state.plan.summary}</p>
     <ol>{state.plan.steps.map((step, i) => <li key={i}><Button title={step.reason} aria-current={state.active === i ? 'step' : undefined} disabled={busy}
-      onClick={() => { void reading.step(i); }}><span className="sc-reading-number">{i + 1}</span><span>{step.title}</span></Button></li>)}</ol>
+      onClick={() => { void reading.step(i); }}><span className="sc-reading-number">{i + 1}</span><span>{step.title}</span>
+      {state.completed?.includes(i) && <small className="sc-reading-complete">{t('readingCompleted')}</small>}</Button></li>)}</ol>
   </div>{state.active >= 0 && <div className="sc-reading-step"><div><span>{message(t, 'readingStep', { current: state.active + 1, total: state.plan.steps.length })}</span>
     <nav><Button title={t('readingPrevious')} aria-label={t('readingPrevious')} disabled={busy || state.active === 0} onClick={() => { void reading.step(state.active - 1); }}><Icon name="arrowLeft" /></Button>
       <Button title={t('readingNext')} aria-label={t('readingNext')} disabled={busy || state.active + 1 >= state.plan.steps.length} onClick={() => { void reading.step(state.active + 1); }}><Icon name="arrowRight" /></Button></nav></div>

@@ -41,7 +41,7 @@ export function useTabLayout(groups, openWindow, canSplit) {
       item: { ...item, cursor: file === item.path && editorKind === item.kind ? cursor : undefined },
       preview: !!origin.previews?.has(item.path),
       async opened(pane) {
-        if (moving && (origin !== destination || tabs.length > 1)) await origin.workbench.closeFile(item.path, 'keep', item.kind);
+        if (moving && (origin !== destination || tabs.length > 1)) await origin.workbench.closeFile(item.path, 'move', item.kind);
         groups.activate(pane);
         if (item.kind === 'file') pane.workbench.view()?.focus();
       },
@@ -60,7 +60,7 @@ export function useTabLayout(groups, openWindow, canSplit) {
           if (target.type === 'split') split(pane, item, target.direction, target.pane, true);
           if (target.type === 'move') void (async () => {
             if (!await openGroupTab(target.pane, item)) return;
-            await pane.workbench.closeFile(item.path, 'keep', item.kind);
+            await pane.workbench.closeFile(item.path, 'move', item.kind);
             groups.activate(target.pane);
             if (item.kind === 'file') target.pane.workbench.view()?.focus();
           })().catch(pane.workbench.fail);

@@ -13,7 +13,7 @@ import type { HistoryReader } from './history-reader.js'
 import type { GitConflict } from './request.js'
 import { filePatch, fileText, workingText } from './edits.js'
 import { gitFileSystem } from './filesystem.js'
-import { conflictBlocks, restoreTextHunk } from './text-diff.js'
+import { conflictBlocks, restoreTextHunk, stageTextHunk } from './text-diff.js'
 
 export type ConfineGit = (argv: readonly string[], policy: SandboxExecutionPolicy, signal: AbortSignal) => readonly string[] | Promise<readonly string[]>
 interface CommandResult { code: number; stdout: Buffer; stderr: string }
@@ -195,6 +195,30 @@ export class NativeGit {
     await this.applyText(file.path, exists ? diff.after : null, !text && !baseExists ? null : text, mode, request.side === 'staged')
   }
 
+  private async stageHunk(request: Extract<GitRequest, { action: 'stageHunk' }>, state: GitState): Promise<void> {
+    const file = state.changes.find(file => file.path === request.path)
+    if (!file || file.worktree === file.stage) throw new Error('WORKBENCH_GIT_STALE')
+    if (file.conflict) throw new Error('WORKBENCH_GIT_CONFLICT')
+    const [entries, working, diff] = await Promise.all([this.indexEntries(file.path), this.working(file.path), this.diff(file.path, 'worktree', state)])
+    const mode = entries[0]?.mode ?? working.mode
+    if ((mode & 0o170000) !== 0o100000) throw new Error('WORKBENCH_GIT_TEXT_FILE')
+    const text = stageTextHunk(diff, request.hunk)
+    const staged = !text && working.text === null ? null : await this.stageHunkText(file.path, diff.before, text)
+    await this.checkEdit(state)
+    await this.applyText(file.path, file.stage ? diff.before : null, staged, mode, true)
+  }
+
+  private async stageHunkText(path: string, before: string, text: string): Promise<string> {
+    const filtered = (await this.run(['hash-object', '--path', path, '--stdin'], { input: text })).stdout.toString('utf8').trim()
+    const algorithm = filtered.length === 64 ? 'sha256' : 'sha1'
+    const oid = (value: string) => createHash(algorithm).update(`blob ${Buffer.byteLength(value)}\0`).update(value).digest('hex')
+    if (oid(text) === filtered) return text
+    // 暂存区原文是 LF 时，仅有来自选中块的新行需要规范化。
+    const normalized = text.replaceAll('\r\n', '\n')
+    if (!before.includes('\r\n') && oid(normalized) === filtered) return normalized
+    throw new Error('WORKBENCH_GIT_STAGE_FILTER')
+  }
+
   private async resolveConflict(request: Extract<GitRequest, { action: 'resolveConflict' }>, state: GitState): Promise<void> {
     await this.conflict(request.path, state)
     if (request.text !== null && conflictBlocks(request.text).length) throw new Error('WORKBENCH_GIT_UNRESOLVED')
@@ -247,6 +271,7 @@ export class NativeGit {
     const write = { write: true }
     switch (request.action) {
       case 'restoreHunk': await this.restoreHunk(request, state); return
+      case 'stageHunk': await this.stageHunk(request, state); return
       case 'resolveConflict': await this.resolveConflict(request, state); return
       case 'init': await this.run(['init', '-b', request.branch], write); return
       case 'stage': await this.run(['add', '--pathspec-from-file=-', '--pathspec-file-nul'], { ...write, input: request.paths.join('\0') + '\0' }); return

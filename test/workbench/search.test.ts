@@ -6,7 +6,7 @@ import { Context } from '@deepseek-ai/cordis'
 import LocalFileSystem from '@deepseek-ai/dsh-fs-local'
 import { WorkbenchFiles, MAX_FILE_BYTES } from '../../src/workbench/files.js'
 import { searchProject } from '../../src/workbench/search.js'
-import { literalMatches, locationBatches } from '../../src/workbench/search-query.js'
+import { literalMatches, locationBatches, searchMatches, searchPathFilter } from '../../src/workbench/search-query.js'
 import { validationRoot } from '../validation-root.js'
 
 test('全局替换使用字面文本，保留正则符号、中文、换行及大小写的准确偏移', () => {
@@ -130,4 +130,45 @@ test('索引版本不可用时完整读取，Unicode与短查询不被过滤', a
     assert.equal(events.filter(event=>event.kind==='matches').length,query==='xyz'?0:1)
   }
   assert.equal(reads,4)
+})
+
+test('全词和正则支持Unicode词边界、跨行、零长度和非法表达式', () => {
+  const query = { search: 'foo', caseSensitive: false, wholeWord: true }
+  assert.deepEqual([...searchMatches('Foo food _foo foo甲 foo', query)].map(match => match.index), [0, 19])
+  assert.deepEqual([...locationBatches('id=12\r\nid=34', '^id=(\\d+)$', true, { regexp: true })].flat().map(item => [item.line, item.character, item.length]), [[0, 0, 5], [1, 0, 5]])
+  assert.deepEqual([...searchMatches('😀a', { search: '(?=.)', caseSensitive: true, regexp: true })].map(match => match.index), [0, 2])
+  assert.throws(() => [...searchMatches('a', { search: '[', caseSensitive: true, regexp: true })], /WORKBENCH_SEARCH_REGEXP/)
+})
+
+test('目录及包含排除规则支持多规则、任意深度和根目录文件，按路径区分大小写', () => {
+  const filter = searchPathFilter({ directory: 'src', include: '*.ts, **/*.tsx', exclude: '**/*.test.ts\ngenerated' })
+  assert.deepEqual(['src/main.ts', 'src/ui/view.tsx', 'src/main.test.ts', 'src/generated/code.ts', 'other/src/main.ts', 'src/data.json'].filter(filter.file), ['src/main.ts', 'src/ui/view.tsx'])
+  assert.equal(searchPathFilter({ include: '**/*.ts' }).file('root.ts'), true)
+  assert.equal(searchPathFilter({ include: 'a?.ts' }).file('dir/ab.ts'), true)
+  assert.equal(searchPathFilter({ include: 'a?.ts' }).file('dir/abc.ts'), false)
+  assert.equal(searchPathFilter({ directory: 'Src' }).file('src/main.ts'), false)
+  assert.throws(() => searchPathFilter({ include: '../outside' }), /WORKBENCH_SEARCH_SCOPE/)
+})
+
+test('真实磁盘：范围与正则在查找和替换预览中一致，缓存不能把正则当字面文本过滤', async t => {
+  await mkdir(validationRoot, { recursive: true }); const root = await mkdtemp(join(validationRoot, 'search-options-'))
+  const ctx = new Context(); await ctx.plugin(LocalFileSystem, { cwd: root })
+  t.after(async () => { await ctx.fiber.dispose(); await rm(root, { recursive: true, force: true }) })
+  for (const path of ['src/main.ts', 'src/nested/main.ts', 'src/skip.test.ts', 'src/info.txt', 'outside.ts']) {
+    await mkdir(join(root, path, '..'), { recursive: true }); await writeFile(join(root, path), 'Token12 token34 tokenLong')
+  }
+  const files = new WorkbenchFiles(ctx.fs, async () => ({ cwd: root })), signal = new AbortController().signal
+  const query = { search: 'token', replace: 'new', caseSensitive: false }
+  for await (const _event of searchProject(ctx.fs, files, { cwd: root }, 'demo', query, signal)) {}
+  for (const locations of [true, false]) {
+    const paths = []
+    for await (const event of searchProject(ctx.fs, files, { cwd: root }, 'demo', { ...query, search: 'token\\d+', regexp: true, wholeWord: true, directory: 'src', include: '*.ts', exclude: '*.test.ts', locations }, signal)) {
+      if (event.kind !== 'done') { paths.push(event.path); assert.equal(event.kind === 'file' ? event.count : event.matches.length, 2) }
+      else assert.deepEqual(event, { kind: 'done', scanned: 2, skipped: 0 })
+    }
+    assert.deepEqual(paths.sort(), ['src/main.ts', 'src/nested/main.ts'])
+  }
+  for (const invalid of [{ regexp: true, search: '[' }, { directory: '../outside' }, { include: '../outside' }]) {
+    await assert.rejects(async () => { for await (const _event of searchProject(ctx.fs, files, { cwd: root }, 'demo', { ...query, ...invalid }, signal)) {} })
+  }
 })

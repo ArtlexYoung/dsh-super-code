@@ -4,6 +4,7 @@ import { keyOf } from '../editor/preferences.js';
 import { useWindowMode } from '../windows/presentation.js';
 import { useDialogKeyboard } from './Floating.jsx';
 import { Icon } from './Icon.jsx';
+import { EditReview } from './EditReview.jsx';
 
 export function Selection({ value, workbench, Button, t, palette, preferences, inline = false }) {
   const panel = useRef(null), input = useRef(null), anchor = useRef(null), messages = useRef(null);
@@ -32,7 +33,7 @@ export function Selection({ value, workbench, Button, t, palette, preferences, i
       const box = node.getBoundingClientRect(), scaleX = box.width / node.offsetWidth, scaleY = box.height / node.offsetHeight;
       const viewport = { width: window.innerWidth / scaleX, height: window.innerHeight / scaleY };
       const point = { top: anchorPoint.top / scaleY, bottom: anchorPoint.bottom / scaleY, right: anchorPoint.right / scaleX };
-      const width = Math.min(450, viewport.width - 24), height = Math.min(440, viewport.height - 24);
+      const width = Math.min(thread.proposal ? 760 : 450, viewport.width - 24), height = Math.min(thread.proposal ? 680 : 440, viewport.height - 24);
       const below = point.bottom + 12, top = below + node.offsetHeight <= viewport.height - 12 ? below : point.top - node.offsetHeight - 12;
       Object.assign(node.style, { width: `${width}px`, maxHeight: `${height}px`, left: `${Math.max(12, Math.min(point.right, viewport.width - width - 12))}px`, top: `${Math.max(12, Math.min(top, viewport.height - node.offsetHeight - 12))}px` });
     }
@@ -41,9 +42,9 @@ export function Selection({ value, workbench, Button, t, palette, preferences, i
     const outside = event => { if (!thread.pinned && !panel.current?.contains(event.target) && !event.target.closest('.selection-action,.selection-mark')) assistant.close(); };
     window.addEventListener('resize', place); document.addEventListener('pointerdown', outside);
     return () => { observer.disconnect(); window.removeEventListener('resize', place); document.removeEventListener('pointerdown', outside); };
-  }, [visible, thread?.id, thread?.pinned, inline]);
+  }, [visible, thread?.id, thread?.pinned, thread?.proposal?.id, inline]);
   if (!visible || !thread) return null;
-  const busy = thread.status === 'running', translation = thread.kind === 'translation', placeholder = t(translation ? 'translationQuestion' : 'question');
+  const busy = thread.status === 'running', pending = thread.proposal?.state === 'pending', translation = thread.kind === 'translation', placeholder = t(translation ? 'translationQuestion' : 'question');
   const content = <section ref={panel} className={`sc-workbench sc-wb-assistant${inline ? ' sc-wb-assistant-inline' : ''}`} data-palette={palette} data-workbench-dialog
     role="dialog" aria-label={t(translation ? 'translate' : 'selection')} aria-busy={busy}>
     <header><strong>{t(translation ? 'translate' : 'selection')}</strong><nav>
@@ -53,20 +54,21 @@ export function Selection({ value, workbench, Button, t, palette, preferences, i
       <Button className="sc-wb-window-close" title={t('close')} aria-label={t('close')} onClick={() => assistant.close()}><Icon name="close" /></Button>
     </nav></header>
     <div className="sc-wb-messages" ref={messages}>{thread.messages.map((item, i) => <article key={i} data-role={item.role}>
-      <strong>{t(item.role === 'assistant' ? 'assistant' : item.mode === 'edit' ? 'editRequest' : 'user')}</strong><pre>{item.text}</pre>
+      <strong>{t(item.role === 'assistant' ? 'assistant' : item.mode === 'edit' ? 'editRequest' : 'user')}</strong>
+      {item.proposalId && item.proposalId === thread.proposal?.id ? <EditReview thread={thread} assistant={assistant} palette={palette} Button={Button} t={t} /> : <pre>{item.text}</pre>}
     </article>)}</div>
     <div className="sc-wb-answer-state" data-status={thread.status} role="status" aria-live="polite">
       {busy && <i className="sc-wb-answer-spinner" aria-hidden="true" />}
-      <span>{t(busy ? 'quickRunning' : thread.status === 'error' ? 'quickFailed' : thread.status === 'stopped' ? 'quickStopped' : thread.messages.at(-1)?.role === 'assistant' ? 'quickCompleted' : 'quickReady')}</span>
+      <span>{t(pending ? 'editReviewFirst' : busy ? 'quickRunning' : thread.status === 'error' ? 'quickFailed' : thread.status === 'stopped' ? 'quickStopped' : thread.messages.at(-1)?.role === 'assistant' ? 'quickCompleted' : 'quickReady')}</span>
     </div>
-    <form onSubmit={event => { event.preventDefault(); void assistant.send(); }}>
+    {!pending && <form onSubmit={event => { event.preventDefault(); void assistant.send(); }}>
       {!translation && <div className="sc-wb-mode" role="group" aria-label={t('selectionAction')}>{['ask', 'edit'].map(mode => <Button key={mode} aria-pressed={value.mode === mode} onClick={() => assistant.mode(mode)} type="button">{t(mode)}</Button>)}</div>}
       <textarea ref={input} aria-label={placeholder} placeholder={placeholder} value={thread.draft} disabled={busy} onChange={event => assistant.draft(event.target.value)}
         onKeyDown={event => { if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) { event.preventDefault(); void assistant.send(); } }} />
       <footer><span role="status">{thread.stale && !translation ? t('stale') : thread.note || (busy ? t('working') : '')}</span>
         {busy ? <Button type="button" onClick={() => assistant.stop()}>{t('stop')}</Button> : <Button type="submit" disabled={!translation && thread.stale || !thread.draft.trim()} className="sc-wb-primary">{t('send')}</Button>}
       </footer>
-    </form>
+    </form>}
   </section>;
   return inline ? content : createPortal(content, document.body);
 }

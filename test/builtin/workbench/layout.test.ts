@@ -12,7 +12,7 @@ function fixture() {
 test('目录、右栏宽度和文件区的高度与折叠可以恢复，不改编辑器偏好', () => {
   const { data, storage } = fixture()
   storage.setItem('dsh-super-code-workbench', 'existing-preferences')
-  assert.deepEqual(readLayout(storage), { explorer: 220, reading: 380, files: 280, filesOpen: true, outlineOpen: true, explorerOpen: true, rightOpen: true, right, panes })
+  assert.deepEqual(readLayout(storage), { explorer: 200, reading: 320, files: 280, filesOpen: true, outlineOpen: true, explorerOpen: true, rightOpen: true, right, panes })
   const layout = { explorer: 312, reading: 460, files: 240, filesOpen: true, outlineOpen: false, explorerOpen: true, rightOpen: true, right, panes }
   saveLayout(storage, layout)
   assert.deepEqual(readLayout(storage), layout)
@@ -28,7 +28,7 @@ test('忽略旧学习开关，无效尺寸使用默认值，保留可识别的�
   storage.setItem('dsh-super-code-workbench-layout', 'broken')
   assert.equal(readLayout(storage).filesOpen, true)
   storage.setItem('dsh-super-code-workbench-layout', JSON.stringify({ explorer: -1, reading: 'wide', learningOpen: false }))
-  assert.deepEqual(readLayout(storage), { explorer: 220, reading: 380, files: 280, filesOpen: true, outlineOpen: true, explorerOpen: true, rightOpen: true, right, panes })
+  assert.deepEqual(readLayout(storage), { explorer: 200, reading: 320, files: 280, filesOpen: true, outlineOpen: true, explorerOpen: true, rightOpen: true, right, panes })
   storage.setItem('dsh-super-code-workbench-layout', JSON.stringify({ explorer: 300, reading: 420, files: null, filesOpen: false, outlineOpen: 'yes' }))
   assert.deepEqual(readLayout(storage), { explorer: 300, reading: 420, files: 280, filesOpen: false, outlineOpen: true, explorerOpen: true, rightOpen: true, right, panes })
   for (const width of [-Infinity, 0, 129, 200, 100000, Infinity]) {

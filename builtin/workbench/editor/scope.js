@@ -132,6 +132,15 @@ export function readScope(state, head = state.selection.main.head) {
   return { path: path.reverse(), block, ready: !state.facet(language) || syntaxTreeAvailable(state, head) };
 }
 
+export function siblingDeclarations(state, symbols, parents) {
+  return symbols.filter(symbol => {
+    if (state.doc.sliceString(symbol.offset, symbol.offset + symbol.name.length) !== symbol.name) return false;
+    const path = readScope(state, symbol.offset).path;
+    if (path.at(-1)?.head === symbol.offset) path.pop();
+    return path.length === parents.length && path.every((scope, index) => scope.head === parents[index].head);
+  });
+}
+
 function samePath(left, right) {
   return left.length === right.length && left.every((scope, index) => {
     const other = right[index];

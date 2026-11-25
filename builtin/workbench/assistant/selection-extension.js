@@ -26,8 +26,11 @@ class ConversationMark extends WidgetType {
 }
 
 export function selectionExtension(threads, open, select, t) {
-  const decorations = (items, length) => Decoration.set(items.filter(hasMark).map(thread=>Decoration.widget({widget:new ConversationMark(thread,open,t),side:1}).range(Math.min(length,thread.to))),true);
-  const marked = (items,length) => ({threads:items.map(thread=>({...thread})),decorations:decorations(items,length)});
+  const marked = (items, length) => {
+    const threads = items.filter(thread => !thread.unchecked && thread.to <= length).map(thread => ({ ...thread }));
+    const decorations = Decoration.set(threads.filter(hasMark).map(thread => Decoration.widget({ widget: new ConversationMark(thread, open, t), side: 1 }).range(thread.to)), true);
+    return { threads, decorations };
+  };
   const marks=StateField.define({
     create:state=>marked(threads,state.doc.length),
     update(value,transaction) {

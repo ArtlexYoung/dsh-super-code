@@ -15,6 +15,7 @@ import { SelectControl } from './builtin/ui/controls.js';
 const query=new URLSearchParams(location.search),t=key=>(query.has('en')?en:zh)[key]||key;
 if(query.has('dark'))document.body.setAttribute('data-ds-dark-theme','');
 Object.defineProperty(navigator,'permissions',{value:{query:async()=>({state:'granted'})}});window.queryLocalFonts=async()=>[{family:'Menlo'},{family:'Songti SC'}];
+let writeFailure=false;const write=Storage.prototype.setItem;Storage.prototype.setItem=function(key,value){if(writeFailure&&key==='dsh-super-code-workbench')throw Error('storage unavailable');return write.call(this,key,value)};
 let failure=query.has('fail'),calls=0;const remote={async fonts(){return {ok:true,value:['Menlo','Songti SC']}},async models(_session,signal){calls++;signal.throwIfAborted();if(failure)throw Error('catalog unavailable');return {ok:true,value:[{provider:'demo',model:'fast',name:'Demo Fast',current:true,efforts:[{id:'off',name:'Off'},{id:'high',name:'High'}]},{provider:'demo',model:'plain',name:'Demo Plain',efforts:[]}]}}};
 const contributions=new Map(),disposers=[],preference=createWorkbenchPreference(localStorage);preference.save({enabled:true});
 const ctx={effect(run){const d=run();if(typeof d==='function')disposers.push(d)},inject(names,run){if(names.includes('remote.superCodeWorkbench'))run(ctx)},
@@ -26,7 +27,7 @@ const ui=apply(ctx,{Button,Select:SelectControl,MarkdownText:'div',Conversation:
 const entry=contributions.get('super-code-workbench').value,first=entry.inject('first').workbench,second=entry.inject('second').workbench;
 function Editor(){const snapshot=useSyncExternalStore(first.subscribe,first.snapshot);return <section className='sc-workbench' data-palette={snapshot.preferences.palette}><Settings workbench={first} preferences={snapshot.preferences} Button={Button} Select={SelectControl} t={t}/></section>}
 const root=createRoot(document.getElementById('root'));root.render(<main><section id='global'><ui.Settings remote={remote}/></section><section id='editor'><Editor/></section></main>);
-window.test={first,second,calls:()=>calls,failure:value=>{failure=value},dispose(){root.unmount();for(const d of disposers.reverse())d()}};`;
+window.test={first,second,calls:()=>calls,failure:value=>{failure=value},writeFailure:value=>{writeFailure=value},dispose(){root.unmount();for(const d of disposers.reverse())d()}};`;
 const bundle = await build({ stdin: { contents: fixture, loader: 'jsx', resolveDir: repo }, bundle: true, write: false, platform: 'browser', format: 'esm', external: ['@deepseek-ai/*'], loader: { '.css': 'text', '.woff2': 'dataurl' } });
 const server = createServer((req, res) => {
   if (req.url === '/app.js') { res.setHeader('content-type', 'text/javascript'); res.end(bundle.outputFiles[0].contents); }
@@ -37,6 +38,7 @@ const browser = await (process.env.SC_TEST_BROWSER === 'webkit' ? webkit : chrom
 try {
   await test('Super Code与编辑器设置共用全局偏好', async t => {
     const page = await browser.newPage({ viewport: { width: 1300, height: 1000 } }), errors = [];
+    page.setDefaultTimeout(5000);
     page.on('pageerror', error => errors.push(error.message));
     const global = page.locator('#global'), editor = page.locator('#editor');
     async function select(scope, label, choice) {
@@ -112,14 +114,101 @@ try {
       assert.equal(await page.evaluate(() => window.test.first.snapshot().preferences.quickReasoning), 'off');
       assert.equal(await page.evaluate(() => window.test.first.snapshot().preferences.translationReasoning), 'high');
     });
+    await t.test('关键词筛选和高亮不重新挂载模型目录，清空与空结果可恢复', async () => {
+      const search = editor.getByRole('searchbox', { name: '搜索设置', exact: true });
+      assert.equal(await search.count(), 1);
+      const calls = await page.evaluate(() => window.test.calls());
+      await search.fill('自动 保存');
+      assert.equal(await editor.locator('[data-setting]:visible').count(), 1);
+      assert.equal(await editor.getByRole('combobox', { name: '自动保存', exact: true }).isVisible(), true);
+      assert.equal(await editor.locator('[data-setting=autoSave] mark').allTextContents().then(parts => parts.join('')), '自动保存');
+      assert.equal(await editor.locator('.sc-wb-settings-nav button:visible').count(), 1);
+      await search.fill('FONT size');
+      assert.equal(await editor.locator('[data-setting]:visible').count(), 1);
+      assert.equal(await editor.getByRole('combobox', { name: '代码字号', exact: true }).isVisible(), true);
+      await search.fill('no-such-setting');
+      assert.equal(await editor.getByText('没有匹配的设置', { exact: true }).isVisible(), true);
+      await editor.getByRole('button', { name: '清除筛选', exact: true }).click();
+      assert.equal(await editor.getByRole('combobox', { name: '工作台主题', exact: true }).isVisible(), true);
+      assert.equal(await page.evaluate(() => window.test.calls()), calls);
+    });
+    await t.test('只看修改项，逐项恢复保留其他值并同步到另一入口、会话和刷新后的页面', async () => {
+      await select(global, '代码字号', '18 px');
+      const before = await page.evaluate(() => window.test.first.snapshot().preferences);
+      await editor.getByRole('checkbox', { name: '只看已修改', exact: true }).check();
+      assert.equal(await editor.locator('[data-setting=fontSize]').getByText('已修改', { exact: true }).isVisible(), true);
+      await editor.locator('[data-setting=fontSize]').getByRole('button', { name: '恢复默认：代码字号', exact: true }).click();
+      assert.equal(await editor.locator('[data-setting=fontSize]').isVisible(), false);
+      assert.deepEqual(await page.evaluate(() => window.test.second.snapshot().preferences), { ...before, fontSize: 14 });
+      assert.match(await global.getByRole('combobox', { name: '代码字号', exact: true }).innerText(), /14 px/);
+      await page.reload(); await global.getByRole('combobox', { name: '代码字号', exact: true }).waitFor();
+      assert.deepEqual(await page.evaluate(() => window.test.first.snapshot().preferences), { ...before, fontSize: 14 });
+    });
+    await t.test('恢复失败保留原值与修改标记，重试只恢复模型并保留思考设置', async () => {
+      await page.goto(`http://127.0.0.1:${server.address().port}/`);
+      await select(global, '快速对话模型', 'Demo Fast'); await select(global, '快速对话思考', 'High');
+      const before = await page.evaluate(() => window.test.first.snapshot().preferences);
+      const reset = global.locator('[data-setting=quickModel]').getByRole('button', { name: '恢复默认：快速对话模型', exact: true });
+      await page.evaluate(() => window.test.writeFailure(true)); await reset.click();
+      await global.getByRole('alert').filter({ hasText: '未能保存' }).waitFor();
+      assert.deepEqual(await page.evaluate(() => window.test.second.snapshot().preferences), before);
+      assert.equal(await global.locator('[data-setting=quickModel]').getByText('已修改', { exact: true }).isVisible(), true);
+      await page.evaluate(() => window.test.writeFailure(false)); await reset.click();
+      const expected = { ...before }; delete expected.quickModel;
+      assert.deepEqual(await page.evaluate(() => window.test.second.snapshot().preferences), expected);
+      assert.match(await global.getByRole('combobox', { name: '快速对话思考', exact: true }).innerText(), /High/);
+      assert.equal(await global.getByRole('alert').count(), 0);
+    });
+    await t.test('工具栏显隐与顺序独立恢复，快捷键只恢复当前项', async () => {
+      const back = editor.locator('[data-toolbar-setting=back]');
+      await back.getByRole('button', { name: '下移 后退', exact: true }).click();
+      await back.getByRole('checkbox').uncheck();
+      const before = await page.evaluate(() => window.test.first.snapshot().preferences);
+      await back.getByRole('button', { name: '恢复默认：后退', exact: true }).click();
+      assert.deepEqual(await page.evaluate(() => window.test.first.snapshot().preferences.toolbar), before.toolbar.map(item => item.id === 'back' ? { ...item, visible: true } : item));
+      await back.getByRole('checkbox').uncheck();
+      await editor.locator('[data-setting=toolbarOrder]').getByRole('button', { name: '恢复默认：工具排列顺序', exact: true }).click();
+      const toolbar = await page.evaluate(() => window.test.first.snapshot().preferences.toolbar);
+      assert.equal(toolbar[0].id, 'back'); assert.equal(toolbar[0].visible, false);
+      const shortcut = editor.locator('[data-setting="shortcuts.save"]');
+      await shortcut.getByRole('button', { name: '保存文件', exact: true }).click(); await page.keyboard.press('Control+Alt+s');
+      await editor.getByRole('alert').filter({ hasText: '此组合键已被使用' }).waitFor();
+      assert.equal(await page.evaluate(() => window.test.first.snapshot().preferences.shortcuts.save), undefined);
+      await page.keyboard.press('Control+Alt+g');
+      assert.equal(await page.evaluate(() => window.test.first.snapshot().preferences.shortcuts.save), 'Ctrl-Alt-g');
+      await shortcut.getByRole('button', { name: '恢复默认：保存文件', exact: true }).click();
+      assert.equal(await page.evaluate(() => window.test.first.snapshot().preferences.shortcuts.save), undefined);
+      assert.deepEqual(await page.evaluate(() => window.test.first.snapshot().preferences.toolbar), toolbar);
+    });
+    await t.test('保存失败保留输入，切换筛选后可继续编辑', async () => {
+      const input = global.getByRole('spinbutton', { name: '最大撤销历史步数', exact: true });
+      const before = await page.evaluate(() => window.test.first.snapshot().preferences.undoLimit);
+      await page.evaluate(() => window.test.writeFailure(true)); await input.fill('1200'); await input.press('Tab');
+      await global.getByRole('alert').waitFor();
+      assert.equal(await input.inputValue(), '1200');
+      assert.equal(await page.evaluate(() => window.test.first.snapshot().preferences.undoLimit), before);
+      await global.getByRole('searchbox', { name: '搜索设置', exact: true }).fill('字体');
+      await global.getByRole('button', { name: '清除筛选', exact: true }).click();
+      assert.equal(await input.inputValue(), '1200');
+      await page.evaluate(() => window.test.writeFailure(false)); await input.focus(); await input.press('Tab');
+      assert.equal(await page.evaluate(() => window.test.first.snapshot().preferences.undoLimit), 1200);
+    });
     await t.test('明暗主题、英文及窄屏保留设置和对齐', async () => {
       for (const suffix of ['?dark', '?en', '?en&dark']) {
         await page.goto(`http://127.0.0.1:${server.address().port}/${suffix}`);
         await global.locator('.sc-wb-model-setting').first().waitFor();
         assert.equal(await global.locator('.sc-wb-model-setting').count(), 2);
         await page.setViewportSize({ width: 1000, height: 900 });
+        for (const scope of [global, editor]) assert.equal(await scope.locator('.sc-wb-settings-content').evaluate(node => node.scrollWidth <= node.clientWidth + 1), true);
         if (process.env.SC_TEST_ARTIFACTS) { await mkdir(process.env.SC_TEST_ARTIFACTS, { recursive: true }); await page.screenshot({ path: join(process.env.SC_TEST_ARTIFACTS, `${process.env.SC_TEST_BROWSER || 'chromium'}-settings-${suffix.replace(/\W/g, '')}.png`) }); }
       }
+      await page.evaluate(() => { document.body.style.zoom = '2'; document.querySelector('#global').style.display = 'none'; });
+      await editor.getByRole('searchbox', { name: 'Search settings', exact: true }).fill('font');
+      await editor.getByRole('checkbox', { name: 'Modified only', exact: true }).check();
+      assert.equal(await editor.locator('.sc-wb-settings-content').evaluate(node => node.scrollWidth <= node.clientWidth + 1), true);
+      await editor.locator('[data-setting=fontFamily]').getByRole('button', { name: 'Reset: English code font', exact: true }).click();
+      assert.equal(await page.evaluate(() => window.test.first.snapshot().preferences.fontFamily), 'jetbrains');
+      if (process.env.SC_TEST_ARTIFACTS) await page.screenshot({ path: join(process.env.SC_TEST_ARTIFACTS, 'settings-english-zoom.png') });
     });
     assert.deepEqual(errors, []);
     await page.evaluate(() => window.test.dispose()); await page.close();

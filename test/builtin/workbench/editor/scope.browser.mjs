@@ -65,6 +65,23 @@ try {
       await page.waitForFunction(()=>window.test.parsed());
     };
     const capture = async name => { if (process.env.SC_TEST_ARTIFACTS) { await mkdir(process.env.SC_TEST_ARTIFACTS, { recursive: true }); await page.screenshot({ path: join(process.env.SC_TEST_ARTIFACTS, name + '.png'), animations: 'disabled' }); } };
+    await t.test('侧栏收起时用路径切换同级文件，用声明菜单跳转并保留原快捷跳转', async () => {
+      await page.getByRole('button', { name: '专注阅读', exact: true }).click();
+      await page.getByRole('button', { name: '浏览 tasks.ts 的同级项' }).click();
+      const filter = page.getByRole('combobox', { name: '筛选同级项' });
+      await filter.fill('tasks.py'); await page.getByRole('option', { name: 'tasks.py' }).waitFor(); await filter.press('Enter');
+      await page.waitForFunction(() => window.test.c.snapshot().file === 'tasks.py');
+      await page.getByRole('button', { name: '浏览 tasks.py 的同级项' }).click();
+      await filter.press('Escape'); await page.waitForFunction(() => !document.querySelector('.sc-wb-crumb-picker'));
+      await visit('tasks.ts'); await select('const result40');
+      await page.getByRole('button', { name: '浏览 load 的同级声明' }).click();
+      await page.getByRole('option').filter({ hasText: 'load' }).waitFor();
+      assert.equal(await page.getByRole('option').filter({ hasText: 'normalize' }).count(), 0);
+      await capture('sibling-menu'); await filter.fill('load'); await filter.press('Enter');
+      await page.waitForFunction(() => !document.querySelector('.sc-wb-crumb-picker'));
+      assert.equal(await page.evaluate(() => window.test.c.view().state.selection.main.head), text.indexOf('load('));
+      await page.locator('.sc-wb-reading-focus').click();
+    });
     await t.test('光标位置显示当前类和嵌套函数，原文保持', async () => {
       await select('const result40');
       assert.deepEqual(await names(), ['TaskStore', 'load', 'normalize']);
@@ -173,7 +190,7 @@ try {
           const tip = document.getElementById(active.getAttribute('aria-describedby'));
           const probe = document.createElement('span'); node.append(probe);
           probe.style.backgroundColor='var(--wb-bg)'; probe.style.color='var(--wb-text)';
-          const icons = [...node.querySelectorAll('[data-icon]')].map(svg => ({
+          const icons = [...node.querySelectorAll('button:not(.sc-wb-crumb-arrow) [data-icon]')].map(svg => ({
             kind:svg.dataset.icon, shown:getComputedStyle(svg.querySelector('[data-icon-theme=' + palette + ']')).display !== 'none',
           }));
           const value = { inline:Boolean(node.closest('.sc-wb-path')), icons, tipColor:getComputedStyle(tip).color,

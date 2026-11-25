@@ -1,5 +1,5 @@
 [data-conversation-scroll]:has(.sc-flows[data-conversation-composer-overlay])>[data-composer-seat]{display:none!important}
-.sc-flows{--flow-bg:#f2efe6;--flow-text:#263a30;--flow-muted:#626f69;--flow-line:#d8dfd8;--flow-surface:#fff;--flow-accent:#177953;--flow-soft:#e2eddf;--flow-ink:#fff;--flow-good:#227b5b;--flow-warn:#9b601b;color:var(--flow-text);background:var(--flow-bg);font:14px/1.6 system-ui,sans-serif;overflow:auto;height:100%;padding:18px 24px 28px;box-sizing:border-box;container-type:inline-size}
+.sc-flows{--flow-bg:#f2efe6;--flow-text:#263a30;--flow-muted:#626f69;--flow-line:#d8dfd8;--flow-surface:#fff;--flow-accent:#177953;--flow-soft:#e2eddf;--flow-ink:#fff;--flow-good:#227b5b;--flow-warn:#9b601b;color:var(--flow-text);background:var(--flow-bg);font:14px/1.6 system-ui,sans-serif;overflow:auto;overflow-anchor:none;height:100%;padding:18px 24px 28px;box-sizing:border-box;container-type:inline-size}
 .sc-flows [data-world=pstack],.sc-flows[data-world=pstack]{--flow-accent:#176956;--flow-soft:#e8f3ed}
 .sc-flows [data-world=openspec],.sc-flows[data-world=openspec]{--flow-accent:#385eab;--flow-soft:#edf2fc}
 .sc-flows [data-world=oil-ui],.sc-flows[data-world=oil-ui]{--flow-accent:#994579;--flow-soft:#f8edf4}

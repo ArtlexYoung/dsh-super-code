@@ -95,6 +95,14 @@ try {
       await leave(); await open('openspec');
       await page.getByRole('heading', {name:'搜索筛选规格',exact:true}).waitFor();
       await page.waitForFunction(expected => Math.abs(document.querySelector('.sc-flows').scrollTop - expected) < 2, scrollTop);
+      await leave(); await page.evaluate(() => window.fixture.hold()); await open('openspec');
+      await page.waitForFunction(() => window.fixture.pending());
+      await page.getByRole('heading', {name:'搜索筛选规格',exact:true}).waitFor();
+      await page.waitForFunction(expected => Math.abs(document.querySelector('.sc-flows').scrollTop - expected) < 2, scrollTop);
+      await page.evaluate(() => window.fixture.release());
+      await page.locator('.sc-flow-alert[role=status]').waitFor({state:'hidden'});
+      await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      assert.ok(Math.abs(await page.locator('.sc-flows').evaluate(node => node.scrollTop) - scrollTop) < 2, '加载提示消失时保持恢复后的阅读位置');
       await page.getByRole('button', {name:'按方案开发',exact:true}).click();
       await page.waitForFunction(() => window.fixture.draft().draft.startsWith('/openspec-apply-change '));
       await page.getByRole('button', {name:'已归档',exact:true}).click();

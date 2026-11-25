@@ -7,11 +7,11 @@ import { chromium, webkit } from 'playwright';
 
 const repo = fileURLToPath(new URL('../../../../', import.meta.url));
 const fixture = `import React from 'react';import{createRoot}from'react-dom/client';
-import{Replace}from'./builtin/workbench/components/Replace.jsx';
-let state={panel:{id:'shared',kind:'projectReplace'}},waiting=[],held=true,holdApply=false,applying=[],stream='normal';const listeners=new Set(),applied=[],scanned=[];
-const workbench={snapshot:()=>state,subscribe:fn=>{listeners.add(fn);return()=>listeners.delete(fn)},panel(panel){state={...state,panel};for(const listener of listeners)listener()},
+import{Replace}from'./builtin/workbench/components/Replace.jsx';import{projectSearchDefaults}from'./src/workbench/search-query.ts';
+let state={searchQuery:{...projectSearchDefaults},panel:{id:'shared',kind:'projectReplace'}},waiting=[],held=true,holdApply=false,applying=[],stream='normal';const listeners=new Set(),applied=[],scanned=[];
+const workbench={setSearchQuery(patch){state={...state,searchQuery:{...state.searchQuery,...patch}};for(const listener of listeners)listener()},snapshot:()=>state,subscribe:fn=>{listeners.add(fn);return()=>listeners.delete(fn)},panel(panel){state={...state,panel};for(const listener of listeners)listener()},
 async *searchProject(query,signal){const version='v'+scanned.push(query);if(held)await new Promise((resolve,reject)=>waiting.push({resolve,reject}));signal.throwIfAborted();yield{kind:'file',path:query.search+'.ts',count:1,version,sample:query.search+' '+version};if(stream==='no-done')return;yield{kind:'done',scanned:1,skipped:0};if(stream==='after-done')throw new Error('stream failed')},
-async replaceProject(rows,query,progress){applied.push({rows,query});if(holdApply)await new Promise((resolve,reject)=>applying.push({resolve,reject}));progress({changed:rows.map(row=>row.path),failed:[]})}};
+async replaceProject(rows,query,progress){applied.push({rows,query});if(holdApply)await new Promise((resolve,reject)=>applying.push({resolve,reject}));const result={changed:rows.map(row=>row.path),failed:[]};progress(result);return result}};
 function Button({children,...props}){return <button {...props}>{children}</button>}
 const roots=['a','b'].map(id=>{const root=createRoot(document.getElementById(id));root.render(<Replace workbench={workbench} Button={Button} t={key=>key}/>);return root});
 window.test={waiting:()=>waiting.length,release(){for(const item of waiting.splice(0))item.resolve()},fail(){for(const item of waiting.splice(0))item.reject(new Error('scan failed'))},fast(){held=false},stream(value){stream=value},holdApply(){holdApply=true},applying:()=>applying.length,releaseApply(){for(const item of applying.splice(0))item.resolve()},failApply(){for(const item of applying.splice(0))item.reject(new Error('apply failed'))},clone(){state=structuredClone(state);for(const listener of listeners)listener()},state:()=>state,applied,scanned,dispose(){for(const item of applying.splice(0))item.resolve();roots.forEach(root=>root.unmount())}};`;
@@ -26,6 +26,22 @@ try {
     t.afterEach(async () => { await page.evaluate(() => { window.test.release(); window.test.dispose(); }); await page.close(); assert.deepEqual(errors, []); });
     const field = side => page.locator('#' + side).getByRole('textbox', { name: 'replaceSearch' });
     const preview = side => page.locator('#' + side).getByRole('button', { name: 'replacePreview', exact: true });
+    await t.test('扫描显示当前阶段，失败和主动停止都可以继续检查', async () => {
+      const panel = page.locator('#a');
+      await field('a').fill('current'); await preview('a').click();
+      await panel.getByRole('status').filter({ hasText: 'replaceBusy_scan' }).waitFor();
+      await page.waitForFunction(() => window.test.waiting() === 1);
+      await page.evaluate(() => window.test.fail());
+      await panel.getByRole('alert').waitFor();
+      await panel.getByRole('button', { name: 'retryOperation', exact: true }).click();
+      await page.waitForFunction(() => window.test.waiting() === 1);
+      await panel.getByRole('button', { name: 'stop', exact: true }).click();
+      await page.evaluate(() => window.test.release());
+      await panel.getByRole('status').filter({ hasText: 'replaceReadStopped' }).waitFor();
+      assert.equal(await panel.getByRole('alert').count(), 0);
+      await page.evaluate(() => window.test.fast());
+      await preview('a').click(); await panel.locator('.sc-wb-replace-row').waitFor();
+    });
     await t.test('另一个视图改查询后，晚到的旧预览不可应用', async () => {
       await field('a').fill('old'); await preview('a').click(); await page.waitForFunction(() => window.test.waiting() === 1);
       await field('b').fill('new'); await page.evaluate(() => window.test.release()); await preview('a').waitFor({ state: 'visible' });
@@ -44,7 +60,7 @@ try {
     for (const changed of ['replacement', 'case']) await t.test(`另一个视图修改${changed === 'replacement' ? '替换内容' : '大小写条件'}后，旧预览不能复活`, async () => {
       await field('a').fill('same'); await preview('a').click(); await page.waitForFunction(() => window.test.waiting() === 1);
       if (changed === 'replacement') await page.locator('#b textarea').fill('different');
-      else await page.locator('#b input[type=checkbox]').uncheck();
+      else await page.locator('#b').getByRole('checkbox', { name: 'caseSensitive', exact: true }).check();
       await page.evaluate(() => window.test.release()); await page.waitForFunction(() => !document.querySelector('#a button[type=submit]').disabled);
       assert.equal(await page.locator('.sc-wb-replace-row').count(), 0);
       assert.equal(await page.locator('#b').getByRole('button', { name: 'replaceApply', exact: true }).isDisabled(), true);
@@ -85,7 +101,7 @@ try {
     });
     await t.test('当前有效预览仍可应用且使用对应查询和文件', async () => {
       await page.evaluate(() => window.test.fast()); await field('a').fill('current'); await preview('a').click();
-      const apply = page.locator('#b').getByRole('button', { name: 'replaceApply', exact: true }); await apply.waitFor(); await page.waitForFunction(() => !document.querySelector('#b button[type=button]').disabled);
+      const apply = page.locator('#b').getByRole('button', { name: 'replaceApply', exact: true }); await apply.waitFor(); await page.locator('#b .sc-wb-replace-row').waitFor();
       await apply.click();
       assert.deepEqual(await page.evaluate(() => window.test.applied.map(item => ({ search: item.query.search, paths: item.rows.map(row => row.path) }))), [{ search: 'current', paths: ['current.ts'] }]);
       assert.equal(await page.evaluate(() => window.test.scanned.length), 1);

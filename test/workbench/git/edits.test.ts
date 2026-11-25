@@ -93,7 +93,38 @@ test('native：保存冲突结果遵守 Git 换行属性，工作区保留 CRLF�
   assert.equal((await fs.stat(join(root, '.git/index'))).isFile(), true)
 })
 
+test('native：按块暂存遵守 CRLF 属性，保持磁盘字节和规范化的索引内容', async t => {
+  const { act, state, commit, write, read, index } = await fixture(t, 'native')
+  await write('.gitattributes', '*.txt text eol=crlf\n')
+  await write('a.txt', 'base\r\nkeep\r\n'); await commit('base')
+  await write('a.txt', 'changed\r\nkeep\r\n')
+  await act({ action: 'stageHunk', path: 'a.txt', hunk: 0 })
+  assert.equal(await index('a.txt'), 'changed\nkeep\n')
+  assert.equal(await read('a.txt'), 'changed\r\nkeep\r\n')
+  const change = (await state()).changes.find(file => file.path === 'a.txt')!
+  assert.equal(change.stage, change.worktree)
+})
+
 for (const backend of ['native', 'builtin']) {
+  test(`${backend}：按块暂存只写入选中差异，保留原有暂存和工作区字节`, async t => {
+    const { run, state, act, commit, write, read, index } = await fixture(t, backend)
+    const file = '中文 "改动".txt', base = '\ufefffirst\r\nkeep\r\nlast'
+    await write(file, base); await commit('base')
+    const staged = base.replace('keep', 'already staged')
+    await write(file, staged); await act({ action: 'stage', paths: [file] })
+    const current = staged.replace('first', 'edited first').replace('last', 'edited last')
+    await write(file, current)
+    const request = { action: 'stageHunk', path: file, hunk: 1, version: (await state()).version }
+    await assert.rejects(run(request, { mode: 'read-only' }), /WORKBENCH_GIT_READONLY/)
+    await run(request)
+    assert.equal(await index(file), staged.replace('last', 'edited last'))
+    assert.equal(await read(file), current)
+    await assert.rejects(run(request), /WORKBENCH_GIT_STALE/)
+    await assert.rejects(act({ ...request, hunk: 99 }), /WORKBENCH_GIT_HUNK/)
+    await act({ ...request, hunk: 0 })
+    assert.equal(await index(file), current)
+  })
+
   test(`${backend}：按段还原隔离暂存区与工作区，拒绝过期、只读和占用`, async t => {
     const { root, run, state, act, commit, write, read, index } = await fixture(t, backend)
     await write('a.txt', 'base\nkeep\nlast\n'); await commit('base')

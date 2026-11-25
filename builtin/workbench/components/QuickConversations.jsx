@@ -14,9 +14,10 @@ export function QuickConversations({ items = [], workbench, Button, t, open, tog
     </Button>
     {open && <div id={id} className="sc-wb-quick-content">{rows.length ? <FileList items={rows} rowHeight={60}>{row => <div className="sc-wb-quick-row">
       <Button title={t('quickOpen')} onClick={act(() => workbench.openConversation(row))}><span>{row.preview}</span><small className="sc-wb-quick-state" data-status={row.status}>
+        {row.pinned && <span title={t('quickPinned')} aria-label={t('quickPinned')}><Icon name="pin" /></span>}
         {row.status === 'running' && <i className="sc-wb-answer-spinner" aria-hidden="true" />}{t(row.status === 'running' ? 'quickRunning' : row.status === 'error' ? 'quickFailed' : row.status === 'stopped' ? 'quickStopped' : row.count > 1 ? 'quickCompleted' : 'quickReady')}
       </small></Button>
-      <Button title={t('quickFile')} onClick={act(() => workbench.visit({ file: row.file, line: row.line, character: row.character, length: row.to - row.from }))}>
+      <Button title={t('quickFile')} onClick={act(() => workbench.openConversation(row, false))}>
         <FileIcon path={row.file} /><span>{row.file}:{row.line + 1}</span>{row.count > 0 && <small>{message(t, 'quickMessages', { count: row.count })}</small>}
       </Button>
     </div>}</FileList> : <p>{t('quickEmpty')}</p>}</div>}

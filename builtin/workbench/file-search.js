@@ -18,7 +18,7 @@ export function matchFiles(files, query) {
 }
 
 export function createFileSearch(list) {
-  const listeners = new Set();
+  const listeners = new Set(), consumers = new Set();
   let snapshot = { files: [], searching: false, truncated: false, error: null };
   let folders = [''], cursor = 0, files = new Set(), seen = new Set(['']), active = false, request, complete = false;
   const publish = patch => { snapshot = { ...snapshot, ...patch }; for (const listener of listeners) listener(); };
@@ -51,8 +51,9 @@ export function createFileSearch(list) {
   return {
     subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); },
     snapshot: () => snapshot,
-    activate(value) {
-      active = value;
+    activate(value, consumer = 'files') {
+      if (value) consumers.add(consumer); else consumers.delete(consumer);
+      active = consumers.size > 0;
       if (active) void scan();
       else { cancel(); publish({ searching: false }); }
     },

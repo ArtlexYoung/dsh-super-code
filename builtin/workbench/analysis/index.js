@@ -1,3 +1,4 @@
+import { compact, projectSymbols, symbolAt } from './project-symbols.js';
 import { parseSource, sourceSignature, precedingComment, pythonDocstring, identifierOccurrences, lineAt, excludedAt } from './source-info.js';
 import { parseDocumentation } from './documentation.js';
 import { extension } from '../editor/languages.js';
@@ -67,18 +68,8 @@ export async function analyze(file, text, detail = true) {
   return { text, symbols, occurrences, starts, references, ...scope };
 }
 
-const kinds = ['function', 'variable', 'property', 'selector', 'tag', 'schema'];
 const SOURCE_CACHE_BYTES = 16 * 1024 * 1024;
 const REFERENCE_BYTES = 64, DECLARATION_BYTES = 256;
-function compact(symbols) {
-  const positions = new Uint32Array(symbols.length * 3), types = new Uint8Array(symbols.length);
-  symbols.forEach((symbol, i) => { positions.set([symbol.offset, symbol.line, symbol.character], i * 3); types[i] = kinds.indexOf(symbol.kind); });
-  // 复制名称，避免字符串切片继续持有整份源码；数字位置以紧凑数组存储。
-  return { symbols: JSON.parse(JSON.stringify(symbols.map(symbol => symbol.name))), positions, kinds: types };
-}
-function symbolAt(entry, i, file) {
-  return { name: entry.symbols[i], offset: entry.positions[i * 3], line: entry.positions[i * 3 + 1], character: entry.positions[i * 3 + 2], kind: kinds[entry.kinds[i]], file };
-}
 
 function symbolAfter(symbols, offset) {
   let from = 0, to = symbols.length;
@@ -96,6 +87,9 @@ function findSymbol(symbols, item) {
 
 export class SymbolIndex {
   #updates = new Map();
+  #listeners = new Set();
+  #snapshot = { indexed: 0, indexing: false, indexPartial: false, indexRevision: 0 };
+  #notification;
   files = new Map();
   versions = new Map();
   names = new Map();
@@ -105,6 +99,14 @@ export class SymbolIndex {
   cacheSize = 0;
   sequence = 0;
   constructor(analyzer = analyze, { read, external, cacheBytes = read ? SOURCE_CACHE_BYTES : Infinity } = {}) { this.analyzer = analyzer; this.read = read; this.external = external; this.cacheBytes = cacheBytes; }
+  snapshot = () => this.#snapshot;
+  subscribe = listener => { this.#listeners.add(listener); return () => this.#listeners.delete(listener); };
+  progress(patch = {}) {
+    clearTimeout(this.#notification); this.#notification = null;
+    this.#snapshot = { ...this.#snapshot, ...patch, indexed: this.files.size, indexRevision: this.#snapshot.indexRevision + 1 };
+    for (const listener of this.#listeners) listener();
+  }
+  #changed() { this.#notification ||= setTimeout(() => this.progress(), 80); }
   async fingerprint(file, text) {
     // 局域网 HTTP 页面可能没有 WebCrypto；此时不做内容合并，仍完整索引。
     if (!globalThis.crypto?.subtle) return `file:${file}:${++this.sequence}`;
@@ -162,6 +164,7 @@ export class SymbolIndex {
       }
     result.paths.add(file); this.contents.set(result.key, result);
     this.files.set(file, result);
+    this.#changed();
   }
   restore(file, entry) {
     this.versions.set(file, Symbol());
@@ -181,13 +184,14 @@ export class SymbolIndex {
     const value = this.files.get(file);
     value?.paths.delete(file);
     if (value && !value.paths.size) { this.contents.delete(value.key); this.forget(value.key); }
-    if (invalidate) { this.versions.delete(file); this.files.delete(file); this.#updates.delete(file); }
+    if (invalidate) { this.versions.delete(file); this.files.delete(file); this.#updates.delete(file); if (value) this.#changed(); }
   }
-  clear() { this.#updates.clear(); this.versions.clear(); this.files.clear(); this.names.clear(); this.pending.clear(); this.contents.clear(); this.cache.clear(); this.cacheSize = 0; }
+  clear() { this.#updates.clear(); this.versions.clear(); this.files.clear(); this.names.clear(); this.pending.clear(); this.contents.clear(); this.cache.clear(); this.cacheSize = 0; this.progress({ indexing: false, indexPartial: false }); }
   declarations(file) {
     const entry = this.files.get(file);
     return entry ? entry.symbols.map((_name, i) => symbolAt(entry, i, file)) : [];
   }
+  symbols(query, limit = 1000, signal) { return projectSymbols(this.files, query, limit, signal); }
   candidates(file, name, exact = true) {
     if (extension(file) === 'php') name = name.replace(/^\$/, '');
     const prefix = `${family(file)}\0`, wanted = name.toLowerCase();

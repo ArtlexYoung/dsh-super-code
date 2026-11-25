@@ -56,6 +56,36 @@ function findElement(value: any, predicate: (element: any) => boolean): any {
   return predicate(value) ? value : findElement(value.props?.children, predicate)
 }
 
+test('工作台区分对话输入锁定原因，锁定时拒绝提交并可返回同一会话', () => {
+  const scenarios = [
+    { phase: 'adjudicating', reason: 'conversationInput_adjudicating' },
+    { phase: 'claimed', reason: 'conversationInput_claimed' },
+    { phase: 'submitting', reason: 'conversationInput_submitting' },
+    { phase: 'plain', attachmentIds: ['attachment'], reason: 'conversationRichDraft' },
+    { phase: 'plain', occurrences: [{ offset: 0 }], reason: 'conversationRichDraft' },
+    { phase: 'plain', reason: '' },
+  ]
+  for (const scenario of scenarios) {
+    let submitted = 0
+    const opened: unknown[][] = []
+    const view = plugin.workbenchControls.Conversation({ sessionId: 'demo', remote: {}, t: (key: string) => key, useSessions: () => {},
+      useInput: (select: (value: unknown) => unknown) => select({ draft: 'draft text', ...scenario }),
+      inputActions: { submit: () => { submitted++ } }, openView: (...target: unknown[]) => opened.push(target),
+    })
+    const input = findElement(view, element => element.type?.name === 'WorkbenchInput')
+    const form = input.type(input.props)
+    const textarea = findElement(form, element => element.type === 'textarea')
+    const notice = findElement(form, element => element.props?.role === 'status')
+    assert.equal(textarea.props.disabled, !!scenario.reason)
+    assert.equal(notice?.props.children[0] ?? '', scenario.reason)
+    form.props.onSubmit({ preventDefault() {} })
+    textarea.props.onKeyDown({ key: 'Enter', nativeEvent: { isComposing: true }, preventDefault() {} })
+    textarea.props.onKeyDown({ key: 'Enter', nativeEvent: { isComposing: false }, preventDefault() {} })
+    assert.equal(submitted, scenario.reason ? 0 : 2)
+    findElement(form, element => element.props?.children.includes('openConversation')).props.onClick()
+    assert.deepEqual(opened, [['chat', '']])
+  }
+})
 test('切换子 Agent 使用父子地址且隐藏主会话输入，返回后仍使用原输入动作', () => {
   const inputActions = { submit: () => assert.fail('Rendering must not send') };
   const props = { sessionId: 'root', remote: {}, t: (key: string) => key, useInput: () => {}, inputActions, useSessions: () => {}, detailT: (key: string) => key };

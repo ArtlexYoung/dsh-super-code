@@ -85,15 +85,15 @@ test('Esc 关闭弹框可配置且不会抢占编辑器补全和搜索的 Esc', 
   assert.throws(() => readPreferences({ ...preferences, shortcuts: { close: 'Mod-f' } }), /CONFLICT/)
 })
 
-test('顶栏快捷键默认显示，弹窗默认内嵌；旧偏好补齐，显式配置可保存恢复', () => {
+test('顶栏快捷键默认放在提示中，弹窗默认内嵌；显式配置可保存恢复', () => {
   const legacy = { keymap: 'idea', palette: 'vscode', shortcuts: { find: 'Ctrl-k' } }
   const preferences = readPreferences(legacy)
-  assert.equal(defaults().showToolbarShortcuts, true)
+  assert.equal(defaults().showToolbarShortcuts, false)
   assert.equal(defaults().windowMode, 'internal')
-  assert.equal(preferences.showToolbarShortcuts, true)
+  assert.equal(preferences.showToolbarShortcuts, false)
   assert.equal(preferences.windowMode, 'internal')
-  const changed = readPreferences(JSON.parse(JSON.stringify({ ...preferences, showToolbarShortcuts: false, windowMode: 'external' })))
-  assert.equal(changed.showToolbarShortcuts, false)
+  const changed = readPreferences(JSON.parse(JSON.stringify({ ...preferences, showToolbarShortcuts: true, windowMode: 'external' })))
+  assert.equal(changed.showToolbarShortcuts, true)
   assert.equal(changed.windowMode, 'external')
   assert.deepEqual(bindingsOf(changed, {}).map(item => item.key), bindingsOf(preferences, {}).map(item => item.key))
   for (const value of [null, 0, 1, 'false', {}, []]) assert.throws(() => readPreferences({ ...preferences, showToolbarShortcuts: value }), /WORKBENCH_PREFERENCES_INVALID/)

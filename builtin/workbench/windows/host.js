@@ -14,10 +14,10 @@ function createHost(workbench, transmit, close, metadata, onReady) {
   let stopped = false, scheduled = false, editorFile, ready = false, initialized = false;
   const push = value => { if (!stopped && initialized) void transmit(value).catch(close); };
   const edits = createEditHost(workbench.view, push);
-  const calls = Object.fromEntries(['visit', 'move', 'list', 'refresh', 'save', 'settings', 'environmentPaths', 'definition', 'fileOperation', 'undo', 'closeFile', 'cancelCloseFile',
-    'moveTab', 'keepTab', 'openConversation', 'menu', 'copyFile', 'pinFile', 'panel', 'submitFileAction'].map(name => [name, args => workbench[name](...args)]));
+  const calls = Object.fromEntries(['visit', 'move', 'list', 'refresh', 'save', 'saveAll', 'recoverDraft', 'discardDraft', 'draftText', 'retryDrafts', 'settings', 'environmentPaths', 'definition', 'fileOperation', 'undo', 'closeFile', 'closeTabs', 'reopenTab', 'cancelCloseFile',
+    'moveTab', 'keepTab', 'setSearchQuery', 'openConversation', 'menu', 'copyFile', 'pinFile', 'panel', 'submitFileAction', 'applySaveConflict'].map(name => [name, args => workbench[name](...args)]));
   for (const [name, target, methods] of [
-    ['assistant', workbench.assistant, ['open', 'select', 'close', 'send', 'stop', 'remove', 'draft', 'mode', 'pin']],
+    ['assistant', workbench.assistant, ['open', 'select', 'close', 'send', 'stop', 'remove', 'draft', 'mode', 'pin', 'review']],
     ['reading', workbench.reading, ['goal', 'plan', 'file', 'retry', 'step', 'stop', 'open', 'verify']],
     ['changes', workbench.changes, ['refresh', 'invalidate', 'visible', 'forget']],
     ['files', workbench.files, ['activate', 'reset']],
@@ -29,6 +29,7 @@ function createHost(workbench, transmit, close, metadata, onReady) {
     'index.describe': (args, signal) => workbench.index.describe(args[0], signal),
     'index.resolve': (args, signal) => workbench.index.resolve(args[0], args[1], args[2], signal),
     'index.search': (args, signal) => workbench.index.search(args[0], args[1], signal),
+    'index.symbols': (args, signal) => workbench.index.symbols(args[0], 1000, signal),
     edit: args => edits.apply(args[0]),
     list: (args, signal) => workbench.list(args[0], signal),
     fail: args => workbench.fail(new Error(args[0])),
@@ -36,9 +37,12 @@ function createHost(workbench, transmit, close, metadata, onReady) {
     fonts: (_args, signal) => workbench.fonts(signal),
     environments: (_args, signal) => workbench.environments(signal),
     git: (args, signal) => workbench.git(args[0], signal),
+    searchContext: (args, signal) => workbench.searchContext(args[0], signal),
     compareFiles: (args, signal) => workbench.compareFiles(args[0], args[1], signal),
+    readSaveConflict: (args, signal) => workbench.readSaveConflict(args[0], signal),
+    previewReplacement: (args, signal) => workbench.previewReplacement(args[0], args[1], signal),
     'changes.diff': (args, signal) => workbench.changes.diff(args[0], signal),
-    replaceProject: (args, signal, progress) => workbench.replaceProject(...args, progress, signal),
+    replaceProject: ([matches, query, previewId], signal, progress) => workbench.replaceProject(matches, query, progress, signal, previewId),
     async searchProject(args, signal, progress) { for await (const value of workbench.searchProject(args[0], signal)) progress(value); },
     openFileWindow([file, editorKind, markdownSplit]) {
       if (typeof file !== 'string' || !file || !['file', 'markdown'].includes(editorKind)) throw new Error('WORKBENCH_WINDOW_PROTOCOL');

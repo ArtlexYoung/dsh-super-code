@@ -2,6 +2,12 @@
 
 [中文](../Compatibility.md) · English
 
+## Main acceptance update (2026-11-25)
+
+The tested revision is `1c13a2f`, still version `0.4.3`. All 2,143 source tests passed. The fixed archive also passed the three workflow checks, live-model workbench and SSH checks, 44 Windows ARM64 Desktop/NEXT checks, and 46 checks on a physical Windows x64 machine using the oldest and newest supported Web hosts. Existing build, type, three-platform version matrix and performance results are reused only where the tested behavior is unchanged.
+
+The full result is **partial**: the 117 regression conditions comprise 28 passed, 84 partially covered, 3 unverified and 2 not applicable. Mobile devices, Intel Mac, macFUSE, Windows x64 native apps and SFTP, physical network interruption, and some detailed scenarios remain unverified. License changes blocked automatic updates; dependencies were not upgraded. See the [Chinese acceptance report](../testing/Main-acceptance-20261125.md) for scope and retry results. Earlier dated entries retain their original scope.
+
 ## 0.4.3 integration acceptance (2026-11-19)
 
 Tool profiles and the Code Workbench are integrated with the modular architecture, with checks for the integration changes completed on three systems. Tool profiles and the original workbench package each completed the 15-version, three-system matrix below. Integration checks cover changed entry points, service isolation, Windows shell selection, client controls, and distribution resources; the original matrix results remain tied to their packages.

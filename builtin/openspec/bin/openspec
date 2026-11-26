@@ -1,2 +1,7 @@
 #!/bin/sh
-ELECTRON_RUN_AS_NODE=1 OPENSPEC_TELEMETRY=0 exec "$SUPER_CODE_OPENSPEC_NODE" "$SUPER_CODE_OPENSPEC_CLI" "$@"
+if [ "$SUPER_CODE_OPENSPEC_PRESERVE_LINKS" = 1 ]; then
+    set -- --preserve-symlinks --preserve-symlinks-main "$SUPER_CODE_OPENSPEC_CLI" "$@"
+else
+    set -- "$SUPER_CODE_OPENSPEC_CLI" "$@"
+fi
+ELECTRON_RUN_AS_NODE=1 OPENSPEC_TELEMETRY=0 exec "$SUPER_CODE_OPENSPEC_NODE" "$@"

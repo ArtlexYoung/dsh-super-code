@@ -2,11 +2,11 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
-import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises'
-import { join, delimiter } from 'node:path'
+import { mkdir, mkdtemp, readdir, readFile, rm, symlink, unlink, writeFile } from 'node:fs/promises'
+import { join, delimiter, dirname } from 'node:path'
 import { Context } from '@deepseek-ai/cordis'
 import { validationRoot } from '../validation-root.js'
-import { openspecProvider } from '../../src/dsh/openspec-shell.js'
+import { openspecProvider, windowsOpenSpecEntry } from '../../src/dsh/openspec-shell.js'
 import { skillPackages } from '../../src/dsh/skill-packages.js'
 
 const run = promisify(execFile)
@@ -61,6 +61,30 @@ test('OpenSpec environment is live, scoped, and leaves commands, projects and ho
   assert.equal(await readFile(join(cwd, 'keep.txt'), 'utf8'), 'user content')
   assert.equal(JSON.stringify(process.env) === JSON.stringify(originalEnv), true, 'the host environment remains unchanged')
   assert.deepEqual(request, originalRequest)
+})
+
+test('Windows OpenSpec uses only a profile link to the exact loaded package', async t => {
+  await mkdir(validationRoot, { recursive: true })
+  const cwd = await mkdtemp(join(validationRoot, 'OpenSpec profile link-'))
+  t.after(() => rm(cwd, { recursive: true, force: true }))
+  const profileModules = join(cwd, 'node_modules')
+  const packages = join(profileModules, '.pnpm')
+  const loaded = join(packages, 'loaded', 'node_modules', 'dsh-super-code')
+  const replaced = join(packages, 'replaced', 'node_modules', 'dsh-super-code')
+  const entry = join('node_modules', '@fission-ai', 'openspec', 'bin', 'openspec.js')
+  const physical = join(loaded, entry)
+  const profileLink = join(profileModules, 'dsh-super-code')
+  for (const root of [loaded, replaced]) {
+    const file = join(root, entry)
+    await mkdir(dirname(file), { recursive: true })
+    await writeFile(file, 'fixture')
+  }
+  assert.equal(windowsOpenSpecEntry(loaded, physical), physical)
+  await symlink(loaded, profileLink, 'junction')
+  assert.equal(windowsOpenSpecEntry(loaded, physical), join(profileLink, entry))
+  await unlink(profileLink)
+  await symlink(replaced, profileLink, 'junction')
+  assert.equal(windowsOpenSpecEntry(loaded, physical), physical)
 })
 
 test('the installed CLI initializes a project only when its init command is explicitly executed', { skip: process.platform === 'win32' }, async t => {

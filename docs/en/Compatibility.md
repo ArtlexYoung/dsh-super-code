@@ -2,6 +2,12 @@
 
 [中文](../Compatibility.md) · English
 
+## Automated Go SSH phone acceptance (2026-11-26)
+
+The `0.4.3` candidate for main `1b39707` passed five automated Go SSH phone scenarios: native settings round-trip, tool approval and rejection, long-command cancellation, and saving memory from the embedded Web UI with server readback. The queue received `SIGTERM` after the allow-once scenario. The same command resumed with completed results intact, and a later run started no environment and repeated no writes.
+
+The overall result remains **partial**. A local model adapter generated requests for this run. Live-model, Agents Anywhere and relay results retain the scope of earlier tests. dsh-Go automatic recovery, statistics for the same session ID across hosts, Web shortcuts and the relay Web tunnel still have open items. See the [Chinese automation report](../testing/Automatic-acceptance-20261126.md) for the environment, results and remaining conditions.
+
 ## Phone entry points and update workflow (2026-11-26)
 
 After official CLI installation, dsh-Go 1.4.0 shows the plugin and its native configuration form. The SSH embedded Web UI can change Super Code settings, open the task panel and save memory. With compact history enabled, phone allow-once, rejection, command cancellation and absence of delayed writes pass. An isolated update branch upgraded `@types/node` to 22.20.7, passed 2,143 source tests and two distribution checks, and made no duplicate commit on a second run. That dependency change remains outside main.

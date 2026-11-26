@@ -16,7 +16,11 @@
 
 通过正式 CLI 离线安装后，macOS ARM64 Harness `0.2.2-rc.5` 的受控模型在同一会话执行了三项检查。启用后新增 13 个 Skill，通过 `run_code → bash` 运行 CLI `2.2.0`、读取旧提案并创建新变更，关闭后恢复原 Skill 列表。旧提案内容未变，宿主正常退出。完整证据见外层 `openspec-release-20261126/Verification.json`。
 
-CLI 的 Node 下限从 `22.12.0` 升为 `22.20.0`。用校验过的 Node `22.19.0` 运行两版 CLI，各三条读取命令成功，但 npm 开启 `engine-strict` 后拒绝安装 `2.2.0`，错误为 `EBADENGINE`。因此本轮仅保留独立候选分支。合入前仍需明确旧 Node 宿主的兼容做法，并复验 Windows 与 Linux。
+CLI 的 Node 下限从 `22.12.0` 升为 `22.20.0`。用校验过的 Node `22.19.0` 运行两版 CLI，各三条读取命令成功，但 npm 开启 `engine-strict` 后拒绝安装 `2.2.0`，错误为 `EBADENGINE`。旧 Node 宿主的兼容做法仍需明确。
+
+同一候选包在 Linux ARM64 容器和原生 Windows x64 的 Harness `0.2.2-rc.5` Web 宿主中通过正式 CLI 离线安装。两端均从会话记录核对了 `run_code → bash` 的实际输出，确认 CLI `2.2.0` 读到旧提案、创建了新变更，原会话启停 13 个 Skill 后恢复原列表。Linux 容器断网运行，宿主以退出码 0 停止。Windows 在短路径安装、单次批准这条命令后通过。测试用隔离会话的批准适配器应答，批准前后未获批准的调用均被沙箱拦截。驱动结束了自己启动的 Windows 进程树。两端端口均已释放。
+
+Windows 深目录安装复现了 CLI 失败。Node `24.13.0` 在长路径中无法解析 Chalk 的 `#ansi-styles`，CLI 读取旧提案时以退出码 1 停止。单独导入 Chalk 的对照使用内容哈希一致的包配置，路径长 277 字符时复现 `ERR_PACKAGE_IMPORT_NOT_DEFINED`，缩至 211 字符后成功。该限制与旧 Node 的安装要求均未解决，候选保留在升级分支。两端复验及长路径对照见外层 `openspec-release-20261126/cross-platform/Verification.json`。
 
 ## Go 网页快捷入口
 

@@ -39,6 +39,12 @@
 
 测试运行于 SSH 会话 0，六次启动观察期间未出现原生目录确认窗口。系统级对话框和可见桌面的焦点行为仍待实测。包内的 Agents Anywhere 桥接为 `2.2.0-desktop.cb364f42d2f3f.r2afb7d8b`，此版本的手机接管仍待实测。结果、安装包版本、进程及端口检查保存在外层验收目录 `windows-x64-native-20261126` 的 `NEXT-Verification.json`，工作台截图为 `next-result/Workbench-native.png`。OpenSpec 两版 Bash 兼容的对照记录保存在 `upgrade-gates-20261126/openspec-shell-overlay`。
 
+### NEXT 手机接管
+
+在同一 Windows x64 便携版上通过原生设置向导启用远控。完成向导后，侧栏显示“远程控制”，可以进入自托管连接设置。Android 15 ARM64 模拟器上的 Agents Anywhere `2.2.0` 通过相同自托管服务的登录和授权页面，进入 App 首页。
+
+**Windows 配对未通过。** 在 SSH 会话 0 中两次点击“连接服务器”，服务端均有健康检查记录。NEXT 随后尝试打开浏览器授权页，两次都收到 `0x483` 并进入恢复模式。系统登记了 Edge，同一后台会话中的独立 URL 启动命令返回成功，但没有观察到可见窗口。现有证据还不能判断在交互式 Windows 桌面能否复现。手机未获得该 NEXT 的会话，审批、取消、写入和冷续聊尚未开始。复验需要能打开授权页的隔离 Windows 桌面。证据保存在 `next-phone-20261126/Result.json`、两次恢复界面记录和 Android 界面记录中。退出后，应用与桥接进程已停止，Windows 的临时桥接状态已移入测试目录。
+
 ## iOS 和其他缺项
 
 本机 Xcode `26.3` 已有 iOS Simulator SDK `26.2`，设备清单中没有已安装的运行时或可用 iPhone。`xcodebuild -downloadPlatform iOS` 请求 `26.2` 和默认 `26.3.1` 时均未能连接 Apple MobileAsset 目录。另一个 Apple 下载入口只取得约 4 MiB 的加密归档片段，目前缺少完整且可导入的运行时。Xcode 提供导入已下载运行时的入口，本轮取得的片段无法用于导入。正式 Go `1.4.0` 的 iOS 发布物为设备用 IPA，因此 iOS 模拟器场景尚未开始。

@@ -2,6 +2,12 @@
 
 [中文](../Compatibility.md) · English
 
+## Phone entry points and update workflow (2026-11-26)
+
+After official CLI installation, dsh-Go 1.4.0 shows the plugin and its native configuration form. The SSH embedded Web UI can change Super Code settings, open the task panel and save memory. With compact history enabled, phone allow-once, rejection, command cancellation and absence of delayed writes pass. An isolated update branch upgraded `@types/node` to 22.20.7, passed 2,143 source tests and two distribution checks, and made no duplicate commit on a second run. That dependency change remains outside main.
+
+The overall result remains **partial**. Web shortcuts did not land on their requested page; Remote 0.6.8 returned `TUNNEL_UNAVAILABLE` with the tested self-hosted server. Earlier recovery, same-ID statistics and device gaps remain, and the complete automatic phone queue is unfinished. See the [Chinese follow-up](../testing/Remaining-acceptance-20261126.md) for conditions. Earlier entries retain their dated scope.
+
 ## Simulated-device follow-up (2026-11-26)
 
 Twenty checks passed on a complete x64 Web host under Rosetta, and eight checks passed for an isolated SSH server interruption and recovery. On an Android emulator, dsh-Go 1.4.0 completed real SSH and relay conversations; Agents Anywhere 2.2.0 with its original bridge completed phone takeover, tool execution and conversation continuation after a host restart. Files, tasks and memory were checked against server state, with no repeated relay or AA writes.

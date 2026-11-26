@@ -6,9 +6,13 @@
 
 冻结的 `0.4.3` 候选在真实 Windows x64、官方 Desktop `0.2.2-rc.5` 上通过 22 项原生 Electron 检查，覆盖工作台保存、Skill、MCP、记忆冷续聊和卸载恢复。测试在隔离后台会话中执行，系统级弹窗和 NEXT 远控仍待验证。见[本轮验收记录](testing/Acceptance-followup-20261126.md#windows-x64-官方-desktop)。
 
+## Windows x64 NEXT（2026-11-26）
+
+冻结的 `0.4.3` 候选在真实 Windows x64、NEXT `2.0.24-next`（内置 Harness `0.2.2-rc.5`）上通过 22 项原生 Electron 检查，覆盖安装、工作台实际保存、Skill、MCP、记忆和卸载后原会话续聊。便携包 SHA-256 与官方发布一致，Windows 报告应用未签名。测试使用隔离后台会话，系统级对话框和手机接管待验证。见[本轮验收记录](testing/Acceptance-followup-20261126.md#windows-x64-next)。
+
 ## Go 网页快捷入口与 Skill 更新（2026-11-26）
 
-Matt Skill 已在独立维护分支自动更新，2143 项源码测试和 2 项分发检查通过，第二次运行没有重复提交。OpenSpec 的新旧 CLI 在旧项目上通过了 6 项对照检查，内置升级仍由许可检查暂停。PStack 升级仍需迁移本地适配。整体仍为**部分通过**。浏览器收到 Go 的会话或插件目标后可以打开对应页面，Android 原生的两处快捷入口仍会落到首页，iOS 仍缺模拟器运行时。见[本轮验收记录](testing/Acceptance-followup-20261126.md)。
+Matt Skill 已在独立维护分支自动更新，2143 项源码测试和 2 项分发检查通过，第二次运行没有重复提交。OpenSpec 的新旧 CLI 在旧项目上通过了 6 项对照检查，通过冻结包的 Bash 适配器各通过 4 项。内置升级仍由许可检查暂停。PStack 升级仍需迁移本地适配。整体仍为**部分通过**。浏览器收到 Go 的会话或插件目标后可以打开对应页面，Android 原生的两处快捷入口仍会落到首页，iOS 仍缺模拟器运行时。见[本轮验收记录](testing/Acceptance-followup-20261126.md)。
 
 ## Go SSH 手机自动验收（2026-11-26）
 

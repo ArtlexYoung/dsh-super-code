@@ -2,6 +2,10 @@
 
 [中文](../Compatibility.md) · English
 
+## Official Desktop on Windows x64 (2026-11-26)
+
+The frozen `0.4.3` candidate passed 22 native Electron checks on a Windows x64 machine with official Desktop `0.2.2-rc.5`. The checks covered saving from the workbench, Skills, MCP, reopening memory and conversations after a restart, and uninstall recovery. The run used an isolated background session. OS dialogs and NEXT phone takeover still require testing. See the [Chinese acceptance report](../testing/Acceptance-followup-20261126.md#windows-x64-官方-desktop).
+
 ## Go Web shortcuts and Skill updates (2026-11-26)
 
 The Matt Skill update ran on an isolated maintenance branch, passed 2,143 source tests and two distribution checks, and produced no duplicate commit on a second run. Both OpenSpec CLI versions passed six checks on copies of the same existing project. The bundled upgrade remains gated by the license check, and PStack still requires changes to the local adapter. The overall result remains **partial**. The browser opened the requested Go session and plugin card when supplied with their targets. Both Android native shortcuts still land on the home page, and the iOS simulator runtime is unavailable. See the [Chinese acceptance follow-up](../testing/Acceptance-followup-20261126.md).

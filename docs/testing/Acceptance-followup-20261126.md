@@ -23,8 +23,16 @@
 
 另核对了 Go `v1.4.0` 的发布源码。会话切换由 `WebHome` 将会话目标交给 `DshWebLink`，插件设置通过 SSH 网页入口把 `pluginItem` 交给 `WebViewPage`。两条路径都依赖 `WebViewPage` 在页面加载后注入跳转脚本。下一次原生复验需要从这两个入口分别观测目标参数、脚本注入和页面加载顺序。
 
+## Windows x64 官方 Desktop
+
+在真实 Windows x64 主机上，从缓存的官方安装包解出 Desktop `0.2.2-rc.5`。Windows 验证了应用签名，测试驱动在隔离的 SSH 会话 0 中连接应用自己的 Electron 页面。应用安装的冻结包哈希与本轮候选一致。
+
+**22 项全部通过。** 覆盖 Skill 开关及去重、配置保存、原生工作台打开文件并保存到磁盘、Git 空态、编辑器环境路径、MCP HTTP 权限与取消、记忆读写和冷续聊。卸载后两次冷启动保留原会话，并按官方标准预设续聊，恢复通知只出现一次。受控模型适配器通过真实宿主调用工具，外部模型调用为 0。应用正常完成测试，测试进程和调试监听端口均已释放。系统目录选择器、真实桌面焦点和当前 NEXT 手机接管仍待实测。
+
+首次准备时，Windows 自带解包工具不支持安装器内的 LZMA 压缩。改在 Mac 解包并核对传输包哈希后，应用成功启动。随后第 9 项等待事件超时，宿主记录显示对应记忆回合已经完成，4 个工具结果已写入。验收驱动应读取带序号的 Windows 事件文件，当次使用的通用夹具只写了无序号文件。换用仓库已有的 Windows 专用夹具，从空配置重跑 22 项通过。
+
 ## iOS 和其他缺项
 
 本机 Xcode `26.3` 已有 iOS Simulator SDK `26.2`，设备清单中没有已安装的运行时或可用 iPhone。`xcodebuild -downloadPlatform iOS` 请求 `26.2` 和默认 `26.3.1` 时均未能连接 Apple MobileAsset 目录。另一个 Apple 下载入口只取得约 4 MiB 的加密归档片段，目前缺少完整且可导入的运行时。Xcode 提供导入已下载运行时的入口，本轮取得的片段无法用于导入。正式 Go `1.4.0` 的 iOS 发布物为设备用 IPA，因此 iOS 模拟器场景尚未开始。
 
-Go 自动恢复、相同会话 ID 跨宿主回合统计，以及 Remote `0.6.8` 在现有中转服务打开 Web 返回 `TUNNEL_UNAVAILABLE`，沿用[剩余项目补验](Remaining-acceptance-20261126.md)的结论。实体 Android、Intel Mac、macFUSE、Windows x64 原生应用与 SFTP、物理断网和当前 NEXT 桌面远控仍缺相应环境的实测。Windows x64 测试机本轮可以连接，系统没有 WinFsp 服务，命令搜索路径也没有 `rclone.exe`，所以未开始 SFTP 挂载、卸载和重新挂载测试。
+Go 自动恢复、相同会话 ID 跨宿主回合统计，以及 Remote `0.6.8` 在现有中转服务打开 Web 返回 `TUNNEL_UNAVAILABLE`，沿用[剩余项目补验](Remaining-acceptance-20261126.md)的结论。实体 Android、Intel Mac、macFUSE、Windows x64 的 NEXT 和 SFTP、物理断网和当前 NEXT 桌面远控仍缺相应环境的实测。Windows x64 测试机本轮可以连接，系统没有 WinFsp 服务，命令搜索路径也没有 `rclone.exe`，所以未开始 SFTP 挂载、卸载和重新挂载测试。

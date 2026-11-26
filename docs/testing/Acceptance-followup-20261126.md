@@ -37,7 +37,7 @@
 
 **22 项全部通过。** 从空隔离配置安装同一份冻结包，检查 Skill 开关和去重、设置保存、实际工作台编辑并保存到磁盘、Git 空态、MCP 权限和取消、记忆冷续聊，以及卸载后两次完整重启并在原会话续聊。运行使用真实 Electron 和受控模型适配器，外部模型调用为 0，页面脚本错误为 0。退出后核对测试应用进程和调试端口均已释放。
 
-测试运行于 SSH 会话 0，六次启动观察期间未出现原生目录确认窗口。系统级对话框、可见桌面的焦点行为和手机接管仍待实测。结果、安装包版本、进程及端口检查保存在外层验收目录 `windows-x64-native-20261126` 的 `NEXT-Verification.json`，工作台截图为 `next-result/Workbench-native.png`。OpenSpec 两版 Bash 兼容的对照记录保存在 `upgrade-gates-20261126/openspec-shell-overlay`。
+测试运行于 SSH 会话 0，六次启动观察期间未出现原生目录确认窗口。系统级对话框和可见桌面的焦点行为仍待实测。包内的 Agents Anywhere 桥接为 `2.2.0-desktop.cb364f42d2f3f.r2afb7d8b`，此版本的手机接管仍待实测。结果、安装包版本、进程及端口检查保存在外层验收目录 `windows-x64-native-20261126` 的 `NEXT-Verification.json`，工作台截图为 `next-result/Workbench-native.png`。OpenSpec 两版 Bash 兼容的对照记录保存在 `upgrade-gates-20261126/openspec-shell-overlay`。
 
 ## iOS 和其他缺项
 

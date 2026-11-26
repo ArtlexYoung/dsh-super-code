@@ -299,6 +299,13 @@ test('global preferences cross projects, reject unsourced promotion and persist 
   assert.equal((await first.call({ ...request, record: { ...request.record, globalConfirmed: false } })).isError, true)
   assert.equal((await first.call({ ...request, record: { ...request.record,
     entries: [{ ...request.record.entries[0], source: { kind: 'user', eventSeq: source.seq, quote: 'invented' } }] } })).isError, true)
+  const versioned = await first.call({ ...request, record: { ...request.record,
+    entries: [{ ...request.record.entries[0], sourceVersion: 'workspace-version' }] } })
+  assert.equal(versioned.isError, true)
+  assert.match(JSON.stringify(versioned.content), /omit sourceVersion/)
+  assert.deepEqual(f.store.read(memoryGlobalNamespace(), GLOBAL_PREFERENCES_TOPIC), { kind: 'missing' })
+  const help = await first.call({ action: 'help', forAction: 'remember' })
+  assert.match(JSON.stringify(help.content), /omit sourceVersion/)
   assert.equal((await first.call(request)).isError, false)
   const global = f.store.read(memoryGlobalNamespace(), GLOBAL_PREFERENCES_TOPIC)
   assert.equal(global.kind, 'found')

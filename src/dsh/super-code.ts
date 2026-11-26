@@ -317,8 +317,11 @@ export function apply(ctx: Context, config: Config = {}): void {
           if (scope === 'global' && input.globalConfirmed !== true) throw new Error('Global memory requires explicit confirmation in this request')
           if (scope === 'project' && input.globalConfirmed !== undefined) throw new Error('globalConfirmed is only valid for global memory')
           const entries = input.entries.map(entry => {
-            if (scope === 'global' && (entry.kind !== 'constraint' || entry.sourceVersion !== undefined)) {
+            if (scope === 'global' && entry.kind !== 'constraint') {
               throw new Error('Global memory accepts only sourced user preferences')
+            }
+            if (scope === 'global' && entry.sourceVersion !== undefined) {
+              throw new Error('Global preferences are not tied to a workspace version; omit sourceVersion and keep the quoted user source')
             }
             if (entry.kind === 'constraint') {
               if (entry.source.kind !== 'user') throw new Error('A constraint needs a quoted user source')

@@ -2,6 +2,12 @@
 
 [中文](../Compatibility.md) · English
 
+## Simulated-device follow-up (2026-11-26)
+
+Twenty checks passed on a complete x64 Web host under Rosetta, and eight checks passed for an isolated SSH server interruption and recovery. On an Android emulator, dsh-Go 1.4.0 completed real SSH and relay conversations; Agents Anywhere 2.2.0 with its original bridge completed phone takeover, tool execution and conversation continuation after a host restart. Files, tasks and memory were checked against server state, with no repeated relay or AA writes.
+
+This run clarified the error and help text for global memory entries containing `sourceVersion`. Twenty relevant regression tests, type checking, compilation and two distribution checks passed; a real model corrected its request using the new error and saved the preference. The overall result remains **partial**: dsh-Go automatic reconnection was unreliable, although reopening the app restored the session. Phone approvals, iOS, physical-device checks and other gaps remain. See the [Chinese simulated-device report](../testing/Simulated-devices-20261126.md) for package identities, failed attempts and exact limits.
+
 ## Main acceptance update (2026-11-25)
 
 The tested revision is `1c13a2f`, still version `0.4.3`. All 2,143 source tests passed. The fixed archive also passed the three workflow checks, live-model workbench and SSH checks, 44 Windows ARM64 Desktop/NEXT checks, and 46 checks on a physical Windows x64 machine using the oldest and newest supported Web hosts. Existing build, type, three-platform version matrix and performance results are reused only where the tested behavior is unchanged.

@@ -57,8 +57,16 @@ Windows 深目录安装复现了 CLI 失败。Node `24.13.0` 在长路径中无�
 
 **Windows 配对未通过。** 在 SSH 会话 0 中两次点击“连接服务器”，服务端均有健康检查记录。NEXT 随后尝试打开浏览器授权页，两次都收到 `0x483` 并进入恢复模式。系统登记了 Edge，同一后台会话中的独立 URL 启动命令返回成功，但没有观察到可见窗口。现有证据还不能判断在交互式 Windows 桌面能否复现。手机未获得该 NEXT 的会话，审批、取消、写入和冷续聊尚未开始。复验需要能打开授权页的隔离 Windows 桌面。证据保存在 `next-phone-20261126/Result.json`、两次恢复界面记录和 Android 界面记录中。退出后，应用与桥接进程已停止，Windows 的临时桥接状态已移入测试目录。
 
+## Windows ARM64 SFTP 补验
+
+正式 `main` 冻结包在 Windows 11 ARM64 虚拟机、Harness `0.2.2-rc.5` Web 宿主和 Node `24.18.1` 上通过全部 10 项。测试副本安装了签名有效的 WinFsp，并使用 rclone `1.76.0` 挂载隔离 Linux 服务器的 SFTP 目录。安装后核对了插件清单、宿主入口和前端文件的哈希，随后用受控模型触发实际宿主工具，逐项核对会话记录与服务器文件。
+
+远程会话能读取 SFTP 挂载的文件，并通过 `remote_bash` 在服务器写入。本地会话仍有 `run_code`。只读拒绝、手动取消和 SSH 服务中断均未产生迟到写入，重连没有重放命令。卸载后，宿主明确拒绝访问已经消失的挂载路径，没有写入本机或服务器。重挂后，同一会话恢复读写。冷重启后恢复了原会话、任务和记忆。
+
+两次宿主退出均完成资源清理，rclone 两次退出码为 0。核对虚拟机正常关机、测试端口释放和原始虚拟磁盘的文件元数据，再回收本次虚拟磁盘副本及临时 SSH 密钥。证据见外层 `windows-arm64-sftp-20261126` 的 `Verification.json` 和 `Cleanup.json`。
+
 ## iOS 和其他缺项
 
 本机 Xcode `26.3` 已有 iOS Simulator SDK `26.2`，设备清单中没有已安装的运行时或可用 iPhone。`xcodebuild -downloadPlatform iOS` 请求 `26.2` 和默认 `26.3.1` 时均未能连接 Apple MobileAsset 目录。另一个 Apple 下载入口只取得约 4 MiB 的加密归档片段，目前缺少完整且可导入的运行时。Xcode 提供导入已下载运行时的入口，本轮取得的片段无法用于导入。正式 Go `1.4.0` 的 iOS 发布物为设备用 IPA，因此 iOS 模拟器场景尚未开始。
 
-Go 自动恢复、相同会话 ID 跨宿主回合统计，以及 Remote `0.6.8` 在现有中转服务打开 Web 返回 `TUNNEL_UNAVAILABLE`，沿用[剩余项目补验](Remaining-acceptance-20261126.md)的结论。实体 Android、Intel Mac、macFUSE、Windows x64 的 SFTP、物理断网和当前 NEXT 桌面远控仍缺相应环境的实测。Windows x64 测试机本轮可以连接，系统没有 WinFsp 服务，命令搜索路径也没有 `rclone.exe`，所以未开始 SFTP 挂载、卸载和重新挂载测试。
+Go 自动恢复、相同会话 ID 跨宿主回合统计，以及 Remote `0.6.8` 在现有中转服务打开 Web 返回 `TUNNEL_UNAVAILABLE`，沿用[剩余项目补验](Remaining-acceptance-20261126.md)的结论。实体 Android、Intel Mac、macFUSE、Windows x64 的 SFTP、物理断网和当前 NEXT 桌面远控仍缺相应环境的实测。Windows x64 测试机本轮可以连接，系统没有 WinFsp 服务，命令搜索路径没有 `rclone.exe`，也没有可用的 Hyper-V 管理命令。x64 的 SFTP 挂载、卸载和重新挂载仍未验证。

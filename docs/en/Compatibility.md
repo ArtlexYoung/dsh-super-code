@@ -2,6 +2,10 @@
 
 [中文](../Compatibility.md) · English
 
+## Go Web shortcuts and Skill updates (2026-11-26)
+
+The Matt Skill update ran on an isolated maintenance branch, passed 2,143 source tests and two distribution checks, and produced no duplicate commit on a second run. Both OpenSpec CLI versions passed six checks on copies of the same existing project. The bundled upgrade remains gated by the license check, and PStack still requires changes to the local adapter. The overall result remains **partial**. The browser opened the requested Go session and plugin card when supplied with their targets. Both Android native shortcuts still land on the home page, and the iOS simulator runtime is unavailable. See the [Chinese acceptance follow-up](../testing/Acceptance-followup-20261126.md).
+
 ## Automated Go SSH phone acceptance (2026-11-26)
 
 The `0.4.3` candidate for main `1b39707` passed five automated Go SSH phone scenarios: native settings round-trip, tool approval and rejection, long-command cancellation, and saving memory from the embedded Web UI with server readback. The queue received `SIGTERM` after the allow-once scenario. The same command resumed with completed results intact, and a later run started no environment and repeated no writes.

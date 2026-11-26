@@ -35,6 +35,12 @@ Windows 深目录安装复现了 CLI 失败。Node `24.13.0` 在长路径中无�
 
 另核对了 Go `v1.4.0` 的发布源码。会话切换由 `WebHome` 将会话目标交给 `DshWebLink`，插件设置通过 SSH 网页入口把 `pluginItem` 交给 `WebViewPage`。两条路径都依赖 `WebViewPage` 在页面加载后注入跳转脚本。下一次原生复验需要从这两个入口分别观测目标参数、脚本注入和页面加载顺序。
 
+## PStack 0.15.48 候选补验（2026-11-27）
+
+本地分支 `chore/pstack-0.15.48-acceptance` 的提交 `1c78628` 完成了 11 处本地覆盖的迁移核对。新版注册 59 个 Skill，新增 `reframe`，并保留 DSH 自带的编排 playbook。MIT 许可证全文与现版一致。
+
+构建、类型检查、2142 项源码测试通过。最后两处改动后，77 项相关测试及 2 项分发检查通过。macOS ARM64 的完整 Web Harness `0.2.2-rc.5` 使用官方 CLI 离线安装冻结包，6149 个文件与归档一致，6 项工作流界面检查通过。随包状态图工具在 Node `24.18.1` 和真实 TLC 上通过成功退出、非法配置及运行中取消。Windows 状态图进程及新版 Skill 的完整模型流程仍待复验。`main` 的内置版本是 `0.15.36`，冻结候选及证据保存在外层验收目录 `pstack-0.15.48-acceptance`。
+
 ## Windows x64 官方 Desktop
 
 在真实 Windows x64 主机上，从缓存的官方安装包解出 Desktop `0.2.2-rc.5`。Windows 验证了应用签名，测试驱动在隔离的 SSH 会话 0 中连接应用自己的 Electron 页面。应用安装的冻结包哈希与本轮候选一致。

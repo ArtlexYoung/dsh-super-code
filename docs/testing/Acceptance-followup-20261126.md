@@ -16,8 +16,15 @@
 
 在 Android 15 模拟器中，从原生会话点击“切换网页版”，网页加载后额外等待 12 秒，仍显示“选择工作区”首页。手动打开对应会话后，测试消息和右侧栏的 Super Code 任务入口可见。从原生插件设置点击“在网页版设置”，也打开了同一个首页。手动对照只走到“正在读取插件”，脚本没有等列表加载完成，因此手动打开设置的结论沿用前轮实测。浏览器实验给出了网页收到目标后的行为。结合 Android 的实际结果，尚需核实原生目标传递和 WebView 加载过程。通用 `settings` 跳转也做过单独检查，窄屏侧栏折叠时无法定位通用设置，插件配置入口使用 `pluginItem`。三次 Android 隔离运行的宿主均正常退出，端口已释放。回收了三份重复安装，每份回收前核对 6165 个包内文件。
 
+
+### 同一台宿主的对照
+
+使用 Android 补验正在连接的同一个 Linux ARM64 Harness、同一份冻结包和同一个种子会话，在全新 Chromium 上下文中从宿主启动链接直接进入。使用 Go APK 内的移动端网页脚本后，会话目标能打开指定消息，插件目标能打开 Super Code 卡片。Linux 宿主确实显示了预览提示。脚本报告插件跳转成功，点击“继续”后卡片仍在。同一轮 Android 从原生插件配置打开网页两次，第二次是在关闭第一次打开的网页后重试。两次都没有出现预览提示，仍停在“选择工作区”首页。由此可知，在本轮条件下，即使没有提示挡住页面，Android 快捷入口仍会失败。网页手动对照加载了插件列表，但脚本在当前可见区域未找到插件按钮，未完成手动点开卡片的验证。此次未取得 Android App 实际发送的目标和 WebView 的脚本执行顺序。
+
+另核对了 Go `v1.4.0` 的发布源码。会话切换由 `WebHome` 将会话目标交给 `DshWebLink`，插件设置通过 SSH 网页入口把 `pluginItem` 交给 `WebViewPage`。两条路径都依赖 `WebViewPage` 在页面加载后注入跳转脚本。下一次原生复验需要从这两个入口分别观测目标参数、脚本注入和页面加载顺序。
+
 ## iOS 和其他缺项
 
 本机 Xcode `26.3` 已有 iOS Simulator SDK `26.2`，设备清单中没有已安装的运行时或可用 iPhone。`xcodebuild -downloadPlatform iOS` 请求 `26.2` 和默认 `26.3.1` 时均未能连接 Apple MobileAsset 目录。另一个 Apple 下载入口只取得约 4 MiB 的加密归档片段，目前缺少完整且可导入的运行时。Xcode 提供导入已下载运行时的入口，本轮取得的片段无法用于导入。正式 Go `1.4.0` 的 iOS 发布物为设备用 IPA，因此 iOS 模拟器场景尚未开始。
 
-Go 自动恢复、相同会话 ID 跨宿主回合统计，以及 Remote `0.6.8` 在现有中转服务打开 Web 返回 `TUNNEL_UNAVAILABLE`，沿用[剩余项目补验](Remaining-acceptance-20261126.md)的结论。实体 Android、Intel Mac、macFUSE、Windows x64 原生应用与 SFTP、物理断网和当前 NEXT 桌面远控仍缺相应环境的实测。
+Go 自动恢复、相同会话 ID 跨宿主回合统计，以及 Remote `0.6.8` 在现有中转服务打开 Web 返回 `TUNNEL_UNAVAILABLE`，沿用[剩余项目补验](Remaining-acceptance-20261126.md)的结论。实体 Android、Intel Mac、macFUSE、Windows x64 原生应用与 SFTP、物理断网和当前 NEXT 桌面远控仍缺相应环境的实测。Windows x64 测试机本轮可以连接，系统没有 WinFsp 服务，命令搜索路径也没有 `rclone.exe`，所以未开始 SFTP 挂载、卸载和重新挂载测试。

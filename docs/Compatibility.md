@@ -8,7 +8,7 @@
 
 ## Windows x64 NEXT（2026-11-26）
 
-冻结的 `0.4.3` 候选在真实 Windows x64、NEXT `2.0.24-next`（内置 Harness `0.2.2-rc.5`）上通过 22 项原生 Electron 检查，覆盖安装、工作台实际保存、Skill、MCP、记忆和卸载后原会话续聊。便携包 SHA-256 与官方发布一致，Windows 报告应用未签名。测试使用隔离后台会话，系统级对话框和手机接管待验证。见[本轮验收记录](testing/Acceptance-followup-20261126.md#windows-x64-next)。
+冻结的 `0.4.3` 候选在真实 Windows x64、NEXT `2.0.24-next`（内置 Harness `0.2.2-rc.5`）上通过 22 项原生 Electron 检查，覆盖安装、工作台实际保存、Skill、MCP、记忆和卸载后原会话续聊。便携包 SHA-256 与官方发布一致，Windows 报告应用未签名。原生 Windows x64 的隔离后台会话中，打开手机配对授权页失败，系统级对话框待验证。Windows 11 ARM64 虚拟机运行同一 x64 NEXT，配合 Android 15 ARM64 模拟器，通过手机接管、冷重启后续聊、手机审批和运行中命令取消。见[本轮验收记录](testing/Acceptance-followup-20261126.md#next-手机接管)。
 
 ## Go 网页快捷入口与 Skill 更新（2026-11-26）
 

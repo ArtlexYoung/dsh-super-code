@@ -49,7 +49,7 @@ Windows 深目录安装复现了 CLI 失败。Node `24.13.0` 在长路径中无�
 
 **22 项全部通过。** 从空隔离配置安装同一份冻结包，检查 Skill 开关和去重、设置保存、实际工作台编辑并保存到磁盘、Git 空态、MCP 权限和取消、记忆冷续聊，以及卸载后两次完整重启并在原会话续聊。运行使用真实 Electron 和受控模型适配器，外部模型调用为 0，页面脚本错误为 0。退出后核对测试应用进程和调试端口均已释放。
 
-测试运行于 SSH 会话 0，六次启动观察期间未出现原生目录确认窗口。系统级对话框和可见桌面的焦点行为仍待实测。包内的 Agents Anywhere 桥接为 `2.2.0-desktop.cb364f42d2f3f.r2afb7d8b`，此版本的手机接管仍待实测。结果、安装包版本、进程及端口检查保存在外层验收目录 `windows-x64-native-20261126` 的 `NEXT-Verification.json`，工作台截图为 `next-result/Workbench-native.png`。OpenSpec 两版 Bash 兼容的对照记录保存在 `upgrade-gates-20261126/openspec-shell-overlay`。
+测试运行于 SSH 会话 0，六次启动观察期间未出现原生目录确认窗口。系统级对话框和可见桌面的焦点行为仍待实测。包内的 Agents Anywhere 桥接为 `2.2.0-desktop.cb364f42d2f3f.r2afb7d8b`。下节记录相同便携包在 Windows ARM64 虚拟机上的手机接管复验。结果、安装包版本、进程及端口检查保存在外层验收目录 `windows-x64-native-20261126` 的 `NEXT-Verification.json`，工作台截图为 `next-result/Workbench-native.png`。OpenSpec 两版 Bash 兼容的对照记录保存在 `upgrade-gates-20261126/openspec-shell-overlay`。
 
 ### NEXT 手机接管
 
@@ -59,7 +59,17 @@ Windows 深目录安装复现了 CLI 失败。Node `24.13.0` 在长路径中无�
 
 在 Windows 11 ARM64 隔离虚拟机的交互式控制台会话 1 中，又用同一份官方 x64 NEXT `2.0.24-next` 便携包复验。安装校验过的 `main` 冻结包后，创建了独立测试会话。Android 模拟器已登录同一个自托管服务。NEXT 点击连接后提示登录页已打开，随后显示“浏览器未打开？点击继续”。当次进程检查未发现可见的 Edge 窗口。首轮在验证该手动入口前关闭了虚拟机。
 
-复用同一虚拟机后，点击手动入口仍停留在 NEXT 等待页。将该入口提供的链接打开到隔离的 Edge 配置中，可以正常登录并授权。服务端完成了桌面 OAuth，NEXT 显示已登录账号，Android 设备列表也出现了该 Windows 设备，首次状态为离线。NEXT 的 Connector 首次启动因虚拟机无法解析 Python 下载域名而退出。把经过上游 SHA-256 校验的 x64 CPython `3.14.6` 提供给测试进程后，原 Connector 已创建虚拟环境，并通过仅供测试使用的 PyPI 代理下载依赖。手机接管仍待验证。证据见 `next-phone-interactive-20261126/services-r2/PairingVerification.json`。
+复用同一虚拟机后，点击手动入口仍停留在 NEXT 等待页。将该入口提供的链接打开到隔离的 Edge 配置中，可以正常登录并授权。服务端完成了桌面 OAuth，NEXT 显示已登录账号，Android 设备列表也出现了该 Windows 设备，首次状态为离线。NEXT 的 Connector 首次启动因虚拟机无法解析 Python 下载域名而退出。把经过上游 SHA-256 校验的 x64 CPython `3.14.6` 提供给测试进程后，原 Connector 已创建虚拟环境，并通过仅供测试使用的 PyPI 代理下载依赖。配对证据见 `next-phone-interactive-20261126/services-r2/PairingVerification.json`。
+
+**Android 模拟器接管、冷启动续聊和手机审批通过。** 在独立 Windows 账号下，按 Connector 锁文件准备依赖，56 个已安装包通过依赖检查。复验使用原装 Connector，仅在本次隔离启动中跳过重复安装。测试最初将 Python 的用户目录指向隔离子目录，导致 Connector 和桌面桥接查找了不同位置。让两个进程使用同一 Windows 测试账号目录后，桌面日志出现 `bridge.connected`。在 Android 设备页配置指向本次 DSH 数据目录的 DeepSeek Harness 实例后，手机找到了原桌面会话。
+
+手机能在只读状态查看桌面消息和回复。开启接管后，手机发出的消息写入原桌面会话。NEXT 进程退出并重启时，手机显示设备离线。设备重新上线后，手机在原会话直接续聊。宿主事件中，桌面首轮、手机接管轮和重启后的手机续聊各有一条用户消息、一条受控模型回复。手机发送一个延迟回复请求后，点击停止，宿主记录 `aborted`，该轮没有生成正常回复，随后同一会话可以继续收发。
+
+手机选择“允许一次”后，宿主记录 `allowed-once`，Windows 测试目录的文件恰有一份 `NEXT_APPROVED` 内容，工具读回成功。第二条写入仍需审批，手机拒绝后宿主记录 `rejected`，工具返回失败，文件没有生成。证据见 `next-phone-interactive-20261126` 下的 `AndroidReadOnlySession.log`、`AndroidColdReply.log`、`vm/cold-turn-evidence.stdout.log` 和 `vm/denied-decision-evidence.stdout.log`。
+
+**手机取消正在执行的 Bash 命令通过。** Windows 的 `workspace-write` 沙箱首次返回 `SUPER_CODE_BASH_SANDBOX`，因为内置 MSYS Bash 启动时需要命名管道，命令当时未执行。保留原会话权限，在单独一轮从手机选择“允许一次”。Windows 写出 `NEXT_STARTED` 后，从手机停止该轮，宿主在事件 151 记录 `aborted`。超过命令原定的 60 秒后仍未出现第二次写入，手机随后在原会话收到新回复。前后文件状态和宿主事件见 `vm/approved-tool-running.stdout.log`、`vm/approved-cancel-after-timeout.stdout.log`，手机回执见 `AndroidAfterToolCancelReply.log`。完整证据核对见该轮目录下的 `Verification.json`。
+
+Windows 虚拟机正常关机，Android 模拟器、专用 ADB 和临时自托管服务已退出。测试端口释放，原始虚拟磁盘的文件元数据与启动前一致。已回收本轮磁盘和模拟器副本，保留日志、截图及 `Cleanup.json`。
 
 ## Windows ARM64 SFTP 补验
 
@@ -73,4 +83,4 @@ Windows 深目录安装复现了 CLI 失败。Node `24.13.0` 在长路径中无�
 
 本机 Xcode `26.3` 已有 iOS Simulator SDK `26.2`，设备清单中没有已安装的运行时或可用 iPhone。`xcodebuild -downloadPlatform iOS` 请求 `26.2` 和默认 `26.3.1` 时均未能连接 Apple MobileAsset 目录。另一个 Apple 下载入口只取得约 4 MiB 的加密归档片段，目前缺少完整且可导入的运行时。Xcode 提供导入已下载运行时的入口，本轮取得的片段无法用于导入。正式 Go `1.4.0` 的 iOS 发布物为设备用 IPA，因此 iOS 模拟器场景尚未开始。
 
-Go 自动恢复、相同会话 ID 跨宿主回合统计，以及 Remote `0.6.8` 在现有中转服务打开 Web 返回 `TUNNEL_UNAVAILABLE`，沿用[剩余项目补验](Remaining-acceptance-20261126.md)的结论。实体 Android、Intel Mac、macFUSE、Windows x64 的 SFTP、物理断网和当前 NEXT 桌面远控仍缺相应环境的实测。Windows x64 测试机本轮可以连接，系统没有 WinFsp 服务，命令搜索路径没有 `rclone.exe`，也没有可用的 Hyper-V 管理命令。x64 的 SFTP 挂载、卸载和重新挂载仍未验证。
+Go 自动恢复、相同会话 ID 跨宿主回合统计，以及 Remote `0.6.8` 在现有中转服务打开 Web 返回 `TUNNEL_UNAVAILABLE`，沿用[剩余项目补验](Remaining-acceptance-20261126.md)的结论。实体 Android、Intel Mac、macFUSE、Windows x64 的 SFTP、物理断网和原生 Windows x64 的 NEXT 手机接管仍缺相应环境的实测。Windows x64 测试机本轮可以连接，系统没有 WinFsp 服务，命令搜索路径没有 `rclone.exe`，也没有可用的 Hyper-V 管理命令。x64 的 SFTP 挂载、卸载和重新挂载仍未验证。

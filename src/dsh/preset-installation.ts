@@ -332,10 +332,13 @@ async function declarationHost(owner: Context): Promise<DeclarationHost | false>
     // ConfigEditor writes the same patch under the profile package lock, even
     // when HMR is absent. Acquire both locks in the host's order.
     const lockPath = join(dirname(profile.patchPath), 'package.json')
+    // New Cordis exposes the root on Context.root's symbol key.
+    const rootKey = Symbol.for('cordis.root')
+    const root = (owner as Context & { [rootKey]?: Context })[rootKey] ?? owner.root
     return {
       patchPath: profile.patchPath,
       entries: () => [...loader.entries()].map(row => ({ id: row.options.id, disabled: row.disabled, options: row.options })),
-      reload: async () => { await boot.reconcileProfilePatches(owner.root, boot.readProfilePatches('dsh', profile), 'dsh') },
+      reload: async () => { await boot.reconcileProfilePatches(root, boot.readProfilePatches('dsh', profile), 'dsh') },
       exclusive: run => {
         const locked = () => withFileLock(lockPath, run)
         return hmr ? hmr.runExclusive(locked) : locked()

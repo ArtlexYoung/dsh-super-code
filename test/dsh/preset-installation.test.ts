@@ -5,8 +5,9 @@ import { syncBuiltinESMExports } from 'node:module'
 import { pathToFileURL } from 'node:url'
 import { basename, dirname, join, resolve } from 'node:path'
 import { tmpdir } from 'node:os'
+import { Context } from '@deepseek-ai/cordis'
 import { discoverPresets, type PresetRoot } from '@deepseek-ai/dsh-agent-presets'
-import { DeclaredPresetStatus, PresetInstaller } from '../../src/dsh/preset-installation.js'
+import { applyPresetInstallation, DeclaredPresetStatus, PresetInstaller, type SuperCodePresets } from '../../src/dsh/preset-installation.js'
 import { compositionVersion, pluginVersion } from '../../src/dsh/preset-version.js'
 import { displayCopy } from '../../src/dsh/preset-metadata.js'
 
@@ -23,6 +24,51 @@ test('declarative host reports its own preset without editing the profile', asyn
   const missing = new DeclaredPresetStatus({ list: async () => [] })
   assert.equal((await missing.status()).state, 'missing')
 })
+
+for (const rootFormat of ['symbol', 'legacy'] as const) {
+  test(`declarative preset synchronization reloads through the ${rootFormat} root`, { timeout: 5000 }, async t => {
+    const root = await mkdtemp(join(tmpdir(), 'super-code-profile-root-'))
+    t.after(() => rm(root, { recursive: true, force: true }))
+    const modules = join(root, 'node_modules', '@deepseek-ai')
+    const installAnchor = join(root, 'package.json')
+    const patchPath = join(root, 'cordis.patch.yml')
+    const boot = `export function readProfilePatches(_name, profile) { return profile.patchPath }
+      export async function reconcileProfilePatches(root, patchPath, name) {
+        const { writeFile } = await import('node:fs/promises')
+        if (name !== 'dsh' || !root || ${rootFormat === 'symbol' ? '!root.expectedByHost' : 'root.root !== root'}) {
+          throw new Error('Host received the wrong root context')
+        }
+        await writeFile(patchPath + '.reloaded', name)
+      }`
+    for (const [name, code] of [
+      ['dsh-app-boot', boot],
+      ['dsh-atomic-write', 'export const withFileLock = (_path, run) => run()'],
+    ]) {
+      const directory = join(modules, name)
+      await mkdir(directory, { recursive: true })
+      await writeFile(join(directory, 'package.json'), JSON.stringify({ exports: './index.mjs' }))
+      await writeFile(join(directory, 'index.mjs'), code)
+    }
+    await writeFile(patchPath, '[]\n')
+    const ctx = new Context()
+    t.after(() => ctx.fiber.dispose())
+    if (rootFormat === 'symbol') Object.defineProperty(ctx, Symbol.for('cordis.root'), { value: { expectedByHost: true } })
+    const options = { id: 'preset-super-code', name: '@deepseek-ai/dsh-agent-preset', config: {
+      id: 'super-code', ...displayCopy('en'), plugins: [{ name: 'dsh-super-code/super-code', config: { presetInstallation: 'bundle:dsh-super-code' } }],
+    } }
+    ctx.provide('profileContext', { patchPath, installAnchor })
+    ctx.provide('loader', { entries: () => [{ options }] })
+    ctx.provide('agentPresets', { list: async () => [{ id: 'super-code' }] })
+    ctx.provide('settings', {})
+    await ctx.plugin(applyPresetInstallation)
+    const ready = Promise.withResolvers<SuperCodePresets>()
+    ctx.inject(['superCodePresets'], owner => ready.resolve(owner.get('superCodePresets') as SuperCodePresets))
+    const service = await ready.promise
+    assert.deepEqual(await service.synchronize('zh'), { changed: true })
+    assert.equal(await readFile(patchPath + '.reloaded', 'utf8'), 'dsh')
+    assert.ok((await readFile(patchPath, 'utf8')).includes(displayCopy('zh').description))
+  })
+}
 
 const versionedComposition = (version: string) => `- id: super-code\n  name: dsh-super-code/super-code\n  config:\n    presetVersion: ${version}\n`
 

@@ -61,6 +61,8 @@ Windows 深目录安装复现了 CLI 失败。Node `24.13.0` 在长路径中无�
 
 另核对了 Go `v1.4.0` 的发布源码。会话切换由 `WebHome` 将会话目标交给 `DshWebLink`，插件设置通过 SSH 网页入口把 `pluginItem` 交给 `WebViewPage`。两条路径都依赖 `WebViewPage` 在页面加载后注入跳转脚本。下一次原生复验需要从这两个入口分别观测目标参数、脚本注入和页面加载顺序。
 
+隔离 Dart 测试复现了两种丢失跳转指令的情况。页面先报告加载完成时，`DshWebLink` 可能在脚本注入前发送指令。直接传入的目标在脚本执行报错后，也可能因已被标记为发送而跳过重试。候选让调用等到脚本就绪，并在执行返回后记录直接目标已发送。两项对照均通过。Android 上此前落到首页的原因仍需用修复版 APK 核对。补丁和测试记录见外层 `go-web-target-audit-20261126/bridge-delivery-candidate`。
+
 ## PStack 0.15.48 候选补验（2026-11-27）
 
 本地分支 `chore/pstack-0.15.48-acceptance` 的提交 `1c78628` 完成了 11 处本地覆盖的迁移核对。新版注册 59 个 Skill，新增 `reframe`，并保留 DSH 自带的编排 playbook。MIT 许可证全文与现版一致。

@@ -8,7 +8,7 @@
 
 ## Windows x64 NEXT（2026-11-26）
 
-冻结的 `0.4.3` 候选在真实 Windows x64、NEXT `2.0.24-next`（内置 Harness `0.2.2-rc.5`）上通过 22 项原生 Electron 检查，覆盖安装、工作台实际保存、Skill、MCP、记忆和卸载后原会话续聊。便携包 SHA-256 与官方发布一致，Windows 报告应用未签名。原生 Windows x64 的交互式桌面已完成 OAuth、Android 15 ARM64 模拟器手机接管、冷重启后续聊和运行中模型请求取消。工具审批和实际文件副作用仍待补测。之前的后台会话返回 `0x483`，不能作为交互式桌面结果。Windows 11 ARM64 虚拟机运行同一 x64 NEXT，配合 Android 15 ARM64 模拟器，通过手机接管、冷重启后续聊、手机审批和运行中命令取消。见[本轮验收记录](testing/Acceptance-followup-20261126.md#next-手机接管)。
+冻结的 `0.4.3` 候选在真实 Windows x64、NEXT `2.0.24-next`（内置 Harness `0.2.2-rc.5`）上通过 22 项原生 Electron 检查，覆盖安装、工作台实际保存、Skill、MCP、记忆和卸载后原会话续聊。便携包 SHA-256 与官方发布一致，Windows 报告应用未签名。原生 Windows x64 的交互式桌面已完成 OAuth、Android 15 ARM64 模拟器手机接管、冷重启后续聊和运行中模型请求取消。Android 模拟器已在原会话实测工具审批。允许一次后 Windows 写入了预期文件，但回合最终中止。拒绝后宿主记录为 `rejected`，且没有生成文件。运行中工具取消仍待复验。之前的后台会话返回 `0x483`，不能作为交互式桌面结果。Windows 11 ARM64 虚拟机运行同一 x64 NEXT，配合 Android 15 ARM64 模拟器，通过手机接管、冷重启后续聊、手机审批和运行中命令取消。见[本轮验收记录](testing/Acceptance-followup-20261126.md#next-手机接管)。
 
 ## Go 网页快捷入口与 Skill 更新（2026-11-26）
 

@@ -87,7 +87,7 @@ Windows 深目录安装复现了 CLI 失败。Node `24.13.0` 在长路径中无�
 
 在同一 Windows x64 便携版上通过原生设置向导启用远控。完成向导后，侧栏显示“远程控制”，可以进入自托管连接设置。Android 15 ARM64 模拟器上的 Agents Anywhere `2.2.0` 通过相同自托管服务的登录和授权页面，进入 App 首页。
 
-**Windows x64 交互式桌面已部分通过。** 原先的 SSH 会话 0 两次点击“连接服务器”均返回 `0x483`，该后台失败记录保留在 `next-phone-20261126/Result.json`。随后在会话 1 的交互式桌面中，隔离账号完成 OAuth，Android 15 ARM64 模拟器发现在线的 Windows x64 主机并接管原会话。冷重启后，手机继续使用同一会话；受控模型请求被手机取消后，宿主回合以 `aborted` 结束且没有迟到回复。工具审批和实际文件副作用尚未补测，统一验收保留为部分通过。原始收据保存在 `next-phone-native-session-20261127/Verification.json`。退出后，NEXT、Edge、桥接服务和临时端口均已清理。
+**Windows x64 交互式桌面已部分通过。** 原先的 SSH 会话 0 两次点击“连接服务器”均返回 `0x483`，该后台失败记录保留在 `next-phone-20261126/Result.json`。随后在会话 1 的交互式桌面中，隔离账号完成 OAuth，Android 15 ARM64 模拟器发现在线的 Windows x64 主机并接管原会话。冷重启后，手机继续使用同一会话；受控模型请求被手机取消后，宿主回合以 `aborted` 结束且没有迟到回复。补验时，手机点“允许一次”后，Windows 写出了预期标记，宿主记录为 `allowed-once`，该回合最终以 `aborted` 结束。手机点拒绝后，宿主记录为 `rejected`，回合结束且没有生成目标文件。首轮取消脚本使用的 `sleep` 在测试 Bash 中不可用。改用 PowerShell 延时后，原会话在重启后被 Bridge 拒绝读取，新建会话则没有暴露脚本依赖的 `tools.bash`。因此，允许运行后的完整回合和运行中工具取消仍待复验。补验收据保存在 `next-phone-native-session-20261127/tool-followup/Verification.json`，统一验收保留为部分通过。原始收据保存在 `next-phone-native-session-20261127/Verification.json`。退出后，NEXT、Edge、桥接服务和临时端口均已清理。
 
 在 Windows 11 ARM64 隔离虚拟机的交互式控制台会话 1 中，又用同一份官方 x64 NEXT `2.0.24-next` 便携包复验。安装校验过的 `main` 冻结包后，创建了独立测试会话。Android 模拟器已登录同一个自托管服务。NEXT 点击连接后提示登录页已打开，随后显示“浏览器未打开？点击继续”。当次进程检查未发现可见的 Edge 窗口。首轮在验证该手动入口前关闭了虚拟机。
 

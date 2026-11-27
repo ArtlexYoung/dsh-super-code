@@ -55,7 +55,8 @@ test('工作台独立初始化、工作流随真实开关登记，并在卸载�
   }
   const beforeWorkbench = editorEnvironmentReads
   const stop = start()
-  assert.equal(editorEnvironmentReads, beforeWorkbench, '登记关闭的工作台不初始化编辑器的浏览器环境')
+  assert.equal(entries.get('super-code-workbench').contribution.name, 'conversation.view')
+  assert.ok(editorEnvironmentReads > beforeWorkbench, '默认开启时准备编辑器，首次打开文件不再初始化模块')
   const settings = entries.get('super-code').contribution.inject()
   await settingsUpdated()
   assert.equal(entries.has('super-code-mattpocock'), false)
@@ -84,12 +85,8 @@ test('工作台独立初始化、工作流随真实开关登记，并在卸载�
   assert.equal(workflow.page, 'mattpocock')
   const preference = settings.workbenchState.snapshot()?.preference
   assert.ok(preference)
-  assert.equal(entries.has('super-code-workbench'), false)
-  assert.equal(workflow.hasWorkbench(), false)
-  preference.save({ enabled: true })
-  assert.ok(editorEnvironmentReads > beforeWorkbench, '启用时准备编辑器，首次打开文件不再初始化模块')
+  assert.equal(preference.snapshot().openFiles, true)
   assert.equal(workflow.hasWorkbench(), true, '工作流文件入口读取工作台现有开关')
-  assert.equal(entries.get('super-code-workbench').contribution.name, 'conversation.view')
   assert.ok(entries.has('super-code'))
   preference.save({ enabled: false })
   assert.equal(entries.has('super-code-workbench'), false)

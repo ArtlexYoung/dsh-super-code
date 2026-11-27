@@ -39,7 +39,10 @@ export function createEditorPreference(storage) {
 /** 纯界面模块的开关保存在当前客户端，不改变项目、预设或模型。 */
 export function createWorkbenchPreference(storage) {
   const listeners = new Set();
-  const read = () => ({ enabled: storage.getItem(KEY) === 'true' || storage.getItem(LEGACY_READING_KEY) === 'true', openFiles: storage.getItem(OPEN_FILES_KEY) === 'true' });
+  const read = () => ({
+    enabled: storage.getItem(KEY) !== 'false' || storage.getItem(LEGACY_READING_KEY) === 'true',
+    openFiles: storage.getItem(OPEN_FILES_KEY) !== 'false',
+  });
   let state = read();
   const update = value => { if (value.enabled === state.enabled && value.openFiles === state.openFiles) return; state = value; for (const listener of listeners) listener(); };
   return {

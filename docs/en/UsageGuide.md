@@ -29,7 +29,7 @@ New here? Read the Install and Use sections of the [README](../../README.en.md) 
 
 [![Super Code preset settings](../images/preset-settings-display.svg)](../images/preset-settings.png)
 
-3. The workbench has its own opt-in switch. Follow the [illustrated workbench guide](CodeWorkbench.md) to enable it and open project files.
+3. In a conversation with a working directory, open **Code workbench** beside **Conversation** to browse and edit project files. [See the illustrated guide](CodeWorkbench.md).
 
 ## Model
 
@@ -73,11 +73,11 @@ Before plugin 0.2.0, the settings page lives under **Plugins → Plugin configur
 
 Switching tabs keeps unsaved input.
 
-In **Settings → Super Code → Code workbench**, turn on **Enable code workbench (Beta)**. Return to your conversation and open **Code workbench** beside Conversation. See the [illustrated workbench guide](CodeWorkbench.md) for the switches, editing and reading controls.
+**Enable code workbench** and **Open files in workbench** are both on by default. You can change them independently under **Settings → Super Code → Code workbench**. [See the illustrated guide](CodeWorkbench.md).
 
 ### When a feature is unavailable
 
-The workbench and MCP connection are off by default; enable them as needed. File browsing and Git remain available when the model service is unavailable. Features that need a missing host interface are marked unavailable. If the working directory becomes invalid, follow the recovery prompt; in-flight requests are not replayed automatically. After updating the plugin, reload or restart when prompted, then check the preset version. Reinstall an older preset from **Preset configuration**.
+The MCP connection is off by default. File browsing and Git remain available when the model service is unavailable. Features that need a missing host interface are marked unavailable. If the working directory becomes invalid, follow the recovery prompt; in-flight requests are not replayed automatically. After updating the plugin, reload or restart when prompted, then check the preset version. Reinstall an older preset from **Preset configuration**.
 
 ### Tool profiles
 

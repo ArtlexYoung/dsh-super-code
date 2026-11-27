@@ -5,24 +5,24 @@ import { readPreferences, defaults, bindingsOf, conflict, keyOf, matchesShortcut
 import { selectionThread, hasMark, applyReplacement, selectionSnapshot, mapThread } from '../../../builtin/workbench/assistant/selection-state.js'
 import { EditorState, ChangeSet } from '@codemirror/state'
 
-test('代码模块默认关闭，开关及时通知且只保存自己的设置', () => {
+test('代码工作台默认开启，关闭后即时生效并在重载后保留', () => {
   const data = new Map<string, string>(), storage = { getItem: (key: string) => data.get(key), setItem: (key: string, value: string) => data.set(key, value) }
   const preference = createWorkbenchPreference(storage)
-  assert.equal(preference.snapshot().enabled, false)
+  assert.equal(preference.snapshot().enabled, true)
   let notifications = 0
   const unsubscribe = preference.subscribe(() => notifications++)
-  preference.save({ enabled: true }); preference.save({ enabled: true })
+  preference.save({ enabled: false }); preference.save({ enabled: false })
   assert.equal(notifications, 1)
-  assert.equal(createWorkbenchPreference(storage).snapshot().enabled, true)
-  unsubscribe(); preference.save({ enabled: false })
+  assert.equal(createWorkbenchPreference(storage).snapshot().enabled, false)
+  unsubscribe(); preference.save({ enabled: true })
   assert.equal(notifications, 1)
   assert.equal(data.size, 1)
 })
 
 test('模块开关写入失败时保留之前的有效状态', () => {
   const preference = createWorkbenchPreference({ getItem: () => null, setItem: () => { throw new Error('read-only') } })
-  assert.throws(() => preference.save({ enabled: true }), /read-only/)
-  assert.equal(preference.snapshot().enabled, false)
+  assert.throws(() => preference.save({ enabled: false }), /read-only/)
+  assert.equal(preference.snapshot().enabled, true)
 })
 
 test('旧学习开关迁移到统一工作台，关闭后不会被旧开关重新开启', () => {
@@ -38,7 +38,7 @@ test('旧学习开关迁移到统一工作台，关闭后不会被旧开关重�
   data.set('dsh-super-code-workbench-enabled', 'true')
   preference.refresh({ key: 'unrelated' }); assert.equal(preference.snapshot().enabled, false)
   preference.refresh({ key: 'dsh-super-code-workbench-enabled' }); assert.equal(preference.snapshot().enabled, true)
-  data.clear(); preference.refresh({ key: null }); assert.equal(preference.snapshot().enabled, false)
+  data.clear(); preference.refresh({ key: null }); assert.equal(preference.snapshot().enabled, true)
 })
 
 test('编辑器默认 IDEA，支持独立配色、VS Code 绑定及无冲突的自定义快捷键', () => {
@@ -150,28 +150,25 @@ test('选区修改按编辑器字符位置处理换行，模型返回不同换�
   }
 })
 
-test('对话文件接管默认关闭，独立实时保存，不重置工作台和编辑设置', () => {
+test('对话文件默认在工作台打开，两个开关独立保存', () => {
   const data = new Map<string, string>(), storage = { getItem: (key: string) => data.get(key), setItem: (key: string, value: string) => data.set(key, value) }
   const preference = createWorkbenchPreference(storage), initial = preference.snapshot()
-  assert.deepEqual(initial, { enabled: false, openFiles: false })
+  assert.deepEqual(initial, { enabled: true, openFiles: true })
   let count = 0
   preference.subscribe(() => count++)
-  preference.save({ openFiles: true })
-  assert.deepEqual(preference.snapshot(), { enabled: false, openFiles: true })
-  preference.save({ enabled: true }); preference.save({ enabled: true })
-  assert.equal(count, 2)
-  assert.deepEqual(createWorkbenchPreference(storage).snapshot(), { enabled: true, openFiles: true })
-  preference.save({ enabled: false })
-  assert.equal(preference.snapshot().openFiles, true)
-  data.set('dsh-super-code-workbench-open-files', 'false')
-  preference.refresh({ key: 'dsh-super-code-workbench-open-files' })
+  preference.save({ openFiles: false })
+  assert.deepEqual(createWorkbenchPreference(storage).snapshot(), { enabled: true, openFiles: false })
+  preference.save({ enabled: false }); preference.save({ enabled: false })
   assert.deepEqual(preference.snapshot(), { enabled: false, openFiles: false })
-  assert.equal(count, 4)
+  data.set('dsh-super-code-workbench-open-files', 'true')
+  preference.refresh({ key: 'dsh-super-code-workbench-open-files' })
+  assert.deepEqual(preference.snapshot(), { enabled: false, openFiles: true })
+  assert.equal(count, 3)
 })
 
 test('文件接管开关写入失败后快照保持稳定', () => {
   const preference = createWorkbenchPreference({ getItem: () => null, setItem: () => { throw new Error('read-only') } })
   const previous = preference.snapshot()
-  assert.throws(() => preference.save({ openFiles: true }), /read-only/)
+  assert.throws(() => preference.save({ openFiles: false }), /read-only/)
   assert.equal(preference.snapshot(), previous)
 })

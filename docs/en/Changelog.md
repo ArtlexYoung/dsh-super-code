@@ -4,6 +4,20 @@
 
 Versions are `major.performance.maintenance`. The second number changes when coding results or efficiency improve; the third covers fixes, UI, and compatibility. See [Compatibility](Compatibility.md) for what each release was tested on.
 
+## 0.4.4 · 2026-11-28
+
+- Matt, PStack, and OpenSpec have dedicated workflow pages. Enable the corresponding Skill pack to track prerequisites, results, and acceptance in Matt, keep design and implementation notes in PStack, or read change documents and task progress from the project in OpenSpec. Switching pages preserves the current task or reading position.
+- Prepare and send instructions from a workflow page using the same draft as the full conversation. The conversation pane supports agent switching, keyboard search, navigation by question, and quoting replies in results or notes with a way back to the original. The Skill library supports filtering, search, favorites, and recent items. See the [workflow guide](Workflows.md).
+- The Code Workbench and **Open files in workbench** are on by default. The workbench drops its Beta label. The two switches remain independent and saved choices carry over.
+- Jump to a file, line and column, or project symbol, and browse sibling paths or scopes. Search results can be grouped by file and shown beside the editor. Search and replace share the same scope, with a preview and file selection before applying project-wide replacements.
+- Rename, move, and undo file operations, save all files, recover drafts and closed tabs, review Git changes, stage individual hunks, and review or revert edits to selected code. Reopen the workbench to recover tabs, reading positions, pinned conversations, and learning progress. Settings are searchable and can be reset individually. Narrow windows use a compact layout, and the right pane can be expanded temporarily. See the [Code Workbench guide](CodeWorkbench.md).
+- Lightweight SSH projects use `remote_bash` for commands and file edits on all platforms. Reads and searches can use a working mount. Switching tool profiles keeps tool lists and prompts tied to the remote session’s capabilities. Deletion protection tells agents to check for a trash command on the remote machine. See [remote projects](UsageGuide.md#remote-projects).
+- The plugin rebuilds incomplete bundled Bash caches and fixes OpenSpec startup on long Windows installation paths. Desktop hosts with workspace repair can scan a local NTFS workspace and fix Low integrity labels under **Settings → Windows** after confirmation. The sandbox’s access rules are preserved, and later writable sessions may add the labels again.
+- Added Harness `0.2.3-alpha.1` and `0.2.3-alpha.2` to the existing 15 supported versions. Fixed preset language synchronization on newer hosts and conflicts when saving language and theme together. See [compatibility](Compatibility.md) for the Cordis startup issue in the `alpha.1` npm host and the test scope.
+- Fixed tool and shell inheritance on the first turn of child agents, persistent Bash shutdown timeouts on macOS, and the error message when a project-version argument is passed to global memory.
+- Added automated maintenance for bundled Skills and dependencies. Scheduled checks cover sources, licenses, and compatibility. When automatic updates are enabled, validated changes can be committed to a separate branch. Updated bundled oil-ui and `marked` to 18.2.1. See [maintaining bundled resources](Workflows.md#maintaining-bundled-resources).
+- New evaluation runs can use APFS file clones for session snapshots to reduce duplicate storage. See the [evaluation storage notes](../StorageUsage.md).
+
 ## 0.4.3 · 2026-11-19
 
 - Aligned current support with 15 Harness versions, from `0.1.5-rc.3` to `0.2.2-rc.5`, updating DSH peers, lockfile and usage documentation while retaining historical acceptance records.

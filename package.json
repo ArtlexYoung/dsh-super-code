@@ -1,6 +1,6 @@
 {
   "name": "dsh-super-code",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "Task-focused coding, specialist teams, and durable task memory with directory and declarative presets for DeepSeek Harness.",
   "license": "Apache-2.0",
   "type": "module",
@@ -103,6 +103,8 @@
     "docs/images/tool-profiles-zh-display.svg",
     "docs/images/tool-profiles-en.png",
     "docs/images/tool-profiles-en-display.svg",
+    "docs/images/workflows-zh.png",
+    "docs/images/workflows-en.png",
     "docs/images/star-history.svg",
     "docs/images/star-history-dark.svg",
     "docs/images/npm-downloads.svg",

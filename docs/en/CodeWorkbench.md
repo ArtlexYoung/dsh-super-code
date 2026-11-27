@@ -2,14 +2,9 @@
 
 [中文](../CodeWorkbench.md) · English
 
-## Enable and open the workbench
+## Open the workbench
 
-1. Open **Settings → Super Code → Code workbench**.
-2. Turn on **Enable code workbench (Beta)**, the first switch shown below. It is off by default, takes effect immediately, and is saved in this client. Toggling it does not initialize a project or change its preset.
-
-[![Code workbench settings: enable the first switch](../images/workbench-settings-en-display.svg)](../images/workbench-settings-en.png)
-
-3. Return to a conversation with a working directory. Open **Code workbench** beside **Conversation**, then select a file in the left-hand tree.
+The workbench is on by default. In a conversation with a working directory, open **Code workbench** beside **Conversation**, then select a file in the left-hand tree or use **Quick open file** on the empty page.
 
 [![Browse files and navigate symbols in the workbench](../images/workbench-en-display.svg)](../images/workbench-en.png)
 
@@ -17,9 +12,9 @@
 - Edit in the center, then click **Save** or press Ctrl/⌘+S to write changes. The current conversation's access permissions apply.
 - Use **Git**, **Open window**, or **Editor settings** in the top toolbar. The right rail opens Conversation, Quick conversations, Changed files and Learn as needed; the example shows the current conversation alongside the code.
 
-The second switch, **Open code in workbench**, controls file links in the main Conversation tab. Enable it if those links should open in the workbench. It is also off by default and is separate from the main workbench switch.
+File links in **Conversation** open in the workbench by default. You can change **Enable code workbench** and **Open files in workbench** independently under **Settings → Super Code → Code workbench**. Changes take effect immediately and are saved in the current client.
 
-Workbench overviews, settings and tool-profile screenshots show an isolated Harness instance with a demo project and sample conversation; the reader image shows the same workbench component. Click an image for the full-size version.
+The workbench and tool-profile screenshots use a demo project and sample conversation. Click an image for the full-size version.
 
 ## Reading and navigation
 
@@ -79,7 +74,7 @@ Place the cursor inside a function and choose **All actions → Code history** i
 
 Unsaved selections are mapped to their committed predecessor; newly written code may have no committed history. Shallow history, ambiguous sources, replacements spanning adjacent code and unsupported historical text are marked as incomplete. Queries can be stopped, retried or refreshed. Refresh uses the code snapshot captured when the dialog opened; reopen Code history after editing the selection. Queries are read-only, use no model and create no disk index. Existing text-diff size limits apply.
 
-Conversation file links opened through **Open code in workbench** locate the referenced line. File links in the workbench conversation always open in the current workbench using the host’s path recognition, regardless of this switch. Disabling the workbench restores the host’s original file preview.
+File links opened from **Conversation** jump to the referenced line. In the workbench’s conversation pane, links always open in the current workbench using the host’s path recognition. Turning off either switch restores the Harness preview for links in the main **Conversation** tab.
 
 Opening a file does not wait for the project index. Indexing continues in the background while files remain available for reading, editing, and navigation.
 

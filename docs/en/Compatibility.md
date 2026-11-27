@@ -8,7 +8,7 @@ The frozen `0.4.3` candidate passed 22 native Electron checks on a Windows x64 m
 
 ## NEXT on Windows x64 (2026-11-26)
 
-The frozen `0.4.3` candidate passed 22 native Electron checks on a Windows x64 machine running NEXT `2.0.24-next` with bundled Harness `0.2.2-rc.5`. This covered installation, saving a file from the workbench, Skills, MCP, memory, and continuing the original conversation after uninstall. The portable ZIP matched the official SHA-256. Windows reported the executable as unsigned. The run used an isolated background session. OS dialogs and phone takeover still require testing. See the [Chinese acceptance report](../testing/Acceptance-followup-20261126.md#windows-x64-next).
+The frozen `0.4.3` candidate passed 22 native Electron checks on a Windows x64 machine running NEXT `2.0.24-next` with bundled Harness `0.2.2-rc.5`. This covered installation, saving a file from the workbench, Skills, MCP, memory, and continuing the original conversation after uninstall. The portable ZIP matched the official SHA-256. Windows reported the executable as unsigned. The run used an isolated background session. An interactive Windows x64 desktop later completed OAuth, Android phone takeover, cold-restart continuation and cancellation of a running model request. Tool approval and real file side effects still require testing. The earlier background session returned `0x483`. See the [Chinese acceptance report](../testing/Acceptance-followup-20261126.md#windows-x64-next).
 
 ## Go Web shortcuts and Skill updates (2026-11-26)
 

@@ -4,7 +4,7 @@
 
 [![npm total downloads](https://img.shields.io/npm/dt/dsh-super-code?label=npm%20downloads)](https://npmtrends.com/dsh-super-code) [![Latest npm release](https://img.shields.io/npm/v/dsh-super-code)](https://www.npmjs.com/package/dsh-super-code) [![17 declared Harness versions](https://img.shields.io/badge/Harness-17%20versions-blue)](docs/en/Compatibility.md) [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
-A coding tool for DeepSeek Harness worth trying: smarter, leaner, and easier to use.
+A smarter, more efficient, and easier-to-use coding tool for DeepSeek Harness. It includes the Super Code coding preset, the Code Workbench, the Workflow Workbench, Windows compatibility, remote support, and more.
 
 # 1 Features
 

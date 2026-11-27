@@ -4,7 +4,7 @@
 
 [![npm 总下载量](https://img.shields.io/npm/dt/dsh-super-code?label=npm%20downloads)](https://npmtrends.com/dsh-super-code) [![npm 当前发布版本](https://img.shields.io/npm/v/dsh-super-code)](https://www.npmjs.com/package/dsh-super-code) [![Harness 安装包声明 17 个版本](https://img.shields.io/badge/Harness-17%20versions-blue)](docs/Compatibility.md) [![许可证：Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
-值得一试的 DeepSeek Harness 编程工具，更聪明、更节省、更好用。
+更聪明、更节省、更好用的 DeepSeek Harness 编程工具，包含 Super Code 编程预设、代码工作台、工作流工作台、Windows 兼容、远程支持以及更多。
 
 # 1 特性
 

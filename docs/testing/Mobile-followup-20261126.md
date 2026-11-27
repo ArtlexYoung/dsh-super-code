@@ -30,7 +30,7 @@
 
 已按发布标签 `v1.4.0` 核对自动恢复路径。`network_watch.dart` 的前台事件会通知 `LocalConnectionController`、SSH 链路和中转链路，但 `ChatController` 没有订阅同一个 `networkKicksProvider`。聊天控制器只有在自己的 mux 状态流收到 `connected` 且 `_watchEnded` 已置为 `true` 时才重新打开会话跟随；后台返回后，如果连接对象没有重新发出这条状态，当前会话就会继续显示 `Disconnected`，手动同步也可能停在 `Chat sync interrupted`。应用完全重启会重新建立 `ChatController`，所以原有历史能够恢复。
 
-最小修复方向是在 `ChatController.build` 订阅 `networkKicksProvider`。收到前台或网络事件后，先确认当前 `ChatController` 和 mux 仍然有效，再按现有 generation、follow epoch 和 `_watchEnded` 守卫重连 mux，并重新打开或同步会话跟随。当前只完成源码诊断，没有把未经 APK 验证的修复写入主分支。诊断证据见外层 `mobile-followup-20261126/reconnect-diagnosis-20261127/Verification.json`。
+最小修复方向是在 `ChatController.build` 订阅 `networkKicksProvider`。收到前台或网络事件后，先确认当前 `ChatController` 和 mux 仍然有效，再按现有 generation、follow epoch 和 `_watchEnded` 守卫重连 mux，并重新打开或同步会话跟随。已做一个隔离的最小修复候选。`ChatController` 在构建时订阅 `networkKicksProvider`，收到事件后只对当前 mux 处理，断开时调用 `reconnect()`，已结束的 follow 在连接仍有效时调用 `resync()`，并在控制器销毁时取消订阅。候选保留现有的 generation、follow epoch 和当前客户端守卫。静态检查已通过，Flutter analyzer、APK 构建和 Android 前后台复测尚未完成。候选证据见外层 `mobile-followup-20261126/reconnect-candidate-20261127/Verification.json`，源码诊断见 `reconnect-diagnosis-20261127/Verification.json`。
 
 精简历史通过实际服务进程的只读调试观察取证，没有修改第三方源码或响应变量。同一历史快照按一致方式编码为 UTF-8 JSON 后，完整内容为 110052 字节，精简后为 107798 字节。这个样本只证明内容确实精简，不是性能测试。精简模式下的实时审批组合未另行重测。
 

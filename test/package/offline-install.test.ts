@@ -38,6 +38,16 @@ test('local tgz installs offline with empty cache and default peer resolution', 
   const modules = join(installDir, 'node_modules')
   assert.ok(!(await readdir(modules)).includes('@deepseek-ai'), 'DSH provides its own modules at runtime')
   const pkg = JSON.parse(await readFile(join(modules, 'dsh-super-code', 'package.json'), 'utf8'))
+  const lockfile = JSON.parse(await readFile(join(root, 'package-lock.json'), 'utf8'))
+  assert.deepEqual(pkg.peerDependencies, lockfile.packages[''].peerDependencies)
+  for (const [name, range] of Object.entries<string>(pkg.peerDependencies)) {
+    if (!name.startsWith('@deepseek-ai/dsh-')) continue
+    for (const version of ['0.2.3-alpha.1', '0.2.3-alpha.2']) {
+      assert.ok(range.split(' || ').includes(version), `${name} must declare ${version}`)
+    }
+  }
+  assert.ok(pkg.peerDependencies['@deepseek-ai/cordis'].split(' || ').includes('4.2.0-alpha.1'))
+  assert.ok(pkg.peerDependencies['@deepseek-ai/schemastery'].split(' || ').includes('3.20.0-alpha.1'))
   for (const name of Object.keys(pkg.dependencies)) {
     await readFile(join(modules, 'dsh-super-code', 'node_modules', name, 'package.json'), 'utf8')
   }

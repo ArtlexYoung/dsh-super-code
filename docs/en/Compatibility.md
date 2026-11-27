@@ -2,6 +2,12 @@
 
 [中文](../Compatibility.md) · English
 
+## Harness 0.2.3 alpha support on `main` (2026-11-27)
+
+Packages built from `main` declare `0.2.3-alpha.1` and `0.2.3-alpha.2`. All 18 Harness peers remain optional and retain the previous 15 versions. The component ranges also include Cordis `4.2.0-alpha.1` and Schemastery `3.20.0-alpha.1`, which `alpha.2` uses.
+
+On macOS ARM64 with Node.js `24.22.3`, the official npm `alpha.2` host passed 20 Web lifecycle checks. These covered offline installation, saving settings, toggling Skills, MCP, continuing a conversation after a cold restart, and uninstall recovery. The official npm `alpha.1` host fails at startup because its Cordis Loader lacks the `EntryValidationError` export. An isolated host passed the same 20 checks after the affected Cordis components were rebuilt from the matching source tag. Both runs used a controlled model adapter.
+
 ## Official Desktop on Windows x64 (2026-11-26)
 
 The frozen `0.4.3` candidate passed 22 native Electron checks on a Windows x64 machine with official Desktop `0.2.2-rc.5`. The checks covered saving from the workbench, Skills, MCP, reopening memory and conversations after a restart, and uninstall recovery. The run used an isolated background session. OS dialogs and NEXT phone takeover still require testing. See the [Chinese acceptance report](../testing/Acceptance-followup-20261126.md#windows-x64-官方-desktop).

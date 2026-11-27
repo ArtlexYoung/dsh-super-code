@@ -2,7 +2,7 @@
 
 中文 · [English](README.en.md)
 
-[![npm 总下载量](https://img.shields.io/npm/dt/dsh-super-code?label=npm%20downloads)](https://npmtrends.com/dsh-super-code) [![npm 当前发布版本](https://img.shields.io/npm/v/dsh-super-code)](https://www.npmjs.com/package/dsh-super-code) [![Harness 目标支持范围：15 个版本](https://img.shields.io/badge/Harness-15%20versions-blue)](docs/Compatibility.md) [![许可证：Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+[![npm 总下载量](https://img.shields.io/npm/dt/dsh-super-code?label=npm%20downloads)](https://npmtrends.com/dsh-super-code) [![npm 当前发布版本](https://img.shields.io/npm/v/dsh-super-code)](https://www.npmjs.com/package/dsh-super-code) [![Harness 安装包声明 17 个版本](https://img.shields.io/badge/Harness-17%20versions-blue)](docs/Compatibility.md) [![许可证：Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
 值得一试的 DeepSeek Harness 编程工具，更聪明、更节省、更好用。
 
@@ -93,11 +93,11 @@
 
 # 4 安装
 
-当前支持 15 个 Harness 版本，最低为 `0.1.5-rc.3`：历史系列保留 `0.1.5-rc.3`、`0.1.7-rc.2`、`0.2.0-rc.2`；较新版本覆盖 `0.2.1-rc.1`～`rc.5`、`0.2.2-alpha.2/alpha.3` 和 `0.2.2-rc.1`～`rc.5`。安装依赖声明与这 15 个版本一致，早期 alpha 和 `0.1.6` 不在当前支持范围；最新系列保留 `0.2.2-alpha.2`、`alpha.3`。三系统验收方式、桌面端范围与已知限制见[兼容性记录](docs/Compatibility.md)。
+当前 `main` 分支的安装包声明 17 个 Harness 版本。原有范围包括 `0.1.5-rc.3`、`0.1.7-rc.2`、`0.2.0-rc.2`、`0.2.1-rc.1`～`rc.5`、`0.2.2-alpha.2/alpha.3` 和 `0.2.2-rc.1`～`rc.5`。本次加入 `0.2.3-alpha.1` 和 `0.2.3-alpha.2`。`alpha.1` 的 npm 宿主存在 Cordis 启动问题，已验证用同版本标签源码重建相关组件后的宿主。各平台的验证结果见[兼容性记录](docs/Compatibility.md)。
 
 **桌面版**：在左侧打开「插件 → 添加插件」，输入 `dsh-super-code`，依次点击「安装」和「立即启用」（旧版本请按提示重载或重启）。桌面版内置运行环境，无需安装 Node.js。
 
-**Web / 命令行版**：建议使用 Node.js `24.9.0` 及以上，Harness 自 `0.2.2-alpha.2` 起也声明此要求。历史验收曾在 macOS 用 Node.js `22.18.0` 逐版验证较早的 Harness；当前支持的 Harness 版本以上述列表为准。插件单独支持 Node.js `22.0.0`，完整 Harness 在该版本会静默退出。
+**Web / 命令行版**：Harness `0.2.2-alpha.2` 至 `0.2.3-alpha.1` 要求 Node.js `24.9.0` 或更新版本。`0.2.3-alpha.2` 需要 24.x 中的 `24.22.3` 及以上版本，或 `26.13.1` 及以上版本。插件单独支持 Node.js `22.0.0`。
 
 ```bash
 npm install -g @deepseek-ai/dsh            # 已安装 dsh 命令可跳过

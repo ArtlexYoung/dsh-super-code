@@ -2,6 +2,12 @@
 
 中文 · [English](en/Compatibility.md)
 
+## `main` 的 Harness 0.2.3 alpha 适配（2026-11-27）
+
+从 `main` 构建的插件包声明支持 `0.2.3-alpha.1` 和 `0.2.3-alpha.2`。18 项 Harness peer 仍为可选，原有 15 个版本继续保留。`alpha.2` 使用的 Cordis `4.2.0-alpha.1` 和 Schemastery `3.20.0-alpha.1` 也加入了各自的版本范围。
+
+macOS ARM64 上，官方 npm `alpha.2` 宿主使用 Node.js `24.22.3`，完成 20 项 Web 生命周期检查，覆盖离线安装、设置保存、Skill 启停、MCP、冷重启续聊和卸载恢复。`alpha.1` 的官方 npm 宿主在启动时缺少 Cordis Loader 的 `EntryValidationError` 导出。用同版本标签源码重建相关 Cordis 组件后，隔离宿主通过相同的 20 项检查。两次验收都使用受控模型。
+
 ## Windows x64 官方 Desktop（2026-11-26）
 
 冻结的 `0.4.3` 候选在真实 Windows x64、官方 Desktop `0.2.2-rc.5` 上通过 22 项原生 Electron 检查，覆盖工作台保存、Skill、MCP、记忆冷续聊和卸载恢复。测试在隔离后台会话中执行，系统级弹窗和 NEXT 远控仍待验证。见[本轮验收记录](testing/Acceptance-followup-20261126.md#windows-x64-官方-desktop)。

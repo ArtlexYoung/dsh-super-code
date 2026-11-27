@@ -2,7 +2,7 @@
 
 [中文](README.md) · English
 
-[![npm total downloads](https://img.shields.io/npm/dt/dsh-super-code?label=npm%20downloads)](https://npmtrends.com/dsh-super-code) [![Latest npm release](https://img.shields.io/npm/v/dsh-super-code)](https://www.npmjs.com/package/dsh-super-code) [![Target Harness support: 15 versions](https://img.shields.io/badge/Harness-15%20versions-blue)](docs/en/Compatibility.md) [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+[![npm total downloads](https://img.shields.io/npm/dt/dsh-super-code?label=npm%20downloads)](https://npmtrends.com/dsh-super-code) [![Latest npm release](https://img.shields.io/npm/v/dsh-super-code)](https://www.npmjs.com/package/dsh-super-code) [![17 declared Harness versions](https://img.shields.io/badge/Harness-17%20versions-blue)](docs/en/Compatibility.md) [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
 A coding tool for DeepSeek Harness worth trying: smarter, leaner, and easier to use.
 
@@ -93,11 +93,11 @@ Versions follow `major.performance.maintenance`: a change in the second number i
 
 # 4 Install
 
-The current release supports 15 Harness versions, starting at `0.1.5-rc.3`: `0.1.5-rc.3`, `0.1.7-rc.2`, and `0.2.0-rc.2` from older series; `0.2.1-rc.1` through `rc.5`; and `0.2.2-alpha.2/alpha.3` plus `0.2.2-rc.1` through `rc.5`. Peer dependency declarations match these 15 versions. Earlier alpha releases and `0.1.6` are outside the current support scope; the latest series retains `0.2.2-alpha.2` and `alpha.3`. see [compatibility](docs/en/Compatibility.md) for the three-system environments, desktop coverage, and known limits.
+Packages built from `main` declare 17 Harness versions. The existing range includes `0.1.5-rc.3`, `0.1.7-rc.2`, `0.2.0-rc.2`, `0.2.1-rc.1` through `rc.5`, `0.2.2-alpha.2/alpha.3`, and `0.2.2-rc.1` through `rc.5`. This update adds `0.2.3-alpha.1` and `0.2.3-alpha.2`. The `alpha.1` npm host has a Cordis startup failure. The test used a host with the affected components rebuilt from the matching tag. See the [compatibility record](docs/en/Compatibility.md) for results by platform.
 
 **Desktop**: open **Plugins → Add plugin** in the left sidebar, enter `dsh-super-code`, then click **Install** and **Enable now** (on older versions, reload or restart when prompted). Desktop includes its own runtime; Node.js is not required.
 
-**Web / CLI**: use Node.js `24.9.0` or later. Harness declares this requirement starting with `0.2.2-alpha.2`. Historical macOS checks covered earlier Harness releases on Node.js `22.18.0`. Currently supported Harness versions are listed above. The plugin itself supports Node.js `22.0.0`. The full Harness exits silently on that version.
+**Web / CLI**. Harness `0.2.2-alpha.2` through `0.2.3-alpha.1` requires Node.js `24.9.0` or later. For `0.2.3-alpha.2`, use `24.22.3` or later in the 24.x series, or `26.13.1` or later. The plugin itself supports Node.js `22.0.0`.
 
 ```bash
 npm install -g @deepseek-ai/dsh            # skip if dsh is already installed

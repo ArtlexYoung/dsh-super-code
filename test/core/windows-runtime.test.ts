@@ -139,6 +139,14 @@ test('missing payloads and interrupted preparation leave no published or staging
   await assert.rejects(prepareWindowsRuntime({ ...f.options, cacheRoot: 'relative-cache' }), /absolute path/)
 })
 
+test('an incomplete published cache is rebuilt after an interrupted preparation', async t => {
+  const f = await fixture(t), runtime = await prepareWindowsRuntime(f.options)
+  await unlink(join(runtime.bin, 'cat.exe'))
+  const rebuilt = await prepareWindowsRuntime(f.options)
+  assert.deepEqual(rebuilt, runtime)
+  assert.equal((await lstat(join(runtime.bin, 'cat.exe'))).isFile(), true)
+})
+
 test('replaced command entries and symbolic executable paths cannot reuse a prepared cache', async t => {
   const f = await fixture(t), runtime = await prepareWindowsRuntime(f.options)
   const entry = join(runtime.bin, 'cat.exe')

@@ -75,10 +75,22 @@ export async function prepareWindowsRuntime(options: { cacheRoot?: string; arch?
   await mkdir(cache, { recursive: true, mode: 0o700 })
   const root = join(cache, manifest.id + '-' + arch), bin = join(root, 'usr', 'bin')
   const runtime = { root, bin, bash: join(bin, 'bash.exe'), version: manifest.id, arch }
+  let ready = false
   try {
     await lstat(root)
+    try {
+      await verify(root, files, manifest.applets)
+      ready = true
+    } catch (error) {
+      // A killed preparation can leave the published directory without all command entries.
+      // Rebuild only that incomplete shape. Content tampering and invalid links still fail closed.
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error
+      await rm(root, { recursive: true, force: true })
+    }
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error
+  }
+  if (!ready) {
     const staging = await mkdtemp(join(cache, '.prepare-'))
     try {
       const target = join(staging, 'usr', 'bin')
